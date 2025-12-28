@@ -66,7 +66,8 @@ export default function KnowledgeBase() {
   const [showUploadPanel, setShowUploadPanel] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
-  const { user, isLoading: authLoading, isAuthenticated } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
+  const isAuthenticated = !!user;
 
   const { data: docs = [], isLoading } = useQuery<KnowledgeBaseDoc[]>({
     queryKey: ["/api/knowledge-base"],
