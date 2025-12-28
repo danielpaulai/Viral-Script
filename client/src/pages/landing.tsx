@@ -18,12 +18,12 @@ import { Link } from "wouter";
 import { pricingTiers } from "@shared/schema";
 import { useState, useEffect, useCallback } from "react";
 
-// Feature images - realistic stock photos
-import viralHooksImg from "@assets/stock_images/content_creator_film_a810c071.jpg";
-import smartScriptImg from "@assets/stock_images/young_person_typing__5755715a.jpg";
-import knowledgeBaseImg from "@assets/stock_images/person_speaking_to_c_a11b396c.jpg";
-import voiceDnaImg from "@assets/stock_images/filmmaker_with_micro_711e6458.jpg";
-import deepResearchImg from "@assets/stock_images/researcher_analyzing_f6b1ab19.jpg";
+// Feature images - Gemini generated hyper-realistic visuals
+import viralHooksImg from "@assets/Gemini_Generated_Image_l5rfhel5rfhel5rf_1766959322314.jpeg";
+import smartScriptImg from "@assets/Gemini_Generated_Image_33o45v33o45v33o4_(1)_1766959353422.jpeg";
+import knowledgeBaseImg from "@assets/Gemini_Generated_Image_zqsvjzqsvjzqsvjz_1766959397993.jpeg";
+import voiceDnaImg from "@assets/Gemini_Generated_Image_do72nvdo72nvdo72_(1)_1766959412860.jpeg";
+import deepResearchImg from "@assets/Gemini_Generated_Image_c69af2c69af2c69a_1766959451509.jpeg";
 import hemingwayImg from "@assets/stock_images/writer_working_on_sc_9244fd3f.jpg";
 
 // Animated Typing Text Component

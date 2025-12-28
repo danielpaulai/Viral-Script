@@ -1,0 +1,404 @@
+# 6 SAAS FEATURE IMAGE PROMPTS
+## Hyper-Realistic, Creator-Focused Visuals for Video Script Writer App
+
+**Style Guide for All Images:**
+- Aspect Ratio: 16:9 (landscape for feature cards)
+- Resolution: 1920 x 1080 pixels minimum
+- Style: Hyper-realistic, premium SaaS aesthetic
+- Color Tone: Dark/moody with accent colors (matches your dark UI)
+- Feel: Professional, tech-forward, creator-economy focused
+
+---
+
+## FEATURE 1: 50+ Viral Hooks
+
+**Current:** Camera equipment stock photo
+**New Concept:** Multiple phone screens showing viral videos mid-scroll, engagement notifications exploding
+
+### Gemini Prompt - Copy & Paste:
+
+```
+Create a hyper-realistic 16:9 image (1920x1080) for a SaaS feature card.
+
+CONCEPT: "50+ Viral Hooks" - Visual representation of viral content and engagement
+
+MAIN ELEMENTS:
+- 3-4 smartphone screens floating at dynamic angles in space
+- Each phone showing a different viral video mid-play:
+  - Phone 1: TikTok interface with a creator speaking to camera, 2.3M views visible
+  - Phone 2: Instagram Reels with engagement notifications popping off (heart icons, comment bubbles, share arrows flying out of screen)
+  - Phone 3: YouTube Shorts interface with subscribe animation
+- Notification bubbles floating around phones: "10K likes", "Going viral", fire emojis 🔥, rocket emojis 🚀
+
+VISUAL EFFECTS:
+- Engagement icons (hearts, comments, shares) literally floating/exploding out of the screens
+- Glowing edges on phones suggesting energy/virality
+- Motion blur on some elements suggesting rapid growth
+- Small sparkles or particles around high-engagement elements
+
+BACKGROUND:
+- Dark gradient background (deep navy/black) matching your app UI
+- Subtle grid pattern or tech lines in background
+- Soft red/coral accent lighting (matching your app's accent color)
+- Depth with phones at different z-depths
+
+LIGHTING:
+- Screens are the primary light source
+- Soft glow emanating from phones
+- Rim lighting on phone edges (coral/red accent)
+- Dark, moody, premium tech aesthetic
+
+STYLE:
+- Hyper-realistic phone renders
+- 3D floating composition
+- Premium SaaS marketing visual
+- Clean but dynamic
+
+TEXT: None (text will be added in UI)
+
+OUTPUT: Photorealistic, looks like Apple or premium SaaS marketing material
+```
+
+---
+
+## FEATURE 2: Smart Script Generation
+
+**Current:** Person typing on laptop
+**New Concept:** AI interface generating script in real-time with text flowing onto screen
+
+### Gemini Prompt - Copy & Paste:
+
+```
+Create a hyper-realistic 16:9 image (1920x1080) for a SaaS feature card.
+
+CONCEPT: "Smart Script Generation" - AI writing viral scripts in real-time
+
+MAIN ELEMENTS:
+- Sleek laptop or monitor displaying a script editor interface
+- On screen: Visible lines of script text being "typed" in real-time (some lines complete, cursor blinking on current line)
+- Script format visible: Hook line highlighted, body text, CTA at bottom
+- AI assistant visualization: Subtle glowing orb or neural network pattern near the text suggesting AI is writing
+- Word count, readability score, or "Viral Score: 94%" badge visible on interface
+
+FLOATING ELEMENTS:
+- Script structure labels floating near screen: "HOOK", "BODY", "CTA"
+- Small badges floating: "Grade 4 Reading Level ✓", "Hemingway Approved ✓"
+- Subtle code or prompt snippets dissolving into readable script
+
+COMPOSITION:
+- 3/4 angle view of screen (not straight on)
+- Screen is hero but environment adds context
+- Depth of field: Screen sharp, surroundings soft
+
+BACKGROUND:
+- Dark, minimal workspace environment
+- Subtle desk surface visible
+- Deep shadows, moody lighting
+- Navy/black gradient matching app UI
+
+LIGHTING:
+- Screen glow as primary light source
+- Soft coral/red accent rim lighting
+- Premium, cinematic tech lighting
+- High contrast, dramatic
+
+STYLE:
+- Hyper-realistic screen content
+- SaaS product marketing aesthetic
+- Clean, minimal, premium
+- Suggests AI intelligence and speed
+
+TEXT: None (text will be added in UI)
+
+OUTPUT: Photorealistic, looks like Notion or premium AI tool marketing
+```
+
+---
+
+## FEATURE 3: Knowledge Base
+
+**Current:** Surprised woman stock photo
+**New Concept:** Documents and brand assets flowing into a central hub/brain visualization
+
+### Gemini Prompt - Copy & Paste:
+
+```
+Create a hyper-realistic 16:9 image (1920x1080) for a SaaS feature card.
+
+CONCEPT: "Knowledge Base" - Your brand documents becoming intelligent content fuel
+
+MAIN ELEMENTS:
+- Central glowing hub/core (could be abstract sphere, brain shape, or database icon)
+- Multiple document types floating and flowing INTO the central hub:
+  - PDF document labeled "Brand Guide"
+  - Document with "ICP" visible
+  - File labeled "Voice DNA"
+  - Messaging document
+  - Business strategy doc
+- Documents connected by glowing data streams/light trails leading to center
+- Small preview snippets of content visible on floating docs
+
+VISUAL METAPHOR:
+- Documents are being "absorbed" or "learned" by the central AI
+- Light particles flowing from docs toward center
+- Central hub pulsing with energy as it receives information
+- Transformation visual: Raw docs → Intelligent system
+
+COMPOSITION:
+- Central hub in middle-right of frame
+- Documents arranged in orbital pattern around it
+- Sense of movement and flow toward center
+- Dynamic, not static
+
+BACKGROUND:
+- Deep dark gradient (navy to black)
+- Subtle tech grid or neural network pattern
+- Abstract data visualization elements
+- Depth and dimension
+
+LIGHTING:
+- Central hub is brightest element (warm glow)
+- Documents have soft individual lighting
+- Data streams glow with coral/red accent color
+- Dramatic, premium SaaS aesthetic
+
+STYLE:
+- Hyper-realistic document renders
+- Abstract tech visualization for the hub
+- Premium, intelligent, sophisticated
+- Suggests "your data becomes smart"
+
+TEXT: None (text will be added in UI)
+
+OUTPUT: Photorealistic mixed with premium tech visualization
+```
+
+---
+
+## FEATURE 4: Voice DNA Matching
+
+**Current:** Microphone in studio
+**New Concept:** Sound waves transforming into unique fingerprint/DNA pattern with creator personality
+
+### Gemini Prompt - Copy & Paste:
+
+```
+Create a hyper-realistic 16:9 image (1920x1080) for a SaaS feature card.
+
+CONCEPT: "Voice DNA Matching" - Your unique voice becoming a recognizable pattern
+
+MAIN ELEMENTS:
+- Premium studio microphone (Shure SM7B or similar) on one side
+- Sound waves emanating from microphone
+- Sound waves TRANSFORMING into a DNA helix or unique fingerprint pattern
+- The DNA/fingerprint made of audio waveform patterns
+- Visualization suggests "your voice = your unique identifier"
+
+TRANSFORMATION VISUAL:
+- Left side: Sound waves (traditional waveform visualization)
+- Middle: Transition zone where waves morph
+- Right side: Unique DNA helix or fingerprint pattern made of soundwaves
+- Suggests voice being "decoded" into unique signature
+
+FLOATING ELEMENTS:
+- Small text snippets showing personality traits: "Confident", "Warm", "Direct"
+- Tone indicators floating: Icons for energy level, warmth, authority
+- Subtle checkmarks suggesting "match found"
+
+COMPOSITION:
+- Microphone in left third
+- Transformation happening across middle
+- DNA pattern in right third
+- Horizontal flow of energy/transformation
+
+BACKGROUND:
+- Dark gradient background
+- Subtle audio grid or frequency pattern
+- Deep blacks with rich shadows
+- Tech-forward, premium feel
+
+LIGHTING:
+- Microphone has subtle key light
+- Sound waves and DNA glow with coral/red accent
+- Central transformation area brightest
+- Cinematic, dramatic lighting
+
+STYLE:
+- Hyper-realistic microphone
+- Abstract but elegant visualization for DNA/voice pattern
+- Premium audio brand aesthetic (like Spotify or podcast platform marketing)
+- Suggests personalization and uniqueness
+
+TEXT: None (text will be added in UI)
+
+OUTPUT: Photorealistic microphone with premium tech visualization
+```
+
+---
+
+## FEATURE 5: Deep Research Mode
+
+**Current:** Computer with analytics charts
+**New Concept:** AI research visualization with data points, sources, and insights connecting
+
+### Gemini Prompt - Copy & Paste:
+
+```
+Create a hyper-realistic 16:9 image (1920x1080) for a SaaS feature card.
+
+CONCEPT: "Deep Research Mode" - AI finding stats, quotes, and contrarian angles
+
+MAIN ELEMENTS:
+- Central "search" or "research" visualization (magnifying glass with AI brain inside, or radar scanning effect)
+- Multiple floating data cards/snippets being discovered:
+  - Card 1: Statistic "73% of viewers..." with source citation
+  - Card 2: Quote bubble with quotation marks
+  - Card 3: "Contrarian Take:" label with insight
+  - Card 4: Trending topic indicator
+  - Card 5: Competitor insight card
+- Connection lines between related insights
+- Small source icons (news sites, research papers, social platforms)
+
+VISUAL ELEMENTS:
+- Radar/scanning effect emanating from center
+- Data points "lighting up" as they're discovered
+- Network/constellation of connected insights
+- Search beams or scanning lines
+
+COMPOSITION:
+- Central research "engine" in middle
+- Discovered insights floating in orbit around it
+- Some cards closer (more relevant), some further
+- Dynamic, intelligent visualization
+
+BACKGROUND:
+- Dark tech gradient
+- Subtle world map or data grid suggesting global research
+- Abstract network connections
+- Deep, sophisticated atmosphere
+
+LIGHTING:
+- Central element glowing brightest
+- Each insight card has soft glow
+- Connection lines pulsing with light
+- Coral/red accent color on key elements
+- Premium, intelligent aesthetic
+
+STYLE:
+- Mix of hyper-realistic cards and abstract visualization
+- AI/ML research aesthetic
+- Premium SaaS marketing quality
+- Suggests depth and intelligence of research
+
+TEXT: None (text will be added in UI)
+
+OUTPUT: Premium tech visualization suitable for AI SaaS marketing
+```
+
+---
+
+## FEATURE 6: Hemingway Analysis
+
+**Current:** Vintage typewriter
+**New Concept:** Modern script being analyzed with readability scores and grade-level indicators
+
+### Gemini Prompt - Copy & Paste:
+
+```
+Create a hyper-realistic 16:9 image (1920x1080) for a SaaS feature card.
+
+CONCEPT: "Hemingway Analysis" - Scripts being analyzed for readability and punch
+
+MAIN ELEMENTS:
+- Clean document/script page as the hero element
+- Text on document with color-coded highlighting:
+  - Green highlights on short, punchy sentences
+  - Yellow on medium sentences
+  - Red/coral on sentences flagged for simplification
+- Floating analysis badges around the document:
+  - "Grade 4 Reading Level ✓"
+  - "Readability: 94/100"
+  - "0 Adverbs"
+  - "Punch Score: High"
+- Edit suggestions appearing as subtle annotations
+
+VISUAL ANALYSIS ELEMENTS:
+- Word count counter
+- Reading time estimate
+- Sentence length visualization (bar graph or wave)
+- "Simple" vs "Complex" word ratio indicator
+- Green checkmarks for passing elements
+
+COMPOSITION:
+- Document/script page in center, slightly angled
+- Analysis badges floating around it
+- Grading visualization to one side
+- Clean, editorial layout
+
+BACKGROUND:
+- Dark, minimal background
+- Subtle paper texture or grid
+- Deep navy/black gradient
+- Premium, sophisticated feel
+
+LIGHTING:
+- Document appears lit as if on a lightbox
+- Analysis elements have soft glow
+- Green = good, coral/red = needs attention
+- Clean, bright on dark contrast
+
+STYLE:
+- Hyper-realistic document render
+- Clean data visualization
+- Editorial/publishing quality aesthetic
+- Suggests precision and professionalism
+- Nod to Hemingway (could have subtle typewriter key or vintage element in corner)
+
+TEXT: None (text will be added in UI)
+
+OUTPUT: Photorealistic document with premium analysis visualization
+```
+
+---
+
+## QUICK REFERENCE: ALL 6 FEATURES
+
+| Feature | Old Visual | New Concept | Key Visual Elements |
+|---------|-----------|-------------|---------------------|
+| 50+ Viral Hooks | Camera equipment | Multiple phones with viral content | Floating phones, engagement exploding |
+| Smart Script Generation | Person typing | AI writing script in real-time | Screen with script, AI visualization |
+| Knowledge Base | Surprised woman | Documents flowing to central hub | Docs → glowing brain/database |
+| Voice DNA Matching | Microphone | Soundwaves → DNA/fingerprint | Mic + voice transformation |
+| Deep Research Mode | Analytics charts | AI research radar finding insights | Scanning effect, data cards |
+| Hemingway Analysis | Vintage typewriter | Script with color-coded analysis | Document with readability scores |
+
+---
+
+## STYLE CONSISTENCY NOTES
+
+For all 6 images, maintain:
+
+**Color Palette:**
+- Background: Deep navy (#0a0a0f) to black gradient
+- Accent: Coral/red (#ff6b6b or similar) matching your app
+- Highlights: White and soft cream
+- Data viz: Greens for positive, coral for attention
+
+**Visual Style:**
+- Hyper-realistic hero elements
+- Abstract tech visualization for concepts
+- Floating/3D composition
+- Premium SaaS marketing quality
+- Dark mode aesthetic matching your UI
+
+**Lighting:**
+- Dramatic, cinematic
+- Elements as light sources
+- Soft glows and rim lighting
+- High contrast, moody
+
+**Feel:**
+- Intelligent, AI-powered
+- Creator-economy focused
+- Premium, not cheap
+- Modern, not dated
