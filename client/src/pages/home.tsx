@@ -77,7 +77,7 @@ const platformWordTargets: Record<string, { min: number; max: number; label: str
 
 export default function Home() {
   const { toast } = useToast();
-  const { isAuthenticated } = useAuth();
+  const { user } = useAuth();
   const [generatedScript, setGeneratedScript] = useState<GeneratedScript | null>(null);
   const [activePreset, setActivePreset] = useState<string | null>(null);
   const [deepResearch, setDeepResearch] = useState(false);
@@ -126,7 +126,7 @@ export default function Home() {
 
   const { data: knowledgeBaseDocs = [] } = useQuery<any[]>({
     queryKey: ["/api/knowledge-base"],
-    enabled: isAuthenticated, // Only fetch if authenticated
+    enabled: !!user, // Only fetch if authenticated
   });
 
   const generateMutation = useMutation({
@@ -603,7 +603,7 @@ export default function Home() {
                 <div>
                   <p className="text-sm font-medium text-white">Use Knowledge Base</p>
                   <p className="text-[10px] text-muted-foreground">
-                    {!isAuthenticated 
+                    {!user 
                       ? "Sign in to use your personalized Knowledge Base"
                       : knowledgeBaseDocs.length > 0 
                         ? `${knowledgeBaseDocs.length} docs loaded - AI uses your brand voice`
@@ -612,11 +612,11 @@ export default function Home() {
                   </p>
                 </div>
               </div>
-              {!isAuthenticated ? (
+              {!user ? (
                 <Button 
                   size="sm" 
                   variant="outline" 
-                  onClick={() => window.location.href = "/api/login"}
+                  onClick={() => window.location.href = "/login"}
                   data-testid="button-login-kb-toggle"
                 >
                   Sign In
