@@ -211,11 +211,63 @@ export const quickPresets = [
   },
 ] as const;
 
+// Predefined CTA Library
+export const ctaCategories = [
+  { id: "follow", name: "Follow / Subscribe", description: "Grow your audience" },
+  { id: "engage", name: "Engagement", description: "Comments, likes, shares" },
+  { id: "save", name: "Save / Bookmark", description: "Build content library" },
+  { id: "link", name: "Link in Bio", description: "Drive traffic" },
+  { id: "action", name: "Take Action", description: "Specific next steps" },
+  { id: "community", name: "Community", description: "Build relationships" },
+] as const;
+
+export const ctaOptions = [
+  // Follow / Subscribe CTAs
+  { id: "follow_more", category: "follow", text: "Follow for more tips like this", short: "Follow for more" },
+  { id: "follow_daily", category: "follow", text: "Follow for daily [topic] content", short: "Follow for daily tips" },
+  { id: "follow_journey", category: "follow", text: "Follow along on my journey", short: "Follow my journey" },
+  { id: "follow_miss", category: "follow", text: "Follow so you don't miss part 2", short: "Don't miss part 2" },
+  { id: "follow_first", category: "follow", text: "Follow to be first to know when I drop new content", short: "Be first to know" },
+  
+  // Engagement CTAs
+  { id: "comment_question", category: "engage", text: "Drop a [emoji] in the comments if this resonated", short: "Drop a comment" },
+  { id: "comment_tell", category: "engage", text: "Tell me in the comments - which one are you trying first?", short: "Which one first?" },
+  { id: "share_friend", category: "engage", text: "Share this with someone who needs to hear it", short: "Share with a friend" },
+  { id: "tag_friend", category: "engage", text: "Tag a friend who's going through this", short: "Tag a friend" },
+  { id: "duet_stitch", category: "engage", text: "Duet/Stitch this with your experience", short: "Duet this" },
+  
+  // Save / Bookmark CTAs
+  { id: "save_later", category: "save", text: "Save this for later - you'll need it", short: "Save for later" },
+  { id: "save_reference", category: "save", text: "Bookmark this as your go-to reference", short: "Bookmark this" },
+  { id: "save_comeback", category: "save", text: "Save this and come back when you're ready", short: "Come back to this" },
+  { id: "screenshot", category: "save", text: "Screenshot this before you scroll", short: "Screenshot now" },
+  
+  // Link in Bio CTAs
+  { id: "link_free", category: "link", text: "Grab my free [resource] - link in bio", short: "Free resource in bio" },
+  { id: "link_guide", category: "link", text: "Full guide in my bio", short: "Guide in bio" },
+  { id: "link_tool", category: "link", text: "I linked the tool in my bio", short: "Tool in bio" },
+  { id: "link_checklist", category: "link", text: "Get the free checklist - link in bio", short: "Checklist in bio" },
+  
+  // Take Action CTAs
+  { id: "try_today", category: "action", text: "Try this today and let me know what happens", short: "Try it today" },
+  { id: "start_now", category: "action", text: "Start with step 1 right now", short: "Start now" },
+  { id: "dm_word", category: "action", text: "DM me '[word]' for more details", short: "DM me" },
+  { id: "test_yourself", category: "action", text: "Test this on your next [content type]", short: "Test it" },
+  
+  // Community CTAs
+  { id: "lets_connect", category: "community", text: "Let's connect - I reply to every comment", short: "Let's connect" },
+  { id: "ask_anything", category: "community", text: "Ask me anything in the comments", short: "Ask me anything" },
+  { id: "join_community", category: "community", text: "Join our community of [description]", short: "Join us" },
+  { id: "help_each", category: "community", text: "Help each other out in the comments", short: "Help each other" },
+] as const;
+
 // Script Parameters Interface
 export interface ScriptParameters {
   topic: string;
   targetAudience?: string;
   callToAction?: string;
+  selectedCtaId?: string;
+  customCta?: string;
   keyFacts?: string;
   platform: string;
   duration: string;

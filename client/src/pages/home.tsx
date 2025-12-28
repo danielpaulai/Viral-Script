@@ -35,6 +35,8 @@ import {
   platformOptions,
   durationOptions,
   quickPresets,
+  ctaCategories,
+  ctaOptions,
   type ScriptParameters,
   type GeneratedScript,
 } from "@shared/schema";
@@ -83,6 +85,8 @@ export default function Home() {
     topic: "",
     targetAudience: "",
     callToAction: "",
+    selectedCtaId: "",
+    customCta: "",
     keyFacts: "",
     platform: "tiktok",
     duration: "30",
@@ -460,9 +464,9 @@ export default function Home() {
         <Collapsible open={showAdvanced} onOpenChange={setShowAdvanced}>
           <CollapsibleTrigger asChild>
             <Button 
-              variant="ghost" 
+              variant="outline" 
               size="sm" 
-              className="w-full mb-4 text-muted-foreground hover:text-white"
+              className={`w-full mb-4 border-dashed ${showAdvanced ? "border-primary/50 text-primary" : "border-white/30 text-white/80 bg-white/5"}`}
               data-testid="button-toggle-advanced"
             >
               {showAdvanced ? (
@@ -473,7 +477,7 @@ export default function Home() {
               ) : (
                 <>
                   <ChevronDown className="w-4 h-4 mr-2" />
-                  Show Advanced Options
+                  Customize: Audience, CTA, Facts & Research
                 </>
               )}
             </Button>
@@ -493,17 +497,67 @@ export default function Home() {
                 />
               </div>
               <div>
-                <Label htmlFor="cta" className="text-xs font-medium mb-2 block uppercase tracking-wider">Call to Action</Label>
-                <Input
-                  id="cta"
-                  value={formData.callToAction}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, callToAction: e.target.value }))}
-                  placeholder="e.g., Follow for more tips..."
-                  className="bg-white/5 border-white/10"
-                  data-testid="input-cta"
-                />
+                <Label className="text-xs font-medium mb-2 block uppercase tracking-wider">Call to Action</Label>
+                <Select
+                  value={formData.selectedCtaId || "custom"}
+                  onValueChange={(value) => {
+                    if (value === "custom") {
+                      setFormData((prev) => ({ ...prev, selectedCtaId: "", customCta: prev.customCta }));
+                    } else {
+                      const selectedCta = ctaOptions.find(c => c.id === value);
+                      setFormData((prev) => ({ 
+                        ...prev, 
+                        selectedCtaId: value, 
+                        callToAction: selectedCta?.text || "",
+                        customCta: "" 
+                      }));
+                    }
+                  }}
+                >
+                  <SelectTrigger className="bg-white/5 border-white/10" data-testid="select-cta">
+                    <SelectValue placeholder="Choose a CTA..." />
+                  </SelectTrigger>
+                  <SelectContent className="max-h-72">
+                    <SelectItem value="custom">
+                      <span className="text-muted-foreground">Write Custom CTA</span>
+                    </SelectItem>
+                    {ctaCategories.map((category) => (
+                      <div key={category.id}>
+                        <div className="px-2 py-1.5 text-xs font-semibold text-primary">{category.name}</div>
+                        {ctaOptions
+                          .filter((cta) => cta.category === category.id)
+                          .map((cta) => (
+                            <SelectItem key={cta.id} value={cta.id}>
+                              {cta.short}
+                            </SelectItem>
+                          ))}
+                      </div>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
+
+            {(!formData.selectedCtaId) && (
+              <div>
+                <Label htmlFor="customCta" className="text-xs font-medium mb-2 block uppercase tracking-wider">Custom CTA</Label>
+                <Input
+                  id="customCta"
+                  value={formData.customCta || ""}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, customCta: e.target.value }))}
+                  placeholder="e.g., Follow for more tips..."
+                  className="bg-white/5 border-white/10"
+                  data-testid="input-custom-cta"
+                />
+              </div>
+            )}
+
+            {formData.selectedCtaId && (
+              <div className="p-2 rounded bg-white/5 border border-white/10">
+                <p className="text-[10px] text-muted-foreground mb-1">Selected CTA:</p>
+                <p className="text-xs text-white">"{ctaOptions.find(c => c.id === formData.selectedCtaId)?.text}"</p>
+              </div>
+            )}
 
             <div>
               <Label htmlFor="facts" className="text-xs font-medium mb-2 block uppercase tracking-wider">Key Facts / Stats (Optional)</Label>

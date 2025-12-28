@@ -37,10 +37,17 @@ Core entities defined in `shared/schema.ts`:
 
 Script generation uses predefined catalogs:
 - 9 script categories (content creation, business, AI, personal branding, etc.)
-- 10 hook formats (personal experience, case study, contrarian, etc.)
+- 50 viral hooks organized in 7 categories (personal experience, case study, secret reveal, contrarian, question, list, education)
 - 6 structure formats (problem solver, breakdown, listicle, tutorial, etc.)
 - 5 tone options and voice options
 - Duration and platform targeting
+- **CTA Library**: 30+ predefined CTAs across 6 categories (Follow, Engage, Save, Link, Action, Community)
+
+### AI-Powered Script Generation
+- **OpenAI Integration**: Uses gpt-4o-mini via Replit AI Integrations (no API key needed, charges to user's Replit credits)
+- **Deep Research Mode**: Two-phase AI approach - first researches topic (stats, expert quotes, contrarian takes), then generates script with enhanced context
+- **Word Count Targets**: Platform/duration specific (15s: 30-45, 30s: 60-90, 60s: 120-180, 90s: 180-270, 180s: 360-540 words)
+- **Fallback**: Automatically falls back to template-based generation if AI fails
 
 ### Key Design Decisions
 
