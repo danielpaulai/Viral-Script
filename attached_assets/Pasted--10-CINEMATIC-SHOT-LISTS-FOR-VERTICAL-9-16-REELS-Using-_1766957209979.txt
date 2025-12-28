@@ -1,0 +1,629 @@
+# 10 CINEMATIC SHOT LISTS FOR VERTICAL 9:16 REELS
+## Using Your Reference Photo - Gemini Ready Prompts
+
+**Reference Image:** Professional headshot - South Asian male, short black hair with fade, warm smile, wearing black crew neck shirt, arms crossed, dark gradient background, professional studio lighting.
+
+---
+
+## MASTER SPECIFICATIONS FOR ALL SHOTS
+
+### Output Requirements
+- **Aspect Ratio:** 9:16 vertical (1080 x 1920 pixels)
+- **Style:** Photorealistic, cinematic, high-end production quality
+- **Lighting:** Cinematic with depth and dimension
+- **Color Grade:** Slightly desaturated with rich blacks, cinematic color tone
+- **Quality:** 8K quality render, sharp focus, professional
+
+### Safe Zones
+- **Top:** Avoid top 250px for critical content
+- **Bottom:** Avoid bottom 350px for critical content  
+- **Right:** Avoid right 150px for critical content
+- **Text Zone:** Center 780px x 1320px
+
+---
+
+## SHOT 1: EXTREME CLOSE-UP (ECU)
+
+### Gemini Prompt - Copy & Paste:
+
+```
+Using the attached reference photo, create a photorealistic, cinematic 9:16 vertical image (1080 x 1920 pixels).
+
+SHOT TYPE: Extreme Close-Up
+
+SUBJECT REQUIREMENTS:
+- Use the person from the reference photo (South Asian male, short black hair with fade)
+- Show ONLY the eyes, bridge of nose, and eyebrows
+- Eyes positioned at upper 1/3 of frame (640px from top)
+- Frame cuts through forehead at top and mid-nose at bottom
+- Maintain the subject's warm, engaging expression in the eyes
+- Hyperrealistic skin texture, visible pores, natural imperfections
+- Sharp catch lights in both eyes reflecting a window or softbox
+
+CINEMATIC REQUIREMENTS:
+- Shallow depth of field (f/1.4 equivalent) - only eyes in perfect focus
+- Anamorphic lens flare subtly visible
+- Film grain texture (subtle, not overpowering)
+- Color grade: Slightly teal shadows, warm highlights (cinematic look)
+
+BACKGROUND:
+- Modern minimalist office, completely blurred into creamy bokeh
+- Hint of warm natural light from window (left side)
+- Soft golden hour tones bleeding through
+- Bokeh balls from background lights visible
+
+LIGHTING:
+- Key light: Large softbox from camera-left, creating soft shadows
+- Fill: Subtle bounce from right side
+- Rim/hair light: Subtle edge light on hair from behind-right
+- Catch lights: Two rectangular softbox reflections in eyes
+
+TEXT OVERLAY - MUST INCLUDE:
+- Text: "EXTREME CLOSE-UP"
+- Position: Center of frame, overlaying the bridge of nose area (850-950px from top)
+- Style: Bold, uppercase, letter-spaced, white text with subtle outer glow
+- Font: Rethink Sans Bold
+- Size: Large, easily readable on mobile
+
+MOOD: Intense, mysterious, revealing a secret
+OUTPUT: Photorealistic, cinematic, indistinguishable from real photograph
+```
+
+---
+
+## SHOT 2: CLOSE-UP (CU)
+
+### Gemini Prompt - Copy & Paste:
+
+```
+Using the attached reference photo, create a photorealistic, cinematic 9:16 vertical image (1080 x 1920 pixels).
+
+SHOT TYPE: Close-Up
+
+SUBJECT REQUIREMENTS:
+- Use the person from the reference photo (South Asian male, short black hair with fade, warm smile)
+- Visible from shoulders/collar up to just above head
+- Face fills 60-70% of frame height
+- Eyes positioned at upper 1/3 line (640px from top)
+- Headroom: Only 60-80 pixels above head
+- Same confident, warm smile as reference
+- Wearing the same black crew neck shirt
+- Looking directly at camera, engaged and approachable
+
+CINEMATIC REQUIREMENTS:
+- Medium-shallow depth of field (f/2.8 equivalent)
+- Subtle film grain
+- Color grade: Rich blacks, warm skin tones, slightly lifted shadows
+- Cinematic aspect with professional color science
+- High dynamic range look
+
+BACKGROUND:
+- Upscale coffee shop / co-working space
+- Visible but softly blurred: Exposed red brick wall, industrial pendant lights (warm Edison bulbs), plants, wooden shelving with books
+- Background blur level: Recognizable but not distracting
+- Warm ambient lighting creating cozy atmosphere
+- Depth: 8-10 feet behind subject
+
+LIGHTING:
+- Key light: Large window light from camera-left (soft, natural)
+- Fill: Ambient bounce from warm interior
+- Practical lights: Edison bulbs creating warm bokeh in background
+- Subtle rim light separating subject from background
+- Professional 3-point lighting feel with natural motivation
+
+TEXT OVERLAY - MUST INCLUDE:
+- Text: "CLOSE-UP"
+- Position: Above head in the headroom space (200-320px from top)
+- Style: Bold, uppercase, letter-spaced, white text with black outline or drop shadow for readability
+- Font: Rethink Sans Bold
+- Size: Large, prominent
+
+MOOD: Confident, approachable, direct, trustworthy
+OUTPUT: Photorealistic, looks like a frame from a Netflix documentary
+```
+
+---
+
+## SHOT 3: MEDIUM CLOSE-UP (MCU)
+
+### Gemini Prompt - Copy & Paste:
+
+```
+Using the attached reference photo, create a photorealistic, cinematic 9:16 vertical image (1080 x 1920 pixels).
+
+SHOT TYPE: Medium Close-Up
+
+SUBJECT REQUIREMENTS:
+- Use the person from the reference photo (South Asian male, short black hair with fade)
+- Visible from mid-chest up to above head
+- Face fills 50-60% of frame height
+- Eyes at upper 1/3 line
+- Headroom: 100-120 pixels above head
+- Expression: Mid-speech, animated, explaining something important
+- Hands partially visible at bottom of frame, gesturing
+- Same black crew neck shirt from reference
+
+CINEMATIC REQUIREMENTS:
+- Depth of field: f/4 equivalent (subject sharp, background softly blurred)
+- Anamorphic characteristics: Subtle oval bokeh, slight edge distortion
+- Film grain: Light texture
+- Color grade: Modern YouTube/podcast creator aesthetic - clean, slightly warm
+- High production value look
+
+BACKGROUND:
+- Professional home studio / podcast setup
+- Visible: Acoustic foam panels (dark grey), LED strip lights (purple/blue RGB glow), professional microphone arm (out of focus), monitor with content visible, indoor plant
+- Modern creator aesthetic
+- Practical lighting from RGB strips creating colored rim light
+- Depth and dimension in the space
+
+LIGHTING:
+- Key light: Ring light or large softbox from front (slightly above eye level)
+- Accent: RGB LED strips creating purple/blue edge lighting on one side
+- Fill: Soft ambient from the room
+- Background practicals: Monitor glow, LED strips
+- Creates "professional creator" look
+
+TEXT OVERLAY - MUST INCLUDE:
+- Text: "MEDIUM CLOSE-UP"
+- Position: Top of frame, using headroom space (180-300px from top)
+- Style: Bold, uppercase, letter-spaced, white text with subtle glow matching RGB colors
+- Font: Rethink Sans Bold
+- Size: Large, punchy
+
+MOOD: Educational, energetic, expert sharing knowledge
+OUTPUT: Photorealistic, looks like a high-end YouTube thumbnail come to life
+```
+
+---
+
+## SHOT 4: MEDIUM SHOT (MS)
+
+### Gemini Prompt - Copy & Paste:
+
+```
+Using the attached reference photo, create a photorealistic, cinematic 9:16 vertical image (1080 x 1920 pixels).
+
+SHOT TYPE: Medium Shot
+
+SUBJECT REQUIREMENTS:
+- Use the person from the reference photo (South Asian male, short black hair with fade, warm smile)
+- Visible from waist/belt line up to above head
+- Subject fills 40-50% of frame height
+- Eyes at upper 1/3 line
+- Headroom: 120-150 pixels
+- Arms uncrossed, hands visible and gesturing (explaining something)
+- Same black crew neck shirt
+- Confident, teaching posture
+
+CINEMATIC REQUIREMENTS:
+- Depth of field: f/5.6 equivalent (subject sharp, background visible but soft)
+- Clean, bright, aspirational look
+- Color grade: Bright, airy, slightly lifted blacks, warm and inviting
+- High-end lifestyle content aesthetic
+- Lens: 35mm equivalent field of view
+
+BACKGROUND:
+- Bright, modern Scandinavian-style kitchen
+- Visible: White marble countertop with subtle grey veining, white subway tile backsplash, brass/copper pendant lights, open shelving with plants and ceramics, large window with natural light
+- Style: Aspirational but achievable home
+- Light and airy atmosphere
+- Everything clean and organized
+
+LIGHTING:
+- Key light: Large window providing soft, bright natural daylight from camera-right
+- Fill: White surfaces bouncing light everywhere
+- Practical: Pendant lights adding warmth
+- Overall: Bright, even, flattering, lifestyle content look
+- Time of day feel: Late morning, plenty of natural light
+
+TEXT OVERLAY - MUST INCLUDE:
+- Text: "MEDIUM SHOT"
+- Position: Top portion of frame (200-340px from top)
+- Style: Bold, uppercase, letter-spaced, black or dark grey text for contrast against bright background
+- Font: Rethink Sans Bold
+- Size: Large, clean, professional
+
+MOOD: Helpful, knowledgeable, approachable expert in comfortable environment
+OUTPUT: Photorealistic, looks like premium lifestyle content
+```
+
+---
+
+## SHOT 5: MEDIUM WIDE SHOT / COWBOY SHOT (MWS)
+
+### Gemini Prompt - Copy & Paste:
+
+```
+Using the attached reference photo, create a photorealistic, cinematic 9:16 vertical image (1080 x 1920 pixels).
+
+SHOT TYPE: Medium Wide Shot (Cowboy Shot)
+
+SUBJECT REQUIREMENTS:
+- Use the person from the reference photo (South Asian male, short black hair with fade)
+- Visible from mid-thigh (just above knees) up to above head
+- Subject fills 35-40% of frame height
+- Confident, powerful stance - weight slightly on one leg
+- Arms: One hand on hip, other relaxed, or both hands gesturing wide
+- Wearing: Black fitted t-shirt and dark jeans or joggers
+- Athletic build visible, confident body language
+- Expression: Determined, motivated
+
+CINEMATIC REQUIREMENTS:
+- Depth of field: f/5.6-8 (environment visible and somewhat sharp)
+- Cinematic wide lens feel (24-35mm equivalent)
+- Color grade: High contrast, desaturated slightly, cinematic fitness content look
+- Dramatic but not dark
+- Film grain: Subtle
+
+BACKGROUND:
+- High-end home gym / private fitness studio
+- Visible: Large mirror on wall reflecting equipment, professional dumbbells on rack, cable machine, kettlebells, rubber flooring, motivational art on wall
+- Industrial-modern aesthetic: Exposed concrete, black metal, warm wood accents
+- Large windows with natural light creating dramatic rays
+- Premium fitness environment
+
+LIGHTING:
+- Key light: Dramatic side lighting from large windows (camera-left)
+- Creates strong shadows for definition
+- Practical lights: Gym equipment LEDs, overhead industrial fixtures
+- Rim light: Strong edge light from window behind-right
+- High contrast, dramatic, emphasizes physique
+
+TEXT OVERLAY - MUST INCLUDE:
+- Text: "MEDIUM WIDE SHOT"
+- Position: Upper portion of frame (180-320px from top)
+- Style: Bold, uppercase, letter-spaced, white text with strong contrast/shadow
+- Font: Rethink Sans Bold
+- Size: Large, athletic, powerful
+
+MOOD: Motivational, powerful, fitness-focused, commanding
+OUTPUT: Photorealistic, looks like Nike or Under Armour campaign imagery
+```
+
+---
+
+## SHOT 6: FULL SHOT / WIDE SHOT (FS/WS)
+
+### Gemini Prompt - Copy & Paste:
+
+```
+Using the attached reference photo, create a photorealistic, cinematic 9:16 vertical image (1080 x 1920 pixels).
+
+SHOT TYPE: Full Shot (Head to Toe)
+
+SUBJECT REQUIREMENTS:
+- Use the person from the reference photo (South Asian male, short black hair with fade, warm smile)
+- Full body visible from head to feet
+- Subject fills 28-35% of frame height
+- Positioned in upper 2/3 of frame (feet NOT at bottom edge)
+- Headroom: 200-280 pixels
+- Foot room: 150 pixels minimum
+- Outfit: Stylish business casual - black fitted t-shirt, well-fitted dark chinos or tailored joggers, clean white sneakers
+- Pose: Dynamic, mid-stride or confident stance, one hand perhaps adjusting sleeve
+
+CINEMATIC REQUIREMENTS:
+- Depth of field: f/8 (environment sharp and detailed)
+- Wide lens perspective (24-28mm equivalent)
+- Color grade: Golden hour warmth, rich colors, cinematic street photography look
+- Film characteristics: Subtle grain, beautiful skin tones
+- High production value editorial feel
+
+BACKGROUND:
+- Trendy urban street location
+- Visible: Large colorful street art/mural on brick wall (abstract or geometric), vintage storefront with neon signs, outdoor café seating with string lights, cobblestone or interesting pavement, parked vintage car or motorcycle
+- Urban textures: Brick, metal, greenery
+- City life elements without being crowded
+
+LIGHTING:
+- Golden hour sunlight from camera-left
+- Long, dramatic shadows on ground
+- Warm light wrapping around subject
+- Background lit by same golden hour light
+- Cinematic, magical hour lighting
+- Some lens flare from sun position
+
+TEXT OVERLAY - MUST INCLUDE:
+- Text: "FULL SHOT"
+- Position: Top of frame (180-300px from top)
+- Style: Bold, uppercase, letter-spaced, white or cream text with subtle shadow
+- Font: Rethink Sans Bold
+- Size: Large, editorial
+
+MOOD: Stylish, confident, aspirational, street-style editorial
+OUTPUT: Photorealistic, looks like GQ or Esquire street style photography
+```
+
+---
+
+## SHOT 7: OVER-THE-SHOULDER (OTS)
+
+### Gemini Prompt - Copy & Paste:
+
+```
+Using the attached reference photo, create a photorealistic, cinematic 9:16 vertical image (1080 x 1920 pixels).
+
+SHOT TYPE: Over-the-Shoulder
+
+COMPOSITION:
+- Foreground: Back of head and shoulder of another person (soft focus), taking up bottom 25% of frame
+- Main subject: The person from reference photo, in sharp focus, in upper 65% of frame
+- Creates cinematic depth with three distinct planes
+
+FOREGROUND PERSON (Person A - NOT the reference):
+- Back of head and shoulder visible
+- Could be female with long dark hair, or male with different hair
+- Wearing neutral colored clothing (grey, navy)
+- Completely soft focus (f/1.8 on them)
+- Creates framing device
+
+MAIN SUBJECT (Person B - FROM REFERENCE):
+- The South Asian male from reference photo
+- In sharp focus
+- Close-up framing within his portion: Head to mid-chest visible
+- Eyes at upper 1/3 of the overall frame
+- Expression: Engaged in conversation, warm, listening or mid-response
+- Same black crew neck shirt
+- Natural, candid moment
+
+CINEMATIC REQUIREMENTS:
+- Extreme shallow depth of field creating separation
+- Anamorphic bokeh characteristics (oval shapes)
+- Color grade: Warm, intimate, romantic dinner scene colors
+- Rich shadows, warm highlights
+- Film grain: Present but subtle
+- Cinematic intimacy
+
+BACKGROUND:
+- Upscale restaurant / wine bar setting
+- Visible through bokeh: Exposed brick, wine bottles on shelves, warm Edison bulb chandeliers, candles on tables, rich wood textures
+- Bokeh balls from candles and lights
+- Intimate, date-night atmosphere
+- Warm amber and deep red tones
+
+LIGHTING:
+- Practical lighting: Candles on table (warm glow on face)
+- Ambient: Edison bulbs creating warm overall tone  
+- Key light motivated by candles/ambient
+- Fill: Subtle bounce from table/environment
+- Intimate, romantic, cinematic restaurant lighting
+
+TEXT OVERLAY - MUST INCLUDE:
+- Text: "OVER-THE-SHOULDER"
+- Position: Top of frame above both subjects (200-340px from top)
+- Style: Bold, uppercase, letter-spaced, white text with warm glow effect
+- Font: Rethink Sans Bold
+- Size: Large, elegant
+
+MOOD: Intimate, intriguing, story-driven, romantic tension
+OUTPUT: Photorealistic, looks like a frame from a prestige drama film
+```
+
+---
+
+## SHOT 8: HIGH ANGLE / BIRD'S EYE
+
+### Gemini Prompt - Copy & Paste:
+
+```
+Using the attached reference photo for brand consistency, create a photorealistic, cinematic 9:16 vertical image (1080 x 1920 pixels).
+
+SHOT TYPE: Bird's Eye View (Flat Lay)
+
+CAMERA POSITION:
+- Directly overhead, looking straight down (90-degree angle)
+- Flat lay composition
+- Items arranged to fill vertical 9:16 frame beautifully
+
+SUBJECT/ITEMS TO INCLUDE:
+- Hands of the person (matching skin tone from reference - South Asian male)
+- Hands entering frame from bottom, one hand holding coffee cup, other resting on surface or holding phone
+- Professional items: MacBook Pro (partially visible), premium notebook (Moleskine style), quality pen, wireless earbuds case
+- Personal touches: Coffee in ceramic cup, small succulent plant, reading glasses
+- Brand elements: Business cards (could say "Purely Personal" or be generic premium)
+- Watch on wrist visible (premium, minimal design)
+
+SURFACE/BACKGROUND:
+- Rich, dark walnut wood desk surface
+- Beautiful grain pattern visible
+- Warm, premium aesthetic
+- Some items casting soft shadows
+
+ARRANGEMENT:
+- Organized but natural, not too perfect
+- Main items in center-upper area (safe zone)
+- Hands/arms coming from bottom 1/4
+- Negative space used intentionally
+- Items flow through the vertical frame naturally
+
+CINEMATIC REQUIREMENTS:
+- Sharp focus throughout (f/11 equivalent for flat lay)
+- Color grade: Rich, warm, premium brand aesthetic
+- Slight vignette for depth
+- Beautiful product photography quality
+- High-end lifestyle brand feel
+
+LIGHTING:
+- Large soft light from above and slightly camera-left
+- Creates soft, defined shadows (not harsh)
+- Warm color temperature
+- Premium product photography lighting
+- No harsh reflections on screens or surfaces
+
+TEXT OVERLAY - MUST INCLUDE:
+- Text: "BIRD'S EYE"
+- Position: Upper portion of frame (180-300px from top)
+- Style: Bold, uppercase, letter-spaced, white or cream text
+- Font: Rethink Sans Bold
+- Size: Large, clean, minimal
+
+MOOD: Productive, aspirational, organized, premium lifestyle
+OUTPUT: Photorealistic, looks like Apple or premium brand campaign flat lay
+```
+
+---
+
+## SHOT 9: LOW ANGLE / HERO SHOT
+
+### Gemini Prompt - Copy & Paste:
+
+```
+Using the attached reference photo, create a photorealistic, cinematic 9:16 vertical image (1080 x 1920 pixels).
+
+SHOT TYPE: Low Angle / Hero Shot
+
+CAMERA POSITION:
+- Camera below subject, looking up at 30-40 degree angle
+- Creates powerful, dominant perspective
+- Subject appears larger than life, heroic
+
+SUBJECT REQUIREMENTS:
+- The person from reference photo (South Asian male, short black hair with fade)
+- Looking down at camera with confident, knowing expression
+- Not smiling - serious, powerful, "I know something you don't" look
+- Chin slightly raised
+- Arms crossed (like in reference) or hands on hips in power pose
+- Wearing: Premium black t-shirt or black blazer over black tee
+- Subject fills upper 60% of frame
+- Imposing, powerful presence
+
+CINEMATIC REQUIREMENTS:
+- Wide angle lens perspective (20-24mm equivalent) emphasizing height
+- Deep depth of field showing environment
+- Color grade: Cool teal/blue shadows, warm highlights on skin, cinematic contrast
+- Dramatic, high-end corporate/motivational content look
+- Film grain: Present
+- Possible subtle lens flare from sky
+
+BACKGROUND:
+- Modern glass and steel skyscraper/office building
+- Visible: Glass windows reflecting clouds and sky, geometric steel architecture, dramatic sky (could be blue hour or golden hour)
+- Building lines create strong leading lines toward subject
+- Sky visible: Dramatic clouds, could be sunset colors or moody blue
+- Urban, successful, corporate environment
+- Subject clearly "owns" this space
+
+LIGHTING:
+- Dramatic sky providing backlight/rim light
+- Subject slightly silhouetted but face still visible
+- Golden or blue hour quality
+- Strong rim light on hair and shoulders from sky
+- Fill: Ambient/reflected light from building
+- Heroic, powerful, aspirational lighting
+
+TEXT OVERLAY - MUST INCLUDE:
+- Text: "LOW ANGLE"
+- Position: Upper portion of frame (160-280px from top)
+- Style: Bold, uppercase, letter-spaced, white text with strong shadow
+- Font: Rethink Sans Bold
+- Size: Large, powerful, dominant
+
+MOOD: Powerful, authoritative, successful, inspirational, "boss" energy
+OUTPUT: Photorealistic, looks like motivational speaker promo or Forbes feature
+```
+
+---
+
+## SHOT 10: POINT OF VIEW (POV)
+
+### Gemini Prompt - Copy & Paste:
+
+```
+Using the attached reference photo for hand/skin tone reference, create a photorealistic, cinematic 9:16 vertical image (1080 x 1920 pixels).
+
+SHOT TYPE: Point of View (First Person Perspective)
+
+CAMERA POSITION:
+- First-person view - camera IS the viewer's eyes
+- Looking down at desk/workspace
+- Natural angle as if person is sitting and looking at their work
+
+HANDS/SUBJECT:
+- Hands matching the reference photo's skin tone (South Asian male)
+- Hands entering frame from bottom
+- One hand on laptop keyboard, other holding phone or gesturing
+- Watch visible on wrist (premium minimal design)
+- Well-groomed hands, natural
+- Hands positioned in lower 35% of frame
+
+WHAT VIEWER IS LOOKING AT:
+- MacBook Pro screen showing: Analytics dashboard, or LinkedIn profile, or content creation tool
+- Phone in hand showing: Social media notifications or messages
+- Main focus: The laptop screen content
+- Screen content should look realistic and readable
+
+ENVIRONMENT/DESK:
+- Clean, organized home office desk setup
+- Surface: Light oak or white desk
+- Visible: High-quality monitor (edge visible), quality desk lamp, small plant, notebook, premium pen, AirPods case
+- Window visible to the side with natural light and view of city or trees
+- Cozy but productive space
+
+CINEMATIC REQUIREMENTS:
+- Focus: Sharp on screens/main interaction point
+- Hands slightly soft (natural DOF for this perspective)
+- Color grade: Clean, bright, productive but warm
+- High-end lifestyle content feel
+- Slight vignette
+- Natural, not overly produced
+
+LIGHTING:
+- Soft natural light from window (camera-left)
+- Warm desk lamp providing accent light
+- Screen glow on hands/desk
+- Cozy, productive atmosphere
+- Morning light feel
+
+TEXT OVERLAY - MUST INCLUDE:
+- Text: "POV"
+- Position: Upper portion of frame (200-320px from top)
+- Style: Bold, uppercase, letter-spaced, white text with subtle shadow
+- Font: Rethink Sans Bold
+- Size: Large, clean
+
+MOOD: Productive, immersive, "come along with me", tutorial-style
+OUTPUT: Photorealistic, looks like premium "day in my life" content
+```
+
+---
+
+## QUICK REFERENCE: ALL 10 SHOTS
+
+| # | Shot Type | Text on Image | Background |
+|---|-----------|---------------|------------|
+| 1 | Extreme Close-Up | **EXTREME CLOSE-UP** | Office bokeh |
+| 2 | Close-Up | **CLOSE-UP** | Coffee shop |
+| 3 | Medium Close-Up | **MEDIUM CLOSE-UP** | Creator studio |
+| 4 | Medium Shot | **MEDIUM SHOT** | Modern kitchen |
+| 5 | Medium Wide | **MEDIUM WIDE SHOT** | Home gym |
+| 6 | Full Shot | **FULL SHOT** | Urban street |
+| 7 | Over-the-Shoulder | **OVER-THE-SHOULDER** | Wine bar |
+| 8 | Bird's Eye | **BIRD'S EYE** | Walnut desk |
+| 9 | Low Angle | **LOW ANGLE** | Skyscraper |
+| 10 | POV | **POV** | Home office |
+
+---
+
+## TEXT STYLING (ALL SHOTS)
+
+```
+Font: Rethink Sans Bold
+Style: Uppercase, letter-spaced
+Color: White (or dark for bright backgrounds)
+Effect: Subtle shadow or glow for readability
+Position: Upper portion of frame (safe zone)
+```
+
+---
+
+## HOW TO USE WITH GEMINI
+
+1. Copy the entire prompt for the shot type you want
+2. Attach your reference photo
+3. Paste the prompt
+4. Generate
+
+The output will show:
+- Shot type label in Rethink Sans Bold
+- Your likeness in the correct framing
+- Cinematic, realistic background

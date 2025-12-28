@@ -1,0 +1,357 @@
+# 5 ADDITIONAL CREATIVE ANGLES FOR VERTICAL 9:16 REELS
+## Using Your Reference Photo - Gemini Ready Prompts
+
+**Reference Image:** Professional headshot - South Asian male, short black hair with fade, warm smile, wearing black crew neck shirt, arms crossed, dark gradient background, professional studio lighting.
+
+---
+
+## SHOT 11: SEATED POWER POSE
+
+### Gemini Prompt - Copy & Paste:
+
+```
+Using the attached reference photo, create a photorealistic, cinematic 9:16 vertical image (1080 x 1920 pixels).
+
+SHOT TYPE: Seated Power Pose
+
+CAMERA POSITION:
+- Camera at eye level or slightly below
+- Subject seated, camera captures from knees up
+- Slight angle (not straight on) for dynamic feel
+
+SUBJECT REQUIREMENTS:
+- The person from reference photo (South Asian male, short black hair with fade)
+- Seated in a high-end executive chair or designer armchair
+- Leaning back confidently, one ankle crossed over knee OR leaning forward with elbows on knees
+- Hands: Fingertips together (thinking pose) OR one hand on armrest
+- Expression: Confident, contemplative, "I've figured it out" look
+- Wearing: Black crew neck shirt, dark tailored pants visible
+- Body language exudes success and calm confidence
+
+CINEMATIC REQUIREMENTS:
+- Depth of field: f/2.8 (subject sharp, background softly blurred)
+- Color grade: Moody, rich, executive aesthetic - deep shadows, warm highlights
+- Film grain: Subtle
+- Contrast: High, dramatic
+- Lens: 50mm equivalent, flattering perspective
+
+BACKGROUND:
+- Luxury corner office or high-end study
+- Visible: Floor-to-ceiling windows with city skyline view (evening/blue hour), bookshelves with leather-bound books, subtle art on wall, desk lamp casting warm pool of light, whiskey decanter on side table (optional)
+- Dark wood and leather textures
+- Moody, sophisticated atmosphere
+- City lights creating bokeh through windows
+
+LIGHTING:
+- Key light: Warm practical lamp from side creating dramatic shadows
+- Fill: City ambient glow from windows
+- Rim light: Cool blue from window/city behind
+- Creates contrast between warm interior and cool exterior
+- Rembrandt lighting style on face
+
+TEXT OVERLAY - MUST INCLUDE:
+- Text: "SEATED POWER POSE"
+- Position: Upper portion of frame (180-300px from top)
+- Style: Bold, uppercase, letter-spaced, white text with subtle shadow
+- Font: Rethink Sans Bold
+- Size: Large, authoritative
+
+MOOD: Executive, contemplative, successful, "CEO energy"
+OUTPUT: Photorealistic, looks like Forbes or Fortune magazine cover
+```
+
+---
+
+## SHOT 12: LOOKING UP (WORM'S EYE)
+
+### Gemini Prompt - Copy & Paste:
+
+```
+Using the attached reference photo, create a photorealistic, cinematic 9:16 vertical image (1080 x 1920 pixels).
+
+SHOT TYPE: Looking Up / Worm's Eye View
+
+CAMERA POSITION:
+- Camera on ground or very low, pointing straight up
+- Extreme low angle - more dramatic than standard low angle
+- Subject towering above camera
+- Creates powerful, almost intimidating perspective
+
+SUBJECT REQUIREMENTS:
+- The person from reference photo (South Asian male, short black hair with fade)
+- Standing directly over camera, looking down
+- Expression: Serious, powerful, knowing - slight smirk optional
+- Chin prominent from this angle
+- Shoulders and chest visible, creating V-shape
+- Arms: At sides, or one hand adjusting collar/cuff
+- Wearing: Black t-shirt or black blazer
+- Subject fills upper 70% of frame
+- Foreshortening makes subject look powerful
+
+CINEMATIC REQUIREMENTS:
+- Wide angle lens (16-24mm equivalent) emphasizing dramatic perspective
+- Deep depth of field - environment visible
+- Color grade: Dramatic, high contrast, teal and orange cinema look
+- Film grain: Present
+- Lens characteristics: Slight wide-angle distortion adding to drama
+- Possible lens flare from light source above
+
+BACKGROUND:
+- Dramatic architectural ceiling or sky
+- Option 1: Modern building atrium with geometric glass ceiling, steel beams creating leading lines
+- Option 2: Open sky with dramatic clouds, golden hour colors
+- Option 3: Neon lights and urban architecture at night
+- All lines lead toward subject
+- Creates sense of grandeur and scale
+
+LIGHTING:
+- Backlit/rim lit from above (sky or ceiling lights)
+- Face lit by reflected light from below or fill
+- Dramatic silhouette edge on hair and shoulders
+- High contrast, cinematic
+- Subject pops from background
+
+TEXT OVERLAY - MUST INCLUDE:
+- Text: "WORM'S EYE"
+- Position: Lower portion of frame, near camera position (1400-1550px from top)
+- Style: Bold, uppercase, letter-spaced, white text with strong shadow
+- Font: Rethink Sans Bold
+- Size: Large, impactful
+- Note: Text at bottom because subject dominates upper frame
+
+MOOD: Dominant, powerful, larger-than-life, aspirational
+OUTPUT: Photorealistic, looks like movie poster or album cover
+```
+
+---
+
+## SHOT 13: DUTCH ANGLE / TILTED FRAME
+
+### Gemini Prompt - Copy & Paste:
+
+```
+Using the attached reference photo, create a photorealistic, cinematic 9:16 vertical image (1080 x 1920 pixels).
+
+SHOT TYPE: Dutch Angle (Tilted Frame)
+
+CAMERA POSITION:
+- Camera tilted 15-25 degrees from horizontal
+- Creates dynamic, slightly unsettling energy
+- Medium shot framing (waist up)
+- Adds tension and visual interest
+
+SUBJECT REQUIREMENTS:
+- The person from reference photo (South Asian male, short black hair with fade)
+- Visible from waist up, tilted with the frame
+- Expression: Intense, direct eye contact, slight edge - like sharing a controversial take
+- Leaning slightly into the frame
+- One eyebrow slightly raised optional
+- Wearing: Black crew neck shirt
+- Body angled opposite to camera tilt for dynamic tension
+- Energy: "I'm about to tell you something important"
+
+CINEMATIC REQUIREMENTS:
+- Depth of field: f/2.8-4 (subject sharp, background soft)
+- Color grade: High contrast, slightly desaturated, thriller/drama aesthetic
+- Film grain: Medium presence
+- Shadows: Deep and dramatic
+- Lens: 35mm equivalent
+
+BACKGROUND:
+- Urban environment with strong geometric lines
+- Visible: Concrete walls, metal stairs/railings, industrial textures, graffiti hints
+- The tilt makes straight lines diagonal - adds energy
+- Neon sign or street light creating color accent
+- Gritty but stylish urban location
+- Lines in background emphasize the tilt
+
+LIGHTING:
+- Hard key light from one side creating strong shadows
+- Half the face in shadow (split lighting or loop lighting)
+- Practical neon or street light adding color
+- High contrast, dramatic, edgy
+- Creates mood and tension
+
+TEXT OVERLAY - MUST INCLUDE:
+- Text: "DUTCH ANGLE"
+- Position: Upper portion of frame (200-340px from top)
+- Style: Bold, uppercase, letter-spaced, white text - could be slightly tilted with the frame
+- Font: Rethink Sans Bold
+- Size: Large, edgy
+
+MOOD: Edgy, dynamic, tension, "hot take incoming"
+OUTPUT: Photorealistic, looks like a frame from a thriller or music video
+```
+
+---
+
+## SHOT 14: REFLECTION SHOT
+
+### Gemini Prompt - Copy & Paste:
+
+```
+Using the attached reference photo, create a photorealistic, cinematic 9:16 vertical image (1080 x 1920 pixels).
+
+SHOT TYPE: Reflection Shot
+
+CAMERA POSITION:
+- Camera captures subject AND their reflection simultaneously
+- Could be mirror, window, water, or polished surface
+- Creates visual depth and artistic composition
+- Medium or medium close-up framing
+
+SUBJECT REQUIREMENTS:
+- The person from reference photo (South Asian male, short black hair with fade)
+- Subject looking at their reflection OR looking at camera while reflection shows profile
+- Expression: Thoughtful, introspective, or confident meeting own gaze
+- Wearing: Black crew neck shirt
+- Creates "two versions" effect - adds depth to composition
+- Real subject and reflection should both be partially visible
+
+COMPOSITION OPTIONS (choose one):
+- Option A: Subject in foreground (soft focus), reflection in mirror sharp and centered
+- Option B: Side profile real, front face in reflection
+- Option C: Subject looking out rain-covered window, reflection visible in glass
+
+CINEMATIC REQUIREMENTS:
+- Depth of field: f/2-2.8 (play with focus between real and reflection)
+- Color grade: Moody, introspective, slightly cool tones with warm accents
+- Film grain: Subtle
+- Reflections should be realistic with slight imperfections
+- Artistic, editorial quality
+
+BACKGROUND:
+- High-end bathroom with large mirror and dramatic lighting OR
+- Modern space with floor-to-ceiling windows at night (city reflection) OR
+- Rainy window with water droplets
+- Clean, minimal environment that doesn't distract
+- Dark/moody tones
+
+LIGHTING:
+- Soft, directional lighting creating dimension
+- Light source visible in reflection (window, vanity lights)
+- Mood lighting - not flat
+- Creates atmosphere and depth
+- Reflection may have slightly different lighting quality
+
+TEXT OVERLAY - MUST INCLUDE:
+- Text: "REFLECTION SHOT"
+- Position: Upper portion of frame (180-320px from top)
+- Style: Bold, uppercase, letter-spaced, white text with subtle glow
+- Font: Rethink Sans Bold
+- Size: Large, artistic
+
+MOOD: Introspective, artistic, thoughtful, "the real me"
+OUTPUT: Photorealistic, looks like high-end editorial or film still
+```
+
+---
+
+## SHOT 15: THROUGH FRAME / FOREGROUND ELEMENT
+
+### Gemini Prompt - Copy & Paste:
+
+```
+Using the attached reference photo, create a photorealistic, cinematic 9:16 vertical image (1080 x 1920 pixels).
+
+SHOT TYPE: Through Frame / Foreground Element
+
+CAMERA POSITION:
+- Camera shoots THROUGH something in the foreground
+- Creates natural frame-within-frame
+- Adds depth and visual interest
+- Subject in middle ground, sharp focus
+
+SUBJECT REQUIREMENTS:
+- The person from reference photo (South Asian male, short black hair with fade)
+- Positioned in the "window" created by foreground elements
+- Close-up or medium close-up framing on subject
+- Expression: Engaging, direct, warm smile or thoughtful look
+- Wearing: Black crew neck shirt
+- Subject is the clear focal point despite foreground elements
+
+FOREGROUND ELEMENT OPTIONS:
+- Option A: Shot through doorframe or archway (architectural)
+- Option B: Shot through plant leaves (organic, natural)
+- Option C: Shot through glass with slight reflections/distortion
+- Option D: Shot through ring light or circular object
+- Option E: Hands of subject creating frame (fingers forming rectangle)
+
+CINEMATIC REQUIREMENTS:
+- Depth of field: f/1.8-2.8 (foreground soft, subject sharp, background soft)
+- Three distinct depth layers: foreground (soft), subject (sharp), background (soft)
+- Color grade: Rich, cinematic, warm tones
+- Film grain: Subtle
+- Foreground should be very soft/blurry, almost abstract shapes
+
+BACKGROUND:
+- Depends on foreground choice:
+- For doorframe: Moody office or studio space
+- For plants: Bright, airy indoor space with natural light
+- For glass: Urban environment, city lights
+- Should complement but not compete with subject
+- Soft bokeh, adding depth without distraction
+
+LIGHTING:
+- Key light on subject, falling off toward edges
+- Foreground elements may be silhouetted or soft
+- Creates sense of depth and dimension
+- Natural, motivated lighting
+- Subject "glows" compared to darker foreground
+
+TEXT OVERLAY - MUST INCLUDE:
+- Text: "THROUGH FRAME"
+- Position: Upper portion of frame (200-340px from top)
+- Style: Bold, uppercase, letter-spaced, white text with shadow
+- Font: Rethink Sans Bold
+- Size: Large, clean
+
+MOOD: Cinematic, artistic, layered, professional
+OUTPUT: Photorealistic, looks like cinematographer's portfolio shot
+```
+
+---
+
+## QUICK REFERENCE: 5 NEW CREATIVE ANGLES
+
+| # | Shot Type | Text on Image | Camera Position | Background |
+|---|-----------|---------------|-----------------|------------|
+| 11 | Seated Power Pose | **SEATED POWER POSE** | Eye level, subject seated | Luxury office, city view |
+| 12 | Worm's Eye | **WORM'S EYE** | Ground level, looking straight up | Architectural ceiling or sky |
+| 13 | Dutch Angle | **DUTCH ANGLE** | Tilted 15-25 degrees | Urban/industrial |
+| 14 | Reflection Shot | **REFLECTION SHOT** | Capturing subject + reflection | Mirror/window setting |
+| 15 | Through Frame | **THROUGH FRAME** | Through foreground element | Varies by element |
+
+---
+
+## ALL 15 SHOTS COMBINED REFERENCE
+
+| # | Shot Type | Key Feature |
+|---|-----------|-------------|
+| 1 | Extreme Close-Up | Eyes only |
+| 2 | Close-Up | Shoulders up |
+| 3 | Medium Close-Up | Mid-chest up |
+| 4 | Medium Shot | Waist up |
+| 5 | Medium Wide Shot | Mid-thigh up |
+| 6 | Full Shot | Head to toe |
+| 7 | Over-the-Shoulder | Through another person |
+| 8 | Bird's Eye | Looking straight down |
+| 9 | Low Angle | Looking up at subject |
+| 10 | POV | First-person view |
+| 11 | Seated Power Pose | Subject in chair |
+| 12 | Worm's Eye | Extreme low, looking up |
+| 13 | Dutch Angle | Tilted frame |
+| 14 | Reflection Shot | Subject + mirror/reflection |
+| 15 | Through Frame | Shot through foreground element |
+
+---
+
+## TEXT STYLING (ALL SHOTS)
+
+```
+Font: Rethink Sans Bold
+Style: Uppercase, letter-spaced
+Color: White (or dark for bright backgrounds)
+Effect: Subtle shadow or glow for readability
+Position: Upper portion of frame (safe zone)
+```

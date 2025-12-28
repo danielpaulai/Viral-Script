@@ -1,0 +1,236 @@
+<div class="z-10 md:px-8 max-w-7xl mr-auto ml-auto pr-6 pl-6 relative m-8 my-24">
+  <div class="text-center">
+    <h2 class="sm:text-5xl text-4xl font-medium text-white tracking-tight font-manrope animate-on-scroll"
+      style="animation: fadeSlideIn 1.0s ease-out 0.1s both;">
+      Pricing Plans
+    </h2>
+
+    <div class="flex mt-6 gap-x-4 gap-y-4 items-center justify-center animate-on-scroll"
+      style="animation: fadeSlideIn 1.0s ease-out 0.2s both;">
+      <span id="labelMonthly" class="text-sm text-white/50 transition-colors">
+                Monthly
+              </span>
+      <button id="billingToggle" class="relative inline-flex h-8 w-16 items-center rounded-full bg-white/10 p-1 ring-1 ring-white/15 transition cursor-pointer hover:bg-white/20" onclick="togglePricing()">
+                <span id="billingKnob" class="inline-flex h-6 w-6 translate-x-8 rounded-full bg-white shadow-[0_2px_8px_rgba(0,0,0,0.25)] transition-transform duration-300 will-change-transform"></span>
+              </button>
+      <span id="labelAnnual" class="text-sm text-white font-medium transition-colors">
+                Annual
+                <span id="annualBadge" class="ml-2 inline-flex items-center rounded-full bg-orange-500/20 px-2 py-0.5 text-[10px] text-orange-400 ring-1 ring-orange-500/40">
+                  Save 20%
+                </span>
+      </span>
+    </div>
+  </div>
+
+  <div class="grid gap-6 lg:grid-cols-3 mt-10 gap-x-6 gap-y-6">
+    <!-- Hobby / Starter -->
+    <div
+      class="animate-on-scroll bg-[radial-gradient(circle_at_top_left,var(--tw-gradient-stops))] from-white/10 to-white/0 rounded-3xl pt-6 pr-6 pb-6 pl-6 backdrop-blur-xl"
+      style="animation: fadeSlideIn 1.0s ease-out 0.3s both; position: relative; --border-gradient: linear-gradient(225deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0)); --border-radius-before: 24px">
+      <div class="flex items-center justify-between">
+        <div class="">
+          <div class="text-xs font-bold uppercase tracking-[0.2em] text-white/40">
+            Hobby
+          </div>
+          <div class="mt-2 flex items-end gap-2">
+            <div class="text-4xl font-medium tracking-tight text-white">
+              $0
+            </div>
+            <div class="text-sm text-white/50">/mo</div>
+          </div>
+        </div>
+      </div>
+
+      <button class="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-sm font-medium tracking-tight text-white hover:bg-white/10 transition-all">
+                Start Creating
+              </button>
+
+      <ul class="mt-6 space-y-3 text-sm text-white/60">
+        <li class="flex items-start gap-3">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+            class="lucide lucide-check h-4 w-4 text-white/40">
+            <path d="M20 6 9 17l-5-5" class=""></path>
+          </svg>
+          3 Published Scenes
+        </li>
+        <li class="flex items-start gap-3">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+            class="lucide lucide-check h-4 w-4 text-white/40">
+            <path d="M20 6 9 17l-5-5" class=""></path>
+          </svg>
+          Basic WebGL Export
+        </li>
+        <li class="flex items-start gap-3">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+            class="lucide lucide-check h-4 w-4 text-white/40">
+            <path d="M20 6 9 17l-5-5" class=""></path>
+          </svg>
+          Community Assets
+        </li>
+      </ul>
+    </div>
+
+    <!-- Pro (featured) -->
+    <div
+      class="border-orange-500/30 border ring-1 ring-orange-500/20 rounded-3xl pt-2 pr-2 pb-2 pl-2 relative backdrop-blur-xl animate-on-scroll bg-[#111]"
+      style="animation: fadeSlideIn 1.0s ease-out 0.4s both;">
+      <div
+        class="overflow-hidden bg-gradient-to-b from-white/[0.08] to-transparent rounded-2xl relative h-full flex flex-col">
+        <div class="absolute inset-0">
+          <div class="absolute inset-0 bg-[radial-gradient(60%_80%_at_80%_0%,rgba(249,115,22,0.15),transparent_60%)]">
+          </div>
+        </div>
+
+        <div class="pt-6 pr-6 pb-6 pl-6 relative flex flex-col h-full">
+          <div class="flex items-start justify-between">
+            <div class="">
+              <div class="text-xs font-bold uppercase tracking-[0.2em] text-orange-400">
+                Pro
+              </div>
+              <div class="mt-2 flex items-end gap-2">
+                <div class="text-4xl font-medium tracking-tight text-white price-value" data-monthly="$49"
+                  data-annual="$470">
+                  $470
+                </div>
+                <div class="text-sm text-white/60 price-period" data-period-monthly="/mo" data-period-annual="/yr">
+                  /yr
+                </div>
+              </div>
+            </div>
+            <span class="inline-flex items-center gap-1 rounded-full bg-orange-500/20 px-2 py-1 text-[10px] font-medium text-orange-300 ring-1 ring-orange-500/40">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sparkles">
+                        <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" class=""></path>
+                      </svg>
+                      Popular
+                    </span>
+          </div>
+
+          <button class="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-b from-orange-400 to-orange-500 px-4 py-3 text-sm font-medium tracking-tight text-black shadow-[0_4px_20px_rgba(249,115,22,0.3)] hover:from-orange-300 hover:to-orange-400 transition-all hover:scale-[1.02]">
+                    Upgrade to Pro
+                  </button>
+
+          <ul class="mt-8 space-y-4 text-sm text-white/80">
+            <li class="flex items-start gap-3">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                class="lucide lucide-check-circle-2 h-4 w-4 text-orange-500">
+                <circle cx="12" cy="12" r="10" class=""></circle>
+                <path d="m9 12 2 2 4-4" class=""></path>
+              </svg>
+              Unlimited Private Scenes
+            </li>
+            <li class="flex items-start gap-3">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                class="lucide lucide-check-circle-2 h-4 w-4 text-orange-500">
+                <circle cx="12" cy="12" r="10" class=""></circle>
+                <path d="m9 12 2 2 4-4" class=""></path>
+              </svg>
+              4K Texture &amp; Video Export
+            </li>
+            <li class="flex items-start gap-3">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                class="lucide lucide-check-circle-2 h-4 w-4 text-orange-500">
+                <circle cx="12" cy="12" r="10" class=""></circle>
+                <path d="m9 12 2 2 4-4" class=""></path>
+              </svg>
+              Physics Engine Access
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Enterprise -->
+    <div
+      class="animate-on-scroll bg-[radial-gradient(circle_at_top_left,var(--tw-gradient-stops))] from-white/10 to-white/0 rounded-3xl pt-6 pr-6 pb-6 pl-6 backdrop-blur-xl"
+      style="animation: fadeSlideIn 1.0s ease-out 0.5s both; position: relative; --border-gradient: linear-gradient(225deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0)); --border-radius-before: 24px">
+      <div class="flex items-center justify-between">
+        <div class="">
+          <div class="text-xs font-bold uppercase tracking-[0.2em] text-white/40">
+            Teams
+          </div>
+          <div class="mt-2 flex items-end gap-2">
+            <div class="text-4xl font-medium tracking-tight text-white">
+              Custom
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <button class="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-medium tracking-tight text-white/90 hover:bg-white/10 transition-all">
+                Contact Sales
+              </button>
+
+      <ul class="mt-6 space-y-3 text-sm text-white/60">
+        <li class="flex items-start gap-3">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+            class="lucide lucide-check h-4 w-4 text-white/40">
+            <path d="M20 6 9 17l-5-5" class=""></path>
+          </svg>
+          Organization Management
+        </li>
+        <li class="flex items-start gap-3">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+            class="lucide lucide-check h-4 w-4 text-white/40">
+            <path d="M20 6 9 17l-5-5" class=""></path>
+          </svg>
+          SSO &amp; SAML Auth
+        </li>
+        <li class="flex items-start gap-3">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+            class="lucide lucide-check h-4 w-4 text-white/40">
+            <path d="M20 6 9 17l-5-5" class=""></path>
+          </svg>
+          Dedicated Rendering Cluster
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <p class="animate-on-scroll text-xs text-neutral-500 text-center mt-8 font-mono"
+    style="animation: fadeSlideIn 1.0s ease-out 0.6s both;">
+    Open source via
+    <span class="text-white/60">Apache 2.0</span>
+    license for non-commercial use.
+  </p>
+
+  <script>
+    let isAnnual = true;
+            function togglePricing() {
+              isAnnual = !isAnnual;
+              const knob = document.getElementById('billingKnob');
+              const labelMonthly = document.getElementById('labelMonthly');
+              const labelAnnual = document.getElementById('labelAnnual');
+              const prices = document.querySelectorAll('.price-value');
+              const periods = document.querySelectorAll('.price-period');
+
+              if (isAnnual) {
+                knob.style.transform = 'translateX(32px)';
+                labelAnnual.classList.add('text-white', 'font-medium');
+                labelAnnual.classList.remove('text-white/50');
+                labelMonthly.classList.add('text-white/50');
+                labelMonthly.classList.remove('text-white', 'font-medium');
+
+                prices.forEach(el => el.textContent = el.dataset.annual);
+                periods.forEach(el => el.textContent = el.dataset.periodAnnual);
+              } else {
+                knob.style.transform = 'translateX(0px)';
+                labelMonthly.classList.add('text-white', 'font-medium');
+                labelMonthly.classList.remove('text-white/50');
+                labelAnnual.classList.add('text-white/50');
+                labelAnnual.classList.remove('text-white', 'font-medium');
+
+                prices.forEach(el => el.textContent = el.dataset.monthly);
+                periods.forEach(el => el.textContent = el.dataset.periodMonthly);
+              }
+            }
+  </script>
+</div>
