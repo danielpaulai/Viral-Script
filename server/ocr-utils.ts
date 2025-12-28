@@ -1,10 +1,15 @@
 import Tesseract from 'tesseract.js';
 import mammoth from 'mammoth';
-import { createRequire } from 'module';
 
-// pdf-parse doesn't have proper ESM default export
-const require = createRequire(import.meta.url);
-const pdfParse = require('pdf-parse');
+// Dynamic import for pdf-parse to handle both ESM and CJS
+let pdfParse: any;
+async function getPdfParser() {
+  if (!pdfParse) {
+    const module = await import('pdf-parse');
+    pdfParse = module.default || module;
+  }
+  return pdfParse;
+}
 
 export interface ExtractedText {
   text: string;
@@ -53,7 +58,8 @@ export async function extractTextFromFile(
 
 async function extractFromPdf(buffer: Buffer): Promise<ExtractedText> {
   try {
-    const data = await pdfParse(buffer);
+    const parser = await getPdfParser();
+    const data = await parser(buffer);
     const text = data.text.trim();
     
     if (text.length > 50) {

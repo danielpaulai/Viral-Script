@@ -52,6 +52,12 @@ async function buildAll() {
     bundle: true,
     format: "cjs",
     outfile: "dist/index.cjs",
+    banner: {
+      js: `
+var __cjsFilename = typeof __filename !== 'undefined' ? __filename : (require('path').resolve(__dirname || '.', 'index.cjs'));
+var __cjsDirname = typeof __dirname !== 'undefined' ? __dirname : require('path').dirname(__cjsFilename);
+`.trim(),
+    },
     define: {
       "process.env.NODE_ENV": '"production"',
     },
