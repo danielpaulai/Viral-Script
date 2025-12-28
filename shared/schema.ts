@@ -384,6 +384,7 @@ export const pricingTiers = [
     popular: true,
     features: [
       "Everything in Starter",
+      "100 scripts per month",
       "Knowledge Base (unlimited docs)",
       "ICP & Brand Voice integration",
       "Content strategy categories",
@@ -391,18 +392,19 @@ export const pricingTiers = [
       "Priority support"
     ],
     limits: {
-      scriptsPerMonth: -1,
+      scriptsPerMonth: 100,
       knowledgeBaseDocs: -1,
       competitorAssets: 0
     }
   },
   { 
-    id: "agency", 
-    name: "Agency", 
-    price: 39.99, 
+    id: "ultimate", 
+    name: "Ultimate", 
+    price: 99.99, 
     description: "Full content strategy with competitor intelligence",
     features: [
       "Everything in Pro",
+      "Unlimited scripts",
       "Competitor script analysis",
       "Full content strategy builder",
       "TOFU/MOFU/BOFU planning",

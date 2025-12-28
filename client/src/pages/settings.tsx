@@ -97,7 +97,7 @@ export default function Settings() {
   }
 
   const currentPlan = pricingTiers.find(t => t.id === (subscription?.plan || "starter")) || pricingTiers[0];
-  const PlanIcon = currentPlan.id === "agency" ? Building2 : currentPlan.id === "pro" ? Crown : Zap;
+  const PlanIcon = currentPlan.id === "ultimate" ? Building2 : currentPlan.id === "pro" ? Crown : Zap;
 
   const scriptsLimit = currentPlan.limits.scriptsPerMonth;
   const scriptsUsed = typeof usage?.scriptsGenerated === 'string' ? parseInt(usage.scriptsGenerated, 10) : (usage?.scriptsGenerated || 0);
@@ -248,7 +248,7 @@ export default function Settings() {
                 <Separator />
 
                 <div className="flex flex-wrap gap-3">
-                  {currentPlan.id !== "agency" && (
+                  {currentPlan.id !== "ultimate" && (
                     <Link href="/pricing">
                       <Button data-testid="button-upgrade-plan">
                         <ArrowUpRight className="w-4 h-4 mr-2" />
@@ -389,7 +389,7 @@ export default function Settings() {
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   {pricingTiers.map((tier) => {
-                    const TierIcon = tier.id === "agency" ? Building2 : tier.id === "pro" ? Crown : Zap;
+                    const TierIcon = tier.id === "ultimate" ? Building2 : tier.id === "pro" ? Crown : Zap;
                     const isCurrentPlan = tier.id === currentPlan.id;
                     const limits = tier.limits as { scriptsPerMonth: number; knowledgeBaseDocs: number; competitorAssets: number };
                     return (
