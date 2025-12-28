@@ -5,7 +5,6 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Badge } from "@/components/ui/badge";
 import {
   Select,
   SelectContent,
@@ -15,7 +14,7 @@ import {
 } from "@/components/ui/select";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest, queryClient } from "@/lib/queryClient";
+import { apiRequest } from "@/lib/queryClient";
 import {
   scriptCategories,
   hookFormats,
@@ -27,7 +26,6 @@ import {
   type GeneratedScript,
 } from "@shared/schema";
 import { ScriptOutput } from "@/components/script-output";
-import { Header } from "@/components/header";
 import { 
   Sparkles, 
   ArrowRight, 
@@ -35,8 +33,10 @@ import {
   TrendingUp, 
   Cpu, 
   Heart,
-  Search
+  Search,
+  Menu
 } from "lucide-react";
+import { Link } from "wouter";
 
 const presetIcons: Record<string, typeof Zap> = {
   business_growth: TrendingUp,
@@ -50,6 +50,7 @@ export default function Home() {
   const [generatedScript, setGeneratedScript] = useState<GeneratedScript | null>(null);
   const [activePreset, setActivePreset] = useState<string | null>(null);
   const [deepResearch, setDeepResearch] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const [formData, setFormData] = useState<ScriptParameters>({
     topic: "",
@@ -119,32 +120,136 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      
-      <main className="max-w-5xl mx-auto px-4 py-8">
-        <section className="text-center mb-12">
-          <Badge variant="outline" className="mb-4 border-primary/30 text-primary" data-testid="badge-system-status">
-            <Sparkles className="w-3 h-3 mr-1" />
-            SYSTEM V5.0 LIVE
-          </Badge>
+    <div className="min-h-screen bg-background selection:bg-primary/30 selection:text-white overflow-x-hidden">
+      <div className="fixed top-0 left-0 right-0 h-[600px] ambient-glow pointer-events-none z-0" />
+
+      <nav className="fixed w-full z-50 bg-background/75 backdrop-blur-xl border-b border-white/[0.08]">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            <div className="flex-shrink-0 cursor-pointer flex items-center gap-2 group">
+              <div className="w-6 h-6 rounded bg-primary flex items-center justify-center text-white glow-primary">
+                <Zap className="w-3.5 h-3.5" />
+              </div>
+              <span className="text-sm font-semibold tracking-tight text-white">SCRIPT<span className="text-primary">.</span>PRO</span>
+            </div>
+            
+            <div className="hidden md:flex items-center space-x-8">
+              <Link href="/" className="text-xs font-medium text-muted-foreground hover:text-white transition-colors" data-testid="link-overview">Overview</Link>
+              <Link href="/projects" className="text-xs font-medium text-muted-foreground hover:text-white transition-colors" data-testid="link-projects">Projects</Link>
+              <Link href="/vault" className="text-xs font-medium text-muted-foreground hover:text-white transition-colors" data-testid="link-vault">Vault</Link>
+              <Link href="/calendar" className="text-xs font-medium text-muted-foreground hover:text-white transition-colors" data-testid="link-calendar">Calendar</Link>
+            </div>
+
+            <div className="hidden md:flex items-center gap-4">
+              <Button variant="ghost" size="sm" className="text-xs" data-testid="button-login">Log in</Button>
+              <Button size="sm" className="text-xs glow-primary" data-testid="button-start">
+                Start Free
+              </Button>
+            </div>
+
+            <div className="flex md:hidden">
+              <Button 
+                variant="ghost" 
+                size="icon"
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                data-testid="button-mobile-menu"
+              >
+                <Menu className="w-5 h-5" />
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        {mobileMenuOpen && (
+          <div className="md:hidden bg-background border-b border-white/5">
+            <div className="px-4 pt-2 pb-4 space-y-1">
+              <Link href="/" className="block px-3 py-2 text-sm font-medium text-white">Overview</Link>
+              <Link href="/projects" className="block px-3 py-2 text-sm font-medium text-muted-foreground">Projects</Link>
+              <Link href="/vault" className="block px-3 py-2 text-sm font-medium text-muted-foreground">Vault</Link>
+              <Link href="/calendar" className="block px-3 py-2 text-sm font-medium text-primary">Calendar</Link>
+            </div>
+          </div>
+        )}
+      </nav>
+
+      <section className="relative min-h-screen flex items-center justify-center pt-20 overflow-hidden">
+        <div className="absolute inset-0 z-0">
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/90 to-background/40 z-10" />
+          <div className="w-full h-full bg-[url('https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=2070&auto=format&fit=crop')] bg-cover bg-center opacity-30 grayscale" />
+        </div>
+
+        <div className="relative z-20 max-w-7xl mx-auto px-6 text-center">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/10 bg-white/5 backdrop-blur-sm mb-8 hover:border-primary/50 transition-colors cursor-default">
+            <span className="relative flex h-1.5 w-1.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-primary"></span>
+            </span>
+            <span className="text-[11px] font-medium text-muted-foreground" data-testid="badge-system-status">SYSTEM V5.0 LIVE</span>
+          </div>
           
-          <h1 className="text-4xl md:text-5xl font-bold mb-3" data-testid="text-hero-title">
-            Video Script Writer
-            <br />
-            <span className="gradient-text">for Virality</span>
+          <h1 className="text-5xl md:text-7xl lg:text-8xl font-semibold tracking-tight text-white mb-6 leading-[1.05]" data-testid="text-hero-title">
+            Script Your Way <br />
+            <span className="gradient-text">to Viral Content</span>
           </h1>
           
-          <p className="text-muted-foreground max-w-xl mx-auto" data-testid="text-hero-description">
-            Generate scroll-stopping short-form content in seconds. Built on data, psychology, and viral structures.
+          <p className="mt-6 text-base md:text-lg text-muted-foreground max-w-xl mx-auto font-normal mb-10 leading-relaxed" data-testid="text-hero-description">
+            Generate scroll-stopping short-form scripts in seconds. Built on psychology, data, and viral structures.
           </p>
-        </section>
+          
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <Button 
+              onClick={() => document.getElementById('script-form')?.scrollIntoView({ behavior: 'smooth' })}
+              className="w-full sm:w-auto px-8 py-3 h-auto text-sm font-medium glow-primary"
+              data-testid="button-hero-generate"
+            >
+              Generate Script
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </Button>
+            <Button 
+              variant="outline"
+              className="w-full sm:w-auto px-8 py-3 h-auto bg-white/5 backdrop-blur-md border-white/10 text-white text-sm font-medium hover:bg-white/10"
+              data-testid="button-hero-explore"
+            >
+              Explore Templates
+            </Button>
+          </div>
+        </div>
+        
+        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent z-10" />
+      </section>
 
+      <section className="relative z-20 -mt-24 px-6 mb-24">
+        <div className="max-w-5xl mx-auto">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="glass-card p-6 rounded-md text-center group">
+              <h3 className="text-3xl md:text-4xl font-semibold text-white tracking-tight" data-testid="stat-presets">4</h3>
+              <p className="text-[10px] text-muted-foreground uppercase tracking-widest mt-1 group-hover:text-primary transition-colors">Quick Presets</p>
+            </div>
+            <div className="glass-card p-6 rounded-md text-center group">
+              <h3 className="text-3xl md:text-4xl font-semibold text-white tracking-tight" data-testid="stat-hooks">10</h3>
+              <p className="text-[10px] text-muted-foreground uppercase tracking-widest mt-1 group-hover:text-primary transition-colors">Hook Formats</p>
+            </div>
+            <div className="glass-card p-6 rounded-md text-center group">
+              <h3 className="text-3xl md:text-4xl font-semibold text-white tracking-tight" data-testid="stat-structures">6</h3>
+              <p className="text-[10px] text-muted-foreground uppercase tracking-widest mt-1 group-hover:text-primary transition-colors">Structures</p>
+            </div>
+            <div className="glass-card p-6 rounded-md text-center group">
+              <h3 className="text-3xl md:text-4xl font-semibold text-white tracking-tight" data-testid="stat-categories">9</h3>
+              <p className="text-[10px] text-muted-foreground uppercase tracking-widest mt-1 group-hover:text-primary transition-colors">Categories</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <main id="script-form" className="relative z-20 max-w-5xl mx-auto px-6 pb-24">
         <section className="mb-12">
-          <Card className="p-6 bg-card border-card-border" data-testid="card-script-parameters">
+          <Card className="p-6 glass-card rounded-md" data-testid="card-script-parameters">
             <div className="mb-6">
-              <h2 className="text-lg font-semibold mb-1" data-testid="text-section-title">Script Parameters</h2>
-              <p className="text-sm text-muted-foreground">Configure your viral inputs</p>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="h-px w-8 bg-primary" />
+                <h2 className="text-xs font-semibold text-primary tracking-widest uppercase">Script Parameters</h2>
+              </div>
+              <p className="text-sm text-muted-foreground mt-2">Configure your viral inputs</p>
             </div>
 
             <div className="mb-6">
@@ -174,13 +279,13 @@ export default function Home() {
                       className={`p-3 rounded-md text-left transition-all hover-elevate active-elevate-2 ${
                         activePreset === preset.id
                           ? "bg-primary/20 border border-primary/50"
-                          : "bg-muted/50 border border-transparent"
+                          : "bg-white/5 border border-white/10"
                       }`}
                       data-testid={`button-preset-${preset.id}`}
                     >
                       <div className="flex items-center gap-2 mb-1">
                         <Icon className="w-4 h-4 text-primary" />
-                        <span className="font-medium text-sm">{preset.name}</span>
+                        <span className="font-medium text-sm text-white">{preset.name}</span>
                       </div>
                       <p className="text-xs text-muted-foreground line-clamp-2">
                         {preset.description}
@@ -194,15 +299,15 @@ export default function Home() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
               <div className="space-y-4">
                 <div>
-                  <Label htmlFor="topic" className="text-sm font-medium mb-2 block">
-                    TOPIC / VIDEO IDEAS <span className="text-primary">*</span>
+                  <Label htmlFor="topic" className="text-xs font-medium mb-2 block uppercase tracking-wider">
+                    Topic / Video Ideas <span className="text-primary">*</span>
                   </Label>
                   <Textarea
                     id="topic"
                     placeholder="Describe your video idea, key points, or paste a rough outline..."
                     value={formData.topic}
                     onChange={(e) => setFormData((prev) => ({ ...prev, topic: e.target.value }))}
-                    className="min-h-24 bg-muted/30 border-muted resize-none"
+                    className="min-h-24 bg-white/5 border-white/10 resize-none"
                     data-testid="input-topic"
                   />
                 </div>
@@ -210,28 +315,28 @@ export default function Home() {
 
               <div className="space-y-4">
                 <div>
-                  <Label htmlFor="audience" className="text-sm font-medium mb-2 block">
-                    TARGET AUDIENCE
+                  <Label htmlFor="audience" className="text-xs font-medium mb-2 block uppercase tracking-wider">
+                    Target Audience
                   </Label>
                   <Input
                     id="audience"
                     placeholder="e.g. Solopreneurs"
                     value={formData.targetAudience}
                     onChange={(e) => setFormData((prev) => ({ ...prev, targetAudience: e.target.value }))}
-                    className="bg-muted/30 border-muted"
+                    className="bg-white/5 border-white/10"
                     data-testid="input-audience"
                   />
                 </div>
 
                 <div>
-                  <Label htmlFor="cta" className="text-sm font-medium mb-2 block">
-                    CALL TO ACTION (OPT)
+                  <Label htmlFor="cta" className="text-xs font-medium mb-2 block uppercase tracking-wider">
+                    Call to Action (Opt)
                   </Label>
                   <Select
                     value={formData.callToAction}
                     onValueChange={(value) => setFormData((prev) => ({ ...prev, callToAction: value }))}
                   >
-                    <SelectTrigger className="bg-muted/30 border-muted" data-testid="select-cta">
+                    <SelectTrigger className="bg-white/5 border-white/10" data-testid="select-cta">
                       <SelectValue placeholder="Write my own..." />
                     </SelectTrigger>
                     <SelectContent>
@@ -246,7 +351,7 @@ export default function Home() {
                   {formData.callToAction === "write_own" && (
                     <Input
                       placeholder="e.g. Link in bio"
-                      className="mt-2 bg-muted/30 border-muted"
+                      className="mt-2 bg-white/5 border-white/10"
                       onChange={(e) => setFormData((prev) => ({ ...prev, callToAction: e.target.value }))}
                       data-testid="input-custom-cta"
                     />
@@ -256,27 +361,27 @@ export default function Home() {
             </div>
 
             <div className="mb-6">
-              <Label htmlFor="facts" className="text-sm font-medium mb-2 block">
-                KEY FACTS (OPTIONAL)
+              <Label htmlFor="facts" className="text-xs font-medium mb-2 block uppercase tracking-wider">
+                Key Facts (Optional)
               </Label>
               <Input
                 id="facts"
                 placeholder='2-3 specific details to include (e.g. "Launched in 2020", "Revenue $1M", "Team of 5")'
                 value={formData.keyFacts}
                 onChange={(e) => setFormData((prev) => ({ ...prev, keyFacts: e.target.value }))}
-                className="bg-muted/30 border-muted"
+                className="bg-white/5 border-white/10"
                 data-testid="input-facts"
               />
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-2 gap-4 mb-6">
               <div>
-                <Label className="text-sm font-medium mb-2 block">PLATFORM</Label>
+                <Label className="text-xs font-medium mb-2 block uppercase tracking-wider">Platform</Label>
                 <Select
                   value={formData.platform}
                   onValueChange={(value) => setFormData((prev) => ({ ...prev, platform: value }))}
                 >
-                  <SelectTrigger className="bg-muted/30 border-muted" data-testid="select-platform">
+                  <SelectTrigger className="bg-white/5 border-white/10" data-testid="select-platform">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -290,12 +395,12 @@ export default function Home() {
               </div>
 
               <div>
-                <Label className="text-sm font-medium mb-2 block">DURATION</Label>
+                <Label className="text-xs font-medium mb-2 block uppercase tracking-wider">Duration</Label>
                 <Select
                   value={formData.duration}
                   onValueChange={(value) => setFormData((prev) => ({ ...prev, duration: value }))}
                 >
-                  <SelectTrigger className="bg-muted/30 border-muted" data-testid="select-duration">
+                  <SelectTrigger className="bg-white/5 border-white/10" data-testid="select-duration">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -311,12 +416,12 @@ export default function Home() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
               <div>
-                <Label className="text-sm font-medium mb-2 block">SCRIPT CATEGORY</Label>
+                <Label className="text-xs font-medium mb-2 block uppercase tracking-wider">Script Category</Label>
                 <Select
                   value={formData.category}
                   onValueChange={(value) => setFormData((prev) => ({ ...prev, category: value }))}
                 >
-                  <SelectTrigger className="bg-muted/30 border-muted" data-testid="select-category">
+                  <SelectTrigger className="bg-white/5 border-white/10" data-testid="select-category">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -330,12 +435,12 @@ export default function Home() {
               </div>
 
               <div>
-                <Label className="text-sm font-medium mb-2 block">STRUCTURE FORMAT</Label>
+                <Label className="text-xs font-medium mb-2 block uppercase tracking-wider">Structure Format</Label>
                 <Select
                   value={formData.structure}
                   onValueChange={(value) => setFormData((prev) => ({ ...prev, structure: value }))}
                 >
-                  <SelectTrigger className="bg-muted/30 border-muted" data-testid="select-structure">
+                  <SelectTrigger className="bg-white/5 border-white/10" data-testid="select-structure">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -350,12 +455,12 @@ export default function Home() {
             </div>
 
             <div className="mb-6">
-              <Label className="text-sm font-medium mb-2 block">HOOK STRATEGY</Label>
+              <Label className="text-xs font-medium mb-2 block uppercase tracking-wider">Hook Strategy</Label>
               <Select
                 value={formData.hook}
                 onValueChange={(value) => setFormData((prev) => ({ ...prev, hook: value }))}
               >
-                <SelectTrigger className="bg-muted/30 border-muted" data-testid="select-hook">
+                <SelectTrigger className="bg-white/5 border-white/10" data-testid="select-hook">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -368,11 +473,11 @@ export default function Home() {
               </Select>
             </div>
 
-            <div className="flex items-center justify-between p-4 rounded-md bg-muted/20 border border-muted mb-6">
+            <div className="flex items-center justify-between p-4 rounded-md bg-white/5 border border-white/10 mb-6">
               <div className="flex items-center gap-3">
                 <Search className="w-5 h-5 text-muted-foreground" />
                 <div>
-                  <p className="text-sm font-medium">Deep Research Mode</p>
+                  <p className="text-sm font-medium text-white">Deep Research Mode</p>
                   <p className="text-xs text-muted-foreground">
                     AI will research your topic online before generating the script
                   </p>
@@ -414,8 +519,8 @@ export default function Home() {
           />
         )}
 
-        <footer className="text-center py-8 border-t border-border mt-12">
-          <p className="text-sm text-muted-foreground mb-4">CONNECT WITH ME</p>
+        <footer className="text-center py-8 border-t border-white/10 mt-12">
+          <p className="text-xs text-muted-foreground uppercase tracking-widest mb-4">Connect With Me</p>
           <div className="flex items-center justify-center gap-4">
             <Button variant="ghost" size="icon" data-testid="button-social-linkedin">
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
