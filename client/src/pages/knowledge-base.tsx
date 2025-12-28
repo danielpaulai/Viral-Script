@@ -103,7 +103,7 @@ export default function KnowledgeBase() {
               Sign in to create and manage your personal Knowledge Base. Your documents will be used by the AI to generate scripts tailored specifically to your brand.
             </p>
             <Button 
-              onClick={() => window.location.href = "/api/login"}
+              onClick={() => window.location.href = "/login"}
               className="gap-2"
               data-testid="button-login-knowledge-base"
             >

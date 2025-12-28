@@ -83,7 +83,7 @@ export default function Settings() {
               Sign in to access your account settings, view usage statistics, and manage your subscription.
             </p>
             <Button 
-              onClick={() => window.location.href = "/api/login"}
+              onClick={() => window.location.href = "/login"}
               className="gap-2"
               data-testid="button-login-settings"
             >
