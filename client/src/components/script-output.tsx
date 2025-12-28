@@ -114,6 +114,26 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const handleCopySection = async (section: "hook" | "body" | "cta") => {
+    const displayScript = getDisplayScript();
+    const lines = displayScript.split('\n').filter(Boolean);
+    let textToCopy = "";
+    
+    if (section === "hook") {
+      textToCopy = lines[0] || "";
+    } else if (section === "body") {
+      textToCopy = lines.slice(1, -1).join('\n');
+    } else if (section === "cta") {
+      textToCopy = lines[lines.length - 1] || "";
+    }
+    
+    await navigator.clipboard.writeText(textToCopy);
+    toast({
+      title: "Copied",
+      description: `${section.charAt(0).toUpperCase() + section.slice(1)} copied to clipboard.`,
+    });
+  };
+
   const handleHookChange = (hookId: string) => {
     const hook = viralHooks.find(h => h.id === hookId);
     if (hook) {
@@ -318,11 +338,23 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
           {/* Hook Metadata Header */}
           {(currentHook || script.parameters.hook) && (
             <div className="mb-4 p-4 rounded-md bg-primary/10 border border-primary/20 space-y-2">
-              <div className="flex items-center gap-2">
-                <Zap className="w-4 h-4 text-primary" />
-                <span className="text-sm font-semibold text-white">
-                  HOOK #{viralHooks.findIndex(h => h.id === (selectedHook || script.parameters.hook)) + 1}: {(currentHook || viralHooks.find(h => h.id === script.parameters.hook))?.name}
-                </span>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Zap className="w-4 h-4 text-primary" />
+                  <span className="text-sm font-semibold text-white">
+                    HOOK #{viralHooks.findIndex(h => h.id === (selectedHook || script.parameters.hook)) + 1}: {(currentHook || viralHooks.find(h => h.id === script.parameters.hook))?.name}
+                  </span>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleCopySection("hook")}
+                  className="text-xs h-7"
+                  data-testid="button-copy-hook"
+                >
+                  <Copy className="w-3 h-3 mr-1" />
+                  Copy Hook
+                </Button>
               </div>
               <div className="text-xs text-muted-foreground">
                 <span className="font-medium text-white/80">Template:</span> "{(currentHook || viralHooks.find(h => h.id === script.parameters.hook))?.template}"
@@ -332,11 +364,71 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
               </div>
             </div>
           )}
-          <div 
-            className="p-6 rounded-md bg-white/5 border border-white/10 font-mono text-sm leading-relaxed whitespace-pre-wrap text-white/90"
-            data-testid="text-script-content"
-          >
-            {getDisplayScript()}
+
+          {/* Script Sections with Individual Copy */}
+          <div className="space-y-4">
+            {(() => {
+              const displayScript = getDisplayScript();
+              const lines = displayScript.split('\n').filter(Boolean);
+              const hookLine = lines[0] || "";
+              const bodyLines = lines.slice(1, -1).join('\n');
+              const ctaLine = lines[lines.length - 1] || "";
+              
+              return (
+                <>
+                  {/* Hook Section */}
+                  <div className="p-4 rounded-md bg-white/5 border border-white/10">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xs font-semibold text-primary uppercase tracking-wider">Hook</span>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleCopySection("hook")}
+                        className="text-xs h-6 px-2"
+                        data-testid="button-copy-hook-section"
+                      >
+                        <Copy className="w-3 h-3" />
+                      </Button>
+                    </div>
+                    <p className="font-mono text-sm text-white/90">{hookLine}</p>
+                  </div>
+
+                  {/* Body Section */}
+                  <div className="p-4 rounded-md bg-white/5 border border-white/10">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Body</span>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleCopySection("body")}
+                        className="text-xs h-6 px-2"
+                        data-testid="button-copy-body"
+                      >
+                        <Copy className="w-3 h-3" />
+                      </Button>
+                    </div>
+                    <p className="font-mono text-sm text-white/90 whitespace-pre-wrap">{bodyLines}</p>
+                  </div>
+
+                  {/* CTA Section */}
+                  <div className="p-4 rounded-md bg-white/5 border border-white/10">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xs font-semibold text-green-500 uppercase tracking-wider">Call to Action</span>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleCopySection("cta")}
+                        className="text-xs h-6 px-2"
+                        data-testid="button-copy-cta"
+                      >
+                        <Copy className="w-3 h-3" />
+                      </Button>
+                    </div>
+                    <p className="font-mono text-sm text-white/90">{ctaLine}</p>
+                  </div>
+                </>
+              );
+            })()}
           </div>
         </TabsContent>
         
