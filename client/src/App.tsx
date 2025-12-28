@@ -1,4 +1,5 @@
-import { Switch, Route } from "wouter";
+import { Switch, Route, useLocation } from "wouter";
+import { useEffect } from "react";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -18,10 +19,19 @@ import Landing from "@/pages/landing";
 import Login from "@/pages/login";
 import NotFound from "@/pages/not-found";
 
+function LoginRedirect() {
+  const [, setLocation] = useLocation();
+  useEffect(() => {
+    setLocation("/");
+  }, [setLocation]);
+  return null;
+}
+
 function AuthenticatedRouter() {
   return (
     <Switch>
       <Route path="/" component={Home} />
+      <Route path="/login" component={LoginRedirect} />
       <Route path="/scripts" component={Scripts} />
       <Route path="/projects" component={Projects} />
       <Route path="/calendar" component={CalendarPage} />
