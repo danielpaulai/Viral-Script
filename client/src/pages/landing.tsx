@@ -426,58 +426,110 @@ export default function Landing() {
       {/* Pricing Section */}
       <section id="pricing" className="py-24 relative overflow-hidden">
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
-          <div className="flex items-center gap-2 mb-4 justify-center">
-            <span className="h-px w-8 bg-primary" />
-            <h2 className="text-xs font-semibold text-primary tracking-widest uppercase">Pricing</h2>
-            <span className="h-px w-8 bg-primary" />
+          <div className="text-center">
+            <h2 className="text-4xl sm:text-5xl font-medium text-white tracking-tight mb-6">
+              Pricing Plans
+            </h2>
+            <p className="text-[#b8bec1] text-sm leading-relaxed mb-12">
+              Start free. Upgrade when you're ready to scale.
+            </p>
           </div>
-          <h3 className="text-3xl md:text-4xl font-semibold text-white mb-6 tracking-tight text-center leading-tight">
-            Scalable pricing
-          </h3>
-          <p className="text-[#b8bec1] text-sm leading-relaxed mb-16 text-center">
-            Start free. Upgrade when you're ready.
-          </p>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-5xl mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
             {pricingTiers.map((tier) => (
-              <div 
-                key={tier.id} 
-                className={`relative p-6 rounded-md backdrop-blur-lg border transition-all ${
-                  tier.popular 
-                    ? 'bg-[rgba(233,13,65,0.05)] border-primary/50 ring-1 ring-primary/20' 
-                    : 'bg-[rgba(20,20,22,0.4)] border-white/[0.06] hover:border-primary/30'
-                }`}
-                data-testid={`pricing-card-${tier.id}`}
-              >
-                {tier.popular && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    <span className="px-3 py-1 rounded-full text-[10px] font-semibold bg-primary text-white">Most Popular</span>
+              tier.popular ? (
+                /* Featured Pro Card */
+                <div 
+                  key={tier.id}
+                  className="border-primary/30 border ring-1 ring-primary/20 rounded-3xl p-2 relative backdrop-blur-xl bg-[#111]"
+                  data-testid={`pricing-card-${tier.id}`}
+                >
+                  <div className="overflow-hidden bg-gradient-to-b from-white/[0.08] to-transparent rounded-2xl relative h-full flex flex-col">
+                    {/* Radial glow */}
+                    <div className="absolute inset-0">
+                      <div className="absolute inset-0 bg-[radial-gradient(60%_80%_at_80%_0%,rgba(233,13,65,0.15),transparent_60%)]" />
+                    </div>
+
+                    <div className="p-6 relative flex flex-col h-full">
+                      <div className="flex items-start justify-between gap-2">
+                        <div>
+                          <div className="text-xs font-bold uppercase tracking-[0.2em] text-primary">
+                            {tier.name}
+                          </div>
+                          <div className="mt-2 flex items-end gap-2">
+                            <div className="text-4xl font-medium tracking-tight text-white">
+                              ${tier.price}
+                            </div>
+                            <div className="text-sm text-white/60">/mo</div>
+                          </div>
+                        </div>
+                        <span className="inline-flex items-center gap-1 rounded-full bg-primary/20 px-2 py-1 text-[10px] font-medium text-primary ring-1 ring-primary/40">
+                          <Sparkles className="w-3 h-3" />
+                          Popular
+                        </span>
+                      </div>
+
+                      <p className="text-white/60 text-xs mt-2">{tier.description}</p>
+
+                      <Link href="/login" className="mt-6">
+                        <Button 
+                          className="w-full shadow-[0_4px_20px_rgba(233,13,65,0.3)] hover:scale-[1.02] transition-all"
+                          data-testid={`button-pricing-${tier.id}`}
+                        >
+                          Upgrade to {tier.name}
+                        </Button>
+                      </Link>
+
+                      <ul className="mt-8 space-y-4 text-sm text-white/80">
+                        {tier.features.map((feature, idx) => (
+                          <li key={idx} className="flex items-start gap-3">
+                            <CheckCircle2 className="w-4 h-4 text-primary flex-shrink-0" />
+                            <span>{feature}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
                   </div>
-                )}
-                <h4 className="font-semibold text-white mb-1">{tier.name}</h4>
-                <p className="text-[#b8bec1] text-xs mb-4">{tier.description}</p>
-                <div className="mb-6">
-                  <span className="text-4xl font-semibold text-white">${tier.price}</span>
-                  <span className="text-[#b8bec1] text-sm">/mo</span>
                 </div>
-                <Link href="/login">
-                  <Button 
-                    className={`w-full mb-6 ${tier.popular ? 'shadow-[0_0_20px_-5px_rgba(233,13,65,0.3)]' : ''}`}
-                    variant={tier.popular ? "default" : "outline"}
-                    data-testid={`button-pricing-${tier.id}`}
-                  >
-                    Get Started
-                  </Button>
-                </Link>
-                <ul className="space-y-3">
-                  {tier.features.map((feature, idx) => (
-                    <li key={idx} className="flex items-start gap-2 text-xs text-[#b8bec1]">
-                      <CheckCircle2 className="w-3 h-3 text-primary mt-0.5 flex-shrink-0" />
-                      <span>{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+              ) : (
+                /* Standard Card */
+                <div 
+                  key={tier.id}
+                  className="bg-[radial-gradient(circle_at_top_left,var(--tw-gradient-stops))] from-white/10 to-white/0 rounded-3xl p-6 backdrop-blur-xl relative border border-white/[0.06] hover:border-white/[0.12] transition-all"
+                  data-testid={`pricing-card-${tier.id}`}
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="text-xs font-bold uppercase tracking-[0.2em] text-white/40">
+                        {tier.name}
+                      </div>
+                      <div className="mt-2 flex items-end gap-2">
+                        <div className="text-4xl font-medium tracking-tight text-white">
+                          ${tier.price}
+                        </div>
+                        <div className="text-sm text-white/50">/mo</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <p className="text-white/50 text-xs mt-2">{tier.description}</p>
+
+                  <Link href="/login" className="block mt-6">
+                    <button className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-sm font-medium tracking-tight text-white hover:bg-white/10 transition-all">
+                      Get Started
+                    </button>
+                  </Link>
+
+                  <ul className="mt-6 space-y-3 text-sm text-white/60">
+                    {tier.features.map((feature, idx) => (
+                      <li key={idx} className="flex items-start gap-3">
+                        <CheckCircle2 className="w-4 h-4 text-white/40 flex-shrink-0" />
+                        <span>{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )
             ))}
           </div>
         </div>
