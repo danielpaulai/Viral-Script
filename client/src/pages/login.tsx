@@ -1,8 +1,11 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Sparkles, ArrowRight, Zap, FileText, CheckCircle2, Mail } from "lucide-react";
-import { SiGoogle, SiGithub, SiApple } from "react-icons/si";
-import { Link } from "wouter";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Sparkles, ArrowRight, Zap, FileText, CheckCircle2, Loader2 } from "lucide-react";
+import { Link, useLocation } from "wouter";
+import { useAuth } from "@/hooks/use-auth";
 
 const benefits = [
   "50+ viral hook templates",
@@ -14,13 +17,35 @@ const benefits = [
 ];
 
 export default function Login() {
-  const handleLogin = () => {
-    window.location.href = "/api/login";
+  const [, setLocation] = useLocation();
+  const { loginMutation, registerMutation, user } = useAuth();
+  const [isRegister, setIsRegister] = useState(false);
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
+  if (user) {
+    setLocation("/");
+    return null;
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (isRegister) {
+      if (password !== confirmPassword) {
+        return;
+      }
+      registerMutation.mutate({ username, password });
+    } else {
+      loginMutation.mutate({ username, password });
+    }
   };
+
+  const isPending = loginMutation.isPending || registerMutation.isPending;
 
   return (
     <div className="min-h-screen bg-background flex">
-      {/* Left side - Benefits */}
       <div className="hidden lg:flex lg:w-1/2 bg-card/50 flex-col justify-center p-12 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/10" />
         <div className="relative z-10 max-w-lg">
@@ -62,10 +87,8 @@ export default function Login() {
         </div>
       </div>
 
-      {/* Right side - Login */}
       <div className="flex-1 flex flex-col justify-center items-center p-8">
         <div className="w-full max-w-md">
-          {/* Mobile logo */}
           <div className="flex items-center gap-2 mb-8 lg:hidden">
             <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
               <Sparkles className="w-5 h-5 text-primary-foreground" />
@@ -75,75 +98,94 @@ export default function Login() {
 
           <Card className="bg-card border-card-border">
             <CardHeader className="text-center">
-              <CardTitle className="text-2xl">Welcome back</CardTitle>
+              <CardTitle className="text-2xl">
+                {isRegister ? "Create an account" : "Welcome back"}
+              </CardTitle>
               <CardDescription>
-                Sign in to start creating viral scripts
+                {isRegister 
+                  ? "Sign up to start creating viral scripts" 
+                  : "Sign in to continue creating"}
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <Button 
-                onClick={handleLogin}
-                variant="outline"
-                className="w-full gap-3"
-                size="lg"
-                data-testid="button-login-google"
-              >
-                <SiGoogle className="w-5 h-5" />
-                Continue with Google
-              </Button>
-
-              <Button 
-                onClick={handleLogin}
-                variant="outline"
-                className="w-full gap-3"
-                size="lg"
-                data-testid="button-login-github"
-              >
-                <SiGithub className="w-5 h-5" />
-                Continue with GitHub
-              </Button>
-
-              <Button 
-                onClick={handleLogin}
-                variant="outline"
-                className="w-full gap-3"
-                size="lg"
-                data-testid="button-login-apple"
-              >
-                <SiApple className="w-5 h-5" />
-                Continue with Apple
-              </Button>
-
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-border" />
+            <CardContent>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="username">Username</Label>
+                  <Input
+                    id="username"
+                    type="text"
+                    placeholder="Enter your username"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    required
+                    disabled={isPending}
+                    data-testid="input-username"
+                  />
                 </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-card px-2 text-muted-foreground">or</span>
+
+                <div className="space-y-2">
+                  <Label htmlFor="password">Password</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    placeholder="Enter your password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    disabled={isPending}
+                    data-testid="input-password"
+                  />
                 </div>
-              </div>
 
-              <Button 
-                onClick={handleLogin}
-                variant="secondary"
-                className="w-full gap-3"
-                size="lg"
-                data-testid="button-login-email"
-              >
-                <Mail className="w-5 h-5" />
-                Continue with Email
-              </Button>
+                {isRegister && (
+                  <div className="space-y-2">
+                    <Label htmlFor="confirmPassword">Confirm Password</Label>
+                    <Input
+                      id="confirmPassword"
+                      type="password"
+                      placeholder="Confirm your password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      required
+                      disabled={isPending}
+                      data-testid="input-confirm-password"
+                    />
+                    {password !== confirmPassword && confirmPassword && (
+                      <p className="text-sm text-destructive">Passwords do not match</p>
+                    )}
+                  </div>
+                )}
 
-              <p className="text-center text-sm text-muted-foreground pt-2">
-                New to Script Writer Pro?{" "}
-                <button 
-                  onClick={handleLogin}
-                  className="text-primary hover:underline"
-                  data-testid="link-signup"
+                <Button 
+                  type="submit"
+                  className="w-full"
+                  size="lg"
+                  disabled={isPending || (isRegister && password !== confirmPassword)}
+                  data-testid="button-submit"
                 >
-                  Create an account
+                  {isPending ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : isRegister ? (
+                    "Create account"
+                  ) : (
+                    "Sign in"
+                  )}
+                </Button>
+              </form>
+
+              <div className="mt-6 text-center">
+                <button 
+                  onClick={() => setIsRegister(!isRegister)}
+                  className="text-sm text-muted-foreground hover:text-foreground"
+                  data-testid="button-toggle-mode"
+                >
+                  {isRegister ? (
+                    <>Already have an account? <span className="text-primary">Sign in</span></>
+                  ) : (
+                    <>Don't have an account? <span className="text-primary">Sign up</span></>
+                  )}
                 </button>
-              </p>
+              </div>
             </CardContent>
           </Card>
 
