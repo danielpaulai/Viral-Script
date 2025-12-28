@@ -17,7 +17,8 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import {
   scriptCategories,
-  hookFormats,
+  viralHooks,
+  hookCategories,
   structureFormats,
   platformOptions,
   durationOptions,
@@ -61,7 +62,7 @@ export default function Home() {
     duration: "30",
     category: "content_creation",
     structure: "problem_solver",
-    hook: "personal_experience",
+    hook: "painful_past",
     deepResearch: false,
   });
 
@@ -455,19 +456,26 @@ export default function Home() {
             </div>
 
             <div className="mb-6">
-              <Label className="text-xs font-medium mb-2 block uppercase tracking-wider">Hook Strategy</Label>
+              <Label className="text-xs font-medium mb-2 block uppercase tracking-wider">Hook Strategy (50 Viral Hooks)</Label>
               <Select
                 value={formData.hook}
                 onValueChange={(value) => setFormData((prev) => ({ ...prev, hook: value }))}
               >
                 <SelectTrigger className="bg-white/5 border-white/10" data-testid="select-hook">
-                  <SelectValue />
+                  <SelectValue placeholder="Select a viral hook..." />
                 </SelectTrigger>
-                <SelectContent>
-                  {hookFormats.map((hook) => (
-                    <SelectItem key={hook.id} value={hook.id}>
-                      {hook.name}
-                    </SelectItem>
+                <SelectContent className="max-h-80">
+                  {hookCategories.map((category) => (
+                    <div key={category.id}>
+                      <div className="px-2 py-1.5 text-xs font-semibold text-primary">{category.name}</div>
+                      {viralHooks
+                        .filter((h) => h.category === category.id)
+                        .map((hook) => (
+                          <SelectItem key={hook.id} value={hook.id}>
+                            {hook.name}
+                          </SelectItem>
+                        ))}
+                    </div>
                   ))}
                 </SelectContent>
               </Select>

@@ -4,7 +4,7 @@ import { storage } from "./storage";
 import { randomUUID } from "crypto";
 import {
   scriptCategories,
-  hookFormats,
+  viralHooks,
   structureFormats,
   toneOptions,
   voiceOptions,
@@ -16,7 +16,7 @@ import {
 
 function generateScript(params: ScriptParameters): GeneratedScript {
   const category = scriptCategories.find((c) => c.id === params.category);
-  const hook = hookFormats.find((h) => h.id === params.hook);
+  const hook = viralHooks.find((h) => h.id === params.hook);
   const structure = structureFormats.find((s) => s.id === params.structure);
   const duration = durationOptions.find((d) => d.id === params.duration);
 
