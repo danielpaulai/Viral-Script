@@ -32,7 +32,7 @@ import knowledgeBaseImg from "@assets/Gemini_Generated_Image_zqsvjzqsvjzqsvjz_17
 import voiceDnaImg from "@assets/Gemini_Generated_Image_do72nvdo72nvdo72_(1)_1766959412860.jpeg";
 import deepResearchImg from "@assets/Gemini_Generated_Image_c69af2c69af2c69a_1766959451509.jpeg";
 import hemingwayImg from "@assets/generated_images/hemingway_script_analysis_visualization.png";
-import { SiTiktok, SiYoutube, SiInstagram } from "react-icons/si";
+import { SiTiktok, SiYoutube, SiInstagram, SiLinkedin, SiFacebook } from "react-icons/si";
 
 // Image with loading skeleton
 function ImageWithSkeleton({ src, alt, className }: { src: string; alt: string; className?: string }) {
@@ -453,18 +453,26 @@ export default function Landing() {
           <p className="text-center text-xs uppercase tracking-widest text-[#b8bec1]/60 mb-6">
             Optimized for all platforms
           </p>
-          <div className="flex items-center justify-center gap-12 flex-wrap">
+          <div className="flex items-center justify-center gap-8 md:gap-12 flex-wrap">
             <div className="flex items-center gap-2 text-[#b8bec1]/60 hover:text-primary transition-colors" data-testid="platform-tiktok">
-              <SiTiktok className="w-6 h-6" />
+              <SiTiktok className="w-5 h-5 md:w-6 md:h-6" />
               <span className="text-sm font-medium">TikTok</span>
             </div>
             <div className="flex items-center gap-2 text-[#b8bec1]/60 hover:text-primary transition-colors" data-testid="platform-youtube">
-              <SiYoutube className="w-6 h-6" />
+              <SiYoutube className="w-5 h-5 md:w-6 md:h-6" />
               <span className="text-sm font-medium">Shorts</span>
             </div>
             <div className="flex items-center gap-2 text-[#b8bec1]/60 hover:text-primary transition-colors" data-testid="platform-instagram">
-              <SiInstagram className="w-6 h-6" />
+              <SiInstagram className="w-5 h-5 md:w-6 md:h-6" />
               <span className="text-sm font-medium">Reels</span>
+            </div>
+            <div className="flex items-center gap-2 text-[#b8bec1]/60 hover:text-primary transition-colors" data-testid="platform-linkedin">
+              <SiLinkedin className="w-5 h-5 md:w-6 md:h-6" />
+              <span className="text-sm font-medium">LinkedIn</span>
+            </div>
+            <div className="flex items-center gap-2 text-[#b8bec1]/60 hover:text-primary transition-colors" data-testid="platform-facebook">
+              <SiFacebook className="w-5 h-5 md:w-6 md:h-6" />
+              <span className="text-sm font-medium">Facebook</span>
             </div>
           </div>
         </div>
