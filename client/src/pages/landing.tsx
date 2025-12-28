@@ -298,7 +298,7 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Features Section */}
+      {/* Features Section - Fanned Cards */}
       <section id="features" className="py-24 relative overflow-hidden">
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
           <div className="flex items-center gap-2 mb-4 justify-center">
@@ -314,41 +314,96 @@ export default function Landing() {
             From hook to CTA, we handle the script. You handle the camera.
           </p>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {features.map((feature, idx) => (
-              <div 
-                key={idx} 
-                className="relative overflow-hidden rounded-2xl min-h-[320px] flex flex-col bg-neutral-800/60 shadow-[0_2.8px_2.2px_rgba(0,_0,_0,_0.034),_0_6.7px_5.3px_rgba(0,_0,_0,_0.048),_0_12.5px_10px_rgba(0,_0,_0,_0.06),_0_22.3px_17.9px_rgba(0,_0,_0,_0.072),_0_41.8px_33.4px_rgba(0,_0,_0,_0.086),_0_100px_80px_rgba(0,_0,_0,_0.12)] backdrop-blur-lg border border-white/[0.06] hover:border-primary/40 transition-all group"
-                data-testid={`feature-card-${idx}`}
-              >
-                {/* Background Image */}
+          {/* Fanned Cards Row 1 */}
+          <div className="sm:h-[500px] h-[400px] flex relative items-center justify-center mb-8" style={{ perspective: '1200px' }}>
+            {features.slice(0, 3).map((feature, idx) => {
+              const transforms = [
+                'translateX(-220px) translateY(0px) rotateZ(-12deg) scale(0.95)',
+                'translateX(0px) translateY(0px) rotateZ(0deg) scale(1.05)',
+                'translateX(220px) translateY(0px) rotateZ(12deg) scale(0.95)'
+              ];
+              const zIndexes = [1, 3, 2];
+              const shadows = [
+                'rgba(0, 0, 0, 0.3) 0px 15px 30px -10px',
+                'rgba(0, 0, 0, 0.5) 0px 25px 50px -12px',
+                'rgba(0, 0, 0, 0.3) 0px 15px 30px -10px'
+              ];
+              
+              return (
                 <div 
-                  className="absolute inset-0 bg-cover bg-center opacity-60 group-hover:opacity-80 transition-opacity"
-                  style={{ backgroundImage: `url(${feature.image})` }}
-                />
-                {/* Gradient Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent" />
-                
-                {/* Content */}
-                <div className="relative z-10 flex flex-col h-full p-6 justify-between">
-                  {/* Top Badge */}
-                  <div className="flex items-start justify-between">
-                    <span className="px-3 py-1 rounded-full text-[10px] font-medium uppercase tracking-wider text-neutral-300/90 ring-1 ring-neutral-400/30 bg-neutral-500/15 backdrop-blur-sm">
-                      Feature
-                    </span>
-                    <div className="w-9 h-9 rounded-md bg-primary/20 backdrop-blur-sm flex items-center justify-center">
-                      <feature.icon className="w-4 h-4 text-primary" />
+                  key={idx}
+                  className="absolute w-56 sm:w-72 aspect-[3/4] rounded-2xl bg-neutral-900/40 ring-1 ring-white/10 overflow-hidden shadow-2xl hover:scale-105 transition-transform duration-300"
+                  style={{ 
+                    transform: transforms[idx], 
+                    zIndex: zIndexes[idx],
+                    boxShadow: shadows[idx]
+                  }}
+                  data-testid={`feature-card-${idx}`}
+                >
+                  <img 
+                    alt={feature.title}
+                    className="absolute inset-0 size-full object-cover w-full h-auto"
+                    src={feature.image}
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+                  <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between gap-2">
+                    <div>
+                      <p className="text-sm font-medium tracking-tight text-white">{feature.title}</p>
+                      <p className="text-xs text-neutral-300">{feature.description}</p>
+                    </div>
+                    <div className="inline-flex items-center gap-1 rounded-full bg-primary/20 px-2 py-1 text-[10px] text-primary ring-1 ring-primary/30 flex-shrink-0">
+                      <feature.icon className="h-3.5 w-3.5" />
                     </div>
                   </div>
-                  
-                  {/* Bottom Text */}
-                  <div className="text-left mt-auto">
-                    <h4 className="text-xl font-semibold text-white mb-2 tracking-tight">{feature.title}</h4>
-                    <p className="text-sm text-neutral-300/80 leading-relaxed">{feature.description}</p>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Fanned Cards Row 2 */}
+          <div className="sm:h-[500px] h-[400px] flex relative items-center justify-center" style={{ perspective: '1200px' }}>
+            {features.slice(3, 6).map((feature, idx) => {
+              const transforms = [
+                'translateX(-220px) translateY(0px) rotateZ(-12deg) scale(0.95)',
+                'translateX(0px) translateY(0px) rotateZ(0deg) scale(1.05)',
+                'translateX(220px) translateY(0px) rotateZ(12deg) scale(0.95)'
+              ];
+              const zIndexes = [1, 3, 2];
+              const shadows = [
+                'rgba(0, 0, 0, 0.3) 0px 15px 30px -10px',
+                'rgba(0, 0, 0, 0.5) 0px 25px 50px -12px',
+                'rgba(0, 0, 0, 0.3) 0px 15px 30px -10px'
+              ];
+              
+              return (
+                <div 
+                  key={idx + 3}
+                  className="absolute w-56 sm:w-72 aspect-[3/4] rounded-2xl bg-neutral-900/40 ring-1 ring-white/10 overflow-hidden shadow-2xl hover:scale-105 transition-transform duration-300"
+                  style={{ 
+                    transform: transforms[idx], 
+                    zIndex: zIndexes[idx],
+                    boxShadow: shadows[idx]
+                  }}
+                  data-testid={`feature-card-${idx + 3}`}
+                >
+                  <img 
+                    alt={feature.title}
+                    className="absolute inset-0 size-full object-cover w-full h-auto"
+                    src={feature.image}
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+                  <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between gap-2">
+                    <div>
+                      <p className="text-sm font-medium tracking-tight text-white">{feature.title}</p>
+                      <p className="text-xs text-neutral-300">{feature.description}</p>
+                    </div>
+                    <div className="inline-flex items-center gap-1 rounded-full bg-primary/20 px-2 py-1 text-[10px] text-primary ring-1 ring-primary/30 flex-shrink-0">
+                      <feature.icon className="h-3.5 w-3.5" />
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>
