@@ -5,7 +5,7 @@ import session from "express-session";
 import { scrypt, randomBytes, timingSafeEqual } from "crypto";
 import { promisify } from "util";
 import { storage } from "./storage";
-import { User as SelectUser } from "@shared/schema";
+import { User as SelectUser, authCredentialsSchema } from "@shared/schema";
 
 declare global {
   namespace Express {
@@ -22,10 +22,20 @@ export async function hashPassword(password: string) {
 }
 
 export async function comparePasswords(supplied: string, stored: string) {
+  if (!stored || !stored.includes(".")) {
+    return false;
+  }
   const [hashed, salt] = stored.split(".");
-  const hashedBuf = Buffer.from(hashed, "hex");
-  const suppliedBuf = (await scryptAsync(supplied, salt, 64)) as Buffer;
-  return timingSafeEqual(hashedBuf, suppliedBuf);
+  if (!hashed || !salt) {
+    return false;
+  }
+  try {
+    const hashedBuf = Buffer.from(hashed, "hex");
+    const suppliedBuf = (await scryptAsync(supplied, salt, 64)) as Buffer;
+    return timingSafeEqual(hashedBuf, suppliedBuf);
+  } catch {
+    return false;
+  }
 }
 
 export function setupAuth(app: Express) {
@@ -72,15 +82,14 @@ export function setupAuth(app: Express) {
 
   app.post("/api/register", async (req, res, next) => {
     try {
-      const { username, password } = req.body;
+      const parsed = authCredentialsSchema.safeParse(req.body);
       
-      if (!username || !password) {
-        return res.status(400).json({ message: "Username and password are required" });
+      if (!parsed.success) {
+        const errors = parsed.error.errors.map(e => e.message).join(", ");
+        return res.status(400).json({ message: errors });
       }
-      
-      if (password.length < 6) {
-        return res.status(400).json({ message: "Password must be at least 6 characters" });
-      }
+
+      const { username, password } = parsed.data;
 
       const existingUser = await storage.getUserByUsername(username);
       if (existingUser) {

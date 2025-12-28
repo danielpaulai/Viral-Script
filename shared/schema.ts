@@ -456,7 +456,13 @@ export const insertUserSchema = createInsertSchema(users).pick({
   password: true,
 });
 
+export const authCredentialsSchema = z.object({
+  username: z.string().min(3, "Username must be at least 3 characters"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+});
+
 export type InsertUser = z.infer<typeof insertUserSchema>;
+export type AuthCredentials = z.infer<typeof authCredentialsSchema>;
 export type User = typeof users.$inferSelect;
 
 // Knowledge Base Documents Table

@@ -4,7 +4,7 @@ import {
   useMutation,
   UseMutationResult,
 } from "@tanstack/react-query";
-import { User, InsertUser } from "../../../shared/schema";
+import { User, AuthCredentials } from "../../../shared/schema";
 import { getQueryFn, apiRequest, queryClient } from "../lib/queryClient";
 import { useToast } from "./use-toast";
 
@@ -12,12 +12,10 @@ type AuthContextType = {
   user: User | null;
   isLoading: boolean;
   error: Error | null;
-  loginMutation: UseMutationResult<User, Error, LoginData>;
+  loginMutation: UseMutationResult<User, Error, AuthCredentials>;
   logoutMutation: UseMutationResult<void, Error, void>;
-  registerMutation: UseMutationResult<User, Error, InsertUser>;
+  registerMutation: UseMutationResult<User, Error, AuthCredentials>;
 };
-
-type LoginData = Pick<InsertUser, "username" | "password">;
 
 export const AuthContext = createContext<AuthContextType | null>(null);
 
@@ -33,7 +31,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   });
 
   const loginMutation = useMutation({
-    mutationFn: async (credentials: LoginData) => {
+    mutationFn: async (credentials: AuthCredentials) => {
       const res = await apiRequest("POST", "/api/login", credentials);
       return await res.json();
     },
@@ -50,7 +48,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   });
 
   const registerMutation = useMutation({
-    mutationFn: async (credentials: InsertUser) => {
+    mutationFn: async (credentials: AuthCredentials) => {
       const res = await apiRequest("POST", "/api/register", credentials);
       return await res.json();
     },
