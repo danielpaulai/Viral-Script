@@ -56,6 +56,7 @@ import {
   RotateCcw,
   Target,
   Lightbulb,
+  BookOpen,
 } from "lucide-react";
 
 const presetIcons: Record<string, typeof Zap> = {
@@ -78,6 +79,7 @@ export default function Home() {
   const [generatedScript, setGeneratedScript] = useState<GeneratedScript | null>(null);
   const [activePreset, setActivePreset] = useState<string | null>(null);
   const [deepResearch, setDeepResearch] = useState(false);
+  const [useKnowledgeBase, setUseKnowledgeBase] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [hoveredPreset, setHoveredPreset] = useState<string | null>(null);
 
@@ -118,6 +120,10 @@ export default function Home() {
         };
       });
     },
+  });
+
+  const { data: knowledgeBaseDocs = [] } = useQuery<any[]>({
+    queryKey: ["/api/knowledge-base"],
   });
 
   const generateMutation = useMutation({
@@ -171,7 +177,7 @@ export default function Home() {
       });
       return;
     }
-    generateMutation.mutate({ ...formData, deepResearch });
+    generateMutation.mutate({ ...formData, deepResearch, useKnowledgeBase });
   };
 
   const currentHook = useMemo(() => {
@@ -585,6 +591,27 @@ export default function Home() {
                 checked={deepResearch}
                 onCheckedChange={setDeepResearch}
                 data-testid="switch-deep-research"
+              />
+            </div>
+
+            <div className="flex items-center justify-between p-3 rounded-md bg-primary/10 border border-primary/20">
+              <div className="flex items-center gap-3">
+                <BookOpen className="w-4 h-4 text-primary" />
+                <div>
+                  <p className="text-sm font-medium text-white">Use Knowledge Base</p>
+                  <p className="text-[10px] text-muted-foreground">
+                    {knowledgeBaseDocs.length > 0 
+                      ? `${knowledgeBaseDocs.length} docs loaded - AI uses your brand voice`
+                      : "Add docs in Knowledge Base to enable"
+                    }
+                  </p>
+                </div>
+              </div>
+              <Switch
+                checked={useKnowledgeBase}
+                onCheckedChange={setUseKnowledgeBase}
+                disabled={knowledgeBaseDocs.length === 0}
+                data-testid="switch-knowledge-base"
               />
             </div>
           </CollapsibleContent>

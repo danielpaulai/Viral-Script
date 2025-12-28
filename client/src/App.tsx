@@ -10,6 +10,8 @@ import Scripts from "@/pages/scripts";
 import Projects from "@/pages/projects";
 import CalendarPage from "@/pages/calendar";
 import Vault from "@/pages/vault";
+import Pricing from "@/pages/pricing";
+import KnowledgeBase from "@/pages/knowledge-base";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -20,6 +22,8 @@ function Router() {
       <Route path="/projects" component={Projects} />
       <Route path="/calendar" component={CalendarPage} />
       <Route path="/vault" component={Vault} />
+      <Route path="/pricing" component={Pricing} />
+      <Route path="/knowledge-base" component={KnowledgeBase} />
       <Route component={NotFound} />
     </Switch>
   );

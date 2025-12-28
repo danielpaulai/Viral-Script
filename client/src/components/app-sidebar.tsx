@@ -6,7 +6,8 @@ import {
   FolderOpen,
   Archive,
   Calendar,
-  Settings,
+  BookOpen,
+  CreditCard,
   MessageSquare,
   HelpCircle,
   LogOut,
@@ -17,6 +18,7 @@ import {
   SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
+  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
@@ -30,6 +32,11 @@ const mainNavItems = [
   { href: "/projects", label: "Projects", icon: FolderOpen },
   { href: "/vault", label: "Vault", icon: Archive },
   { href: "/calendar", label: "Calendar", icon: Calendar },
+];
+
+const proNavItems = [
+  { href: "/knowledge-base", label: "Knowledge Base", icon: BookOpen },
+  { href: "/pricing", label: "Pricing", icon: CreditCard },
 ];
 
 const footerNavItems = [
@@ -68,6 +75,34 @@ export function AppSidebar() {
                       tooltip={item.label}
                     >
                       <Link href={item.href} data-testid={`nav-${item.label.toLowerCase()}`}>
+                        <Icon className="w-4 h-4" />
+                        <span>{item.label}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+        
+        <SidebarSeparator />
+        
+        <SidebarGroup>
+          <SidebarGroupLabel>Pro Features</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {proNavItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = location === item.href;
+                return (
+                  <SidebarMenuItem key={item.href}>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={isActive}
+                      tooltip={item.label}
+                    >
+                      <Link href={item.href} data-testid={`nav-${item.label.toLowerCase().replace(' ', '-')}`}>
                         <Icon className="w-4 h-4" />
                         <span>{item.label}</span>
                       </Link>

@@ -88,7 +88,13 @@ export class MemStorage implements IStorage {
 
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = randomUUID();
-    const user: User = { ...insertUser, id };
+    const user: User = { 
+      id,
+      username: insertUser.username,
+      password: insertUser.password,
+      plan: insertUser.plan ?? null,
+      planExpiresAt: insertUser.planExpiresAt ?? null,
+    };
     this.users.set(id, user);
     return user;
   }
@@ -108,8 +114,16 @@ export class MemStorage implements IStorage {
   async createScript(insertScript: InsertScript): Promise<Script> {
     const id = randomUUID();
     const script: Script = {
-      ...insertScript,
       id,
+      title: insertScript.title,
+      script: insertScript.script,
+      wordCount: insertScript.wordCount ?? null,
+      gradeLevel: insertScript.gradeLevel ?? null,
+      productionNotes: insertScript.productionNotes ?? null,
+      bRollIdeas: insertScript.bRollIdeas ?? null,
+      onScreenText: insertScript.onScreenText ?? null,
+      parameters: insertScript.parameters ?? null,
+      status: insertScript.status ?? null,
       createdAt: new Date(),
     };
     this.scripts.set(id, script);
@@ -143,8 +157,9 @@ export class MemStorage implements IStorage {
   async createProject(insertProject: InsertProject): Promise<Project> {
     const id = randomUUID();
     const project: Project = {
-      ...insertProject,
       id,
+      name: insertProject.name,
+      description: insertProject.description ?? null,
       createdAt: new Date(),
     };
     this.projects.set(id, project);
@@ -226,8 +241,13 @@ export class MemStorage implements IStorage {
   async createKnowledgeBaseDoc(insertDoc: InsertKnowledgeBase): Promise<KnowledgeBaseDoc> {
     const id = randomUUID();
     const doc: KnowledgeBaseDoc = {
-      ...insertDoc,
       id,
+      userId: insertDoc.userId ?? null,
+      type: insertDoc.type,
+      title: insertDoc.title,
+      content: insertDoc.content,
+      summary: insertDoc.summary ?? null,
+      tags: insertDoc.tags ?? null,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -262,8 +282,13 @@ export class MemStorage implements IStorage {
   async createCompetitorAsset(insertAsset: InsertCompetitorAsset): Promise<CompetitorAsset> {
     const id = randomUUID();
     const asset: CompetitorAsset = {
-      ...insertAsset,
       id,
+      userId: insertAsset.userId ?? null,
+      name: insertAsset.name,
+      platform: insertAsset.platform ?? null,
+      profileUrl: insertAsset.profileUrl ?? null,
+      scripts: insertAsset.scripts ?? null,
+      analysis: insertAsset.analysis ?? null,
       createdAt: new Date(),
     };
     this.competitorAssets.set(id, asset);
@@ -289,8 +314,13 @@ export class MemStorage implements IStorage {
   async createContentStrategy(insertStrategy: InsertContentStrategy): Promise<ContentStrategy> {
     const id = randomUUID();
     const strategy: ContentStrategy = {
-      ...insertStrategy,
       id,
+      userId: insertStrategy.userId ?? null,
+      name: insertStrategy.name,
+      category: insertStrategy.category,
+      topics: insertStrategy.topics ?? null,
+      hooks: insertStrategy.hooks ?? null,
+      schedule: insertStrategy.schedule ?? null,
       createdAt: new Date(),
     };
     this.contentStrategies.set(id, strategy);
