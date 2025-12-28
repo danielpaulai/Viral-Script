@@ -633,11 +633,11 @@ export async function registerRoutes(
   app.post("/api/scripts/generate", async (req: any, res) => {
     try {
       const params: ScriptParameters = req.body;
+      const userId = req.user?.claims?.sub;
       
       let knowledgeBaseDocs: KnowledgeBaseDoc[] = [];
-      if (params.useKnowledgeBase) {
+      if (params.useKnowledgeBase && userId) {
         // Get user-specific knowledge base if authenticated
-        const userId = req.user?.claims?.sub;
         knowledgeBaseDocs = await storage.getKnowledgeBaseDocs(userId);
       }
       
@@ -654,6 +654,19 @@ export async function registerRoutes(
         parameters: params,
         status: "draft",
       });
+      
+      // Track usage for authenticated users
+      if (userId) {
+        const now = new Date();
+        const month = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+        await storage.incrementUsage(userId, month, 'scriptsGenerated');
+        if (params.deepResearch) {
+          await storage.incrementUsage(userId, month, 'deepResearchUsed');
+        }
+        if (params.useKnowledgeBase && knowledgeBaseDocs.length > 0) {
+          await storage.incrementUsage(userId, month, 'knowledgeBaseQueries');
+        }
+      }
       
       res.json({
         ...generatedScript,
@@ -931,6 +944,54 @@ export async function registerRoutes(
       res.json({ success: true });
     } catch (error) {
       res.status(500).json({ error: "Failed to delete strategy" });
+    }
+  });
+
+  // User Usage Tracking
+  app.get("/api/user/usage", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      if (!userId) {
+        return res.status(401).json({ error: "User not found" });
+      }
+      const now = new Date();
+      const month = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+      const usage = await storage.getUserUsage(userId, month);
+      res.json(usage || {
+        scriptsGenerated: 0,
+        deepResearchUsed: 0,
+        knowledgeBaseQueries: 0,
+        month,
+      });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch usage" });
+    }
+  });
+
+  // User Subscription
+  app.get("/api/user/subscription", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      if (!userId) {
+        return res.status(401).json({ error: "User not found" });
+      }
+      const subscription = await storage.getUserSubscription(userId);
+      if (!subscription) {
+        // Return default starter plan for new users
+        const now = new Date();
+        const periodEnd = new Date(now);
+        periodEnd.setMonth(periodEnd.getMonth() + 1);
+        return res.json({
+          plan: "starter",
+          status: "active",
+          billingCycle: "monthly",
+          currentPeriodStart: now.toISOString(),
+          currentPeriodEnd: periodEnd.toISOString(),
+        });
+      }
+      res.json(subscription);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch subscription" });
     }
   });
 

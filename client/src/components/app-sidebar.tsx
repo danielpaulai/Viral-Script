@@ -11,6 +11,7 @@ import {
   MessageSquare,
   HelpCircle,
   LogOut,
+  Settings,
 } from "lucide-react";
 import {
   Sidebar,
@@ -37,6 +38,7 @@ const mainNavItems = [
 const proNavItems = [
   { href: "/knowledge-base", label: "Knowledge Base", icon: BookOpen },
   { href: "/pricing", label: "Pricing", icon: CreditCard },
+  { href: "/settings", label: "Settings", icon: Settings },
 ];
 
 const footerNavItems = [

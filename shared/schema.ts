@@ -503,3 +503,37 @@ export const contentStrategies = pgTable("content_strategies", {
 export const insertContentStrategySchema = createInsertSchema(contentStrategies).omit({ id: true, createdAt: true });
 export type InsertContentStrategy = z.infer<typeof insertContentStrategySchema>;
 export type ContentStrategy = typeof contentStrategies.$inferSelect;
+
+// User Usage Tracking Table
+export const userUsage = pgTable("user_usage", {
+  id: varchar("id", { length: 36 }).primaryKey(),
+  userId: varchar("user_id", { length: 255 }).notNull(),
+  month: varchar("month", { length: 7 }).notNull(), // YYYY-MM format
+  scriptsGenerated: text("scripts_generated").default("0"),
+  deepResearchUsed: text("deep_research_used").default("0"),
+  knowledgeBaseQueries: text("knowledge_base_queries").default("0"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertUserUsageSchema = createInsertSchema(userUsage).omit({ id: true, createdAt: true, updatedAt: true });
+export type InsertUserUsage = z.infer<typeof insertUserUsageSchema>;
+export type UserUsage = typeof userUsage.$inferSelect;
+
+// User Subscriptions Table
+export const userSubscriptions = pgTable("user_subscriptions", {
+  id: varchar("id", { length: 36 }).primaryKey(),
+  userId: varchar("user_id", { length: 255 }).notNull().unique(),
+  plan: varchar("plan", { length: 50 }).notNull().default("starter"),
+  status: varchar("status", { length: 50 }).notNull().default("active"), // active, cancelled, expired
+  billingCycle: varchar("billing_cycle", { length: 20 }).default("monthly"), // monthly, yearly
+  currentPeriodStart: timestamp("current_period_start"),
+  currentPeriodEnd: timestamp("current_period_end"),
+  cancelAtPeriodEnd: text("cancel_at_period_end").default("false"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertUserSubscriptionSchema = createInsertSchema(userSubscriptions).omit({ id: true, createdAt: true, updatedAt: true });
+export type InsertUserSubscription = z.infer<typeof insertUserSubscriptionSchema>;
+export type UserSubscription = typeof userSubscriptions.$inferSelect;
