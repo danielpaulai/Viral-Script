@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,9 +9,11 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, FileText, Trash2, Edit2, User, Target, MessageSquare, Mic, Box, Layers, BookOpen, FileQuestion, Loader2 } from "lucide-react";
+import { Plus, FileText, Trash2, Edit2, User, Target, MessageSquare, Mic, Box, Layers, BookOpen, FileQuestion, Loader2, LogIn } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/use-auth";
+import { isUnauthorizedError } from "@/lib/auth-utils";
 
 const knowledgeBaseTypes = [
   { id: "icp", name: "Ideal Customer Profile", icon: User, description: "Define your target audience demographics, psychographics, and pain points" },
@@ -46,10 +48,55 @@ export default function KnowledgeBase() {
     tags: "",
   });
   const { toast } = useToast();
+  const { user, isLoading: authLoading, isAuthenticated } = useAuth();
 
   const { data: docs = [], isLoading } = useQuery<KnowledgeBaseDoc[]>({
     queryKey: ["/api/knowledge-base"],
+    enabled: isAuthenticated, // Only fetch if authenticated
   });
+
+  // Show login prompt if not authenticated
+  if (authLoading) {
+    return (
+      <div className="p-6 flex items-center justify-center min-h-[400px]">
+        <div className="flex items-center gap-3">
+          <Loader2 className="w-5 h-5 animate-spin" />
+          <span className="text-muted-foreground">Loading...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <div className="p-6 max-w-2xl mx-auto">
+        <Card className="text-center p-8">
+          <CardHeader>
+            <div className="mx-auto w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+              <BookOpen className="w-8 h-8 text-primary" />
+            </div>
+            <CardTitle className="text-2xl">Knowledge Base</CardTitle>
+            <CardDescription className="text-base mt-2">
+              Store your brand documents, ICP profiles, and voice guidelines to generate personalized scripts that match your unique voice.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p className="text-muted-foreground mb-6">
+              Sign in to create and manage your personal Knowledge Base. Your documents will be used by the AI to generate scripts tailored specifically to your brand.
+            </p>
+            <Button 
+              onClick={() => window.location.href = "/api/login"}
+              className="gap-2"
+              data-testid="button-login-knowledge-base"
+            >
+              <LogIn className="w-4 h-4" />
+              Sign In to Get Started
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   const createMutation = useMutation({
     mutationFn: async (data: typeof formData) => {

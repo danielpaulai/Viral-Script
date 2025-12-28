@@ -2,6 +2,9 @@ import { pgTable, text, varchar, timestamp, jsonb } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
+// Export auth models for Replit Auth integration
+export * from "./models/auth";
+
 // Script Categories
 export const scriptCategories = [
   { id: "content_creation", name: "Content Creation & Strategy", description: "Content workflows, filming systems, creator productivity" },

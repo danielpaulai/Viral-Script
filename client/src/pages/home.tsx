@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/tooltip";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/use-auth";
 import { apiRequest } from "@/lib/queryClient";
 import {
   scriptCategories,
@@ -76,6 +77,7 @@ const platformWordTargets: Record<string, { min: number; max: number; label: str
 
 export default function Home() {
   const { toast } = useToast();
+  const { isAuthenticated } = useAuth();
   const [generatedScript, setGeneratedScript] = useState<GeneratedScript | null>(null);
   const [activePreset, setActivePreset] = useState<string | null>(null);
   const [deepResearch, setDeepResearch] = useState(false);
@@ -124,6 +126,7 @@ export default function Home() {
 
   const { data: knowledgeBaseDocs = [] } = useQuery<any[]>({
     queryKey: ["/api/knowledge-base"],
+    enabled: isAuthenticated, // Only fetch if authenticated
   });
 
   const generateMutation = useMutation({
@@ -600,19 +603,32 @@ export default function Home() {
                 <div>
                   <p className="text-sm font-medium text-white">Use Knowledge Base</p>
                   <p className="text-[10px] text-muted-foreground">
-                    {knowledgeBaseDocs.length > 0 
-                      ? `${knowledgeBaseDocs.length} docs loaded - AI uses your brand voice`
-                      : "Add docs in Knowledge Base to enable"
+                    {!isAuthenticated 
+                      ? "Sign in to use your personalized Knowledge Base"
+                      : knowledgeBaseDocs.length > 0 
+                        ? `${knowledgeBaseDocs.length} docs loaded - AI uses your brand voice`
+                        : "Add docs in Knowledge Base to enable"
                     }
                   </p>
                 </div>
               </div>
-              <Switch
-                checked={useKnowledgeBase}
-                onCheckedChange={setUseKnowledgeBase}
-                disabled={knowledgeBaseDocs.length === 0}
-                data-testid="switch-knowledge-base"
-              />
+              {!isAuthenticated ? (
+                <Button 
+                  size="sm" 
+                  variant="outline" 
+                  onClick={() => window.location.href = "/api/login"}
+                  data-testid="button-login-kb-toggle"
+                >
+                  Sign In
+                </Button>
+              ) : (
+                <Switch
+                  checked={useKnowledgeBase}
+                  onCheckedChange={setUseKnowledgeBase}
+                  disabled={knowledgeBaseDocs.length === 0}
+                  data-testid="switch-knowledge-base"
+                />
+              )}
             </div>
           </CollapsibleContent>
         </Collapsible>

@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { randomUUID } from "crypto";
 import OpenAI from "openai";
+import { setupAuth, isAuthenticated, registerAuthRoutes } from "./replit_integrations/auth";
 import {
   scriptCategories,
   viralHooks,
@@ -618,6 +619,9 @@ export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
+  // Setup Replit Auth (MUST be before other routes)
+  await setupAuth(app);
+  registerAuthRoutes(app);
   
   app.get("/api/ctas", (req, res) => {
     res.json({
@@ -626,13 +630,15 @@ export async function registerRoutes(
     });
   });
 
-  app.post("/api/scripts/generate", async (req, res) => {
+  app.post("/api/scripts/generate", async (req: any, res) => {
     try {
       const params: ScriptParameters = req.body;
       
       let knowledgeBaseDocs: KnowledgeBaseDoc[] = [];
       if (params.useKnowledgeBase) {
-        knowledgeBaseDocs = await storage.getKnowledgeBaseDocs();
+        // Get user-specific knowledge base if authenticated
+        const userId = req.user?.claims?.sub;
+        knowledgeBaseDocs = await storage.getKnowledgeBaseDocs(userId);
       }
       
       const generatedScript = await generateScriptWithAI(params, knowledgeBaseDocs);
@@ -799,20 +805,27 @@ export async function registerRoutes(
     });
   });
 
-  app.get("/api/knowledge-base", async (req, res) => {
+  // Knowledge Base routes - require authentication for user-specific documents
+  app.get("/api/knowledge-base", isAuthenticated, async (req: any, res) => {
     try {
-      const docs = await storage.getKnowledgeBaseDocs();
+      const userId = req.user?.claims?.sub;
+      const docs = await storage.getKnowledgeBaseDocs(userId);
       res.json(docs);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch knowledge base documents" });
     }
   });
 
-  app.get("/api/knowledge-base/:id", async (req, res) => {
+  app.get("/api/knowledge-base/:id", isAuthenticated, async (req: any, res) => {
     try {
       const doc = await storage.getKnowledgeBaseDoc(req.params.id);
       if (!doc) {
         return res.status(404).json({ error: "Document not found" });
+      }
+      // Check ownership
+      const userId = req.user?.claims?.sub;
+      if (doc.userId && doc.userId !== userId) {
+        return res.status(403).json({ error: "Access denied" });
       }
       res.json(doc);
     } catch (error) {
@@ -820,13 +833,15 @@ export async function registerRoutes(
     }
   });
 
-  app.post("/api/knowledge-base", async (req, res) => {
+  app.post("/api/knowledge-base", isAuthenticated, async (req: any, res) => {
     try {
+      const userId = req.user?.claims?.sub;
       const { type, title, content, summary, tags } = req.body;
       if (!type || !title || !content) {
         return res.status(400).json({ error: "Type, title, and content are required" });
       }
       const doc = await storage.createKnowledgeBaseDoc({ 
+        userId,
         type, 
         title, 
         content, 
@@ -839,25 +854,37 @@ export async function registerRoutes(
     }
   });
 
-  app.patch("/api/knowledge-base/:id", async (req, res) => {
+  app.patch("/api/knowledge-base/:id", isAuthenticated, async (req: any, res) => {
     try {
-      const updates = req.body;
-      const doc = await storage.updateKnowledgeBaseDoc(req.params.id, updates);
-      if (!doc) {
+      const userId = req.user?.claims?.sub;
+      const existingDoc = await storage.getKnowledgeBaseDoc(req.params.id);
+      if (!existingDoc) {
         return res.status(404).json({ error: "Document not found" });
       }
+      // Check ownership
+      if (existingDoc.userId && existingDoc.userId !== userId) {
+        return res.status(403).json({ error: "Access denied" });
+      }
+      const updates = req.body;
+      const doc = await storage.updateKnowledgeBaseDoc(req.params.id, updates);
       res.json(doc);
     } catch (error) {
       res.status(500).json({ error: "Failed to update document" });
     }
   });
 
-  app.delete("/api/knowledge-base/:id", async (req, res) => {
+  app.delete("/api/knowledge-base/:id", isAuthenticated, async (req: any, res) => {
     try {
-      const deleted = await storage.deleteKnowledgeBaseDoc(req.params.id);
-      if (!deleted) {
+      const userId = req.user?.claims?.sub;
+      const existingDoc = await storage.getKnowledgeBaseDoc(req.params.id);
+      if (!existingDoc) {
         return res.status(404).json({ error: "Document not found" });
       }
+      // Check ownership
+      if (existingDoc.userId && existingDoc.userId !== userId) {
+        return res.status(403).json({ error: "Access denied" });
+      }
+      const deleted = await storage.deleteKnowledgeBaseDoc(req.params.id);
       res.json({ success: true });
     } catch (error) {
       res.status(500).json({ error: "Failed to delete document" });
