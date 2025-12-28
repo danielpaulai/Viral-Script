@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { 
   Zap, 
   FileText, 
@@ -12,7 +13,13 @@ import {
   ChevronDown,
   Sparkles,
   Menu,
-  X
+  X,
+  Users,
+  Briefcase,
+  Quote,
+  Check,
+  XCircle,
+  Star
 } from "lucide-react";
 import { Link } from "wouter";
 import { pricingTiers } from "@shared/schema";
@@ -24,7 +31,27 @@ import smartScriptImg from "@assets/Gemini_Generated_Image_33o45v33o45v33o4_(1)_
 import knowledgeBaseImg from "@assets/Gemini_Generated_Image_zqsvjzqsvjzqsvjz_1766959397993.jpeg";
 import voiceDnaImg from "@assets/Gemini_Generated_Image_do72nvdo72nvdo72_(1)_1766959412860.jpeg";
 import deepResearchImg from "@assets/Gemini_Generated_Image_c69af2c69af2c69a_1766959451509.jpeg";
-import hemingwayImg from "@assets/stock_images/writer_working_on_sc_9244fd3f.jpg";
+import hemingwayImg from "@assets/generated_images/hemingway_script_analysis_visualization.png";
+import { SiTiktok, SiYoutube, SiInstagram } from "react-icons/si";
+
+// Image with loading skeleton
+function ImageWithSkeleton({ src, alt, className }: { src: string; alt: string; className?: string }) {
+  const [isLoaded, setIsLoaded] = useState(false);
+  
+  return (
+    <>
+      {!isLoaded && (
+        <Skeleton className="absolute inset-0 w-full h-full bg-white/5" />
+      )}
+      <img 
+        src={src}
+        alt={alt}
+        className={`${className} ${isLoaded ? 'opacity-100' : 'opacity-0'} transition-opacity duration-300`}
+        onLoad={() => setIsLoaded(true)}
+      />
+    </>
+  );
+}
 
 // Animated Typing Text Component
 function TypingText({ words, className }: { words: string[]; className?: string }) {
@@ -172,11 +199,107 @@ const faqs = [
   }
 ];
 
+const testimonials = [
+  {
+    name: "Sarah Chen",
+    handle: "@sarahcreates",
+    role: "Content Creator",
+    followers: "1.2M followers",
+    avatar: "SC",
+    quote: "Went from struggling for hours to write one script to generating 10 viral-worthy hooks in minutes. My engagement tripled in the first month.",
+    metric: "3x engagement"
+  },
+  {
+    name: "Marcus Johnson",
+    handle: "@marcusjfit",
+    role: "Fitness Coach",
+    followers: "450K followers",
+    avatar: "MJ",
+    quote: "The Hemingway analysis is a game-changer. Every script reads at the perfect level for social. My save rate is through the roof.",
+    metric: "5x save rate"
+  },
+  {
+    name: "Elena Rodriguez",
+    handle: "@elenavlogs",
+    role: "Travel Creator",
+    followers: "890K followers",
+    avatar: "ER",
+    quote: "Finally, an AI that actually sounds like ME. The Voice DNA feature learned my style perfectly. My audience can't tell the difference.",
+    metric: "2x posting frequency"
+  }
+];
+
+const useCases = [
+  {
+    icon: Users,
+    title: "Content Creators",
+    description: "Generate scroll-stopping scripts that match your voice. Post more consistently without burning out.",
+    benefit: "10x faster content creation"
+  },
+  {
+    icon: Briefcase,
+    title: "Business Owners",
+    description: "Create thought leadership content that builds authority. Turn expertise into engaging short-form videos.",
+    benefit: "Build audience on autopilot"
+  },
+  {
+    icon: Target,
+    title: "Marketing Teams",
+    description: "Scale video content production while maintaining brand voice. Knowledge Base ensures consistency across creators.",
+    benefit: "Consistent brand messaging"
+  },
+  {
+    icon: Mic,
+    title: "Coaches & Consultants",
+    description: "Share your expertise in bite-sized, engaging formats. Deep Research adds credibility with real stats.",
+    benefit: "Position as thought leader"
+  }
+];
+
+const comparisonFeatures = [
+  { feature: "Short-form video optimized", scriptPro: true, chatgpt: false, other: false },
+  { feature: "50+ proven viral hooks", scriptPro: true, chatgpt: false, other: false },
+  { feature: "Grade 4-6 readability", scriptPro: true, chatgpt: false, other: false },
+  { feature: "Voice DNA matching", scriptPro: true, chatgpt: false, other: false },
+  { feature: "Knowledge Base (brand docs)", scriptPro: true, chatgpt: false, other: true },
+  { feature: "Production notes & B-roll", scriptPro: true, chatgpt: false, other: false },
+  { feature: "Hemingway analysis", scriptPro: true, chatgpt: false, other: false },
+  { feature: "Platform-specific targeting", scriptPro: true, chatgpt: false, other: true },
+  { feature: "Deep research mode", scriptPro: true, chatgpt: true, other: false },
+  { feature: "CTA library (30+)", scriptPro: true, chatgpt: false, other: false },
+];
+
+// Scroll animation hook
+function useScrollAnimation() {
+  const [visibleSections, setVisibleSections] = useState<Set<string>>(new Set());
+  
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setVisibleSections((prev) => new Set([...prev, entry.target.id]));
+          }
+        });
+      },
+      { threshold: 0.1, rootMargin: "0px 0px -50px 0px" }
+    );
+    
+    const sections = document.querySelectorAll('[data-animate]');
+    sections.forEach((section) => observer.observe(section));
+    
+    return () => observer.disconnect();
+  }, []);
+  
+  return visibleSections;
+}
+
 export default function Landing() {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [selectedFeature, setSelectedFeature] = useState<number | null>(null);
+  const visibleSections = useScrollAnimation();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -303,7 +426,7 @@ export default function Landing() {
       </section>
 
       {/* Stats Section */}
-      <section className="relative z-20 -mt-24 px-6 mb-24">
+      <section className="relative z-20 -mt-24 px-6 mb-16">
         <div className="max-w-5xl mx-auto">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {stats.map((stat, idx) => (
@@ -316,6 +439,33 @@ export default function Landing() {
                 <p className="text-[10px] text-[#b8bec1] uppercase tracking-widest mt-1 group-hover:text-primary transition-colors">{stat.label}</p>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Platform Logos */}
+      <section 
+        id="platforms" 
+        data-animate
+        className={`py-12 relative z-20 transition-all duration-700 ${visibleSections.has('platforms') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
+      >
+        <div className="max-w-4xl mx-auto px-6">
+          <p className="text-center text-xs uppercase tracking-widest text-[#b8bec1]/60 mb-6">
+            Optimized for all platforms
+          </p>
+          <div className="flex items-center justify-center gap-12 flex-wrap">
+            <div className="flex items-center gap-2 text-[#b8bec1]/60 hover:text-primary transition-colors" data-testid="platform-tiktok">
+              <SiTiktok className="w-6 h-6" />
+              <span className="text-sm font-medium">TikTok</span>
+            </div>
+            <div className="flex items-center gap-2 text-[#b8bec1]/60 hover:text-primary transition-colors" data-testid="platform-youtube">
+              <SiYoutube className="w-6 h-6" />
+              <span className="text-sm font-medium">Shorts</span>
+            </div>
+            <div className="flex items-center gap-2 text-[#b8bec1]/60 hover:text-primary transition-colors" data-testid="platform-instagram">
+              <SiInstagram className="w-6 h-6" />
+              <span className="text-sm font-medium">Reels</span>
+            </div>
           </div>
         </div>
       </section>
@@ -336,8 +486,41 @@ export default function Landing() {
             From hook to CTA, we handle the script. You handle the camera.
           </p>
 
-          {/* Fanned Cards Row 1 */}
-          <div className="sm:h-[500px] h-[400px] flex relative items-center justify-center mb-8" style={{ perspective: '1200px' }}>
+          {/* Mobile: Grid Layout */}
+          <div className="md:hidden grid grid-cols-1 sm:grid-cols-2 gap-6">
+            {features.map((feature, idx) => (
+              <div 
+                key={idx}
+                onClick={() => setSelectedFeature(idx)}
+                className="aspect-[4/5] rounded-2xl bg-neutral-900/40 ring-1 ring-white/10 overflow-hidden shadow-2xl cursor-pointer group relative"
+                data-testid={`feature-card-mobile-${idx}`}
+              >
+                <ImageWithSkeleton 
+                  alt={feature.title}
+                  className="absolute inset-0 size-full object-cover w-full h-full group-hover:scale-110 transition-transform duration-500"
+                  src={feature.image}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+                <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="w-8 h-8 rounded-full bg-primary/80 flex items-center justify-center animate-pulse">
+                    <ArrowRight className="w-4 h-4 text-white" />
+                  </div>
+                </div>
+                <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between gap-2">
+                  <div>
+                    <p className="text-sm font-medium tracking-tight text-white">{feature.title}</p>
+                    <p className="text-xs text-neutral-300">{feature.description}</p>
+                  </div>
+                  <div className="inline-flex items-center gap-1 rounded-full bg-primary/20 px-2 py-1 text-[10px] text-primary ring-1 ring-primary/30 flex-shrink-0">
+                    <feature.icon className="h-3.5 w-3.5" />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Desktop: Fanned Cards Row 1 */}
+          <div className="hidden md:flex h-[500px] relative items-center justify-center mb-8" style={{ perspective: '1200px' }}>
             {features.slice(0, 3).map((feature, idx) => {
               const transforms = [
                 'translateX(-220px) translateY(0px) rotateZ(-12deg) scale(0.95)',
@@ -355,7 +538,7 @@ export default function Landing() {
                 <div 
                   key={idx}
                   onClick={() => setSelectedFeature(idx)}
-                  className="absolute w-56 sm:w-72 aspect-[3/4] rounded-2xl bg-neutral-900/40 ring-1 ring-white/10 overflow-hidden shadow-2xl hover:scale-105 transition-transform duration-300 cursor-pointer group"
+                  className="absolute w-72 aspect-[3/4] rounded-2xl bg-neutral-900/40 ring-1 ring-white/10 overflow-hidden shadow-2xl hover:scale-105 transition-transform duration-300 cursor-pointer group"
                   style={{ 
                     transform: transforms[idx], 
                     zIndex: zIndexes[idx],
@@ -363,13 +546,12 @@ export default function Landing() {
                   }}
                   data-testid={`feature-card-${idx}`}
                 >
-                  <img 
+                  <ImageWithSkeleton 
                     alt={feature.title}
                     className="absolute inset-0 size-full object-cover w-full h-auto group-hover:scale-110 transition-transform duration-500"
                     src={feature.image}
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
-                  {/* Click indicator */}
                   <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
                     <div className="w-8 h-8 rounded-full bg-primary/80 flex items-center justify-center animate-pulse">
                       <ArrowRight className="w-4 h-4 text-white" />
@@ -389,8 +571,8 @@ export default function Landing() {
             })}
           </div>
 
-          {/* Fanned Cards Row 2 */}
-          <div className="sm:h-[500px] h-[400px] flex relative items-center justify-center" style={{ perspective: '1200px' }}>
+          {/* Desktop: Fanned Cards Row 2 */}
+          <div className="hidden md:flex h-[500px] relative items-center justify-center" style={{ perspective: '1200px' }}>
             {features.slice(3, 6).map((feature, idx) => {
               const transforms = [
                 'translateX(-220px) translateY(0px) rotateZ(-12deg) scale(0.95)',
@@ -408,7 +590,7 @@ export default function Landing() {
                 <div 
                   key={idx + 3}
                   onClick={() => setSelectedFeature(idx + 3)}
-                  className="absolute w-56 sm:w-72 aspect-[3/4] rounded-2xl bg-neutral-900/40 ring-1 ring-white/10 overflow-hidden shadow-2xl hover:scale-105 transition-transform duration-300 cursor-pointer group"
+                  className="absolute w-72 aspect-[3/4] rounded-2xl bg-neutral-900/40 ring-1 ring-white/10 overflow-hidden shadow-2xl hover:scale-105 transition-transform duration-300 cursor-pointer group"
                   style={{ 
                     transform: transforms[idx], 
                     zIndex: zIndexes[idx],
@@ -416,13 +598,12 @@ export default function Landing() {
                   }}
                   data-testid={`feature-card-${idx + 3}`}
                 >
-                  <img 
+                  <ImageWithSkeleton 
                     alt={feature.title}
                     className="absolute inset-0 size-full object-cover w-full h-auto group-hover:scale-110 transition-transform duration-500"
                     src={feature.image}
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
-                  {/* Click indicator */}
                   <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
                     <div className="w-8 h-8 rounded-full bg-primary/80 flex items-center justify-center animate-pulse">
                       <ArrowRight className="w-4 h-4 text-white" />
@@ -472,7 +653,7 @@ export default function Landing() {
 
             {/* Feature Image */}
             <div className="relative h-48 overflow-hidden">
-              <img 
+              <ImageWithSkeleton 
                 src={features[selectedFeature].image}
                 alt={features[selectedFeature].title}
                 className="w-full h-full object-cover"
@@ -544,6 +725,55 @@ export default function Landing() {
         }
       `}</style>
 
+      {/* Testimonials Section */}
+      <section 
+        id="testimonials" 
+        data-animate
+        className={`py-24 relative overflow-hidden transition-all duration-700 ${visibleSections.has('testimonials') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
+      >
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+          <div className="flex items-center gap-2 mb-4 justify-center">
+            <span className="h-px w-8 bg-primary" />
+            <h2 className="text-xs font-semibold text-primary tracking-widest uppercase">Testimonials</h2>
+            <span className="h-px w-8 bg-primary" />
+          </div>
+          <h3 className="text-3xl md:text-4xl font-semibold text-white mb-12 tracking-tight text-center">
+            Creators love Script.Pro
+          </h3>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {testimonials.map((testimonial, idx) => (
+              <div 
+                key={idx}
+                className="p-6 rounded-2xl bg-[rgba(20,20,22,0.4)] backdrop-blur-lg border border-white/[0.06] hover:border-primary/30 transition-all"
+                data-testid={`testimonial-${idx}`}
+              >
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-semibold text-sm">
+                    {testimonial.avatar}
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-white">{testimonial.name}</p>
+                    <p className="text-xs text-[#b8bec1]">{testimonial.handle}</p>
+                  </div>
+                </div>
+                <Quote className="w-6 h-6 text-primary/30 mb-2" />
+                <p className="text-sm text-[#b8bec1] leading-relaxed mb-4">
+                  {testimonial.quote}
+                </p>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-[#b8bec1]">{testimonial.followers}</span>
+                  <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-green-500/10 text-green-400 text-xs font-medium">
+                    <TrendingUp className="w-3 h-3" />
+                    {testimonial.metric}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* How It Works */}
       <section id="method" className="py-24 relative overflow-hidden">
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
@@ -610,6 +840,47 @@ export default function Landing() {
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Use Cases Section */}
+      <section 
+        id="use-cases" 
+        data-animate
+        className={`py-24 relative overflow-hidden transition-all duration-700 ${visibleSections.has('use-cases') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
+      >
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+          <div className="flex items-center gap-2 mb-4 justify-center">
+            <span className="h-px w-8 bg-primary" />
+            <h2 className="text-xs font-semibold text-primary tracking-widest uppercase">Use Cases</h2>
+            <span className="h-px w-8 bg-primary" />
+          </div>
+          <h3 className="text-3xl md:text-4xl font-semibold text-white mb-6 tracking-tight text-center">
+            How creators use Script.Pro
+          </h3>
+          <p className="text-[#b8bec1] text-sm leading-relaxed mb-12 text-center max-w-xl mx-auto">
+            Whether you're building a personal brand or scaling content for clients.
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {useCases.map((useCase, idx) => (
+              <div 
+                key={idx}
+                className="p-6 rounded-2xl bg-[rgba(20,20,22,0.4)] backdrop-blur-lg border border-white/[0.06] hover:border-primary/30 transition-all group"
+                data-testid={`usecase-${idx}`}
+              >
+                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
+                  <useCase.icon className="w-5 h-5 text-primary" />
+                </div>
+                <h4 className="text-sm font-semibold text-white mb-2">{useCase.title}</h4>
+                <p className="text-xs text-[#b8bec1] leading-relaxed mb-4">{useCase.description}</p>
+                <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-primary/10 text-primary text-xs">
+                  <Zap className="w-3 h-3" />
+                  {useCase.benefit}
+                </span>
+              </div>
+            ))}
           </div>
         </div>
       </section>
@@ -722,6 +993,78 @@ export default function Landing() {
                 </div>
               )
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Comparison Table */}
+      <section 
+        id="comparison" 
+        data-animate
+        className={`py-24 relative overflow-hidden transition-all duration-700 ${visibleSections.has('comparison') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
+      >
+        <div className="max-w-4xl mx-auto px-6">
+          <div className="flex items-center gap-2 mb-4 justify-center">
+            <span className="h-px w-8 bg-primary" />
+            <h2 className="text-xs font-semibold text-primary tracking-widest uppercase">Compare</h2>
+            <span className="h-px w-8 bg-primary" />
+          </div>
+          <h3 className="text-3xl md:text-4xl font-semibold text-white mb-6 tracking-tight text-center">
+            Why Script.Pro vs ChatGPT?
+          </h3>
+          <p className="text-[#b8bec1] text-sm leading-relaxed mb-12 text-center max-w-xl mx-auto">
+            Generic AI isn't built for short-form video. We are.
+          </p>
+
+          <div className="rounded-2xl border border-white/[0.06] overflow-hidden bg-[rgba(20,20,22,0.4)] backdrop-blur-lg">
+            {/* Table Header */}
+            <div className="grid grid-cols-4 gap-4 p-4 border-b border-white/[0.06] bg-white/5">
+              <div className="text-xs font-medium text-[#b8bec1]">Feature</div>
+              <div className="text-xs font-medium text-primary text-center">Script.Pro</div>
+              <div className="text-xs font-medium text-[#b8bec1] text-center">ChatGPT</div>
+              <div className="text-xs font-medium text-[#b8bec1] text-center">Other Tools</div>
+            </div>
+            
+            {/* Table Rows */}
+            {comparisonFeatures.map((row, idx) => (
+              <div 
+                key={idx}
+                className={`grid grid-cols-4 gap-4 p-4 ${idx !== comparisonFeatures.length - 1 ? 'border-b border-white/[0.06]' : ''}`}
+                data-testid={`comparison-row-${idx}`}
+              >
+                <div className="text-sm text-white">{row.feature}</div>
+                <div className="flex justify-center">
+                  {row.scriptPro ? (
+                    <Check className="w-5 h-5 text-green-400" />
+                  ) : (
+                    <XCircle className="w-5 h-5 text-red-400/50" />
+                  )}
+                </div>
+                <div className="flex justify-center">
+                  {row.chatgpt ? (
+                    <Check className="w-5 h-5 text-green-400" />
+                  ) : (
+                    <XCircle className="w-5 h-5 text-red-400/50" />
+                  )}
+                </div>
+                <div className="flex justify-center">
+                  {row.other ? (
+                    <Check className="w-5 h-5 text-green-400" />
+                  ) : (
+                    <XCircle className="w-5 h-5 text-red-400/50" />
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-8 text-center">
+            <Link href="/login">
+              <Button className="gap-2 shadow-[0_0_20px_-5px_rgba(233,13,65,0.3)]" data-testid="button-compare-cta">
+                Try Script.Pro Free
+                <ArrowRight className="w-4 h-4" />
+              </Button>
+            </Link>
           </div>
         </div>
       </section>
