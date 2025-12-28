@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useRef, useCallback } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,11 +9,24 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, FileText, Trash2, Edit2, User, Target, MessageSquare, Mic, Box, Layers, BookOpen, FileQuestion, Loader2, LogIn } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
+import { Plus, FileText, Trash2, Edit2, User, Target, MessageSquare, Mic, Box, Layers, BookOpen, FileQuestion, Loader2, LogIn, Upload, X, CheckCircle2, AlertCircle, File } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
 import { isUnauthorizedError } from "@/lib/auth-utils";
+
+const MAX_FILES = 10;
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+const SUPPORTED_EXTENSIONS = ['.pdf', '.png', '.jpg', '.jpeg', '.gif', '.webp', '.docx', '.txt'];
+
+interface UploadResult {
+  filename: string;
+  success: boolean;
+  docId?: string;
+  error?: string;
+  source?: string;
+}
 
 const knowledgeBaseTypes = [
   { id: "icp", name: "Ideal Customer Profile", icon: User, description: "Define your target audience demographics, psychographics, and pain points" },
@@ -47,6 +60,11 @@ export default function KnowledgeBase() {
     summary: "",
     tags: "",
   });
+  const [isDragOver, setIsDragOver] = useState(false);
+  const [uploadQueue, setUploadQueue] = useState<File[]>([]);
+  const [uploadResults, setUploadResults] = useState<UploadResult[]>([]);
+  const [showUploadPanel, setShowUploadPanel] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const { user, isLoading: authLoading, isAuthenticated } = useAuth();
 
@@ -144,6 +162,115 @@ export default function KnowledgeBase() {
     },
   });
 
+  const uploadMutation = useMutation({
+    mutationFn: async (files: File[]) => {
+      const formData = new FormData();
+      files.forEach((file) => formData.append('files', file));
+      const res = await fetch('/api/knowledge-base/upload', {
+        method: 'POST',
+        body: formData,
+        credentials: 'include',
+      });
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.error || 'Upload failed');
+      }
+      return res.json();
+    },
+    onSuccess: (data) => {
+      setUploadResults(data.results);
+      queryClient.invalidateQueries({ queryKey: ["/api/knowledge-base"] });
+      const successCount = data.results.filter((r: UploadResult) => r.success).length;
+      toast({ 
+        title: "Upload complete", 
+        description: data.message,
+      });
+    },
+    onError: (error: Error) => {
+      toast({ title: "Upload failed", description: error.message, variant: "destructive" });
+    },
+  });
+
+  const validateFile = useCallback((file: File): string | null => {
+    const ext = '.' + file.name.split('.').pop()?.toLowerCase();
+    if (!SUPPORTED_EXTENSIONS.includes(ext)) {
+      return `Unsupported file type: ${ext}`;
+    }
+    if (file.size > MAX_FILE_SIZE) {
+      return `File too large: ${(file.size / 1024 / 1024).toFixed(1)}MB (max 10MB)`;
+    }
+    return null;
+  }, []);
+
+  const handleFileSelect = useCallback((files: FileList | null) => {
+    if (!files) return;
+    
+    const fileArray = Array.from(files);
+    const validFiles: File[] = [];
+    const errors: string[] = [];
+    
+    for (const file of fileArray) {
+      if (uploadQueue.length + validFiles.length >= MAX_FILES) {
+        errors.push(`Maximum ${MAX_FILES} files allowed`);
+        break;
+      }
+      const error = validateFile(file);
+      if (error) {
+        errors.push(`${file.name}: ${error}`);
+      } else {
+        validFiles.push(file);
+      }
+    }
+    
+    if (errors.length > 0) {
+      toast({ 
+        title: "Some files were skipped", 
+        description: errors.slice(0, 3).join('\n'),
+        variant: "destructive",
+      });
+    }
+    
+    if (validFiles.length > 0) {
+      setUploadQueue((prev) => [...prev, ...validFiles]);
+      setShowUploadPanel(true);
+      setUploadResults([]);
+    }
+  }, [uploadQueue.length, validateFile, toast]);
+
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(true);
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+  }, []);
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+    handleFileSelect(e.dataTransfer.files);
+  }, [handleFileSelect]);
+
+  const removeFromQueue = useCallback((index: number) => {
+    setUploadQueue((prev) => prev.filter((_, i) => i !== index));
+  }, []);
+
+  const startUpload = useCallback(() => {
+    if (uploadQueue.length === 0) return;
+    uploadMutation.mutate(uploadQueue);
+  }, [uploadQueue, uploadMutation]);
+
+  const clearUploadPanel = useCallback(() => {
+    setUploadQueue([]);
+    setUploadResults([]);
+    setShowUploadPanel(false);
+  }, []);
+
   const resetForm = () => {
     setFormData({ type: "icp", title: "", content: "", summary: "", tags: "" });
   };
@@ -193,13 +320,31 @@ export default function KnowledgeBase() {
   return (
     <div className="min-h-full p-6 bg-background">
       <div className="max-w-6xl mx-auto">
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center justify-between gap-4 mb-8 flex-wrap">
           <div>
             <h1 className="text-3xl font-bold" data-testid="text-kb-title">Knowledge Base</h1>
             <p className="text-muted-foreground mt-1">
               Store your brand documents so AI generates scripts that sound like you
             </p>
           </div>
+          <div className="flex items-center gap-2">
+            <Button 
+              variant="outline"
+              onClick={() => fileInputRef.current?.click()}
+              data-testid="button-upload-files"
+            >
+              <Upload className="h-4 w-4 mr-2" />
+              Upload Files
+            </Button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              multiple
+              accept=".pdf,.png,.jpg,.jpeg,.gif,.webp,.docx,.txt"
+              onChange={(e) => handleFileSelect(e.target.files)}
+              className="hidden"
+              data-testid="input-file-upload"
+            />
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
               <Button onClick={() => openNewDialog()} data-testid="button-add-document">
@@ -305,7 +450,137 @@ export default function KnowledgeBase() {
               </form>
             </DialogContent>
           </Dialog>
+          </div>
         </div>
+
+        {/* Drag and Drop Zone */}
+        <div
+          className={`mb-6 border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
+            isDragOver 
+              ? 'border-primary bg-primary/5' 
+              : 'border-muted-foreground/25 hover:border-muted-foreground/50'
+          }`}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
+          data-testid="dropzone-files"
+        >
+          <Upload className={`h-10 w-10 mx-auto mb-3 ${isDragOver ? 'text-primary' : 'text-muted-foreground'}`} />
+          <p className="text-lg font-medium mb-1">
+            {isDragOver ? 'Drop files here' : 'Drag and drop files here'}
+          </p>
+          <p className="text-sm text-muted-foreground mb-3">
+            Supports PDF, DOCX, images (with OCR), and text files. Up to 10 files, 10MB each.
+          </p>
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => fileInputRef.current?.click()}
+            data-testid="button-browse-files"
+          >
+            Browse Files
+          </Button>
+        </div>
+
+        {/* Upload Panel */}
+        {showUploadPanel && (
+          <Card className="mb-6" data-testid="card-upload-panel">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between gap-3">
+                <CardTitle className="text-lg">
+                  {uploadMutation.isPending ? 'Processing Files...' : 'Files to Upload'}
+                </CardTitle>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  onClick={clearUploadPanel}
+                  disabled={uploadMutation.isPending}
+                  data-testid="button-close-upload"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {uploadMutation.isPending && (
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span className="text-sm text-muted-foreground">
+                      Extracting text from files (this may take a moment for OCR)...
+                    </span>
+                  </div>
+                  <Progress value={50} className="h-2" />
+                </div>
+              )}
+
+              <div className="space-y-2">
+                {uploadQueue.map((file, index) => {
+                  const result = uploadResults.find((r) => r.filename === file.name);
+                  return (
+                    <div 
+                      key={index} 
+                      className="flex items-center justify-between gap-3 p-3 rounded-md bg-muted/50"
+                      data-testid={`upload-item-${index}`}
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        <File className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium truncate">{file.name}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {(file.size / 1024).toFixed(1)} KB
+                            {result?.source && ` - via ${result.source}`}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        {result ? (
+                          result.success ? (
+                            <CheckCircle2 className="h-5 w-5 text-green-500" />
+                          ) : (
+                            <div className="flex items-center gap-1 text-destructive">
+                              <AlertCircle className="h-5 w-5" />
+                              <span className="text-xs">{result.error}</span>
+                            </div>
+                          )
+                        ) : !uploadMutation.isPending ? (
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            onClick={() => removeFromQueue(index)}
+                            data-testid={`button-remove-${index}`}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        ) : null}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {!uploadMutation.isPending && uploadResults.length === 0 && uploadQueue.length > 0 && (
+                <div className="flex justify-end gap-3">
+                  <Button variant="outline" onClick={clearUploadPanel} data-testid="button-cancel-upload">
+                    Cancel
+                  </Button>
+                  <Button onClick={startUpload} data-testid="button-start-upload">
+                    <Upload className="h-4 w-4 mr-2" />
+                    Extract & Upload ({uploadQueue.length} file{uploadQueue.length !== 1 ? 's' : ''})
+                  </Button>
+                </div>
+              )}
+
+              {uploadResults.length > 0 && (
+                <div className="flex justify-end">
+                  <Button onClick={clearUploadPanel} data-testid="button-done-upload">
+                    Done
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
 
         <Tabs defaultValue="all" className="space-y-6">
           <TabsList className="flex flex-wrap gap-1">

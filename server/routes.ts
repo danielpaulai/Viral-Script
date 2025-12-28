@@ -3,7 +3,27 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { randomUUID } from "crypto";
 import OpenAI from "openai";
+import multer from "multer";
 import { setupAuth, isAuthenticated, registerAuthRoutes } from "./replit_integrations/auth";
+import { extractTextFromFile, truncateText, SUPPORTED_MIME_TYPES, MAX_FILE_SIZE, MAX_FILES } from "./ocr-utils";
+
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: MAX_FILE_SIZE,
+    files: MAX_FILES,
+  },
+  fileFilter: (req, file, cb) => {
+    if (SUPPORTED_MIME_TYPES.includes(file.mimetype) || 
+        file.originalname.toLowerCase().endsWith('.pdf') ||
+        file.originalname.toLowerCase().endsWith('.docx') ||
+        file.originalname.toLowerCase().endsWith('.txt')) {
+      cb(null, true);
+    } else {
+      cb(new Error(`Unsupported file type: ${file.mimetype}`));
+    }
+  },
+});
 import {
   scriptCategories,
   viralHooks,
@@ -901,6 +921,103 @@ export async function registerRoutes(
       res.json({ success: true });
     } catch (error) {
       res.status(500).json({ error: "Failed to delete document" });
+    }
+  });
+
+  // File upload with OCR for knowledge base
+  app.post("/api/knowledge-base/upload", isAuthenticated, (req: any, res, next) => {
+    upload.array('files', MAX_FILES)(req, res, (err: any) => {
+      if (err) {
+        if (err.code === 'LIMIT_FILE_SIZE') {
+          return res.status(400).json({ error: 'File too large. Maximum size is 10MB per file.' });
+        }
+        if (err.code === 'LIMIT_FILE_COUNT') {
+          return res.status(400).json({ error: `Too many files. Maximum is ${MAX_FILES} files.` });
+        }
+        if (err.message?.includes('Unsupported file type')) {
+          return res.status(400).json({ error: err.message });
+        }
+        return res.status(400).json({ error: err.message || 'File upload error' });
+      }
+      next();
+    });
+  }, async (req: any, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      if (!userId) {
+        return res.status(401).json({ error: "User not found" });
+      }
+
+      const files = req.files as Express.Multer.File[];
+      if (!files || files.length === 0) {
+        return res.status(400).json({ error: "No files uploaded" });
+      }
+
+      if (files.length > MAX_FILES) {
+        return res.status(400).json({ error: `Maximum ${MAX_FILES} files allowed` });
+      }
+
+      const results: Array<{
+        filename: string;
+        success: boolean;
+        docId?: string;
+        error?: string;
+        source?: string;
+      }> = [];
+
+      for (const file of files) {
+        try {
+          const extracted = await extractTextFromFile(
+            file.buffer,
+            file.mimetype,
+            file.originalname
+          );
+
+          const text = truncateText(extracted.text);
+          
+          if (!text || text.trim().length < 10) {
+            results.push({
+              filename: file.originalname,
+              success: false,
+              error: "Could not extract meaningful text from file",
+            });
+            continue;
+          }
+
+          // Create knowledge base document from extracted text
+          const doc = await storage.createKnowledgeBaseDoc({
+            userId,
+            type: "custom",
+            title: file.originalname.replace(/\.[^/.]+$/, ""),
+            content: text,
+            summary: `Extracted from ${file.originalname} via ${extracted.source}${extracted.confidence ? ` (${Math.round(extracted.confidence)}% confidence)` : ""}`,
+            tags: extracted.source,
+          });
+
+          results.push({
+            filename: file.originalname,
+            success: true,
+            docId: doc.id,
+            source: extracted.source,
+          });
+        } catch (fileError: any) {
+          console.error(`Error processing file ${file.originalname}:`, fileError);
+          results.push({
+            filename: file.originalname,
+            success: false,
+            error: fileError.message || "Failed to process file",
+          });
+        }
+      }
+
+      const successCount = results.filter((r) => r.success).length;
+      res.json({
+        message: `Successfully processed ${successCount} of ${files.length} files`,
+        results,
+      });
+    } catch (error: any) {
+      console.error("Upload error:", error);
+      res.status(500).json({ error: error.message || "Failed to process uploaded files" });
     }
   });
 
