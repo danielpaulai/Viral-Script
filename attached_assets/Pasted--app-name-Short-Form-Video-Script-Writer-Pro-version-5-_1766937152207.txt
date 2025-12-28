@@ -1,0 +1,523 @@
+{
+  "app_name": "Short-Form Video Script Writer Pro",
+  "version": "5.0",
+  "module": "Script Editor & Readability Analyzer",
+  "description": "Hemingway-style script editor with readability grading, AI suggestions, and structure-preserving edits",
+
+  "hemingway_methodology": {
+    "overview": {
+      "principle": "Lower grade level = more understandable prose. Complexity shouldn't block your message.",
+      "target_grade": "Grade 4-6 for viral short-form content (adult average is Grade 9)",
+      "note": "Low grade levels don't make writing childish - they make it clear and impactful"
+    },
+
+    "grade_level_scale": {
+      "grade_1_3": {
+        "label": "Very Easy",
+        "description": "Elementary level. Extremely simple.",
+        "rating": "Excellent for hooks and key statements",
+        "color": "Green"
+      },
+      "grade_4_6": {
+        "label": "Easy",
+        "description": "Middle school level. Clear and accessible.",
+        "rating": "IDEAL for short-form video scripts",
+        "color": "Green"
+      },
+      "grade_7_8": {
+        "label": "Fairly Easy",
+        "description": "8th grade level. Still good for most content.",
+        "rating": "Acceptable - consider simplifying",
+        "color": "Yellow"
+      },
+      "grade_9_10": {
+        "label": "Average",
+        "description": "High school level. Adult average.",
+        "rating": "Too complex for viral content - simplify",
+        "color": "Orange"
+      },
+      "grade_11_12": {
+        "label": "Fairly Difficult",
+        "description": "College prep level.",
+        "rating": "Too complex - needs significant editing",
+        "color": "Red"
+      },
+      "grade_13_plus": {
+        "label": "Difficult",
+        "description": "College level and above.",
+        "rating": "Way too complex - rewrite required",
+        "color": "Red"
+      }
+    },
+
+    "readability_formulas": {
+      "flesch_kincaid_grade": {
+        "formula": "0.39 × (total words / total sentences) + 11.8 × (total syllables / total words) - 15.59",
+        "description": "Most common grade level formula",
+        "target": "Below 6.0"
+      },
+      "flesch_reading_ease": {
+        "formula": "206.835 - 1.015 × (total words / total sentences) - 84.6 × (total syllables / total words)",
+        "scale": {
+          "90_100": "Very Easy (5th grade)",
+          "80_89": "Easy (6th grade)",
+          "70_79": "Fairly Easy (7th grade)",
+          "60_69": "Standard (8th-9th grade)",
+          "50_59": "Fairly Difficult (10th-12th)",
+          "30_49": "Difficult (College)",
+          "0_29": "Very Confusing (Graduate)"
+        },
+        "target": "Above 70"
+      },
+      "average_sentence_length": {
+        "ideal": "8-12 words per sentence for video scripts",
+        "maximum": "20 words (flag anything over)",
+        "description": "Shorter sentences = easier to speak and understand"
+      },
+      "average_word_length": {
+        "ideal": "4-5 characters per word",
+        "description": "Shorter words = simpler language"
+      }
+    },
+
+    "issue_categories": {
+      "very_hard_sentences": {
+        "id": "ISSUE001",
+        "color": "Red",
+        "icon": "🔴",
+        "description": "Sentences that are very hard to read",
+        "criteria": "30+ words OR grade level 12+",
+        "impact": "High - must fix",
+        "action": "Split into 2-3 shorter sentences or simplify significantly"
+      },
+      "hard_sentences": {
+        "id": "ISSUE002",
+        "color": "Yellow",
+        "icon": "🟡",
+        "description": "Sentences that are hard to read",
+        "criteria": "20-29 words OR grade level 10-11",
+        "impact": "Medium - should fix",
+        "action": "Consider splitting or removing unnecessary words"
+      },
+      "adverbs": {
+        "id": "ISSUE003",
+        "color": "Blue",
+        "icon": "🔵",
+        "description": "Adverbs that weaken the writing",
+        "criteria": "Words ending in -ly that can be removed",
+        "common_offenders": [
+          "really", "very", "extremely", "actually", "basically",
+          "literally", "honestly", "seriously", "totally", "completely",
+          "absolutely", "definitely", "certainly", "obviously", "clearly",
+          "simply", "just", "quite", "rather", "fairly"
+        ],
+        "impact": "Low-Medium - fix when possible",
+        "action": "Remove or replace with stronger verb",
+        "target": "0-1 adverbs per script"
+      },
+      "passive_voice": {
+        "id": "ISSUE004",
+        "color": "Green",
+        "icon": "🟢",
+        "description": "Passive voice constructions",
+        "criteria": "Form of 'to be' + past participle",
+        "patterns": [
+          "was [verb]ed", "were [verb]ed", "is [verb]ed", "are [verb]ed",
+          "has been [verb]ed", "have been [verb]ed", "will be [verb]ed",
+          "being [verb]ed", "been [verb]ed"
+        ],
+        "impact": "Medium - fix for energy",
+        "action": "Convert to active voice for more direct, punchy delivery",
+        "target": "0 passive constructions in scripts"
+      },
+      "complex_words": {
+        "id": "ISSUE005",
+        "color": "Purple",
+        "icon": "🟣",
+        "description": "Complex words with simpler alternatives",
+        "criteria": "3+ syllables with common simpler alternative",
+        "impact": "Medium - simplify when natural",
+        "action": "Replace with simpler word",
+        "examples_database": "See complex_word_alternatives section"
+      },
+      "filler_words": {
+        "id": "ISSUE006",
+        "color": "Gray",
+        "icon": "⚫",
+        "description": "Unnecessary filler words",
+        "common_fillers": [
+          "that", "just", "really", "very", "actually", "basically",
+          "literally", "honestly", "like", "you know", "I mean",
+          "kind of", "sort of", "a little bit", "in order to"
+        ],
+        "impact": "Low-Medium",
+        "action": "Remove if sentence works without it"
+      }
+    },
+
+    "complex_word_alternatives": {
+      "utilize": "use",
+      "implement": "use, start, do",
+      "leverage": "use",
+      "facilitate": "help, enable",
+      "demonstrate": "show",
+      "communicate": "say, tell, share",
+      "approximately": "about, around",
+      "additionally": "also, plus",
+      "consequently": "so",
+      "nevertheless": "but, still",
+      "furthermore": "also, and",
+      "subsequently": "then, later",
+      "previously": "before",
+      "currently": "now",
+      "immediately": "now, right away",
+      "essentially": "basically (or remove)",
+      "particularly": "especially",
+      "significantly": "a lot, much",
+      "ultimately": "in the end",
+      "specifically": "exactly",
+      "accomplish": "do, finish",
+      "accelerate": "speed up",
+      "accumulate": "build up, gather",
+      "acquisition": "buy, getting",
+      "assistance": "help",
+      "beneficial": "helpful, good",
+      "comprehensive": "full, complete",
+      "considerable": "big, large",
+      "differentiate": "stand out",
+      "emphasize": "stress, highlight",
+      "establish": "set up, start",
+      "eliminate": "cut, remove",
+      "generate": "make, create",
+      "guarantee": "promise",
+      "identify": "find, spot",
+      "incorporate": "include, add",
+      "methodology": "method, way",
+      "modification": "change",
+      "numerous": "many",
+      "opportunity": "chance",
+      "participate": "join, take part",
+      "perspective": "view, angle",
+      "prioritize": "focus on",
+      "probability": "chance, odds",
+      "professional": "pro, expert",
+      "recommendation": "tip, advice",
+      "requirements": "needs",
+      "revolutionary": "game-changing",
+      "strategies": "plans, ways",
+      "sufficient": "enough",
+      "transformation": "change"
+    }
+  },
+
+  "script_editor_system": {
+    "analysis_output": {
+      "readability_score": {
+        "grade_level": "Number (e.g., 5.2)",
+        "reading_ease": "Number 0-100",
+        "rating": "Very Easy / Easy / Fairly Easy / Average / Difficult",
+        "color": "Green / Yellow / Orange / Red"
+      },
+      "statistics": {
+        "word_count": "Total words",
+        "sentence_count": "Total sentences",
+        "paragraph_count": "Total paragraphs (line breaks)",
+        "avg_sentence_length": "Words per sentence",
+        "avg_word_length": "Characters per word",
+        "reading_time": "Estimated seconds to speak",
+        "speaking_pace": "Words per minute (target: 150-160 for video)"
+      },
+      "issue_counts": {
+        "very_hard_sentences": "Count (🔴)",
+        "hard_sentences": "Count (🟡)",
+        "adverbs": "Count (🔵)",
+        "passive_voice": "Count (🟢)",
+        "complex_words": "Count (🟣)",
+        "filler_words": "Count (⚫)"
+      },
+      "issues_list": [
+        {
+          "type": "Issue category",
+          "text": "Highlighted text",
+          "line_number": "Which line",
+          "suggestion": "How to fix"
+        }
+      ]
+    },
+
+    "editor_interface": {
+      "main_editor": {
+        "description": "Script text with highlighted issues",
+        "features": [
+          "Line-by-line display",
+          "Color-coded highlights for each issue type",
+          "Click issue to see suggestion",
+          "Real-time grade level update on edit"
+        ]
+      },
+      "sidebar_stats": {
+        "description": "Live statistics panel",
+        "displays": [
+          "Grade Level (large, prominent)",
+          "Reading Ease Score",
+          "Word Count",
+          "Sentence Count",
+          "Issue Counts by Type",
+          "Target indicators"
+        ]
+      },
+      "suggestion_panel": {
+        "description": "AI-powered suggestions that preserve structure",
+        "location": "Bottom of editor"
+      }
+    }
+  },
+
+  "ai_suggestion_system": {
+    "core_rules": {
+      "rule_1": {
+        "name": "Preserve Hook Structure",
+        "description": "NEVER change the hook format or opening pattern",
+        "instruction": "If script uses 'Here's what happens when...' hook, suggestions must keep this exact format"
+      },
+      "rule_2": {
+        "name": "Preserve Script Structure",
+        "description": "NEVER change the overall structure (Problem Solver, Listicle, etc.)",
+        "instruction": "Maintain all structural elements - problem/solution, numbered points, story beats"
+      },
+      "rule_3": {
+        "name": "Preserve Key Facts",
+        "description": "NEVER remove or alter specific facts, numbers, or claims",
+        "instruction": "Keep all statistics, examples, and specific details intact"
+      },
+      "rule_4": {
+        "name": "Preserve Tone",
+        "description": "NEVER change the emotional tone of the script",
+        "instruction": "If script is vulnerable, suggestions stay vulnerable. If high-energy, stay high-energy"
+      },
+      "rule_5": {
+        "name": "Preserve Word Count Range",
+        "description": "Keep suggestions within ±10% of original word count",
+        "instruction": "Don't make script significantly longer or shorter"
+      },
+      "rule_6": {
+        "name": "No Hallucination",
+        "description": "NEVER add new facts, claims, or information",
+        "instruction": "Only simplify existing content - don't invent new content"
+      }
+    },
+
+    "suggestion_types": {
+      "sentence_simplification": {
+        "id": "SUG001",
+        "name": "Simplify Sentence",
+        "trigger": "Hard or very hard sentence detected",
+        "action": "Offer simpler version that preserves meaning",
+        "example": {
+          "before": "The reason that most people fail to achieve success in their business ventures is because they don't understand the fundamental importance of consistent daily action.",
+          "after": "Most people fail in business. Why? They don't show up every day. Consistency wins."
+        }
+      },
+      "split_sentence": {
+        "id": "SUG002",
+        "name": "Split Long Sentence",
+        "trigger": "Sentence over 20 words",
+        "action": "Split into 2-3 shorter sentences",
+        "example": {
+          "before": "I used to spend hours every single day trying to film content and edit it and post it which was completely exhausting and unsustainable.",
+          "after": "I used to film, edit, and post every day. Hours of work. It was exhausting. Totally unsustainable."
+        }
+      },
+      "remove_adverb": {
+        "id": "SUG003",
+        "name": "Remove Adverb",
+        "trigger": "Weak adverb detected",
+        "action": "Remove adverb or strengthen verb",
+        "example": {
+          "before": "This strategy really works extremely well.",
+          "after": "This strategy works."
+        }
+      },
+      "activate_voice": {
+        "id": "SUG004",
+        "name": "Convert to Active Voice",
+        "trigger": "Passive voice detected",
+        "action": "Rewrite in active voice",
+        "example": {
+          "before": "The video was watched by millions of people.",
+          "after": "Millions watched the video."
+        }
+      },
+      "simplify_word": {
+        "id": "SUG005",
+        "name": "Simplify Word",
+        "trigger": "Complex word with simpler alternative",
+        "action": "Suggest simpler word",
+        "example": {
+          "before": "You need to utilize this methodology.",
+          "after": "You need to use this method."
+        }
+      },
+      "remove_filler": {
+        "id": "SUG006",
+        "name": "Remove Filler",
+        "trigger": "Unnecessary filler word detected",
+        "action": "Remove filler, check if sentence still works",
+        "example": {
+          "before": "I actually just really want to tell you that this basically works.",
+          "after": "I want to tell you this works."
+        }
+      },
+      "full_script_optimization": {
+        "id": "SUG007",
+        "name": "Optimize Full Script",
+        "trigger": "User requests full optimization",
+        "action": "Apply all improvements while preserving structure",
+        "constraints": [
+          "Keep exact hook format",
+          "Keep exact structure",
+          "Keep all key facts",
+          "Keep emotional tone",
+          "Stay within word count range"
+        ]
+      }
+    },
+
+    "suggestion_output_format": {
+      "single_issue": {
+        "original": "The problematic text",
+        "issue_type": "What's wrong",
+        "suggestion": "Improved version",
+        "explanation": "Why this is better",
+        "grade_impact": "How much this improves grade level"
+      },
+      "full_script": {
+        "original_script": "Full original",
+        "optimized_script": "Full optimized version",
+        "changes_made": [
+          "List of specific changes"
+        ],
+        "original_grade": "Grade before",
+        "new_grade": "Grade after",
+        "structure_preserved": "Confirmation that hook/structure unchanged"
+      }
+    }
+  },
+
+  "editor_prompts": {
+    "analysis_prompt": "Analyze this script for readability using Hemingway methodology. Calculate grade level, identify issues (hard sentences, adverbs, passive voice, complex words, fillers), and provide statistics. Output in the specified format.",
+    
+    "suggestion_prompt": "Suggest improvements for the highlighted issue. You MUST preserve: (1) the exact hook format, (2) the script structure, (3) all key facts and numbers, (4) the emotional tone. Only simplify language - do NOT add new information or change the meaning.",
+    
+    "full_optimization_prompt": "Optimize this entire script for Grade 4-6 readability while STRICTLY preserving: (1) The exact hook format and opening pattern, (2) The script structure (Problem Solver, Listicle, etc.), (3) All specific facts, numbers, and examples, (4) The emotional tone and energy level, (5) The word count (within 10%). Focus only on: shorter sentences, simpler words, active voice, removing adverbs and fillers. Do NOT hallucinate or add new content."
+  },
+
+  "validation_checks": {
+    "before_accepting_suggestion": [
+      {
+        "check": "Hook Preserved",
+        "method": "Compare first sentence pattern - must match exactly",
+        "fail_action": "Reject suggestion, regenerate"
+      },
+      {
+        "check": "Structure Preserved", 
+        "method": "Verify all structural elements present (numbered points, sections)",
+        "fail_action": "Reject suggestion, regenerate"
+      },
+      {
+        "check": "Facts Preserved",
+        "method": "Verify all numbers, names, specific claims unchanged",
+        "fail_action": "Reject suggestion, regenerate"
+      },
+      {
+        "check": "Tone Preserved",
+        "method": "Compare emotional markers and energy level",
+        "fail_action": "Reject suggestion, regenerate"
+      },
+      {
+        "check": "Word Count Valid",
+        "method": "Verify within ±10% of original",
+        "fail_action": "Flag for user review"
+      },
+      {
+        "check": "No New Content",
+        "method": "Verify no facts, claims, or examples added",
+        "fail_action": "Reject suggestion, regenerate"
+      }
+    ]
+  },
+
+  "grade_level_targets_by_content": {
+    "hooks": {
+      "target": "Grade 3-5",
+      "reason": "First impression must be instantly understood"
+    },
+    "key_points": {
+      "target": "Grade 4-6", 
+      "reason": "Core message needs maximum clarity"
+    },
+    "supporting_details": {
+      "target": "Grade 5-7",
+      "reason": "Can be slightly more complex"
+    },
+    "cta": {
+      "target": "Grade 3-5",
+      "reason": "Call to action must be crystal clear"
+    }
+  },
+
+  "example_transformations": {
+    "example_1": {
+      "category": "Very Hard → Easy",
+      "before": {
+        "text": "The implementation of a systematic approach to content creation, whereby you establish a comprehensive b-roll library through consistent weekly filming sessions, fundamentally transforms your ability to maintain daily posting consistency.",
+        "grade": "Grade 16",
+        "issues": ["Very hard sentence (38 words)", "Complex words: implementation, systematic, comprehensive, fundamentally", "Passive structure"]
+      },
+      "after": {
+        "text": "Want to post every day? Film your b-roll once a week. Build a library. Now you have clips ready whenever you need them.",
+        "grade": "Grade 4",
+        "changes": ["Split into 4 sentences", "Removed complex words", "Made active and direct"]
+      }
+    },
+    "example_2": {
+      "category": "Adverb Heavy → Clean",
+      "before": {
+        "text": "This strategy actually really works extremely well and will definitely completely change how you basically approach content.",
+        "grade": "Grade 8",
+        "issues": ["6 adverbs: actually, really, extremely, definitely, completely, basically"]
+      },
+      "after": {
+        "text": "This strategy works. It will change how you approach content.",
+        "grade": "Grade 4",
+        "changes": ["Removed all 6 unnecessary adverbs"]
+      }
+    },
+    "example_3": {
+      "category": "Passive → Active",
+      "before": {
+        "text": "Your account will be grown by this method. Results can be seen within weeks. More followers will be gained.",
+        "grade": "Grade 7",
+        "issues": ["3 passive voice constructions"]
+      },
+      "after": {
+        "text": "This method grows your account. You'll see results within weeks. You'll gain more followers.",
+        "grade": "Grade 5",
+        "changes": ["Converted all 3 to active voice"]
+      }
+    },
+    "example_4": {
+      "category": "Structure Preserved",
+      "hook_type": "List Hook",
+      "before": {
+        "text": "3 fundamentally important strategies that will significantly transform your business operations.",
+        "grade": "Grade 12"
+      },
+      "after": {
+        "text": "3 strategies that will transform your business.",
+        "grade": "Grade 6",
+        "note": "PRESERVED: Number '3', list format, 'strategies', 'transform your business'"
+      }
+    }
+  }
+}

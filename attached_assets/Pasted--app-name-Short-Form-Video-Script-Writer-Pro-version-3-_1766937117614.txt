@@ -1,0 +1,366 @@
+{
+  "app_name": "Short-Form Video Script Writer Pro",
+  "version": "3.0",
+  "description": "AI-powered video script creator with 8 categories, 7 hooks, 6 structures, and full style customization",
+
+  "script_categories": {
+    "content_creation": {
+      "id": "CAT001",
+      "name": "Content Creation & Strategy",
+      "description": "Scripts about content workflows, filming systems, and creator productivity",
+      "example_topics": [
+        "B-roll systems for daily posting",
+        "Batch content creation",
+        "Content repurposing strategies",
+        "Building a content calendar"
+      ],
+      "best_hooks": ["personal_experience", "education", "list"],
+      "best_structures": ["problem_solver", "listicle", "tutorial"]
+    },
+    "business_marketing": {
+      "id": "CAT002",
+      "name": "Business Building & Marketing",
+      "description": "Scripts about lead generation, sales strategies, business growth, and market access",
+      "example_topics": [
+        "Lead generation with assessments",
+        "Converting followers to customers",
+        "Building in public strategies",
+        "Accessing international markets",
+        "Sustainable vs venture-backed growth",
+        "Pricing strategies"
+      ],
+      "best_hooks": ["case_study", "contrarian", "question", "secret_reveal"],
+      "best_structures": ["problem_solver", "breakdown", "listicle"]
+    },
+    "ai_technology": {
+      "id": "CAT003",
+      "name": "AI & Technology",
+      "description": "Scripts about AI tools, tech trends, and future implications",
+      "example_topics": [
+        "AI tools for creators",
+        "Future of AI in content",
+        "Tech stack recommendations",
+        "Automation workflows"
+      ],
+      "best_hooks": ["case_study", "secret_reveal", "education"],
+      "best_structures": ["breakdown", "tutorial", "listicle"]
+    },
+    "personal_branding": {
+      "id": "CAT004",
+      "name": "Personal Branding & Community",
+      "description": "Scripts about building authentic brands and engaged communities",
+      "example_topics": [
+        "Community-led growth",
+        "Authenticity vs performance",
+        "Building trust with audience",
+        "Personal brand positioning"
+      ],
+      "best_hooks": ["personal_experience", "contrarian", "question"],
+      "best_structures": ["breakdown", "problem_solver", "story", "educational_motivation"]
+    },
+    "social_growth": {
+      "id": "CAT005",
+      "name": "Social Media Growth Hacks",
+      "description": "Scripts about viral strategies, algorithm hacks, and growth tactics",
+      "example_topics": [
+        "Finding viral content formats",
+        "Competitor analysis methods",
+        "Algorithm optimization",
+        "Engagement strategies"
+      ],
+      "best_hooks": ["personal_experience", "education", "list"],
+      "best_structures": ["listicle", "tutorial", "problem_solver"]
+    },
+    "niche_optimization": {
+      "id": "CAT006",
+      "name": "Niche & Format Optimization",
+      "description": "Scripts about finding your niche and optimizing content formats",
+      "example_topics": [
+        "Visual vs verbal niches",
+        "Product-based content strategies",
+        "Format selection by niche",
+        "Content type optimization"
+      ],
+      "best_hooks": ["question", "education", "list"],
+      "best_structures": ["listicle", "breakdown", "tutorial"]
+    },
+    "mindset_growth": {
+      "id": "CAT007",
+      "name": "Mindset & Personal Growth",
+      "description": "Scripts about self-development, boundaries, life philosophy, and personal transformation",
+      "example_topics": [
+        "Setting boundaries",
+        "Self-respect and self-worth",
+        "Releasing external pressure",
+        "Leaving your comfort zone",
+        "Personal transformation journeys",
+        "Building independence",
+        "Overcoming limiting beliefs"
+      ],
+      "best_hooks": ["secret_reveal", "personal_experience", "question"],
+      "best_structures": ["educational_motivation", "breakdown", "story"]
+    },
+    "health_science": {
+      "id": "CAT008",
+      "name": "Health & Science",
+      "description": "Scripts about health topics, scientific insights, psychology, and wellness",
+      "example_topics": [
+        "Mental health awareness",
+        "Substance effects on brain/body",
+        "Psychology insights",
+        "Wellness strategies",
+        "Recovery and resilience",
+        "Brain science simplified"
+      ],
+      "best_hooks": ["list", "secret_reveal", "question"],
+      "best_structures": ["breakdown", "listicle", "educational_motivation"]
+    },
+    "wealth_finance": {
+      "id": "CAT009",
+      "name": "Wealth & Finance",
+      "description": "Scripts about money mindset, wealth building, and financial strategies",
+      "example_topics": [
+        "Millionaire mindset",
+        "Investment thinking",
+        "Multiple income streams",
+        "Financial independence",
+        "Money as a tool vs finite resource"
+      ],
+      "best_hooks": ["personal_experience", "case_study", "contrarian"],
+      "best_structures": ["listicle", "breakdown", "problem_solver"]
+    }
+  },
+
+  "hook_formats": {
+    "personal_experience": {
+      "id": "HOOK001",
+      "name": "Personal Experience",
+      "description": "Present the storyteller's unique perspective on a topic",
+      "template": "I used to [OLD WAY]. Then I discovered [NEW WAY]. Here's what changed...",
+      "example": "I came out here lonely. Didn't know anybody. Had to build from scratch.",
+      "best_for": ["Content Creation", "Growth Hacks", "Personal Branding", "Mindset", "Wealth"],
+      "energy_level": "Medium to High"
+    },
+    "case_study": {
+      "id": "HOOK002",
+      "name": "Case Study",
+      "description": "Highlight a brand, person, or example achieving a result in an unexpected way",
+      "template": "[PERSON/BRAND] did [UNEXPECTED THING] and got [SURPRISING RESULT]. Here's how...",
+      "example": "I just sold my company for $10 million. Here are the 3 things that got me there.",
+      "best_for": ["Business", "AI & Tech", "Marketing", "Wealth"],
+      "energy_level": "Medium"
+    },
+    "secret_reveal": {
+      "id": "HOOK003",
+      "name": "Secret Reveal",
+      "description": "Suggest an unknown insight or future implication that the viewer doesn't know",
+      "template": "Nobody's talking about [HIDDEN TRUTH] but it's about to change everything...",
+      "example": "Here's something nobody tells you about self-respect...",
+      "best_for": ["AI & Tech", "Industry Trends", "Mindset", "Personal Growth", "Business"],
+      "energy_level": "High"
+    },
+    "contrarian": {
+      "id": "HOOK004",
+      "name": "Contrarian",
+      "description": "Present a counterintuitive or negatively framed idea that challenges beliefs",
+      "template": "[POPULAR BELIEF] is killing your [GOAL]. Here's what actually works...",
+      "example": "Educational content is killing your sales. Here's why...",
+      "best_for": ["Business", "Marketing", "Personal Branding"],
+      "energy_level": "High"
+    },
+    "question": {
+      "id": "HOOK005",
+      "name": "Question",
+      "description": "Start by immediately framing a question to introduce the topic",
+      "template": "Ever wonder why [OBSERVATION]? The answer might surprise you...",
+      "example": "Why do most businesses fail? It's not what you think.",
+      "best_for": ["Niche Content", "Educational", "Curiosity-driven", "Business"],
+      "energy_level": "Medium"
+    },
+    "list": {
+      "id": "HOOK006",
+      "name": "List",
+      "description": "Introduce an ordered list of items for accomplishing a task",
+      "template": "[NUMBER] ways to [ACHIEVE GOAL] (number [X] is a game-changer)...",
+      "example": "3 substances that can permanently change your personality.",
+      "best_for": ["How-to", "Tips", "Growth Strategies", "Health & Science"],
+      "energy_level": "Medium to High"
+    },
+    "education": {
+      "id": "HOOK007",
+      "name": "Education",
+      "description": "Introduce a step-by-step process for completing a task",
+      "template": "Here's how to [ACHIEVE OUTCOME] in [TIME/STEPS]...",
+      "example": "Here's how I find viral content ideas in under 5 minutes...",
+      "best_for": ["Tutorials", "Workflows", "Tool Breakdowns"],
+      "energy_level": "Medium"
+    }
+  },
+
+  "structure_formats": {
+    "problem_solver": {
+      "id": "STRUCT001",
+      "name": "Problem Solver",
+      "description": "Two parts: Set up a problem the viewer empathizes with, then present the solution",
+      "sections": [
+        {"name": "Problem Setup", "duration": "30%", "instruction": "Describe the pain point. Make them feel it."},
+        {"name": "Agitation", "duration": "20%", "instruction": "Amplify why this matters. Show consequences."},
+        {"name": "Solution", "duration": "40%", "instruction": "Present the solution with specifics."},
+        {"name": "CTA", "duration": "10%", "instruction": "Key takeaway or call to action."}
+      ],
+      "best_for": ["Business tips", "How-to content", "Pain point content"]
+    },
+    "breakdown": {
+      "id": "STRUCT002",
+      "name": "Breakdown",
+      "description": "Explain foundational principles and building blocks of a topic",
+      "sections": [
+        {"name": "Big Picture", "duration": "20%", "instruction": "Why this matters."},
+        {"name": "Component 1", "duration": "25%", "instruction": "First key element."},
+        {"name": "Component 2", "duration": "25%", "instruction": "Second key element."},
+        {"name": "Component 3", "duration": "20%", "instruction": "Third element (optional)."},
+        {"name": "Synthesis", "duration": "10%", "instruction": "Tie it together."}
+      ],
+      "best_for": ["Educational content", "Complex topics", "Framework explanations", "Health & Science"]
+    },
+    "listicle": {
+      "id": "STRUCT003",
+      "name": "Listicle",
+      "description": "Tell the story through a numbered list with bite-sized pieces",
+      "sections": [
+        {"name": "Hook + Setup", "duration": "15%", "instruction": "State what this list delivers."},
+        {"name": "Item 1", "duration": "20%", "instruction": "First point with explanation."},
+        {"name": "Item 2", "duration": "20%", "instruction": "Second point."},
+        {"name": "Item 3", "duration": "20%", "instruction": "Third point."},
+        {"name": "Item 4 (optional)", "duration": "15%", "instruction": "Bonus tip."},
+        {"name": "Wrap", "duration": "10%", "instruction": "Summary or CTA."}
+      ],
+      "best_for": ["Tips content", "Tool recommendations", "Quick wins", "Wealth strategies"]
+    },
+    "tutorial": {
+      "id": "STRUCT004",
+      "name": "Tutorial",
+      "description": "Ride-along discovery where discoveries happen with the viewer",
+      "sections": [
+        {"name": "Setup", "duration": "15%", "instruction": "What we're doing together."},
+        {"name": "Step 1", "duration": "25%", "instruction": "First action demonstrated."},
+        {"name": "Step 2", "duration": "25%", "instruction": "Second action."},
+        {"name": "Step 3", "duration": "25%", "instruction": "Third action + result."},
+        {"name": "Result/CTA", "duration": "10%", "instruction": "Outcome and encouragement."}
+      ],
+      "best_for": ["Tool walkthroughs", "Process demonstrations", "How-to content"]
+    },
+    "story_arc": {
+      "id": "STRUCT005",
+      "name": "Story Arc",
+      "description": "Narrative-driven structure with setup, conflict, and resolution",
+      "sections": [
+        {"name": "Setup", "duration": "20%", "instruction": "Set the scene."},
+        {"name": "Conflict", "duration": "30%", "instruction": "What went wrong."},
+        {"name": "Turning Point", "duration": "20%", "instruction": "The realization."},
+        {"name": "Resolution", "duration": "20%", "instruction": "How it resolved."},
+        {"name": "Lesson", "duration": "10%", "instruction": "Takeaway for viewer."}
+      ],
+      "best_for": ["Personal branding", "Transformation stories", "Case studies"]
+    },
+    "educational_motivation": {
+      "id": "STRUCT006",
+      "name": "Educational Motivation",
+      "description": "Retell past experiences or decisions in a way that motivates and educates the viewer",
+      "sections": [
+        {"name": "Hook + Context", "duration": "15%", "instruction": "Set up the insight or realization."},
+        {"name": "The Journey/Experience", "duration": "35%", "instruction": "Share the experience or observation."},
+        {"name": "The Lesson", "duration": "30%", "instruction": "Extract the deeper meaning."},
+        {"name": "Empowerment", "duration": "20%", "instruction": "Inspire action or shift in thinking."}
+      ],
+      "best_for": ["Mindset content", "Personal growth", "Life philosophy", "Motivational content"]
+    }
+  },
+
+  "style_options": {
+    "tone": {
+      "direct": {
+        "id": "TONE001",
+        "name": "Direct",
+        "description": "Matter-of-fact communication, no fluff, straight to the point"
+      },
+      "high_energy": {
+        "id": "TONE002",
+        "name": "High Energy",
+        "description": "Enthusiastic, excited, passionate delivery"
+      },
+      "conversational": {
+        "id": "TONE003",
+        "name": "Conversational",
+        "description": "Casual, friendly, like chatting with a friend"
+      },
+      "vulnerable": {
+        "id": "TONE004",
+        "name": "Vulnerable",
+        "description": "Open, honest, sharing real struggles"
+      },
+      "relaxed": {
+        "id": "TONE005",
+        "name": "Relaxed",
+        "description": "Laid-back, chill, unhurried delivery style"
+      }
+    },
+    "voice": {
+      "confident": {
+        "id": "VOICE001",
+        "name": "Confident & Commanding",
+        "description": "Instructive, authoritative, expert positioning"
+      },
+      "inquisitive": {
+        "id": "VOICE002",
+        "name": "Inquisitive & Bold",
+        "description": "Forward-looking, questioning, exploring"
+      },
+      "relatable": {
+        "id": "VOICE003",
+        "name": "Relatable & Authentic",
+        "description": "Human, imperfect, sharing the journey"
+      },
+      "thoughtful": {
+        "id": "VOICE004",
+        "name": "Thoughtful & Introspective",
+        "description": "Personal, reflective, deep insights"
+      }
+    },
+    "pacing": {
+      "balanced": {
+        "id": "PACE001",
+        "name": "Balanced",
+        "description": "Natural rhythm with appropriate pauses"
+      },
+      "rapid": {
+        "id": "PACE002",
+        "name": "Rapid-Fire",
+        "description": "Minimal pauses, fast delivery, high momentum"
+      },
+      "deliberate": {
+        "id": "PACE003",
+        "name": "Deliberate",
+        "description": "Slower, emphasis on key points, dramatic pauses"
+      }
+    }
+  },
+
+  "output_settings": {
+    "word_count_targets": {
+      "15_seconds": "30-45 words",
+      "30_seconds": "60-80 words",
+      "60_seconds": "90-120 words",
+      "90_seconds": "135-180 words"
+    },
+    "formatting_rules": [
+      "One sentence per line",
+      "Blank line between each sentence",
+      "No emojis unless requested",
+      "Simple, everyday vocabulary",
+      "First-person perspective",
+      "No AI-sounding phrases",
+      "No cliches or corny language"
+    ]
+  }
+}

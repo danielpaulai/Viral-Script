@@ -1,0 +1,274 @@
+# COMPLETE PROMPT MAPPING - ALL 20 PROMPTS
+
+## BATCH 1 (Prompts 1-10)
+
+| # | Topic | Category | Hook | Structure | Tone | Voice | Pacing |
+|---|-------|----------|------|-----------|------|-------|--------|
+| 1 | Community-led personal branding | Personal Branding | Personal Experience | Story Arc | Conversational | Relatable | Balanced |
+| 2 | B-roll content system | Content Creation | Personal Experience | Problem Solver | Direct | Confident | Balanced |
+| 3 | Assessment lead generation | Business Marketing | Case Study | Problem Solver | Direct | Confident | Balanced |
+| 4 | Adobe AI tools for creators | AI & Technology | Case Study | Breakdown | High Energy | Inquisitive | Balanced |
+| 5 | AI impact on influencers | AI & Technology | Secret Reveal | Breakdown | High Energy | Inquisitive | Rapid-Fire |
+| 6 | Instagram content strategy | Business Marketing | Contrarian | Problem Solver | Direct | Confident | Rapid-Fire |
+| 7 | Niche types (visual/verbal/product) | Niche Optimization | Question | Listicle | Direct | Inquisitive | Balanced |
+| 8 | Building in public strategies | Business Marketing | List | Listicle | High Energy | Confident | Balanced |
+| 9 | AI tools for viral content | Social Growth | Personal Experience | Listicle | Direct | Inquisitive | Rapid-Fire |
+| 10 | Replicating viral formats | Social Growth | Education | Tutorial | High Energy | Confident | Balanced |
+
+---
+
+## BATCH 2 (Prompts 11-20)
+
+| # | Topic | Category | Hook | Structure | Tone | Voice | Pacing |
+|---|-------|----------|------|-----------|------|-------|--------|
+| 11 | US market access via English | Business Marketing | Secret Reveal | Breakdown | Direct | Inquisitive | Balanced |
+| 12 | Sustainable business growth | Business Marketing | Question | Breakdown | Relaxed | Inquisitive | Balanced |
+| 13 | Self-respect & boundaries | Mindset & Growth | Secret Reveal | Educational Motivation | Direct | Thoughtful | Balanced |
+| 14 | Wealth creation strategies | Wealth & Finance | Personal Experience | Listicle | High Energy | Confident | Rapid-Fire |
+| 15 | Releasing external pressure | Mindset & Growth | Secret Reveal | Educational Motivation | Relaxed | Thoughtful | Balanced |
+| 16 | Substance effects on personality | Health & Science | List | Breakdown | Direct | Inquisitive | Balanced |
+| 17 | Substance effects (duplicate) | Health & Science | List | Breakdown | Direct | Inquisitive | Balanced |
+| 18 | Leaving hometown for growth | Mindset & Growth | Personal Experience | Educational Motivation | High Energy | Thoughtful | Rapid-Fire |
+
+---
+
+## NEW ELEMENTS EXTRACTED FROM BATCH 2
+
+### New Categories Added:
+1. **Mindset & Personal Growth (CAT007)** - Self-development, boundaries, life philosophy
+2. **Health & Science (CAT008)** - Health topics, psychology, substance effects
+3. **Wealth & Finance (CAT009)** - Money mindset, wealth building strategies
+
+### New Structure Added:
+- **Educational Motivation (STRUCT006)** - Retell experiences in a motivating, educational way
+
+### New Tone Added:
+- **Relaxed** - Laid-back, chill, unhurried delivery style
+
+### New Voice Added:
+- **Thoughtful & Introspective** - Personal, reflective, deep insights
+
+---
+
+## PATTERN ANALYSIS BY CATEGORY
+
+### Mindset & Personal Growth
+Most common combination:
+- Hook: Secret Reveal or Personal Experience
+- Structure: Educational Motivation
+- Tone: Relaxed or Direct
+- Voice: Thoughtful & Introspective
+- Pacing: Balanced
+
+### Health & Science
+Most common combination:
+- Hook: List
+- Structure: Breakdown
+- Tone: Direct
+- Voice: Inquisitive & Bold
+- Pacing: Balanced
+
+### Wealth & Finance
+Most common combination:
+- Hook: Personal Experience or Case Study
+- Structure: Listicle
+- Tone: High Energy
+- Voice: Confident & Commanding
+- Pacing: Rapid-Fire
+
+### Business Marketing (Updated)
+Additional patterns found:
+- Secret Reveal hook works well for market access topics
+- Question hook works for philosophy/strategy content
+- Relaxed tone for sustainable growth topics
+
+---
+
+## SAMPLE SCRIPTS FROM BATCH 2
+
+### Sample 1: Mindset & Growth (Prompt 13 Style)
+
+**Settings:**
+- Category: Mindset & Personal Growth
+- Hook: Secret Reveal
+- Structure: Educational Motivation
+- Tone: Direct | Voice: Thoughtful | Pacing: Balanced
+
+**Generated Script:**
+
+Here's something nobody tells you about self-respect.
+
+People who truly value themselves don't stay where they're minimized.
+
+They don't remain loyal to rooms that shrink them.
+
+I learned this the hard way.
+
+I used to tolerate disrespect because I thought it meant I was being patient or understanding.
+
+But here's what changed everything.
+
+When you genuinely love yourself, disrespect becomes physically uncomfortable.
+
+Your body rejects it. Your soul refuses it.
+
+Strong boundaries aren't cold.
+
+They're proof that you've healed.
+
+And that's something worth protecting.
+
+---
+
+### Sample 2: Business Marketing (Prompt 11 Style)
+
+**Settings:**
+- Category: Business Building & Marketing
+- Hook: Secret Reveal
+- Structure: Breakdown
+- Tone: Direct | Voice: Inquisitive | Pacing: Balanced
+
+**Generated Script:**
+
+Here's how international creators charge US prices.
+
+It's not about where you're from.
+
+It's about how you show up.
+
+If you look Indian but speak American English, nobody will even question it.
+
+You'll access the US market instantly.
+
+Here's what you do.
+
+Make your entire profile in English.
+
+Make your videos sound like you're American.
+
+Use American slang, American references, American energy.
+
+The accent is your disguise.
+
+The language is your access pass.
+
+Stop competing in low-paying markets when the US is right there waiting.
+
+---
+
+### Sample 3: Health & Science (Prompt 16 Style)
+
+**Settings:**
+- Category: Health & Science
+- Hook: List
+- Structure: Breakdown
+- Tone: Direct | Voice: Inquisitive | Pacing: Balanced
+
+**Generated Script:**
+
+3 substances that can permanently change your personality.
+
+First, alcohol.
+
+Chronic drinking makes you more impulsive, more depressed, more anxious, and emotionally unstable.
+
+Second, methamphetamine.
+
+It literally rewires your brain.
+
+Paranoia, aggression, emotional numbness can linger long after you quit.
+
+Third, psychedelics.
+
+One bad trip can permanently change how you think, feel, or see reality.
+
+Here's the thing though.
+
+Even with lasting brain changes, you can still improve.
+
+Your brain is plastic. It adapts.
+
+You can harness these experiences and come back stronger.
+
+---
+
+### Sample 4: Wealth & Finance (Prompt 14 Style)
+
+**Settings:**
+- Category: Wealth & Finance
+- Hook: Personal Experience
+- Structure: Listicle
+- Tone: High Energy | Voice: Confident | Pacing: Rapid-Fire
+
+**Generated Script:**
+
+I just sold my company for $10 million.
+
+Here are 3 things that got me there.
+
+Number one. Mindset.
+
+If you think of money as finite instead of a tool that brings more money, you'll never make any.
+
+Number two. Investment thinking.
+
+Every dollar should work for you. Period.
+
+Number three. Personal brand.
+
+Forbes literally said AI will replace 9-to-5 jobs but it cannot replace a personal brand.
+
+Your face, your story, your voice - that's irreplaceable.
+
+Stop waiting. Start building.
+
+The next millionaire could be you.
+
+---
+
+### Sample 5: Mindset & Growth (Prompt 18 Style)
+
+**Settings:**
+- Category: Mindset & Personal Growth
+- Hook: Personal Experience
+- Structure: Educational Motivation
+- Tone: High Energy | Voice: Thoughtful | Pacing: Rapid-Fire
+
+**Generated Script:**
+
+I left LA with nothing.
+
+Didn't know anybody. Had to build from scratch.
+
+And honestly? It was the best decision I ever made.
+
+Here's what happens when you leave.
+
+You're forced to get your own place.
+
+You're forced to get your own car.
+
+You're forced to make friends, talk to people, figure it out.
+
+And then suddenly, two years later, you have a tribe.
+
+You're thriving.
+
+I'm not going back yet. I'm still building.
+
+If you're thinking about leaving your hometown, do it.
+
+The growth happens in the discomfort.
+
+---
+
+## COMPLETE SYSTEM STATS
+
+**Total Categories:** 9
+**Total Hooks:** 7
+**Total Structures:** 6
+**Total Tones:** 5
+**Total Voices:** 4
+**Total Pacing Options:** 3
+
+**Unique Combinations Possible:** 9 × 7 × 6 × 5 × 4 × 3 = **22,680 variations**

@@ -1,0 +1,271 @@
+# INTEGRATED SCRIPT EDITOR
+
+## HOW IT WORKS NOW
+
+The editor is **built into generation**, not a separate step.
+
+When you generate a script:
+1. AI writes the script
+2. AI automatically checks readability
+3. AI fixes any issues BEFORE showing you
+4. You see a clean, Grade 4-6 script
+5. Optional: Click "Show Analysis" to see the verification
+
+---
+
+## WHAT YOU SEE AFTER GENERATING
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                                                                 │
+│  TOPIC: Why educational content kills sales                     │
+│  MODE: 🔥 Viral Hook Banger                                     │
+│  WORD COUNT: 94                                                 │
+│  GRADE LEVEL: 5.1 ✓                                             │
+│                                                                 │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  SCRIPT:                                                        │
+│                                                                 │
+│  Stop posting educational content. [pause]                      │
+│                                                                 │
+│  I'm serious.                                                   │
+│                                                                 │
+│  It's killing your sales.                                       │
+│                                                                 │
+│  Here's what nobody tells you.                                  │
+│                                                                 │
+│  Educational content attracts freebie hunters.                  │
+│                                                                 │
+│  They watch. They learn. They leave.                            │
+│                                                                 │
+│  They were never going to buy.                                  │
+│                                                                 │
+│  You want buyers? [lean in]                                     │
+│                                                                 │
+│  Post content that helps people DECIDE.                         │
+│                                                                 │
+│  Not content that helps them escape.                            │
+│                                                                 │
+│  Break myths. Challenge beliefs. Create urgency.                │
+│                                                                 │
+│  That's what moves people from "interesting" to "I need this."  │
+│                                                                 │
+│  Your content isn't a classroom.                                │
+│                                                                 │
+│  It's a sales conversation.                                     │
+│                                                                 │
+│  Start treating it like one.                                    │
+│                                                                 │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  PRODUCTION NOTES:                                              │
+│                                                                 │
+│  Film this close-up, direct to camera. Start with intensity     │
+│  on "Stop posting educational content" - slight pause after     │
+│  for impact. Energy builds through the middle. On "You want     │
+│  buyers?" lean in slightly. End with conviction, not aggression.│
+│                                                                 │
+│  Music: Minimal trap beat, low in mix. Let the words hit.       │
+│                                                                 │
+│  B-roll moments:                                                │
+│  • 0:04 "killing your sales" → empty cart or $0 notification    │
+│  • 0:12 "watch, learn, leave" → social media scroll POV         │
+│  • 0:22 "I need this" → someone clicking buy button             │
+│                                                                 │
+│  On-screen text: "Stop doing this ❌"                           │
+│                                                                 │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  [Copy Script]  [Show Analysis]  [Edit Script]  [Regenerate]    │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## IF USER CLICKS "SHOW ANALYSIS"
+
+Expands to show the verification:
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  READABILITY VERIFICATION                                       │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  Grade Level: 5.1 ✓ (Target: 4-6)                               │
+│  Reading Ease: 74/100 ✓                                         │
+│  Avg Words/Sentence: 6.7 ✓ (Target: 8-12)                       │
+│                                                                 │
+│  ✓ No sentences over 15 words                                   │
+│  ✓ No adverbs detected                                          │
+│  ✓ No passive voice                                             │
+│  ✓ No complex words                                             │
+│  ✓ Sounds spoken, not written                                   │
+│                                                                 │
+│  [Hide Analysis]                                                │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## IF USER CLICKS "EDIT SCRIPT"
+
+Opens simple editor:
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  EDIT SCRIPT                                                    │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  [Editable text area with the script]                           │
+│                                                                 │
+│  Stop posting educational content. [pause]                      │
+│                                                                 │
+│  I'm serious.                                                   │
+│                                                                 │
+│  It's killing your sales.                                       │
+│  ...                                                            │
+│                                                                 │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  LIVE STATS:                     │  AI SUGGESTIONS:             │
+│  Grade: 5.1 ✓                    │                              │
+│  Words: 94                       │  Your script looks great!    │
+│  Sentences: 17                   │  No issues detected.         │
+│  Avg/Sentence: 6.7               │                              │
+│                                  │  [Suggest Improvements]      │
+│                                                                 │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  [Save Changes]  [Cancel]  [Update Production Notes]            │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## IF USER EDITS AND CREATES AN ISSUE
+
+Stats update live. AI Suggestions panel shows the problem:
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                                                                 │
+│  LIVE STATS:                     │  AI SUGGESTIONS:             │
+│  Grade: 8.4 ⚠️                   │                              │
+│  Words: 98                       │  ⚠️ 2 issues detected:       │
+│  Sentences: 15                   │                              │
+│  Avg/Sentence: 9.2               │  Line 4: "basically" found   │
+│                                  │  → Remove it                 │
+│                                  │                              │
+│                                  │  Line 8: Sentence too long   │
+│                                  │  → Split into two            │
+│                                  │                              │
+│                                  │  [Fix All Issues]            │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## IF USER CLICKS "FIX ALL ISSUES"
+
+AI fixes while preserving structure:
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  FIXES APPLIED                                                  │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  ✓ Removed "basically" from line 4                              │
+│  ✓ Split line 8 into two sentences                              │
+│                                                                 │
+│  Grade: 8.4 → 5.3                                               │
+│                                                                 │
+│  PRESERVED:                                                     │
+│  ✓ Hook format                                                  │
+│  ✓ All key points                                               │
+│  ✓ Tone and energy                                              │
+│                                                                 │
+│  [Accept Fixes]  [Undo]                                         │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## IF USER CLICKS "SUGGEST IMPROVEMENTS"
+
+AI offers optional enhancements (user can ignore):
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  OPTIONAL IMPROVEMENTS                                          │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  Your script is clean (Grade 5.1). Here are optional tweaks:    │
+│                                                                 │
+│  💡 Line 12: "That's what moves people" (8 words)               │
+│     Could be punchier: "That's what converts." (3 words)        │
+│     [Apply] [Skip]                                              │
+│                                                                 │
+│  💡 Consider adding [pause] after line 7 for impact             │
+│     [Apply] [Skip]                                              │
+│                                                                 │
+│  [Apply All]  [Skip All]  [Close]                               │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## THE KEY DIFFERENCE
+
+**OLD SYSTEM:**
+Generate → See mess → Click analyze → See 14 issues → Fix one by one → Hope it's better
+
+**NEW SYSTEM:**
+Generate → See clean script → Done
+
+(Editor is there if you want it, but you probably won't need it)
+
+---
+
+## PROMPT ADDITION FOR EDITOR MODE
+
+Add this to the master prompt:
+
+```
+## WHEN USER EDITS AND ASKS FOR HELP
+
+If user modifies the script and asks for suggestions:
+
+1. Check for issues:
+   - Sentences over 15 words
+   - Banned adverbs
+   - Passive voice
+   - Complex words
+   - Grade level over 6
+
+2. If issues found, show:
+   - Which line
+   - What's wrong
+   - How to fix
+   - What it preserves
+
+3. If no issues, say:
+   "Your script looks great! Grade [X.X]. No issues."
+
+4. Always offer optional improvements:
+   - Punchier alternatives
+   - Delivery notation suggestions
+   - Rhythm improvements
+
+5. NEVER:
+   - Change the hook format
+   - Remove key facts
+   - Change the tone
+   - Add new information
+```
