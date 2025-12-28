@@ -78,36 +78,48 @@ const features = [
     icon: Zap,
     title: "50+ Viral Hooks",
     description: "Battle-tested hooks that stop the scroll and demand attention",
+    longDescription: "Access our library of 50+ proven hook templates across 7 categories: Personal Experience, Case Study, Secret Reveal, Contrarian, Question, List, and Education. Each hook is battle-tested on millions of views and optimized to capture attention in the first 3 seconds.",
+    highlights: ["7 hook categories", "Tested on millions of views", "3-second attention capture"],
     image: viralHooksImg
   },
   {
     icon: FileText,
     title: "Smart Script Generation",
     description: "AI writes punchy, grade 4-6 level scripts that convert viewers",
+    longDescription: "Our AI generates scripts at a 4th-6th grade reading level - the sweet spot for maximum engagement. No corporate jargon, no AI-sounding phrases. Just punchy, conversational scripts that feel authentic and convert viewers into followers.",
+    highlights: ["Grade 4-6 reading level", "No AI-sounding phrases", "Optimized for conversion"],
     image: smartScriptImg
   },
   {
     icon: Target,
     title: "Knowledge Base",
     description: "Upload your ICP, brand voice, and messaging for personalized scripts",
+    longDescription: "Upload your brand guidelines, ideal customer profile, and messaging documents. Our AI learns your unique voice and creates scripts that sound like you wrote them. Supports PDF, DOCX, and images with OCR - up to 10 files for Pro users.",
+    highlights: ["PDF, DOCX & image support", "OCR for screenshots", "Up to 10 files"],
     image: knowledgeBaseImg
   },
   {
     icon: Mic,
     title: "Voice DNA Matching",
     description: "Scripts that sound like you, not a robot",
+    longDescription: "Feed the AI examples of your best content and it learns your unique speaking patterns, vocabulary, and personality. Every script generated matches your authentic voice - your audience won't know the difference.",
+    highlights: ["Learns your patterns", "Matches your vocabulary", "Authentic personality"],
     image: voiceDnaImg
   },
   {
     icon: BookOpen,
     title: "Deep Research Mode",
     description: "AI researches stats, quotes, and contrarian takes for your topic",
+    longDescription: "Toggle Deep Research to have AI dig up relevant statistics, expert quotes, and contrarian angles for your topic. Add credibility and authority to your scripts with real data points that make viewers stop and save.",
+    highlights: ["Real statistics", "Expert quotes", "Contrarian angles"],
     image: deepResearchImg
   },
   {
     icon: TrendingUp,
     title: "Hemingway Analysis",
     description: "Every script analyzed for readability and punch",
+    longDescription: "Every script is analyzed using Hemingway-style metrics. See your grade level, sentence complexity, and get specific suggestions to make your writing punchier. Aim for that sweet spot that keeps viewers hooked.",
+    highlights: ["Grade level scoring", "Sentence analysis", "Actionable suggestions"],
     image: hemingwayImg
   }
 ];
@@ -164,6 +176,7 @@ export default function Landing() {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [selectedFeature, setSelectedFeature] = useState<number | null>(null);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -171,6 +184,15 @@ export default function Landing() {
     };
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // Close modal on escape key
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setSelectedFeature(null);
+    };
+    window.addEventListener('keydown', handleEscape);
+    return () => window.removeEventListener('keydown', handleEscape);
   }, []);
 
   return (
@@ -332,7 +354,8 @@ export default function Landing() {
               return (
                 <div 
                   key={idx}
-                  className="absolute w-56 sm:w-72 aspect-[3/4] rounded-2xl bg-neutral-900/40 ring-1 ring-white/10 overflow-hidden shadow-2xl hover:scale-105 transition-transform duration-300"
+                  onClick={() => setSelectedFeature(idx)}
+                  className="absolute w-56 sm:w-72 aspect-[3/4] rounded-2xl bg-neutral-900/40 ring-1 ring-white/10 overflow-hidden shadow-2xl hover:scale-105 transition-transform duration-300 cursor-pointer group"
                   style={{ 
                     transform: transforms[idx], 
                     zIndex: zIndexes[idx],
@@ -342,10 +365,16 @@ export default function Landing() {
                 >
                   <img 
                     alt={feature.title}
-                    className="absolute inset-0 size-full object-cover w-full h-auto"
+                    className="absolute inset-0 size-full object-cover w-full h-auto group-hover:scale-110 transition-transform duration-500"
                     src={feature.image}
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+                  {/* Click indicator */}
+                  <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="w-8 h-8 rounded-full bg-primary/80 flex items-center justify-center animate-pulse">
+                      <ArrowRight className="w-4 h-4 text-white" />
+                    </div>
+                  </div>
                   <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between gap-2">
                     <div>
                       <p className="text-sm font-medium tracking-tight text-white">{feature.title}</p>
@@ -378,7 +407,8 @@ export default function Landing() {
               return (
                 <div 
                   key={idx + 3}
-                  className="absolute w-56 sm:w-72 aspect-[3/4] rounded-2xl bg-neutral-900/40 ring-1 ring-white/10 overflow-hidden shadow-2xl hover:scale-105 transition-transform duration-300"
+                  onClick={() => setSelectedFeature(idx + 3)}
+                  className="absolute w-56 sm:w-72 aspect-[3/4] rounded-2xl bg-neutral-900/40 ring-1 ring-white/10 overflow-hidden shadow-2xl hover:scale-105 transition-transform duration-300 cursor-pointer group"
                   style={{ 
                     transform: transforms[idx], 
                     zIndex: zIndexes[idx],
@@ -388,10 +418,16 @@ export default function Landing() {
                 >
                   <img 
                     alt={feature.title}
-                    className="absolute inset-0 size-full object-cover w-full h-auto"
+                    className="absolute inset-0 size-full object-cover w-full h-auto group-hover:scale-110 transition-transform duration-500"
                     src={feature.image}
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+                  {/* Click indicator */}
+                  <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="w-8 h-8 rounded-full bg-primary/80 flex items-center justify-center animate-pulse">
+                      <ArrowRight className="w-4 h-4 text-white" />
+                    </div>
+                  </div>
                   <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between gap-2">
                     <div>
                       <p className="text-sm font-medium tracking-tight text-white">{feature.title}</p>
@@ -407,6 +443,106 @@ export default function Landing() {
           </div>
         </div>
       </section>
+
+      {/* Feature Modal */}
+      {selectedFeature !== null && (
+        <div 
+          className="fixed inset-0 z-[100] flex items-center justify-center p-4"
+          onClick={() => setSelectedFeature(null)}
+        >
+          {/* Backdrop */}
+          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm animate-[fadeIn_0.2s_ease-out]" />
+          
+          {/* Modal Content */}
+          <div 
+            onClick={(e) => e.stopPropagation()}
+            className="relative max-w-2xl w-full bg-[#111] rounded-3xl overflow-hidden border border-white/10 shadow-2xl animate-[scaleIn_0.3s_ease-out]"
+            style={{
+              animation: 'scaleIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)'
+            }}
+          >
+            {/* Close button */}
+            <button 
+              onClick={() => setSelectedFeature(null)}
+              className="absolute top-4 right-4 z-10 w-10 h-10 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center text-white/70 hover:text-white hover:bg-black/70 transition-colors"
+              data-testid="button-close-modal"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            {/* Feature Image */}
+            <div className="relative h-48 overflow-hidden">
+              <img 
+                src={features[selectedFeature].image}
+                alt={features[selectedFeature].title}
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#111] via-transparent to-transparent" />
+            </div>
+
+            {/* Content */}
+            <div className="p-8 -mt-8 relative">
+              {/* Icon and Title */}
+              <div className="flex items-start gap-4 mb-6">
+                <div className="w-14 h-14 rounded-2xl bg-primary/20 flex items-center justify-center flex-shrink-0 ring-1 ring-primary/30">
+                  {(() => {
+                    const Icon = features[selectedFeature].icon;
+                    return <Icon className="w-7 h-7 text-primary" />;
+                  })()}
+                </div>
+                <div>
+                  <h3 className="text-2xl font-semibold text-white mb-1">{features[selectedFeature].title}</h3>
+                  <p className="text-sm text-[#b8bec1]">{features[selectedFeature].description}</p>
+                </div>
+              </div>
+
+              {/* Long Description */}
+              <p className="text-white/80 leading-relaxed mb-6">
+                {features[selectedFeature].longDescription}
+              </p>
+
+              {/* Highlights */}
+              <div className="flex flex-wrap gap-2 mb-6">
+                {features[selectedFeature].highlights.map((highlight, idx) => (
+                  <span 
+                    key={idx}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-sm ring-1 ring-primary/20"
+                  >
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    {highlight}
+                  </span>
+                ))}
+              </div>
+
+              {/* CTA */}
+              <Link href="/login">
+                <Button className="w-full gap-2 shadow-[0_0_20px_-5px_rgba(233,13,65,0.3)]" data-testid="button-modal-cta">
+                  Try {features[selectedFeature].title}
+                  <ArrowRight className="w-4 h-4" />
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add animation keyframes */}
+      <style>{`
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @keyframes scaleIn {
+          from { 
+            opacity: 0; 
+            transform: scale(0.9) translateY(20px); 
+          }
+          to { 
+            opacity: 1; 
+            transform: scale(1) translateY(0); 
+          }
+        }
+      `}</style>
 
       {/* How It Works */}
       <section id="method" className="py-24 relative overflow-hidden">
