@@ -14,6 +14,14 @@ import {
   type GeneratedScript,
 } from "@shared/schema";
 
+// Words that sound like AI - avoid these
+const aiWordsToAvoid = [
+  "utilize", "leverage", "unlock", "dive into", "delve", "explore", "crucial",
+  "comprehensive", "robust", "streamline", "revolutionize", "elevate", "harness",
+  "optimize", "empower", "game-changing", "cutting-edge", "seamless", "actionable",
+  "innovative", "paradigm", "synergy", "holistic", "groundbreaking", "transform"
+];
+
 function generateScript(params: ScriptParameters): GeneratedScript {
   const category = scriptCategories.find((c) => c.id === params.category);
   const hook = viralHooks.find((h) => h.id === params.hook);
@@ -21,143 +29,172 @@ function generateScript(params: ScriptParameters): GeneratedScript {
   const duration = durationOptions.find((d) => d.id === params.duration);
 
   const hookLine = hook?.example || "Here's something you need to know.";
+  const topic = params.topic?.toLowerCase() || "this";
+  const cta = params.callToAction || "Follow for more.";
   
+  // Scripts written in punchy style: short sentences, one idea per line
   const sampleScripts: Record<string, string> = {
     problem_solver: `${hookLine}
 
-Most people struggle with this every single day.
+It was killing me.
 
-They try everything but nothing works.
+Every single day.
+
+Nothing worked.
 
 Here's the real problem.
 
-They're approaching it all wrong.
+Most people do it wrong.
 
-Let me show you what actually works.
+They overcomplicate things.
 
-${params.topic ? `When it comes to ${params.topic.toLowerCase()}, the solution is simpler than you think.` : "The solution is simpler than you think."}
+${topic !== "this" ? `When it comes to ${topic}, it's simpler.` : "But it's simpler than you think."}
+
+Here's what actually works.
 
 First, understand the core issue.
 
-Then, take action on what matters.
+Then take action.
 
-Stop overcomplicating things.
+Stop overthinking.
 
-${params.callToAction || "Follow for more tips like this."}`,
+Just start.
+
+${cta}`,
 
     breakdown: `${hookLine}
 
-Let me break this down for you.
+Let me break this down.
 
-There are three key parts to understand.
+There's three parts.
 
-Number one: The foundation.
+One. The foundation.
 
-${params.topic ? `When working with ${params.topic.toLowerCase()}, you need to start here.` : "You need to start with the basics."}
-
-Number two: The execution.
-
-This is where most people fail.
-
-Number three: The results.
-
-Put these together and everything changes.
-
-${params.callToAction || "Save this for later."}`,
-
-    listicle: `${hookLine}
-
-Here are 3 things that will change everything.
-
-Number one.
-
-${params.topic ? `Focus on ${params.topic.toLowerCase()} first.` : "Focus on what matters most."}
+${topic !== "this" ? `With ${topic}, you start here.` : "You start with the basics."}
 
 This is non-negotiable.
 
+Two. The execution.
+
+This is where most fail.
+
+They skip this step.
+
+Don't.
+
+Three. The results.
+
+Put it together.
+
+Watch what happens.
+
+${cta}`,
+
+    listicle: `${hookLine}
+
+3 things that change everything.
+
+Number one.
+
+${topic !== "this" ? `Focus on ${topic} first.` : "Focus on what matters."}
+
+This alone is worth the watch.
+
 Number two.
 
-Stay consistent even when it's hard.
+Stay consistent.
+
+Even when it's hard.
 
 Results come from repetition.
 
 Number three.
 
-Track your progress weekly.
+Track your progress.
 
-What gets measured gets improved.
+Weekly.
 
-${params.callToAction || "Comment which one you're trying first."}`,
+What gets measured gets fixed.
+
+${cta}`,
 
     tutorial: `${hookLine}
 
-Let me walk you through this step by step.
+Takes 2 minutes.
 
-Step one: Get started.
+Step one.
 
-${params.topic ? `Open up your ${params.topic.toLowerCase()} and look at this.` : "Pull this up on your screen."}
+${topic !== "this" ? `Open ${topic}.` : "Pull this up."}
 
-Step two: Make the change.
+Step two.
 
-Click here, then here.
+Make this change.
 
-Step three: See the results.
+Click here. Then here.
 
-That's it. You're done.
+Step three.
 
-Took less than 2 minutes.
+See the result.
 
-${params.callToAction || "Try this and let me know how it goes."}`,
+That's it.
+
+Done.
+
+Simple.
+
+${cta}`,
 
     story_arc: `${hookLine}
 
-A year ago, I was stuck.
+A year ago I was stuck.
 
-Nothing was working.
+Nothing worked.
 
-I tried everything.
+Tried everything.
 
 Then something changed.
 
-${params.topic ? `I discovered a different approach to ${params.topic.toLowerCase()}.` : "I found a completely different approach."}
+${topic !== "this" ? `I found a different approach to ${topic}.` : "I found something different."}
 
-It wasn't easy at first.
+Wasn't easy.
 
 But I kept going.
 
-Now? Everything is different.
+Now? Everything's different.
 
 Here's what I learned.
 
 The struggle was necessary.
 
-It taught me what really matters.
+It taught me what matters.
 
-${params.callToAction || "If you're going through this, keep going."}`,
+You got this.
+
+${cta}`,
 
     educational_motivation: `${hookLine}
 
 I used to think I knew everything.
 
-Then life humbled me.
+Life humbled me.
 
-${params.topic ? `${params.topic} taught me something unexpected.` : "This experience taught me something unexpected."}
+${topic !== "this" ? `${params.topic} taught me something.` : "This taught me something unexpected."}
 
-The lesson wasn't what I expected.
+The lesson was simple.
 
-It was simpler.
+More powerful than I expected.
 
-More powerful.
+Here's what changed.
 
-Here's what changed my perspective.
-
-Stop chasing perfection.
+Stop chasing perfect.
 
 Start embracing progress.
 
-You're already on the right path.
+You're already on the path.
 
-${params.callToAction || "Remember this when things get hard."}`,
+Keep going.
+
+${cta}`,
   };
 
   const scriptContent = sampleScripts[params.structure] || sampleScripts.problem_solver;

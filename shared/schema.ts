@@ -90,7 +90,7 @@ export const viralHooks = [
   // EDUCATION (48-50)
   { id: "how_to", category: "education", name: "The How-To", template: "Here's how to [achieve specific result] in [time/steps].", example: "Here's how to find viral content ideas in under 5 minutes.", why: "Clear promise of transformation with specific outcome." },
   { id: "step_by_step", category: "education", name: "The Step-by-Step", template: "The [number]-step process to [desired outcome].", example: "The 3-step process to never run out of content ideas.", why: "Numbered steps feel organized and achievable." },
-  { id: "beginners_guide", category: "education", name: "The Beginner's Guide", template: "If you're new to [topic], here's what you need to know.", example: "If you're new to content creation, here's what you need to know.", why: "Welcomes newcomers and promises foundational knowledge." },
+  { id: "template_reveal", category: "education", name: "The Template Reveal", template: "I'm giving you the exact template I use to [outcome].", example: "I'm giving you the exact method I use to find my format.", why: "Promises a ready-to-use framework they can copy." },
 ] as const;
 
 // Legacy hook formats (for backwards compatibility)

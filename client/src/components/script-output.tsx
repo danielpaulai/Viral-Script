@@ -306,18 +306,29 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
         </TabsList>
         
         <TabsContent value="script" className="mt-4">
+          {/* Hook Metadata Header */}
+          {(currentHook || script.parameters.hook) && (
+            <div className="mb-4 p-4 rounded-md bg-primary/10 border border-primary/20 space-y-2">
+              <div className="flex items-center gap-2">
+                <Zap className="w-4 h-4 text-primary" />
+                <span className="text-sm font-semibold text-white">
+                  HOOK #{viralHooks.findIndex(h => h.id === (selectedHook || script.parameters.hook)) + 1}: {(currentHook || viralHooks.find(h => h.id === script.parameters.hook))?.name}
+                </span>
+              </div>
+              <div className="text-xs text-muted-foreground">
+                <span className="font-medium text-white/80">Template:</span> "{(currentHook || viralHooks.find(h => h.id === script.parameters.hook))?.template}"
+              </div>
+              <div className="text-xs text-muted-foreground">
+                <span className="font-medium text-white/80">Applied:</span> "{customHookLine || script.script.split('\n')[0]}"
+              </div>
+            </div>
+          )}
           <div 
             className="p-6 rounded-md bg-white/5 border border-white/10 font-mono text-sm leading-relaxed whitespace-pre-wrap text-white/90"
             data-testid="text-script-content"
           >
             {getDisplayScript()}
           </div>
-          {currentHook && (
-            <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
-              <Zap className="w-3 h-3 text-primary" />
-              Using "{currentHook.name}" hook style
-            </p>
-          )}
         </TabsContent>
         
         <TabsContent value="production" className="mt-4">
