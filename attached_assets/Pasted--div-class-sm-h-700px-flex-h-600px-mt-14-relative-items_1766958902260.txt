@@ -1,0 +1,91 @@
+<div class="sm:h-[700px] flex h-[600px] mt-14 relative items-center justify-center" style="perspective: 1200px">
+
+  <!-- Card 1 (Left) -->
+  <div id="hero-card-1"
+    class="absolute w-64 sm:w-80 aspect-[3/4] rounded-2xl bg-neutral-900/40 ring-1 ring-white/10 overflow-hidden shadow-2xl"
+    style="transform: translateX(-280px) translateY(0px) rotateZ(-12deg) scale(1); z-index: 1; opacity: 1;">
+    <img alt="Alpine valley with granite peak" class="absolute inset-0 size-full object-cover w-full h-auto" src="https://hoirqrkdgbmvpwutwuwj-all.supabase.co/storage/v1/object/public/assets/assets/a8c42df7-3d2a-452c-8609-33696606ae50_800w.webp">
+    <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
+    <div class="absolute bottom-3 left-3 right-3 flex items-center justify-between">
+      <div>
+        <p class="text-sm font-medium tracking-tight text-white">Dolomite Ridge</p>
+        <p class="text-xs text-neutral-300">36 photos</p>
+      </div>
+      <div class="inline-flex items-center gap-1 rounded-full bg-white/10 px-2 py-1 text-[10px] text-neutral-200">
+        <i data-lucide="mountain" class="h-3.5 w-3.5"></i>
+        Alps
+      </div>
+    </div>
+  </div>
+
+  <!-- Card 2 (Center) -->
+  <div id="hero-card-2"
+    class="absolute w-64 sm:w-80 aspect-[3/4] rounded-2xl bg-neutral-900/40 ring-1 ring-white/10 overflow-hidden shadow-2xl"
+    style="transform: translateX(0px) translateY(0px) rotateZ(0deg) scale(1.05); z-index: 3; opacity: 1; box-shadow: rgba(0, 0, 0, 0.5) 0px 25px 50px -12px;">
+    <img alt="Minimal portrait in orange light" class="absolute inset-0 size-full object-cover w-full h-auto" src="https://hoirqrkdgbmvpwutwuwj-all.supabase.co/storage/v1/object/public/assets/assets/26b97548-f299-44e5-94a5-2757f54f3ef5_800w.webp">
+    <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
+    <div class="absolute bottom-3 left-3 right-3 flex items-center justify-between">
+      <div>
+        <p class="text-sm font-medium tracking-tight text-white">Amber Portraits</p>
+        <p class="text-xs text-neutral-300">22 photos</p>
+      </div>
+      <div class="inline-flex items-center gap-1 rounded-full bg-white/10 px-2 py-1 text-[10px] text-neutral-200">
+        <i data-lucide="users" class="h-3.5 w-3.5"></i>
+        People
+      </div>
+    </div>
+  </div>
+
+  <!-- Card 3 (Right) -->
+  <div id="hero-card-3"
+    class="absolute w-64 sm:w-80 aspect-[3/4] rounded-2xl bg-neutral-900/40 ring-1 ring-white/10 overflow-hidden shadow-2xl"
+    style="transform: translateX(280px) translateY(0px) rotateZ(12deg) scale(1); z-index: 2; opacity: 1;">
+    <img alt="Snowy village at dusk in the mountains" class="absolute inset-0 size-full object-cover w-full h-auto" src="https://hoirqrkdgbmvpwutwuwj-all.supabase.co/storage/v1/object/public/assets/assets/20ab0cf5-a1bf-4421-bdd9-e8f2963f8f28_800w.webp">
+    <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
+    <div class="absolute bottom-3 left-3 right-3 flex items-center justify-between">
+      <div>
+        <p class="text-sm font-medium tracking-tight text-white">Zermatt Nights</p>
+        <p class="text-xs text-neutral-300">41 photos</p>
+      </div>
+      <div class="inline-flex items-center gap-1 rounded-full bg-white/10 px-2 py-1 text-[10px] text-neutral-200">
+        <i data-lucide="camera" class="h-3.5 w-3.5"></i>
+        Cityscape
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    // Scroll-triggered merge animation
+      const card1 = document.getElementById('hero-card-1');
+      const card2 = document.getElementById('hero-card-2');
+      const card3 = document.getElementById('hero-card-3');
+
+      const handleScroll = () => {
+        const scrollY = window.scrollY;
+        const threshold = 500;
+        const progress = Math.min(scrollY / threshold, 1);
+
+        // Card 1 (Left): Move to center and straighten
+        const card1X = -280 * (1 - progress);
+        const card1Rot = -12 * (1 - progress);
+        const card1Opacity = 1 - (progress * 1);
+        card1.style.transform = `translateX(${card1X}px) translateY(0px) rotateZ(${card1Rot}deg) scale(${1 - progress * 0.05})`;
+        card1.style.opacity = card1Opacity;
+
+        // Card 2 (Center): Stay centered, slightly scale up
+        card2.style.transform = `translateX(0px) translateY(0px) rotateZ(0deg) scale(${1.05 + progress * 0.05})`;
+        card2.style.opacity = 1;
+        card2.style.zIndex = 3;
+
+        // Card 3 (Right): Move to center and straighten
+        const card3X = 280 * (1 - progress);
+        const card3Rot = 12 * (1 - progress);
+        const card3Opacity = 1 - (progress * 1);
+        card3.style.transform = `translateX(${card3X}px) translateY(0px) rotateZ(${card3Rot}deg) scale(${1 - progress * 0.05})`;
+        card3.style.opacity = card3Opacity;
+      };
+
+      window.addEventListener('scroll', handleScroll, { passive: true });
+      handleScroll();
+  </script>
+</div>
