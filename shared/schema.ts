@@ -278,6 +278,8 @@ export interface ScriptParameters {
   voice?: string;
   pacing?: string;
   deepResearch?: boolean;
+  contentStrategy?: string;
+  useKnowledgeBase?: boolean;
 }
 
 // Scene breakdown for production

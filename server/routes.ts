@@ -13,8 +13,12 @@ import {
   durationOptions,
   ctaOptions,
   ctaCategories,
+  pricingTiers,
+  knowledgeBaseTypes,
+  contentStrategyCategories,
   type ScriptParameters,
   type GeneratedScript,
+  type KnowledgeBaseDoc,
 } from "@shared/schema";
 
 const openai = new OpenAI({
@@ -317,7 +321,63 @@ ${cta}`,
   };
 }
 
-async function generateScriptWithAI(params: ScriptParameters): Promise<GeneratedScript> {
+function buildKnowledgeBaseContext(docs: KnowledgeBaseDoc[]): string {
+  if (!docs.length) return "";
+  
+  const sections: string[] = [];
+  
+  const icpDocs = docs.filter(d => d.type === "icp");
+  if (icpDocs.length) {
+    sections.push(`## IDEAL CUSTOMER PROFILE (ICP)
+${icpDocs.map(d => d.content).join("\n\n")}`);
+  }
+  
+  const brandDocs = docs.filter(d => d.type === "brand_positioning");
+  if (brandDocs.length) {
+    sections.push(`## BRAND POSITIONING
+${brandDocs.map(d => d.content).join("\n\n")}`);
+  }
+  
+  const messagingDocs = docs.filter(d => d.type === "messaging_house");
+  if (messagingDocs.length) {
+    sections.push(`## MESSAGING PILLARS
+${messagingDocs.map(d => d.content).join("\n\n")}`);
+  }
+  
+  const voiceDocs = docs.filter(d => d.type === "voice_dna");
+  if (voiceDocs.length) {
+    sections.push(`## VOICE & TONE DNA
+${voiceDocs.map(d => d.content).join("\n\n")}`);
+  }
+  
+  const ruleDocs = docs.filter(d => d.type === "rule_of_one");
+  if (ruleDocs.length) {
+    sections.push(`## RULE OF ONE (Avatar, Problem, Solution)
+${ruleDocs.map(d => d.content).join("\n\n")}`);
+  }
+  
+  const businessDocs = docs.filter(d => d.type === "business_box");
+  if (businessDocs.length) {
+    sections.push(`## BUSINESS CONTEXT
+${businessDocs.map(d => d.content).join("\n\n")}`);
+  }
+  
+  const strategyDocs = docs.filter(d => d.type === "content_strategy");
+  if (strategyDocs.length) {
+    sections.push(`## CONTENT STRATEGY
+${strategyDocs.map(d => d.content).join("\n\n")}`);
+  }
+  
+  const customDocs = docs.filter(d => d.type === "custom");
+  if (customDocs.length) {
+    sections.push(`## ADDITIONAL CONTEXT
+${customDocs.map(d => `${d.title}:\n${d.content}`).join("\n\n")}`);
+  }
+  
+  return sections.join("\n\n---\n\n");
+}
+
+async function generateScriptWithAI(params: ScriptParameters, knowledgeBaseDocs?: KnowledgeBaseDoc[]): Promise<GeneratedScript> {
   const hook = viralHooks.find((h) => h.id === params.hook);
   const structure = structureFormats.find((s) => s.id === params.structure);
   const duration = durationOptions.find((d) => d.id === params.duration);
@@ -339,6 +399,7 @@ async function generateScriptWithAI(params: ScriptParameters): Promise<Generated
   const targetWords = wordTargets[params.duration] || wordTargets["60"];
 
   let researchContext = "";
+  const kbContext = knowledgeBaseDocs ? buildKnowledgeBaseContext(knowledgeBaseDocs) : "";
   
   if (params.deepResearch) {
     try {
@@ -372,6 +433,22 @@ ${params.keyFacts ? `Known facts to include: ${params.keyFacts}` : ""}`
     }
   }
 
+  const knowledgeBaseInstructions = kbContext ? `
+IMPORTANT - USE THE KNOWLEDGE BASE:
+You have access to the creator's brand knowledge base below. Use this to:
+- Match their exact voice, tone, and speaking style
+- Reference their ICP's pain points, fears, and desires
+- Use their brand messaging pillars and UVP
+- Incorporate their specific terminology and phrases
+- Align with their content strategy and positioning
+- Make the script sound authentically like THEM, not generic
+
+=== KNOWLEDGE BASE START ===
+${kbContext}
+=== KNOWLEDGE BASE END ===
+
+` : "";
+
   const systemPrompt = `You are a world-class short-form video scriptwriter. Write scripts that:
 - Use punchy, conversational language (grade 4-6 reading level)
 - One short sentence or phrase per line
@@ -391,12 +468,14 @@ Separate each line with a blank line for clarity.`;
 
   const userPrompt = `Write a ${params.duration}-second video script (aim for ${targetWords.min}-${targetWords.max} words).
 
+${knowledgeBaseInstructions}
 TOPIC: ${params.topic}
 HOOK STYLE: ${hook?.name || "The Painful Past"} - "${hook?.template || "I used to [painful thing everyone relates to]."}"
 STRUCTURE: ${structure?.name || "Problem Solver"} - ${structure?.description || "Present problem, then solution"}
 TONE: ${tone?.name || "High Energy"}
 VOICE: ${voice?.name || "Confident"}
 PLATFORM: ${params.platform}
+${params.contentStrategy ? `CONTENT CATEGORY: ${params.contentStrategy} (consider this funnel stage when writing)` : ""}
 ${params.targetAudience ? `TARGET AUDIENCE: ${params.targetAudience}` : ""}
 ${params.keyFacts ? `KEY FACTS TO INCLUDE: ${params.keyFacts}` : ""}
 CTA TO END WITH: ${finalCta}
@@ -551,7 +630,12 @@ export async function registerRoutes(
     try {
       const params: ScriptParameters = req.body;
       
-      const generatedScript = await generateScriptWithAI(params);
+      let knowledgeBaseDocs: KnowledgeBaseDoc[] = [];
+      if (params.useKnowledgeBase) {
+        knowledgeBaseDocs = await storage.getKnowledgeBaseDocs();
+      }
+      
+      const generatedScript = await generateScriptWithAI(params, knowledgeBaseDocs);
       
       const savedScript = await storage.createScript({
         title: params.topic?.slice(0, 100) || "Untitled Script",
@@ -696,7 +780,7 @@ export async function registerRoutes(
   });
 
   app.get("/api/hooks", (req, res) => {
-    res.json(hookFormats);
+    res.json(viralHooks);
   });
 
   app.get("/api/categories", (req, res) => {
@@ -705,6 +789,122 @@ export async function registerRoutes(
 
   app.get("/api/structures", (req, res) => {
     res.json(structureFormats);
+  });
+
+  app.get("/api/pricing", (req, res) => {
+    res.json({
+      tiers: pricingTiers,
+      knowledgeBaseTypes,
+      contentStrategyCategories,
+    });
+  });
+
+  app.get("/api/knowledge-base", async (req, res) => {
+    try {
+      const docs = await storage.getKnowledgeBaseDocs();
+      res.json(docs);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch knowledge base documents" });
+    }
+  });
+
+  app.get("/api/knowledge-base/:id", async (req, res) => {
+    try {
+      const doc = await storage.getKnowledgeBaseDoc(req.params.id);
+      if (!doc) {
+        return res.status(404).json({ error: "Document not found" });
+      }
+      res.json(doc);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch document" });
+    }
+  });
+
+  app.post("/api/knowledge-base", async (req, res) => {
+    try {
+      const { type, title, content, summary, tags } = req.body;
+      if (!type || !title || !content) {
+        return res.status(400).json({ error: "Type, title, and content are required" });
+      }
+      const doc = await storage.createKnowledgeBaseDoc({ 
+        type, 
+        title, 
+        content, 
+        summary, 
+        tags 
+      });
+      res.json(doc);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to create knowledge base document" });
+    }
+  });
+
+  app.patch("/api/knowledge-base/:id", async (req, res) => {
+    try {
+      const updates = req.body;
+      const doc = await storage.updateKnowledgeBaseDoc(req.params.id, updates);
+      if (!doc) {
+        return res.status(404).json({ error: "Document not found" });
+      }
+      res.json(doc);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update document" });
+    }
+  });
+
+  app.delete("/api/knowledge-base/:id", async (req, res) => {
+    try {
+      const deleted = await storage.deleteKnowledgeBaseDoc(req.params.id);
+      if (!deleted) {
+        return res.status(404).json({ error: "Document not found" });
+      }
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete document" });
+    }
+  });
+
+  app.get("/api/content-strategies", async (req, res) => {
+    try {
+      const strategies = await storage.getContentStrategies();
+      res.json({
+        categories: contentStrategyCategories,
+        strategies,
+      });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch content strategies" });
+    }
+  });
+
+  app.post("/api/content-strategies", async (req, res) => {
+    try {
+      const { name, category, topics, hooks, schedule } = req.body;
+      if (!name || !category) {
+        return res.status(400).json({ error: "Name and category are required" });
+      }
+      const strategy = await storage.createContentStrategy({ 
+        name, 
+        category, 
+        topics, 
+        hooks, 
+        schedule 
+      });
+      res.json(strategy);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to create content strategy" });
+    }
+  });
+
+  app.delete("/api/content-strategies/:id", async (req, res) => {
+    try {
+      const deleted = await storage.deleteContentStrategy(req.params.id);
+      if (!deleted) {
+        return res.status(404).json({ error: "Strategy not found" });
+      }
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete strategy" });
+    }
   });
 
   return httpServer;
