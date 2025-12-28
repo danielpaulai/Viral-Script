@@ -1,0 +1,74 @@
+<div class="typing-text-component">
+  <style>/* Blinking cursor effect */
+    #text-target-aura-emiz19wlbnx3r575 {
+      border-right: 3px solid currentColor;
+      white-space: nowrap;
+      overflow: hidden;
+      display: inline-block;
+      vertical-align: bottom;
+      animation: blink-cursor 0.75s step-end infinite;
+    }
+
+    /* Cursor blink animation */
+    @keyframes blink-cursor {
+      from, to { border-color: transparent }
+      50% { border-color: currentColor; }
+    }</style>
+  <div class="inline-block">
+    <span id="text-target-aura-emiz19wlbnx3r575" class="text-4xl font-bold text-gray-100"></span>
+  </div>
+  <script>(function() {
+      // Configuration
+      const elementId = "text-target-aura-emiz19wlbnx3r575";
+      const words = ["Automatiza", "Escala", "Rentabiliza"];
+      const typeSpeed = 100; speed (ms)
+      const deleteSpeed = 50;   // Deleting speed (ms)
+      const pauseTime = 2000;   // Pause before deleting (ms)
+
+      // Internal variables
+      let wordIndex = 0;
+      let charIndex = 0;
+      let isDeleting = false;
+      const element = document.getElementById(elementId);
+
+      function type() {
+        const currentWord = words[wordIndex];
+
+        if (isDeleting) {
+          // Deleting
+          element.textContent = currentWord.substring(0, charIndex - 1);
+          charIndex--;
+        } else {
+          // Typing
+          element.textContent = currentWord.substring(0, charIndex + 1);
+          charIndex++;
+        }
+
+        // Dynamic speed
+        let currentSpeed = isDeleting ? deleteSpeed : typeSpeed;
+
+        // If word is complete
+        if (!isDeleting && charIndex === currentWord.length) {
+          currentSpeed = pauseTime; // Long pause for reading
+          isDeleting = true;
+        } 
+        // If word is completely deleted
+        else if (isDeleting && charIndex === 0) {
+          isDeleting = false;
+          wordIndex++;
+          if (wordIndex === words.length) {
+            wordIndex = 0; // Restart cycle
+          }
+        }
+
+        setTimeout(type, currentSpeed);
+      }
+
+      // Start if element exists
+      if (element) {
+        type();
+      } else {
+        console.error("Element not found with ID: " + elementId);
+      }
+    })();</script>
+</div>

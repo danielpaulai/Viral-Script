@@ -16,7 +16,54 @@ import {
 } from "lucide-react";
 import { Link } from "wouter";
 import { pricingTiers } from "@shared/schema";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
+
+// Animated Typing Text Component
+function TypingText({ words, className }: { words: string[]; className?: string }) {
+  const [displayText, setDisplayText] = useState("");
+  const [wordIndex, setWordIndex] = useState(0);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const typeSpeed = 100;
+  const deleteSpeed = 50;
+  const pauseTime = 2000;
+
+  const tick = useCallback(() => {
+    const currentWord = words[wordIndex];
+    
+    if (isDeleting) {
+      setDisplayText(currentWord.substring(0, displayText.length - 1));
+    } else {
+      setDisplayText(currentWord.substring(0, displayText.length + 1));
+    }
+  }, [displayText, isDeleting, wordIndex, words]);
+
+  useEffect(() => {
+    const currentWord = words[wordIndex];
+    let timeout: NodeJS.Timeout;
+
+    if (!isDeleting && displayText === currentWord) {
+      // Word complete, pause then start deleting
+      timeout = setTimeout(() => setIsDeleting(true), pauseTime);
+    } else if (isDeleting && displayText === "") {
+      // Word deleted, move to next word
+      setIsDeleting(false);
+      setWordIndex((prev) => (prev + 1) % words.length);
+    } else {
+      // Continue typing or deleting
+      timeout = setTimeout(tick, isDeleting ? deleteSpeed : typeSpeed);
+    }
+
+    return () => clearTimeout(timeout);
+  }, [displayText, isDeleting, wordIndex, words, tick]);
+
+  return (
+    <span className={className}>
+      {displayText}
+      <span className="inline-block w-[3px] h-[1em] bg-current ml-1 animate-[blink-cursor_0.75s_step-end_infinite] align-middle" />
+    </span>
+  );
+}
 
 const features = [
   {
@@ -189,7 +236,11 @@ export default function Landing() {
           </div>
           
           <h1 className="text-5xl md:text-7xl lg:text-8xl font-semibold tracking-tight text-white mb-6 leading-[1.05]">
-            Create Viral Scripts<br />
+            <TypingText 
+              words={["Create", "Write", "Generate", "Craft"]} 
+              className="text-primary"
+            />
+            {" "}Viral Scripts<br />
             <span className="text-transparent bg-clip-text bg-gradient-to-b from-white to-[#b8bec1]">In Seconds</span>
           </h1>
           
