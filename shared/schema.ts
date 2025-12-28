@@ -351,11 +351,95 @@ export type Project = typeof projects.$inferSelect;
 export type InsertVault = z.infer<typeof insertVaultSchema>;
 export type VaultItem = typeof vault.$inferSelect;
 
+// Pricing Tiers
+export const pricingTiers = [
+  { 
+    id: "starter", 
+    name: "Starter", 
+    price: 19.99, 
+    description: "Essential script generation for content creators",
+    features: [
+      "AI-powered script generation",
+      "50 viral hooks library",
+      "30+ CTA templates",
+      "All structure formats",
+      "Basic production notes"
+    ],
+    limits: {
+      scriptsPerMonth: 50,
+      knowledgeBaseDocs: 0,
+      competitorAssets: 0
+    }
+  },
+  { 
+    id: "pro", 
+    name: "Pro", 
+    price: 29.99, 
+    description: "Knowledge Base powered scripts for your brand",
+    popular: true,
+    features: [
+      "Everything in Starter",
+      "Knowledge Base (unlimited docs)",
+      "ICP & Brand Voice integration",
+      "Content strategy categories",
+      "Deep Research mode",
+      "Priority support"
+    ],
+    limits: {
+      scriptsPerMonth: -1,
+      knowledgeBaseDocs: -1,
+      competitorAssets: 0
+    }
+  },
+  { 
+    id: "agency", 
+    name: "Agency", 
+    price: 39.99, 
+    description: "Full content strategy with competitor intelligence",
+    features: [
+      "Everything in Pro",
+      "Competitor script analysis",
+      "Full content strategy builder",
+      "TOFU/MOFU/BOFU planning",
+      "Multi-brand support",
+      "White-label exports"
+    ],
+    limits: {
+      scriptsPerMonth: -1,
+      knowledgeBaseDocs: -1,
+      competitorAssets: -1
+    }
+  }
+] as const;
+
+// Knowledge Base Document Types
+export const knowledgeBaseTypes = [
+  { id: "icp", name: "Ideal Customer Profile", description: "Target audience, pain points, goals" },
+  { id: "brand_positioning", name: "Brand Positioning", description: "UVP, differentiators, market position" },
+  { id: "messaging_house", name: "Messaging House", description: "Key messages, pillars, proof points" },
+  { id: "business_box", name: "Business-in-a-Box", description: "Full business analysis and strategy" },
+  { id: "rule_of_one", name: "Rule of One", description: "Avatar, problem, solution, outcome" },
+  { id: "voice_dna", name: "Voice DNA", description: "Tone, phrases, emotional signature" },
+  { id: "content_strategy", name: "Content Strategy", description: "Pillars, calendar, roadmap" },
+  { id: "custom", name: "Custom Document", description: "Any other business document" },
+] as const;
+
+// Content Strategy Categories (Funnel Stages)
+export const contentStrategyCategories = [
+  { id: "tofu", name: "Top of Funnel", description: "Awareness content - myths, trends, viral hooks", color: "blue" },
+  { id: "mofu", name: "Middle of Funnel", description: "Consideration content - case studies, demos, proof", color: "purple" },
+  { id: "bofu", name: "Bottom of Funnel", description: "Decision content - ROI, testimonials, offers", color: "green" },
+  { id: "personal_stories", name: "Personal Stories", description: "Founder journey, confessions, lessons learned", color: "orange" },
+  { id: "hot_takes", name: "Hot Takes", description: "Contrarian views, industry critiques, bold opinions", color: "red" },
+] as const;
+
 // Keep User types for compatibility
 export const users = pgTable("users", {
   id: varchar("id").primaryKey(),
   username: text("username").notNull().unique(),
   password: text("password").notNull(),
+  plan: text("plan").default("starter"),
+  planExpiresAt: timestamp("plan_expires_at"),
 });
 
 export const insertUserSchema = createInsertSchema(users).pick({
@@ -365,3 +449,52 @@ export const insertUserSchema = createInsertSchema(users).pick({
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
+
+// Knowledge Base Documents Table
+export const knowledgeBase = pgTable("knowledge_base", {
+  id: varchar("id", { length: 36 }).primaryKey(),
+  userId: varchar("user_id", { length: 36 }),
+  type: text("type").notNull(),
+  title: text("title").notNull(),
+  content: text("content").notNull(),
+  summary: text("summary"),
+  tags: text("tags"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertKnowledgeBaseSchema = createInsertSchema(knowledgeBase).omit({ id: true, createdAt: true, updatedAt: true });
+export type InsertKnowledgeBase = z.infer<typeof insertKnowledgeBaseSchema>;
+export type KnowledgeBaseDoc = typeof knowledgeBase.$inferSelect;
+
+// Competitor Assets Table (Agency tier)
+export const competitorAssets = pgTable("competitor_assets", {
+  id: varchar("id", { length: 36 }).primaryKey(),
+  userId: varchar("user_id", { length: 36 }),
+  name: text("name").notNull(),
+  platform: text("platform"),
+  profileUrl: text("profile_url"),
+  scripts: text("scripts"),
+  analysis: text("analysis"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertCompetitorAssetSchema = createInsertSchema(competitorAssets).omit({ id: true, createdAt: true });
+export type InsertCompetitorAsset = z.infer<typeof insertCompetitorAssetSchema>;
+export type CompetitorAsset = typeof competitorAssets.$inferSelect;
+
+// Content Strategies Table
+export const contentStrategies = pgTable("content_strategies", {
+  id: varchar("id", { length: 36 }).primaryKey(),
+  userId: varchar("user_id", { length: 36 }),
+  name: text("name").notNull(),
+  category: text("category").notNull(),
+  topics: text("topics"),
+  hooks: text("hooks"),
+  schedule: text("schedule"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertContentStrategySchema = createInsertSchema(contentStrategies).omit({ id: true, createdAt: true });
+export type InsertContentStrategy = z.infer<typeof insertContentStrategySchema>;
+export type ContentStrategy = typeof contentStrategies.$inferSelect;
