@@ -4,7 +4,7 @@ import { storage } from "./storage";
 import { randomUUID } from "crypto";
 import OpenAI from "openai";
 import multer from "multer";
-import { setupAuth, isAuthenticated, registerAuthRoutes } from "./replit_integrations/auth";
+import { setupAuth } from "./auth";
 import { extractTextFromFile, truncateText, SUPPORTED_MIME_TYPES, MAX_FILE_SIZE, MAX_FILES } from "./ocr-utils";
 
 const upload = multer({
@@ -635,13 +635,18 @@ Write the script now. Make it punchy, specific, and impossible to scroll past. E
   }
 }
 
+function isAuthenticated(req: any, res: any, next: any) {
+  if (req.isAuthenticated()) {
+    return next();
+  }
+  res.status(401).json({ message: "Unauthorized" });
+}
+
 export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
-  // Setup Replit Auth (MUST be before other routes)
-  await setupAuth(app);
-  registerAuthRoutes(app);
+  setupAuth(app);
   
   app.get("/api/ctas", (req, res) => {
     res.json({
@@ -653,7 +658,7 @@ export async function registerRoutes(
   app.post("/api/scripts/generate", async (req: any, res) => {
     try {
       const params: ScriptParameters = req.body;
-      const userId = req.user?.claims?.sub;
+      const userId = req.user?.id;
       
       let knowledgeBaseDocs: KnowledgeBaseDoc[] = [];
       if (params.useKnowledgeBase && userId) {
@@ -841,7 +846,7 @@ export async function registerRoutes(
   // Knowledge Base routes - require authentication for user-specific documents
   app.get("/api/knowledge-base", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user?.claims?.sub;
+      const userId = req.user?.id;
       const docs = await storage.getKnowledgeBaseDocs(userId);
       res.json(docs);
     } catch (error) {
@@ -856,7 +861,7 @@ export async function registerRoutes(
         return res.status(404).json({ error: "Document not found" });
       }
       // Check ownership
-      const userId = req.user?.claims?.sub;
+      const userId = req.user?.id;
       if (doc.userId && doc.userId !== userId) {
         return res.status(403).json({ error: "Access denied" });
       }
@@ -868,7 +873,7 @@ export async function registerRoutes(
 
   app.post("/api/knowledge-base", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user?.claims?.sub;
+      const userId = req.user?.id;
       const { type, title, content, summary, tags } = req.body;
       if (!type || !title || !content) {
         return res.status(400).json({ error: "Type, title, and content are required" });
@@ -889,7 +894,7 @@ export async function registerRoutes(
 
   app.patch("/api/knowledge-base/:id", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user?.claims?.sub;
+      const userId = req.user?.id;
       const existingDoc = await storage.getKnowledgeBaseDoc(req.params.id);
       if (!existingDoc) {
         return res.status(404).json({ error: "Document not found" });
@@ -908,7 +913,7 @@ export async function registerRoutes(
 
   app.delete("/api/knowledge-base/:id", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user?.claims?.sub;
+      const userId = req.user?.id;
       const existingDoc = await storage.getKnowledgeBaseDoc(req.params.id);
       if (!existingDoc) {
         return res.status(404).json({ error: "Document not found" });
@@ -943,7 +948,7 @@ export async function registerRoutes(
     });
   }, async (req: any, res) => {
     try {
-      const userId = req.user?.claims?.sub;
+      const userId = req.user?.id;
       if (!userId) {
         return res.status(401).json({ error: "User not found" });
       }
@@ -1067,7 +1072,7 @@ export async function registerRoutes(
   // User Usage Tracking
   app.get("/api/user/usage", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user?.claims?.sub;
+      const userId = req.user?.id;
       if (!userId) {
         return res.status(401).json({ error: "User not found" });
       }
@@ -1088,7 +1093,7 @@ export async function registerRoutes(
   // User Subscription
   app.get("/api/user/subscription", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user?.claims?.sub;
+      const userId = req.user?.id;
       if (!userId) {
         return res.status(401).json({ error: "User not found" });
       }
