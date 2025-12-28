@@ -18,6 +18,14 @@ import { Link } from "wouter";
 import { pricingTiers } from "@shared/schema";
 import { useState, useEffect, useCallback } from "react";
 
+// Feature images
+import viralHooksImg from "@assets/generated_images/viral_hooks_lightning_visualization.png";
+import smartScriptImg from "@assets/generated_images/ai_script_generation_brain.png";
+import knowledgeBaseImg from "@assets/generated_images/knowledge_base_data_vault.png";
+import voiceDnaImg from "@assets/generated_images/voice_dna_sound_waves.png";
+import deepResearchImg from "@assets/generated_images/deep_research_data_analysis.png";
+import hemingwayImg from "@assets/generated_images/hemingway_analysis_typewriter.png";
+
 // Animated Typing Text Component
 function TypingText({ words, className }: { words: string[]; className?: string }) {
   const [displayText, setDisplayText] = useState("");
@@ -69,32 +77,38 @@ const features = [
   {
     icon: Zap,
     title: "50+ Viral Hooks",
-    description: "Battle-tested hooks that stop the scroll and demand attention"
+    description: "Battle-tested hooks that stop the scroll and demand attention",
+    image: viralHooksImg
   },
   {
     icon: FileText,
     title: "Smart Script Generation",
-    description: "AI writes punchy, grade 4-6 level scripts that convert viewers"
+    description: "AI writes punchy, grade 4-6 level scripts that convert viewers",
+    image: smartScriptImg
   },
   {
     icon: Target,
     title: "Knowledge Base",
-    description: "Upload your ICP, brand voice, and messaging for personalized scripts"
+    description: "Upload your ICP, brand voice, and messaging for personalized scripts",
+    image: knowledgeBaseImg
   },
   {
     icon: Mic,
     title: "Voice DNA Matching",
-    description: "Scripts that sound like you, not a robot"
+    description: "Scripts that sound like you, not a robot",
+    image: voiceDnaImg
   },
   {
     icon: BookOpen,
     title: "Deep Research Mode",
-    description: "AI researches stats, quotes, and contrarian takes for your topic"
+    description: "AI researches stats, quotes, and contrarian takes for your topic",
+    image: deepResearchImg
   },
   {
     icon: TrendingUp,
     title: "Hemingway Analysis",
-    description: "Every script analyzed for readability and punch"
+    description: "Every script analyzed for readability and punch",
+    image: hemingwayImg
   }
 ];
 
@@ -300,18 +314,39 @@ export default function Landing() {
             From hook to CTA, we handle the script. You handle the camera.
           </p>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {features.map((feature, idx) => (
               <div 
                 key={idx} 
-                className="p-6 rounded-md bg-[rgba(20,20,22,0.4)] backdrop-blur-lg border border-white/[0.06] hover:border-primary/30 hover:bg-[rgba(20,20,22,0.6)] transition-all group"
+                className="relative overflow-hidden rounded-2xl min-h-[320px] flex flex-col bg-neutral-800/60 shadow-[0_2.8px_2.2px_rgba(0,_0,_0,_0.034),_0_6.7px_5.3px_rgba(0,_0,_0,_0.048),_0_12.5px_10px_rgba(0,_0,_0,_0.06),_0_22.3px_17.9px_rgba(0,_0,_0,_0.072),_0_41.8px_33.4px_rgba(0,_0,_0,_0.086),_0_100px_80px_rgba(0,_0,_0,_0.12)] backdrop-blur-lg border border-white/[0.06] hover:border-primary/40 transition-all group"
                 data-testid={`feature-card-${idx}`}
               >
-                <div className="w-10 h-10 rounded-md bg-primary/10 flex items-center justify-center mb-4">
-                  <feature.icon className="w-5 h-5 text-primary" />
+                {/* Background Image */}
+                <div 
+                  className="absolute inset-0 bg-cover bg-center opacity-60 group-hover:opacity-80 transition-opacity"
+                  style={{ backgroundImage: `url(${feature.image})` }}
+                />
+                {/* Gradient Overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent" />
+                
+                {/* Content */}
+                <div className="relative z-10 flex flex-col h-full p-6 justify-between">
+                  {/* Top Badge */}
+                  <div className="flex items-start justify-between">
+                    <span className="px-3 py-1 rounded-full text-[10px] font-medium uppercase tracking-wider text-neutral-300/90 ring-1 ring-neutral-400/30 bg-neutral-500/15 backdrop-blur-sm">
+                      Feature
+                    </span>
+                    <div className="w-9 h-9 rounded-md bg-primary/20 backdrop-blur-sm flex items-center justify-center">
+                      <feature.icon className="w-4 h-4 text-primary" />
+                    </div>
+                  </div>
+                  
+                  {/* Bottom Text */}
+                  <div className="text-left mt-auto">
+                    <h4 className="text-xl font-semibold text-white mb-2 tracking-tight">{feature.title}</h4>
+                    <p className="text-sm text-neutral-300/80 leading-relaxed">{feature.description}</p>
+                  </div>
                 </div>
-                <h4 className="font-semibold text-white mb-2">{feature.title}</h4>
-                <p className="text-sm text-[#b8bec1]">{feature.description}</p>
               </div>
             ))}
           </div>
