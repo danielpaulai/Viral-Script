@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Sparkles, ArrowRight, Zap, FileText, Target, CheckCircle2 } from "lucide-react";
+import { Sparkles, ArrowRight, Zap, FileText, CheckCircle2, Mail } from "lucide-react";
+import { SiGoogle, SiGithub, SiApple } from "react-icons/si";
 import { Link } from "wouter";
 
 const benefits = [
@@ -82,15 +83,35 @@ export default function Login() {
             <CardContent className="space-y-4">
               <Button 
                 onClick={handleLogin}
-                className="w-full gap-2"
+                variant="outline"
+                className="w-full gap-3"
                 size="lg"
-                data-testid="button-login-replit"
+                data-testid="button-login-google"
               >
-                <svg viewBox="0 0 32 32" className="w-5 h-5" fill="currentColor">
-                  <path d="M7 5.5C7 4.11929 8.11929 3 9.5 3H22.5C23.8807 3 25 4.11929 25 5.5V11.5C25 12.8807 23.8807 14 22.5 14H9.5C8.11929 14 7 12.8807 7 11.5V5.5Z"/>
-                  <path d="M7 20.5C7 19.1193 8.11929 18 9.5 18H22.5C23.8807 18 25 19.1193 25 20.5V26.5C25 27.8807 23.8807 29 22.5 29H9.5C8.11929 29 7 27.8807 7 26.5V20.5Z"/>
-                </svg>
-                Continue with Replit
+                <SiGoogle className="w-5 h-5" />
+                Continue with Google
+              </Button>
+
+              <Button 
+                onClick={handleLogin}
+                variant="outline"
+                className="w-full gap-3"
+                size="lg"
+                data-testid="button-login-github"
+              >
+                <SiGithub className="w-5 h-5" />
+                Continue with GitHub
+              </Button>
+
+              <Button 
+                onClick={handleLogin}
+                variant="outline"
+                className="w-full gap-3"
+                size="lg"
+                data-testid="button-login-apple"
+              >
+                <SiApple className="w-5 h-5" />
+                Continue with Apple
               </Button>
 
               <div className="relative">
@@ -102,7 +123,18 @@ export default function Login() {
                 </div>
               </div>
 
-              <p className="text-center text-sm text-muted-foreground">
+              <Button 
+                onClick={handleLogin}
+                variant="secondary"
+                className="w-full gap-3"
+                size="lg"
+                data-testid="button-login-email"
+              >
+                <Mail className="w-5 h-5" />
+                Continue with Email
+              </Button>
+
+              <p className="text-center text-sm text-muted-foreground pt-2">
                 New to Script Writer Pro?{" "}
                 <button 
                   onClick={handleLogin}
