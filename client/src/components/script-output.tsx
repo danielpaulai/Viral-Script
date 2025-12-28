@@ -30,6 +30,15 @@ import {
   ChevronUp,
   Lightbulb,
   Zap,
+  Camera,
+  Music,
+  Type,
+  Gauge,
+  Lightbulb as LightbulbIcon,
+  Film,
+  Clapperboard,
+  Timer,
+  Sparkles,
 } from "lucide-react";
 
 interface ScriptOutputProps {
@@ -333,39 +342,174 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
         
         <TabsContent value="production" className="mt-4">
           <div className="space-y-4">
-            <div className="p-4 rounded-md bg-white/5 border border-white/10">
-              <h4 className="text-sm font-medium mb-2 text-white">Filming Notes</h4>
-              <p className="text-sm text-muted-foreground italic" data-testid="text-production-notes">
-                {script.productionNotes}
-              </p>
-            </div>
-            
-            {script.bRollIdeas.length > 0 && (
+            {/* Scene Breakdown */}
+            {script.scenes && script.scenes.length > 0 && (
               <div className="p-4 rounded-md bg-white/5 border border-white/10">
-                <h4 className="text-sm font-medium mb-2 text-white">B-Roll Ideas</h4>
-                <ul className="space-y-1">
-                  {script.bRollIdeas.map((idea, index) => (
-                    <li key={index} className="text-sm text-muted-foreground flex items-start gap-2">
-                      <span className="text-primary">•</span>
-                      <span data-testid={`text-broll-${index}`}>{idea}</span>
-                    </li>
+                <div className="flex items-center gap-2 mb-4">
+                  <Clapperboard className="w-4 h-4 text-primary" />
+                  <h4 className="text-sm font-semibold text-white uppercase tracking-wider">Scene Breakdown</h4>
+                </div>
+                <div className="space-y-3">
+                  {script.scenes.map((scene, index) => (
+                    <div key={index} className="p-3 rounded-md bg-white/5 border-l-2 border-primary" data-testid={`scene-${index}`}>
+                      <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
+                        <div className="flex items-center gap-2">
+                          <Badge className="bg-primary/20 text-primary border-0">{scene.section}</Badge>
+                          <span className="text-xs text-muted-foreground font-mono">{scene.duration}</span>
+                        </div>
+                        <Badge variant="outline" className="text-xs border-white/20">{scene.energy}</Badge>
+                      </div>
+                      <p className="text-sm text-white/80 mb-2 line-clamp-2">{scene.lines}</p>
+                      <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                        <Camera className="w-3 h-3" />
+                        <span>{scene.camera}</span>
+                      </div>
+                    </div>
                   ))}
-                </ul>
+                </div>
               </div>
             )}
-            
-            {script.onScreenText.length > 0 && (
+
+            {/* Quick Reference Cards */}
+            <div className="grid md:grid-cols-2 gap-4">
+              {/* Music & Audio */}
               <div className="p-4 rounded-md bg-white/5 border border-white/10">
-                <h4 className="text-sm font-medium mb-2 text-white">On-Screen Text</h4>
+                <div className="flex items-center gap-2 mb-3">
+                  <Music className="w-4 h-4 text-primary" />
+                  <h4 className="text-sm font-semibold text-white">Music & Audio</h4>
+                </div>
+                <p className="text-sm text-muted-foreground" data-testid="text-music-mood">
+                  {script.musicMood || "Modern lo-fi or chill beat - 80-100 BPM. Not distracting."}
+                </p>
+              </div>
+
+              {/* Pacing */}
+              <div className="p-4 rounded-md bg-white/5 border border-white/10">
+                <div className="flex items-center gap-2 mb-3">
+                  <Gauge className="w-4 h-4 text-primary" />
+                  <h4 className="text-sm font-semibold text-white">Pacing</h4>
+                </div>
+                <p className="text-sm text-muted-foreground" data-testid="text-pacing">
+                  {script.pacing || "Medium pace - let key points breathe for 1s"}
+                </p>
+              </div>
+
+              {/* Caption Style */}
+              <div className="p-4 rounded-md bg-white/5 border border-white/10">
+                <div className="flex items-center gap-2 mb-3">
+                  <Type className="w-4 h-4 text-primary" />
+                  <h4 className="text-sm font-semibold text-white">Caption Style</h4>
+                </div>
+                <p className="text-sm text-muted-foreground" data-testid="text-caption-style">
+                  {script.captionStyle || "Bold, centered captions with 3-4 words max per line."}
+                </p>
+              </div>
+
+              {/* Lighting */}
+              <div className="p-4 rounded-md bg-white/5 border border-white/10">
+                <div className="flex items-center gap-2 mb-3">
+                  <LightbulbIcon className="w-4 h-4 text-primary" />
+                  <h4 className="text-sm font-semibold text-white">Lighting</h4>
+                </div>
+                <p className="text-sm text-muted-foreground" data-testid="text-lighting">
+                  {script.lighting || "Ring light or soft box at 45-degree angle. Avoid harsh shadows."}
+                </p>
+              </div>
+            </div>
+
+            {/* Camera Angles */}
+            {script.cameraAngles && script.cameraAngles.length > 0 && (
+              <div className="p-4 rounded-md bg-white/5 border border-white/10">
+                <div className="flex items-center gap-2 mb-3">
+                  <Camera className="w-4 h-4 text-primary" />
+                  <h4 className="text-sm font-semibold text-white">Camera Angles</h4>
+                </div>
+                <div className="grid md:grid-cols-2 gap-2">
+                  {script.cameraAngles.map((angle, index) => (
+                    <div key={index} className="flex items-center gap-2 p-2 rounded bg-white/5" data-testid={`camera-angle-${index}`}>
+                      <span className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center text-xs text-primary font-medium">
+                        {index + 1}
+                      </span>
+                      <span className="text-sm text-muted-foreground">{angle}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Transitions */}
+            {script.transitions && script.transitions.length > 0 && (
+              <div className="p-4 rounded-md bg-white/5 border border-white/10">
+                <div className="flex items-center gap-2 mb-3">
+                  <Sparkles className="w-4 h-4 text-primary" />
+                  <h4 className="text-sm font-semibold text-white">Transitions & Effects</h4>
+                </div>
                 <div className="flex flex-wrap gap-2">
-                  {script.onScreenText.map((text, index) => (
-                    <Badge key={index} variant="outline" className="border-white/20" data-testid={`badge-onscreen-${index}`}>
-                      {text}
+                  {script.transitions.map((transition, index) => (
+                    <Badge 
+                      key={index} 
+                      variant="outline" 
+                      className="border-primary/30 bg-primary/10 text-white/80"
+                      data-testid={`transition-${index}`}
+                    >
+                      {transition}
                     </Badge>
                   ))}
                 </div>
               </div>
             )}
+
+            {/* B-Roll Ideas */}
+            {script.bRollIdeas && script.bRollIdeas.length > 0 && (
+              <div className="p-4 rounded-md bg-white/5 border border-white/10">
+                <div className="flex items-center gap-2 mb-3">
+                  <Film className="w-4 h-4 text-primary" />
+                  <h4 className="text-sm font-semibold text-white">B-Roll Ideas</h4>
+                </div>
+                <div className="grid gap-2">
+                  {script.bRollIdeas.map((idea, index) => (
+                    <div key={index} className="flex items-start gap-3 p-2 rounded bg-white/5" data-testid={`text-broll-${index}`}>
+                      <div className="w-5 h-5 rounded bg-primary/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <Video className="w-3 h-3 text-primary" />
+                      </div>
+                      <span className="text-sm text-muted-foreground">{idea}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* On-Screen Text */}
+            {script.onScreenText && script.onScreenText.length > 0 && (
+              <div className="p-4 rounded-md bg-white/5 border border-white/10">
+                <div className="flex items-center gap-2 mb-3">
+                  <Type className="w-4 h-4 text-primary" />
+                  <h4 className="text-sm font-semibold text-white">On-Screen Text Overlays</h4>
+                </div>
+                <div className="space-y-2">
+                  {script.onScreenText.map((text, index) => (
+                    <div 
+                      key={index} 
+                      className="p-3 rounded-md bg-black border border-white/20 text-center"
+                      data-testid={`badge-onscreen-${index}`}
+                    >
+                      <span className="text-white font-bold text-sm tracking-wide">{text}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Filming Notes */}
+            <div className="p-4 rounded-md bg-primary/10 border border-primary/20">
+              <div className="flex items-center gap-2 mb-3">
+                <Lightbulb className="w-4 h-4 text-primary" />
+                <h4 className="text-sm font-semibold text-primary">Pro Tips</h4>
+              </div>
+              <p className="text-sm text-white/80" data-testid="text-production-notes">
+                {script.productionNotes}
+              </p>
+            </div>
           </div>
         </TabsContent>
       </Tabs>

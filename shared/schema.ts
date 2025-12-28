@@ -228,6 +228,15 @@ export interface ScriptParameters {
   deepResearch?: boolean;
 }
 
+// Scene breakdown for production
+export interface SceneBreakdown {
+  section: string;
+  lines: string;
+  duration: string;
+  camera: string;
+  energy: string;
+}
+
 // Generated Script Interface
 export interface GeneratedScript {
   id: string;
@@ -237,6 +246,13 @@ export interface GeneratedScript {
   productionNotes: string;
   bRollIdeas: string[];
   onScreenText: string[];
+  cameraAngles: string[];
+  transitions: string[];
+  musicMood: string;
+  captionStyle: string;
+  pacing: string;
+  lighting: string;
+  scenes: SceneBreakdown[];
   parameters: ScriptParameters;
   createdAt: Date;
 }

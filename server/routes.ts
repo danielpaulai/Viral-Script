@@ -207,16 +207,86 @@ ${cta}`,
   const productionNotes = `Film close-up, direct to camera. Start with energy on the hook. Natural pauses between key points. ${params.platform === "tiktok" ? "Keep cuts fast and dynamic." : "Match the pace to your audience."}`;
 
   const bRollIdeas = [
-    `0:02 "${hookLine.slice(0, 30)}..." → Dramatic reveal shot`,
-    `0:10 "Here's what..." → Screen recording or example`,
-    `0:25 Key point → Visual demonstration`,
-    `0:40 Result → Before/after comparison`,
+    `Screen recording of ${topic || "app/tool"} in action`,
+    `Close-up hands typing or demonstrating`,
+    `Before/after comparison graphics`,
+    `Text overlay animations for key stats`,
+    `Reaction shots or nodding moments`,
   ];
 
   const onScreenText = [
-    hook?.name || "Hook",
-    params.topic?.slice(0, 20) || "Key Point",
-    params.callToAction?.slice(0, 15) || "CTA",
+    hookLine.slice(0, 40) + "...",
+    `The ${topic?.split(" ").slice(0, 3).join(" ") || "Key"} Method`,
+    params.callToAction?.slice(0, 25) || "Follow for more",
+  ];
+
+  const cameraAngles = [
+    "Talking head - center frame, eye level",
+    "Slight angle left/right for variety",
+    "Close-up for emotional moments",
+    "Wide shot for context/setup",
+  ];
+
+  const transitions = [
+    "Jump cut between sentences",
+    "Zoom punch on key words",
+    "Swipe transition for new sections",
+    "Flash frame for emphasis",
+  ];
+
+  const musicMood = params.tone === "high_energy" 
+    ? "Upbeat, driving electronic - 120+ BPM. Think motivational workout energy."
+    : params.tone === "vulnerable"
+    ? "Soft ambient piano - emotional and reflective. Keep it subtle."
+    : "Modern lo-fi or chill beat - 80-100 BPM. Not distracting.";
+
+  const captionStyle = params.platform === "tiktok"
+    ? "Bold, centered captions with 3-4 words max per line. Yellow/white with black outline. Animate key words."
+    : params.platform === "instagram"
+    ? "Clean white captions, minimal animation. Consider adding branded colors."
+    : "Standard auto-captions. Ensure accuracy before posting.";
+
+  const pacing = params.duration === "30" 
+    ? "Fast and punchy - no pauses longer than 0.5s between lines"
+    : params.duration === "60"
+    ? "Medium pace - let key points breathe for 1s"
+    : "Conversational pace - can include natural pauses for emphasis";
+
+  const lighting = "Ring light or soft box at 45-degree angle. Fill light optional. Avoid harsh shadows.";
+
+  const scriptLines = scriptContent.split("\n\n").filter(Boolean);
+  const totalDuration = parseInt(params.duration) || 60;
+  const perScene = Math.floor(totalDuration / Math.max(scriptLines.length, 4));
+  
+  const scenes = [
+    {
+      section: "Hook",
+      lines: hookLine,
+      duration: `0:00 - 0:0${Math.min(perScene, 5)}`,
+      camera: "Center frame, slight zoom in",
+      energy: "HIGH - grab attention immediately"
+    },
+    {
+      section: "Setup",
+      lines: scriptLines.slice(1, 3).join(" "),
+      duration: `0:0${perScene} - 0:${perScene * 2}`,
+      camera: "Angle left or right",
+      energy: "Building - establish context"
+    },
+    {
+      section: "Core Content",
+      lines: scriptLines.slice(3, 6).join(" "),
+      duration: `0:${perScene * 2} - 0:${perScene * 4}`,
+      camera: "Mix of angles + B-roll cuts",
+      energy: "Medium-high - deliver value"
+    },
+    {
+      section: "Call to Action",
+      lines: cta,
+      duration: `0:${Math.max(totalDuration - 5, perScene * 4)} - 0:${totalDuration}`,
+      camera: "Center frame, direct to camera",
+      energy: "Warm - personal connection"
+    }
   ];
 
   return {
@@ -227,6 +297,13 @@ ${cta}`,
     productionNotes,
     bRollIdeas,
     onScreenText,
+    cameraAngles,
+    transitions,
+    musicMood,
+    captionStyle,
+    pacing,
+    lighting,
+    scenes,
     parameters: params,
     createdAt: new Date(),
   };
