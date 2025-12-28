@@ -79,12 +79,64 @@ export const durationOptions = [
   { id: "90", name: "90 seconds", wordCount: "135-180 words" },
 ] as const;
 
-// Quick Presets
+// Quick Presets with world-class script writer samples
 export const quickPresets = [
-  { id: "business_growth", name: "Business Growth Engine", description: "High-converting marketing content", category: "business_marketing", hook: "case_study", structure: "problem_solver", tone: "direct", voice: "confident" },
-  { id: "ai_tech", name: "AI & Tech Insider", description: "Futuristic and high-energy tech breakdowns", category: "ai_technology", hook: "secret_reveal", structure: "breakdown", tone: "high_energy", voice: "inquisitive" },
-  { id: "viral_growth", name: "Viral Growth Hacks", description: "Fast-paced tips for social growth", category: "social_growth", hook: "list", structure: "listicle", tone: "high_energy", voice: "confident" },
-  { id: "personal_brand", name: "Authentic Personal Brand", description: "Relatable storytelling to build trust", category: "personal_branding", hook: "personal_experience", structure: "story_arc", tone: "conversational", voice: "relatable" },
+  { 
+    id: "business_growth", 
+    name: "Business Growth Engine", 
+    description: "High-converting marketing content", 
+    category: "business_marketing", 
+    hook: "case_study", 
+    structure: "problem_solver", 
+    tone: "direct", 
+    voice: "confident",
+    sampleTopic: "The exact 3-step cold outreach system I used to book 47 sales calls last month without spending a dollar on ads",
+    sampleAudience: "Entrepreneurs and business owners struggling to get consistent leads",
+    sampleCta: "Drop 'SYSTEM' in the comments and I'll send you my exact templates",
+    sampleFacts: "47 calls booked, $0 ad spend, 23% response rate, 6-figure pipeline"
+  },
+  { 
+    id: "ai_tech", 
+    name: "AI & Tech Insider", 
+    description: "Futuristic and high-energy tech breakdowns", 
+    category: "ai_technology", 
+    hook: "secret_reveal", 
+    structure: "breakdown", 
+    tone: "high_energy", 
+    voice: "inquisitive",
+    sampleTopic: "This new AI feature just dropped and nobody is talking about it. It's going to replace 80% of what most marketers do manually",
+    sampleAudience: "Tech-savvy professionals and early adopters who want an edge",
+    sampleCta: "Follow for daily AI updates that'll keep you ahead of 99% of people",
+    sampleFacts: "Launched this week, free to use, 10x faster than current methods, integrates with everything"
+  },
+  { 
+    id: "viral_growth", 
+    name: "Viral Growth Hacks", 
+    description: "Fast-paced tips for social growth", 
+    category: "social_growth", 
+    hook: "list", 
+    structure: "listicle", 
+    tone: "high_energy", 
+    voice: "confident",
+    sampleTopic: "5 hooks that got me 10M views this month. Number 3 is the one everyone sleeps on",
+    sampleAudience: "Content creators who want more views and engagement",
+    sampleCta: "Save this and use hook #3 on your next video. Trust me.",
+    sampleFacts: "10M+ views, tested on 200+ videos, works on TikTok/Reels/Shorts, takes 5 seconds to add"
+  },
+  { 
+    id: "personal_brand", 
+    name: "Authentic Personal Brand", 
+    description: "Relatable storytelling to build trust", 
+    category: "personal_branding", 
+    hook: "personal_experience", 
+    structure: "story_arc", 
+    tone: "conversational", 
+    voice: "relatable",
+    sampleTopic: "I quit my 6-figure job with no backup plan. Here's the uncomfortable truth about what happened next",
+    sampleAudience: "People feeling stuck in their careers dreaming of something more",
+    sampleCta: "If this resonates, follow for more stories from the journey",
+    sampleFacts: "Left corporate 2 years ago, first 6 months were brutal, now earning 3x my old salary, working 20 hours less"
+  },
 ] as const;
 
 // Script Parameters Interface

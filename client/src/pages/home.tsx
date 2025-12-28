@@ -89,12 +89,20 @@ export default function Home() {
     const preset = quickPresets.find((p) => p.id === presetId);
     if (preset) {
       setActivePreset(presetId);
-      setFormData((prev) => ({
-        ...prev,
+      setFormData({
+        topic: preset.sampleTopic,
+        targetAudience: preset.sampleAudience,
+        callToAction: preset.sampleCta,
+        keyFacts: preset.sampleFacts,
+        platform: "tiktok",
+        duration: "90",
         category: preset.category,
         hook: preset.hook,
         structure: preset.structure,
-      }));
+        tone: preset.tone,
+        voice: preset.voice,
+        deepResearch: false,
+      });
     }
   };
 
