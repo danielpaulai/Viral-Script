@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
+import { useAuth } from "@/hooks/useAuth";
 import Home from "@/pages/home";
 import Scripts from "@/pages/scripts";
 import Projects from "@/pages/projects";
@@ -13,9 +14,11 @@ import Vault from "@/pages/vault";
 import Pricing from "@/pages/pricing";
 import KnowledgeBase from "@/pages/knowledge-base";
 import Settings from "@/pages/settings";
+import Landing from "@/pages/landing";
+import Login from "@/pages/login";
 import NotFound from "@/pages/not-found";
 
-function Router() {
+function AuthenticatedRouter() {
   return (
     <Switch>
       <Route path="/" component={Home} />
@@ -31,28 +34,61 @@ function Router() {
   );
 }
 
-function App() {
+function AuthenticatedApp() {
   const style = {
     "--sidebar-width": "14rem",
     "--sidebar-width-icon": "3rem",
   };
 
   return (
+    <SidebarProvider style={style as React.CSSProperties}>
+      <div className="flex min-h-screen w-full bg-background">
+        <AppSidebar />
+        <SidebarInset className="flex-1">
+          <header className="sticky top-0 z-50 flex h-12 items-center gap-2 border-b border-border bg-background/95 backdrop-blur px-4">
+            <SidebarTrigger data-testid="button-sidebar-toggle" />
+          </header>
+          <main className="flex-1">
+            <AuthenticatedRouter />
+          </main>
+        </SidebarInset>
+      </div>
+    </SidebarProvider>
+  );
+}
+
+function PublicRouter() {
+  return (
+    <Switch>
+      <Route path="/" component={Landing} />
+      <Route path="/login" component={Login} />
+      <Route path="/pricing" component={Pricing} />
+      <Route component={Landing} />
+    </Switch>
+  );
+}
+
+function AppContent() {
+  const { user, isLoading } = useAuth();
+  
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-background">
+        <div className="animate-pulse text-muted-foreground">Loading...</div>
+      </div>
+    );
+  }
+
+  const isAuthenticated = !!user;
+
+  return isAuthenticated ? <AuthenticatedApp /> : <PublicRouter />;
+}
+
+function App() {
+  return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <SidebarProvider style={style as React.CSSProperties}>
-          <div className="flex min-h-screen w-full bg-background">
-            <AppSidebar />
-            <SidebarInset className="flex-1">
-              <header className="sticky top-0 z-50 flex h-12 items-center gap-2 border-b border-border bg-background/95 backdrop-blur px-4">
-                <SidebarTrigger data-testid="button-sidebar-toggle" />
-              </header>
-              <main className="flex-1">
-                <Router />
-              </main>
-            </SidebarInset>
-          </div>
-        </SidebarProvider>
+        <AppContent />
         <Toaster />
       </TooltipProvider>
     </QueryClientProvider>

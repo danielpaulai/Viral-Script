@@ -363,6 +363,7 @@ export const pricingTiers = [
     name: "Starter", 
     price: 19.99, 
     description: "Essential script generation for content creators",
+    popular: false,
     features: [
       "AI-powered script generation",
       "50 viral hooks library",
@@ -402,6 +403,7 @@ export const pricingTiers = [
     name: "Ultimate", 
     price: 99.99, 
     description: "Full content strategy with competitor intelligence",
+    popular: false,
     features: [
       "Everything in Pro",
       "Unlimited scripts",
