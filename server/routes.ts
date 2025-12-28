@@ -616,11 +616,29 @@ Return JSON in this exact format:
       });
 
       const overlayJson = overlayResponse.choices[0]?.message?.content || "";
-      const parsed = JSON.parse(overlayJson.replace(/```json\n?|\n?```/g, ""));
+      // Clean up potential markdown fences and extract JSON
+      const cleanedJson = overlayJson
+        .replace(/```json\s*/gi, "")
+        .replace(/```\s*/g, "")
+        .trim();
+      
+      const parsed = JSON.parse(cleanedJson);
+      
+      // Validate parsed structure
+      const hookOptions = Array.isArray(parsed.hook) 
+        ? parsed.hook.filter((x: any) => typeof x === 'string').slice(0, 3)
+        : [];
+      const bodyOptions = Array.isArray(parsed.body)
+        ? parsed.body.filter((x: any) => typeof x === 'string').slice(0, 3)
+        : [];
+      const ctaOptions = Array.isArray(parsed.cta)
+        ? parsed.cta.filter((x: any) => typeof x === 'string').slice(0, 3)
+        : [];
+      
       overlayOptions = [
-        { section: "Hook", options: parsed.hook || [] },
-        { section: "Body", options: parsed.body || [] },
-        { section: "CTA", options: parsed.cta || [] },
+        { section: "Hook", options: hookOptions },
+        { section: "Body", options: bodyOptions },
+        { section: "CTA", options: ctaOptions },
       ];
     } catch (e) {
       // Fallback overlay options

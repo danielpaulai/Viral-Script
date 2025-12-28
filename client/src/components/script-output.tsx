@@ -16,6 +16,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { viralHooks, hookCategories, type GeneratedScript } from "@shared/schema";
+import { shotPresets, musicResources, getShotRecommendations } from "@/data/shot-presets";
 import {
   Copy,
   RefreshCw,
@@ -39,6 +40,8 @@ import {
   Clapperboard,
   Timer,
   Sparkles,
+  ExternalLink,
+  Image,
 } from "lucide-react";
 
 interface ScriptOutputProps {
@@ -571,36 +574,218 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
               </div>
             )}
 
-            {/* On-Screen Text */}
-            {script.onScreenText && script.onScreenText.length > 0 && (
+            {/* On-Screen Text Overlay Options */}
+            {script.onScreenText && Array.isArray(script.onScreenText) && script.onScreenText.length > 0 && (
               <div className="p-4 rounded-md bg-white/5 border border-white/10">
                 <div className="flex items-center gap-2 mb-3">
                   <Type className="w-4 h-4 text-primary" />
-                  <h4 className="text-sm font-semibold text-white">On-Screen Text Overlays</h4>
+                  <h4 className="text-sm font-semibold text-white">On-Screen Text Overlay Options</h4>
                 </div>
-                <div className="space-y-2">
-                  {script.onScreenText.map((text, index) => (
-                    <div 
-                      key={index} 
-                      className="p-3 rounded-md bg-black border border-white/20 text-center"
-                      data-testid={`badge-onscreen-${index}`}
-                    >
-                      <span className="text-white font-bold text-sm tracking-wide">{text}</span>
+                <p className="text-xs text-muted-foreground mb-4">
+                  Choose from these attention-grabbing text overlays for each section of your video
+                </p>
+                <div className="space-y-4">
+                  {script.onScreenText[0] && typeof script.onScreenText[0] === 'object' && 'section' in script.onScreenText[0] ? (
+                    (script.onScreenText as unknown as { section: string; options: string[] }[]).map((sectionData, sectionIndex) => {
+                      if (!sectionData || typeof sectionData !== 'object') return null;
+                      const options = Array.isArray(sectionData.options) 
+                        ? sectionData.options.filter((x: any) => typeof x === 'string')
+                        : [];
+                      
+                      return (
+                        <div key={sectionIndex} className="space-y-2">
+                          <div className="flex items-center gap-2">
+                            <Badge 
+                              variant="outline" 
+                              className={`text-xs ${
+                                sectionData.section === 'Hook' ? 'border-primary text-primary' :
+                                sectionData.section === 'CTA' ? 'border-green-500 text-green-500' :
+                                'border-white/30 text-white/70'
+                              }`}
+                            >
+                              {sectionData.section || 'Section'}
+                            </Badge>
+                          </div>
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                            {options.map((text: string, optIndex: number) => (
+                              <button
+                                key={optIndex}
+                                onClick={async () => {
+                                  await navigator.clipboard.writeText(text);
+                                  toast({
+                                    title: "Copied",
+                                    description: `"${text}" copied to clipboard`,
+                                  });
+                                }}
+                                className="p-3 rounded-md bg-black border border-white/20 text-center hover-elevate active-elevate-2 cursor-pointer group"
+                                data-testid={`overlay-${(sectionData.section || 'section').toLowerCase()}-${optIndex}`}
+                              >
+                                <span className="text-white font-bold text-sm tracking-wide">{text}</span>
+                                <div className="text-xs text-muted-foreground mt-1 invisible group-hover:visible">Click to copy</div>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                      {(script.onScreenText as string[]).filter((x: any) => typeof x === 'string').map((text, index) => (
+                        <div 
+                          key={index} 
+                          className="p-3 rounded-md bg-black border border-white/20 text-center"
+                          data-testid={`badge-onscreen-${index}`}
+                        >
+                          <span className="text-white font-bold text-sm tracking-wide">{text}</span>
+                        </div>
+                      ))}
                     </div>
-                  ))}
+                  )}
                 </div>
               </div>
             )}
 
-            {/* Filming Notes */}
+            {/* Shot Gallery */}
+            <div className="p-4 rounded-md bg-white/5 border border-white/10">
+              <div className="flex items-center gap-2 mb-3">
+                <Image className="w-4 h-4 text-primary" />
+                <h4 className="text-sm font-semibold text-white">Shot Gallery</h4>
+              </div>
+              <p className="text-xs text-muted-foreground mb-4">
+                Visual examples of camera angles to use in your video
+              </p>
+              
+              {/* Hook Shots */}
+              <div className="mb-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <Badge variant="outline" className="border-primary text-primary text-xs">Hook Shots</Badge>
+                </div>
+                <div className="flex gap-3 overflow-x-auto pb-2">
+                  {getShotRecommendations("hook").map((shot) => (
+                    <div key={shot.id} className="flex-shrink-0 w-40 group">
+                      <div className="relative rounded-md overflow-hidden mb-2">
+                        <img 
+                          src={shot.image} 
+                          alt={shot.name}
+                          className="w-40 h-28 object-cover"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex items-end p-2">
+                          <span className="text-xs font-medium text-white">{shot.name}</span>
+                        </div>
+                      </div>
+                      <p className="text-[10px] text-muted-foreground line-clamp-2">{shot.whenToUse}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Body Shots */}
+              <div className="mb-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <Badge variant="outline" className="border-white/30 text-white/70 text-xs">Body Shots</Badge>
+                </div>
+                <div className="flex gap-3 overflow-x-auto pb-2">
+                  {getShotRecommendations("body").map((shot) => (
+                    <div key={shot.id} className="flex-shrink-0 w-40 group">
+                      <div className="relative rounded-md overflow-hidden mb-2">
+                        <img 
+                          src={shot.image} 
+                          alt={shot.name}
+                          className="w-40 h-28 object-cover"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex items-end p-2">
+                          <span className="text-xs font-medium text-white">{shot.name}</span>
+                        </div>
+                      </div>
+                      <p className="text-[10px] text-muted-foreground line-clamp-2">{shot.whenToUse}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* CTA Shots */}
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <Badge variant="outline" className="border-green-500 text-green-500 text-xs">CTA Shots</Badge>
+                </div>
+                <div className="flex gap-3 overflow-x-auto pb-2">
+                  {getShotRecommendations("cta").map((shot) => (
+                    <div key={shot.id} className="flex-shrink-0 w-40 group">
+                      <div className="relative rounded-md overflow-hidden mb-2">
+                        <img 
+                          src={shot.image} 
+                          alt={shot.name}
+                          className="w-40 h-28 object-cover"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex items-end p-2">
+                          <span className="text-xs font-medium text-white">{shot.name}</span>
+                        </div>
+                      </div>
+                      <p className="text-[10px] text-muted-foreground line-clamp-2">{shot.whenToUse}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Music Resources */}
+            <div className="p-4 rounded-md bg-white/5 border border-white/10">
+              <div className="flex items-center gap-2 mb-3">
+                <Music className="w-4 h-4 text-primary" />
+                <h4 className="text-sm font-semibold text-white">Music Resources</h4>
+              </div>
+              <p className="text-xs text-muted-foreground mb-4">
+                Find royalty-free music for your video
+              </p>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                {musicResources.map((resource, index) => (
+                  <a
+                    key={index}
+                    href={resource.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 p-2 rounded-md bg-white/5 border border-white/10 hover-elevate active-elevate-2"
+                    data-testid={`music-resource-${index}`}
+                  >
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-white truncate">{resource.name}</p>
+                      <p className="text-xs text-muted-foreground">{resource.type}</p>
+                    </div>
+                    <ExternalLink className="w-3 h-3 text-muted-foreground flex-shrink-0" />
+                  </a>
+                ))}
+              </div>
+            </div>
+
+            {/* Filming Notes / Pro Tips */}
             <div className="p-4 rounded-md bg-primary/10 border border-primary/20">
               <div className="flex items-center gap-2 mb-3">
                 <Lightbulb className="w-4 h-4 text-primary" />
                 <h4 className="text-sm font-semibold text-primary">Pro Tips</h4>
               </div>
-              <p className="text-sm text-white/80" data-testid="text-production-notes">
-                {script.productionNotes}
-              </p>
+              {typeof script.productionNotes === 'object' && script.productionNotes !== null ? (
+                <div className="space-y-3">
+                  <p className="text-sm text-white/80" data-testid="text-production-notes">
+                    {(script.productionNotes as any).filming || "Film close-up, direct to camera. High energy on the hook."}
+                  </p>
+                  {Array.isArray((script.productionNotes as any).tips) && (script.productionNotes as any).tips.length > 0 && (
+                    <ul className="space-y-1">
+                      {(script.productionNotes as any).tips
+                        .filter((tip: any) => typeof tip === 'string')
+                        .map((tip: string, index: number) => (
+                          <li key={index} className="text-xs text-white/70 flex items-start gap-2">
+                            <span className="text-primary mt-0.5">-</span>
+                            {tip}
+                          </li>
+                        ))}
+                    </ul>
+                  )}
+                </div>
+              ) : (
+                <p className="text-sm text-white/80" data-testid="text-production-notes">
+                  {typeof script.productionNotes === 'string' ? script.productionNotes : "Film close-up, direct to camera. High energy on the hook."}
+                </p>
+              )}
             </div>
           </div>
         </TabsContent>
