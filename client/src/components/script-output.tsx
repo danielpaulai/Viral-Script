@@ -57,6 +57,7 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
   const [showHookSelector, setShowHookSelector] = useState(false);
   const [selectedHook, setSelectedHook] = useState<string | null>(null);
   const [customHookLine, setCustomHookLine] = useState<string | null>(null);
+  const [expandedShot, setExpandedShot] = useState<string | null>(null);
 
   const saveToVaultMutation = useMutation({
     mutationFn: async () => {
@@ -652,7 +653,7 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
                 <h4 className="text-sm font-semibold text-white">Shot Gallery</h4>
               </div>
               <p className="text-xs text-muted-foreground mb-4">
-                Visual examples of camera angles to use in your video
+                Click on any shot to see camera angle and setup instructions
               </p>
               
               {/* Hook Shots */}
@@ -660,22 +661,80 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
                 <div className="flex items-center gap-2 mb-2">
                   <Badge variant="outline" className="border-primary text-primary text-xs">Hook Shots</Badge>
                 </div>
-                <div className="flex gap-3 overflow-x-auto pb-2">
-                  {getShotRecommendations("hook").map((shot) => (
-                    <div key={shot.id} className="flex-shrink-0 w-40 group">
-                      <div className="relative rounded-md overflow-hidden mb-2">
-                        <img 
-                          src={shot.image} 
-                          alt={shot.name}
-                          className="w-40 h-28 object-cover"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex items-end p-2">
-                          <span className="text-xs font-medium text-white">{shot.name}</span>
+                <div className="space-y-3">
+                  <div className="flex gap-3 overflow-x-auto pb-2">
+                    {getShotRecommendations("hook").map((shot) => (
+                      <div 
+                        key={shot.id} 
+                        className="flex-shrink-0 w-40 cursor-pointer"
+                        onClick={() => setExpandedShot(expandedShot === `hook-${shot.id}` ? null : `hook-${shot.id}`)}
+                        data-testid={`shot-hook-${shot.id}`}
+                      >
+                        <div className={`relative rounded-md overflow-hidden mb-2 ring-2 transition-all ${expandedShot === `hook-${shot.id}` ? 'ring-primary' : 'ring-transparent hover:ring-white/30'}`}>
+                          <img 
+                            src={shot.image} 
+                            alt={shot.name}
+                            className="w-40 h-28 object-cover"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex flex-col items-start justify-end p-2">
+                            <span className="text-xs font-medium text-white">{shot.name}</span>
+                            <span className="text-[10px] text-primary">{shot.angle}</span>
+                          </div>
+                          <div className="absolute top-2 right-2">
+                            <ChevronDown className={`w-4 h-4 text-white transition-transform ${expandedShot === `hook-${shot.id}` ? 'rotate-180' : ''}`} />
+                          </div>
                         </div>
+                        <p className="text-[10px] text-muted-foreground line-clamp-2">{shot.whenToUse}</p>
                       </div>
-                      <p className="text-[10px] text-muted-foreground line-clamp-2">{shot.whenToUse}</p>
+                    ))}
+                  </div>
+                  {/* Expanded Shot Details for Hook */}
+                  {expandedShot?.startsWith('hook-') && (
+                    <div className="p-4 rounded-md bg-black border border-primary/30 animate-in slide-in-from-top-2 duration-200">
+                      {(() => {
+                        const shotId = expandedShot.replace('hook-', '');
+                        const shot = getShotRecommendations("hook").find(s => s.id === shotId);
+                        if (!shot) return null;
+                        return (
+                          <div className="space-y-4">
+                            <div className="flex items-center justify-between">
+                              <h5 className="font-semibold text-white">{shot.name} Setup Guide</h5>
+                              <Badge className="bg-primary/20 text-primary border-0">{shot.angle}</Badge>
+                            </div>
+                            <div className="grid md:grid-cols-2 gap-4">
+                              <div>
+                                <p className="text-xs text-muted-foreground mb-1">Camera Height</p>
+                                <p className="text-sm text-white">{shot.setup.cameraHeight}</p>
+                              </div>
+                              <div>
+                                <p className="text-xs text-muted-foreground mb-1">Distance from Subject</p>
+                                <p className="text-sm text-white">{shot.setup.distance}</p>
+                              </div>
+                            </div>
+                            <div>
+                              <p className="text-xs text-muted-foreground mb-2">Equipment Needed</p>
+                              <div className="flex flex-wrap gap-2">
+                                {shot.setup.equipment.map((item, i) => (
+                                  <Badge key={i} variant="outline" className="border-white/20 text-white/80 text-xs">{item}</Badge>
+                                ))}
+                              </div>
+                            </div>
+                            <div>
+                              <p className="text-xs text-muted-foreground mb-2">Pro Tips</p>
+                              <ul className="space-y-1">
+                                {shot.setup.tips.map((tip, i) => (
+                                  <li key={i} className="text-sm text-white/80 flex items-start gap-2">
+                                    <Lightbulb className="w-3 h-3 text-primary mt-1 flex-shrink-0" />
+                                    {tip}
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          </div>
+                        );
+                      })()}
                     </div>
-                  ))}
+                  )}
                 </div>
               </div>
 
@@ -684,22 +743,80 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
                 <div className="flex items-center gap-2 mb-2">
                   <Badge variant="outline" className="border-white/30 text-white/70 text-xs">Body Shots</Badge>
                 </div>
-                <div className="flex gap-3 overflow-x-auto pb-2">
-                  {getShotRecommendations("body").map((shot) => (
-                    <div key={shot.id} className="flex-shrink-0 w-40 group">
-                      <div className="relative rounded-md overflow-hidden mb-2">
-                        <img 
-                          src={shot.image} 
-                          alt={shot.name}
-                          className="w-40 h-28 object-cover"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex items-end p-2">
-                          <span className="text-xs font-medium text-white">{shot.name}</span>
+                <div className="space-y-3">
+                  <div className="flex gap-3 overflow-x-auto pb-2">
+                    {getShotRecommendations("body").map((shot) => (
+                      <div 
+                        key={shot.id} 
+                        className="flex-shrink-0 w-40 cursor-pointer"
+                        onClick={() => setExpandedShot(expandedShot === `body-${shot.id}` ? null : `body-${shot.id}`)}
+                        data-testid={`shot-body-${shot.id}`}
+                      >
+                        <div className={`relative rounded-md overflow-hidden mb-2 ring-2 transition-all ${expandedShot === `body-${shot.id}` ? 'ring-white/50' : 'ring-transparent hover:ring-white/30'}`}>
+                          <img 
+                            src={shot.image} 
+                            alt={shot.name}
+                            className="w-40 h-28 object-cover"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex flex-col items-start justify-end p-2">
+                            <span className="text-xs font-medium text-white">{shot.name}</span>
+                            <span className="text-[10px] text-white/60">{shot.angle}</span>
+                          </div>
+                          <div className="absolute top-2 right-2">
+                            <ChevronDown className={`w-4 h-4 text-white transition-transform ${expandedShot === `body-${shot.id}` ? 'rotate-180' : ''}`} />
+                          </div>
                         </div>
+                        <p className="text-[10px] text-muted-foreground line-clamp-2">{shot.whenToUse}</p>
                       </div>
-                      <p className="text-[10px] text-muted-foreground line-clamp-2">{shot.whenToUse}</p>
+                    ))}
+                  </div>
+                  {/* Expanded Shot Details for Body */}
+                  {expandedShot?.startsWith('body-') && (
+                    <div className="p-4 rounded-md bg-black border border-white/20 animate-in slide-in-from-top-2 duration-200">
+                      {(() => {
+                        const shotId = expandedShot.replace('body-', '');
+                        const shot = getShotRecommendations("body").find(s => s.id === shotId);
+                        if (!shot) return null;
+                        return (
+                          <div className="space-y-4">
+                            <div className="flex items-center justify-between">
+                              <h5 className="font-semibold text-white">{shot.name} Setup Guide</h5>
+                              <Badge className="bg-white/10 text-white/80 border-0">{shot.angle}</Badge>
+                            </div>
+                            <div className="grid md:grid-cols-2 gap-4">
+                              <div>
+                                <p className="text-xs text-muted-foreground mb-1">Camera Height</p>
+                                <p className="text-sm text-white">{shot.setup.cameraHeight}</p>
+                              </div>
+                              <div>
+                                <p className="text-xs text-muted-foreground mb-1">Distance from Subject</p>
+                                <p className="text-sm text-white">{shot.setup.distance}</p>
+                              </div>
+                            </div>
+                            <div>
+                              <p className="text-xs text-muted-foreground mb-2">Equipment Needed</p>
+                              <div className="flex flex-wrap gap-2">
+                                {shot.setup.equipment.map((item, i) => (
+                                  <Badge key={i} variant="outline" className="border-white/20 text-white/80 text-xs">{item}</Badge>
+                                ))}
+                              </div>
+                            </div>
+                            <div>
+                              <p className="text-xs text-muted-foreground mb-2">Pro Tips</p>
+                              <ul className="space-y-1">
+                                {shot.setup.tips.map((tip, i) => (
+                                  <li key={i} className="text-sm text-white/80 flex items-start gap-2">
+                                    <Lightbulb className="w-3 h-3 text-primary mt-1 flex-shrink-0" />
+                                    {tip}
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          </div>
+                        );
+                      })()}
                     </div>
-                  ))}
+                  )}
                 </div>
               </div>
 
@@ -708,22 +825,80 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
                 <div className="flex items-center gap-2 mb-2">
                   <Badge variant="outline" className="border-green-500 text-green-500 text-xs">CTA Shots</Badge>
                 </div>
-                <div className="flex gap-3 overflow-x-auto pb-2">
-                  {getShotRecommendations("cta").map((shot) => (
-                    <div key={shot.id} className="flex-shrink-0 w-40 group">
-                      <div className="relative rounded-md overflow-hidden mb-2">
-                        <img 
-                          src={shot.image} 
-                          alt={shot.name}
-                          className="w-40 h-28 object-cover"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex items-end p-2">
-                          <span className="text-xs font-medium text-white">{shot.name}</span>
+                <div className="space-y-3">
+                  <div className="flex gap-3 overflow-x-auto pb-2">
+                    {getShotRecommendations("cta").map((shot) => (
+                      <div 
+                        key={shot.id} 
+                        className="flex-shrink-0 w-40 cursor-pointer"
+                        onClick={() => setExpandedShot(expandedShot === `cta-${shot.id}` ? null : `cta-${shot.id}`)}
+                        data-testid={`shot-cta-${shot.id}`}
+                      >
+                        <div className={`relative rounded-md overflow-hidden mb-2 ring-2 transition-all ${expandedShot === `cta-${shot.id}` ? 'ring-green-500' : 'ring-transparent hover:ring-white/30'}`}>
+                          <img 
+                            src={shot.image} 
+                            alt={shot.name}
+                            className="w-40 h-28 object-cover"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex flex-col items-start justify-end p-2">
+                            <span className="text-xs font-medium text-white">{shot.name}</span>
+                            <span className="text-[10px] text-green-400">{shot.angle}</span>
+                          </div>
+                          <div className="absolute top-2 right-2">
+                            <ChevronDown className={`w-4 h-4 text-white transition-transform ${expandedShot === `cta-${shot.id}` ? 'rotate-180' : ''}`} />
+                          </div>
                         </div>
+                        <p className="text-[10px] text-muted-foreground line-clamp-2">{shot.whenToUse}</p>
                       </div>
-                      <p className="text-[10px] text-muted-foreground line-clamp-2">{shot.whenToUse}</p>
+                    ))}
+                  </div>
+                  {/* Expanded Shot Details for CTA */}
+                  {expandedShot?.startsWith('cta-') && (
+                    <div className="p-4 rounded-md bg-black border border-green-500/30 animate-in slide-in-from-top-2 duration-200">
+                      {(() => {
+                        const shotId = expandedShot.replace('cta-', '');
+                        const shot = getShotRecommendations("cta").find(s => s.id === shotId);
+                        if (!shot) return null;
+                        return (
+                          <div className="space-y-4">
+                            <div className="flex items-center justify-between">
+                              <h5 className="font-semibold text-white">{shot.name} Setup Guide</h5>
+                              <Badge className="bg-green-500/20 text-green-400 border-0">{shot.angle}</Badge>
+                            </div>
+                            <div className="grid md:grid-cols-2 gap-4">
+                              <div>
+                                <p className="text-xs text-muted-foreground mb-1">Camera Height</p>
+                                <p className="text-sm text-white">{shot.setup.cameraHeight}</p>
+                              </div>
+                              <div>
+                                <p className="text-xs text-muted-foreground mb-1">Distance from Subject</p>
+                                <p className="text-sm text-white">{shot.setup.distance}</p>
+                              </div>
+                            </div>
+                            <div>
+                              <p className="text-xs text-muted-foreground mb-2">Equipment Needed</p>
+                              <div className="flex flex-wrap gap-2">
+                                {shot.setup.equipment.map((item, i) => (
+                                  <Badge key={i} variant="outline" className="border-white/20 text-white/80 text-xs">{item}</Badge>
+                                ))}
+                              </div>
+                            </div>
+                            <div>
+                              <p className="text-xs text-muted-foreground mb-2">Pro Tips</p>
+                              <ul className="space-y-1">
+                                {shot.setup.tips.map((tip, i) => (
+                                  <li key={i} className="text-sm text-white/80 flex items-start gap-2">
+                                    <Lightbulb className="w-3 h-3 text-green-400 mt-1 flex-shrink-0" />
+                                    {tip}
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          </div>
+                        );
+                      })()}
                     </div>
-                  ))}
+                  )}
                 </div>
               </div>
             </div>

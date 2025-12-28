@@ -21,6 +21,13 @@ export interface ShotPreset {
   description: string;
   whenToUse: string;
   mood: string;
+  angle: string;
+  setup: {
+    cameraHeight: string;
+    distance: string;
+    equipment: string[];
+    tips: string[];
+  };
 }
 
 export const shotPresets: ShotPreset[] = [
@@ -30,7 +37,14 @@ export const shotPresets: ShotPreset[] = [
     image: closeUp,
     description: "Shoulders up to just above head. Face fills 60-70% of frame.",
     whenToUse: "For emotional moments, direct connection with audience, sharing personal stories or insights",
-    mood: "Confident, approachable, trustworthy"
+    mood: "Confident, approachable, trustworthy",
+    angle: "Eye level (0 degrees)",
+    setup: {
+      cameraHeight: "Eye level - camera lens at same height as your eyes",
+      distance: "2-3 feet from subject",
+      equipment: ["Tripod at eye height", "Ring light or key light", "Phone/camera with portrait mode"],
+      tips: ["Keep background simple and uncluttered", "Use shallow depth of field for blur", "Maintain eye contact with lens"]
+    }
   },
   {
     id: "medium-close-up",
@@ -38,7 +52,14 @@ export const shotPresets: ShotPreset[] = [
     image: mediumCloseUp,
     description: "Mid-chest up to above head. Hands partially visible gesturing.",
     whenToUse: "Educational content, explaining concepts, YouTube/podcast creator aesthetic",
-    mood: "Educational, energetic, expert sharing knowledge"
+    mood: "Educational, energetic, expert sharing knowledge",
+    angle: "Eye level to slightly above (0-10 degrees down)",
+    setup: {
+      cameraHeight: "Eye level or slightly above - camera 0-6 inches above eye line",
+      distance: "3-4 feet from subject",
+      equipment: ["Tripod or desk mount", "Soft box or ring light", "Lavalier or shotgun mic"],
+      tips: ["Leave headroom above - about 10% of frame", "Hands should be visible when gesturing", "Background can include relevant props"]
+    }
   },
   {
     id: "medium-close-up-studio",
@@ -46,7 +67,14 @@ export const shotPresets: ShotPreset[] = [
     image: mediumCloseUpStudio,
     description: "Professional studio setup with RGB lighting and monitors visible.",
     whenToUse: "Tech content, professional creator look, behind-the-scenes feel",
-    mood: "Professional, modern creator aesthetic"
+    mood: "Professional, modern creator aesthetic",
+    angle: "Eye level (0 degrees)",
+    setup: {
+      cameraHeight: "Eye level - lens aligned with eyes",
+      distance: "3-4 feet from subject",
+      equipment: ["RGB lighting for ambiance", "Monitor as background element", "Quality webcam or mirrorless camera"],
+      tips: ["Show tech setup in background", "Use RGB lights at 20-30% brightness", "Keep main face lit with key light"]
+    }
   },
   {
     id: "medium-shot",
@@ -54,7 +82,14 @@ export const shotPresets: ShotPreset[] = [
     image: mediumShot,
     description: "Waist/belt line up to above head. Arms and gestures visible.",
     whenToUse: "Teaching moments, lifestyle content, when you need to show body language",
-    mood: "Helpful, knowledgeable, approachable expert"
+    mood: "Helpful, knowledgeable, approachable expert",
+    angle: "Eye level (0 degrees)",
+    setup: {
+      cameraHeight: "Chest to eye level",
+      distance: "4-6 feet from subject",
+      equipment: ["Full-size tripod", "Two-point lighting (key + fill)", "Wireless mic recommended"],
+      tips: ["Frame from waist up", "Show hand gestures clearly", "Use 35-50mm focal length equivalent"]
+    }
   },
   {
     id: "medium-wide-shot",
@@ -62,7 +97,14 @@ export const shotPresets: ShotPreset[] = [
     image: mediumWideShot,
     description: "Mid-thigh up. Shows confident stance and environment.",
     whenToUse: "Motivational content, fitness, showing confidence and environment",
-    mood: "Motivational, powerful, commanding"
+    mood: "Motivational, powerful, commanding",
+    angle: "Slightly below eye level (5-10 degrees up)",
+    setup: {
+      cameraHeight: "Chest height - slightly below eye level",
+      distance: "6-8 feet from subject",
+      equipment: ["Full tripod with adjustable legs", "Wide angle lens (24-35mm)", "Three-point lighting for full body"],
+      tips: ["Show confident stance and posture", "Include environment context", "Lower angle adds power"]
+    }
   },
   {
     id: "full-shot",
@@ -70,7 +112,14 @@ export const shotPresets: ShotPreset[] = [
     image: fullShot,
     description: "Head to toe, full body visible in environment.",
     whenToUse: "Street style content, showing outfit, walking shots, establishing presence",
-    mood: "Stylish, confident, aspirational"
+    mood: "Stylish, confident, aspirational",
+    angle: "Waist level (15-20 degrees up)",
+    setup: {
+      cameraHeight: "Waist height - about 3 feet from ground",
+      distance: "8-12 feet from subject",
+      equipment: ["Low tripod or ground pod", "Wide angle lens (24mm or wider)", "Stabilizer for walking shots"],
+      tips: ["Frame with small headroom and footroom", "Use leading lines in environment", "Shoot at golden hour for best light"]
+    }
   },
   {
     id: "low-angle",
@@ -78,7 +127,14 @@ export const shotPresets: ShotPreset[] = [
     image: lowAngle,
     description: "Camera below eye level, looking up at subject.",
     whenToUse: "Power moments, authority statements, making bold claims",
-    mood: "Powerful, authoritative, dominant"
+    mood: "Powerful, authoritative, dominant",
+    angle: "30-45 degrees up from below",
+    setup: {
+      cameraHeight: "Chest to waist height - 2-3 feet from ground",
+      distance: "3-5 feet from subject",
+      equipment: ["Short tripod or mini tripod", "Standard lens (35-50mm)", "Light from above or side"],
+      tips: ["Chin up slightly for best look", "Light face from above to avoid shadows", "Makes subject look taller and more powerful"]
+    }
   },
   {
     id: "worms-eye",
@@ -86,7 +142,14 @@ export const shotPresets: ShotPreset[] = [
     image: wormsEye,
     description: "Extreme low angle from ground, looking straight up.",
     whenToUse: "Maximum impact moments, dramatic reveals, powerful statements",
-    mood: "Dominant, larger-than-life, aspirational"
+    mood: "Dominant, larger-than-life, aspirational",
+    angle: "60-90 degrees up (near vertical)",
+    setup: {
+      cameraHeight: "Ground level - camera flat on ground or on ground tripod",
+      distance: "2-4 feet from subject",
+      equipment: ["Ground pod or flat surface", "Wide angle lens for dramatic effect", "Remote trigger or timer"],
+      tips: ["Subject should look down at camera", "Works best outdoors with sky background", "Use for dramatic reveals only"]
+    }
   },
   {
     id: "birds-eye",
@@ -94,7 +157,14 @@ export const shotPresets: ShotPreset[] = [
     image: birdsEye,
     description: "Camera directly above looking down at workspace/setup.",
     whenToUse: "Showing process, workspace tours, productivity content, desk setups",
-    mood: "Organized, creative, behind-the-scenes"
+    mood: "Organized, creative, behind-the-scenes",
+    angle: "90 degrees down (directly overhead)",
+    setup: {
+      cameraHeight: "3-4 feet above desk/workspace",
+      distance: "Directly overhead",
+      equipment: ["Overhead camera arm or C-stand", "Wide angle lens", "Even lighting from sides"],
+      tips: ["Keep workspace tidy and organized", "Remove any reflective surfaces", "Hands should enter frame naturally"]
+    }
   },
   {
     id: "pov",
@@ -102,7 +172,14 @@ export const shotPresets: ShotPreset[] = [
     image: pov,
     description: "First-person perspective showing what the creator sees.",
     whenToUse: "Tutorials, showing process, 'day in my life' content, immersive moments",
-    mood: "Immersive, personal, relatable"
+    mood: "Immersive, personal, relatable",
+    angle: "Varies - matches natural eye line",
+    setup: {
+      cameraHeight: "Eye level of subject - mounted on head or chest",
+      distance: "N/A - camera is on the subject",
+      equipment: ["GoPro or action camera", "Head or chest mount", "Stabilization recommended"],
+      tips: ["Move head slowly to avoid motion sickness", "Use wide angle for immersion", "Works great for tutorials and processes"]
+    }
   },
   {
     id: "over-the-shoulder",
@@ -110,7 +187,14 @@ export const shotPresets: ShotPreset[] = [
     image: overTheShoulder,
     description: "Camera positioned behind one person looking at another.",
     whenToUse: "Conversation scenes, interviews, showing interaction or connection",
-    mood: "Intimate, conversational, connected"
+    mood: "Intimate, conversational, connected",
+    angle: "Eye level, 45 degrees off-axis",
+    setup: {
+      cameraHeight: "Eye level - slightly behind one subject's shoulder",
+      distance: "4-6 feet from the subjects",
+      equipment: ["Two tripods for different angles", "85mm or longer lens for compression", "Separate audio for each person"],
+      tips: ["Include 30% of near shoulder in frame", "Focus on the facing subject", "Great for reaction shots"]
+    }
   },
   {
     id: "seated-power-pose",
@@ -118,7 +202,14 @@ export const shotPresets: ShotPreset[] = [
     image: seatedPowerPose,
     description: "Subject seated in executive chair, leaning back confidently.",
     whenToUse: "Authority content, business advice, 'CEO energy' moments",
-    mood: "Executive, contemplative, successful"
+    mood: "Executive, contemplative, successful",
+    angle: "Slightly below eye level (10-15 degrees up)",
+    setup: {
+      cameraHeight: "Below seated eye level - about 3 feet from ground",
+      distance: "5-7 feet from subject",
+      equipment: ["Low tripod position", "Standard or short telephoto lens", "Professional lighting setup"],
+      tips: ["Lean back confidently in chair", "Steeple fingers or rest hands on armrests", "Include desk or office background"]
+    }
   },
   {
     id: "dutch-angle",
@@ -126,7 +217,14 @@ export const shotPresets: ShotPreset[] = [
     image: dutchAngle,
     description: "Camera tilted 15-25 degrees for dynamic, edgy feel.",
     whenToUse: "Hot takes, controversial opinions, creating tension or urgency",
-    mood: "Edgy, dynamic, tension, 'hot take incoming'"
+    mood: "Edgy, dynamic, tension, 'hot take incoming'",
+    angle: "Eye level, tilted 15-25 degrees sideways",
+    setup: {
+      cameraHeight: "Eye level - standard height",
+      distance: "3-5 feet from subject",
+      equipment: ["Tripod with tilt capability", "Any lens works", "Dynamic lighting (shadows okay)"],
+      tips: ["Tilt 15-25 degrees - more looks sloppy", "Use sparingly for impact", "Great for controversial takes or reveals"]
+    }
   },
   {
     id: "reflection-shot",
@@ -134,7 +232,14 @@ export const shotPresets: ShotPreset[] = [
     image: reflectionShot,
     description: "Subject and their reflection visible simultaneously.",
     whenToUse: "Introspective moments, self-reflection content, artistic transitions",
-    mood: "Introspective, artistic, thoughtful"
+    mood: "Introspective, artistic, thoughtful",
+    angle: "Varies based on reflective surface",
+    setup: {
+      cameraHeight: "Depends on mirror/surface placement",
+      distance: "Position to capture both subject and reflection",
+      equipment: ["Mirror, window, or water surface", "Polarizing filter optional", "Soft, diffused lighting"],
+      tips: ["Clean reflective surface thoroughly", "Watch for unwanted reflections", "Focus on subject, not reflection"]
+    }
   },
   {
     id: "through-frame",
@@ -142,7 +247,14 @@ export const shotPresets: ShotPreset[] = [
     image: throughFrame,
     description: "Shot through foreground elements like plants or doorways.",
     whenToUse: "Cinematic transitions, adding depth, professional look",
-    mood: "Cinematic, artistic, layered"
+    mood: "Cinematic, artistic, layered",
+    angle: "Eye level typically (0 degrees)",
+    setup: {
+      cameraHeight: "Eye level or varies based on foreground element",
+      distance: "6-10 feet from subject, 1-2 feet from foreground",
+      equipment: ["Fast aperture lens (f/1.8-2.8)", "Plants, doorframes, or other foreground elements", "Shallow depth of field"],
+      tips: ["Blur foreground heavily with wide aperture", "Frame subject within the gap", "Adds cinematic depth and layers"]
+    }
   }
 ];
 
