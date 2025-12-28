@@ -479,11 +479,18 @@ ${kbContext}
 - Use pattern interrupts to maintain attention
 - End with a compelling call to action
 
-Structure each script as:
-HOOK (first 3 seconds - must stop the scroll)
-SETUP (context and problem)
-CONTENT (the meat - specific insights, steps, or revelations)
-CTA (call to action)
+IMPORTANT: Structure your script with EXACTLY these three sections:
+
+**HOOK**
+(First 3 seconds - must stop the scroll. One powerful opening line.)
+
+**BODY**
+(The main content - insights, steps, revelations. Keep it punchy and valuable.)
+
+**CTA**
+(Call to action - what you want them to do next.)
+
+Use these exact labels. Do NOT include hashtags, cutscenes, B-roll notes, or production directions in the script. Just the spoken words.
 
 Separate each line with a blank line for clarity.`;
 
@@ -526,7 +533,26 @@ Write the script now. Make it punchy, specific, and impossible to scroll past. E
     const avgWordsPerSentence = words.length / Math.max(1, scriptContent.split(/[.!?]+/).length - 1);
     const gradeLevel = Math.max(3, Math.min(12, 0.39 * avgWordsPerSentence + 4));
 
-    const productionNotes = `Film close-up, direct to camera. High energy on the hook. ${researchContext ? "Script includes researched data - emphasize stats with text overlays." : ""} Natural pauses between key points. ${params.platform === "tiktok" ? "Keep cuts fast and dynamic." : "Match the pace to your audience."}`;
+    // Enhanced production notes with music resources
+    const musicResources = [
+      { name: "Epidemic Sound", url: "https://www.epidemicsound.com", type: "Paid (free trial)" },
+      { name: "Artlist", url: "https://artlist.io", type: "Paid" },
+      { name: "Uppbeat", url: "https://uppbeat.io", type: "Free + Paid" },
+      { name: "Pixabay Music", url: "https://pixabay.com/music", type: "Free" },
+      { name: "YouTube Audio Library", url: "https://studio.youtube.com/channel/UC/music", type: "Free" },
+      { name: "Mixkit", url: "https://mixkit.co/free-stock-music", type: "Free" },
+    ];
+
+    const productionNotes = {
+      filming: `Film close-up, direct to camera. High energy on the hook. ${researchContext ? "Script includes researched data - emphasize stats with text overlays." : ""} Natural pauses between key points. ${params.platform === "tiktok" ? "Keep cuts fast and dynamic." : "Match the pace to your audience."}`,
+      musicResources,
+      tips: [
+        "Film multiple takes - energy varies",
+        "Use the first take energy on final edit",
+        "Add captions for accessibility and engagement",
+        researchContext ? "Emphasize researched stats with text overlays" : null,
+      ].filter(Boolean),
+    };
 
     const bRollIdeas = [
       `Screen recording demonstrating ${params.topic?.split(" ").slice(0, 3).join(" ") || "concept"}`,
@@ -536,11 +562,76 @@ Write the script now. Make it punchy, specific, and impossible to scroll past. E
       `Reaction shots or nodding moments`,
     ];
 
-    const onScreenText = [
-      scriptContent.split("\n")[0]?.slice(0, 50) || "Hook text...",
-      `Key stat or insight`,
-      finalCta.slice(0, 30),
-    ];
+    // Generate engaging on-screen text overlay options
+    let overlayOptions: { section: string; options: string[] }[] = [];
+    try {
+      const overlayResponse = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [
+          {
+            role: "system",
+            content: `You generate attention-grabbing on-screen text overlays for short-form videos. These are the text that appears on screen to capture attention and reinforce key points.
+
+For each section (HOOK, BODY, CTA), provide exactly 3 short, punchy text options that:
+- Are 2-6 words max
+- Create curiosity or urgency
+- Are NOT labels like "Hook" or "Key Point"
+- Are actual engaging text viewers will see on screen
+- Use power words, numbers, or emotional triggers
+
+Examples of GOOD overlay text:
+- "Wait for it..."
+- "This changed EVERYTHING"
+- "73% don't know this"
+- "The $10M secret"
+- "Nobody talks about this"
+- "Watch till the end"
+- "Save this NOW"
+
+Examples of BAD overlay text:
+- "Hook"
+- "Key Stat"
+- "Insight"
+- "Follow me"
+
+Respond in JSON format only.`
+          },
+          {
+            role: "user",
+            content: `Generate on-screen text overlay options for this script:
+
+TOPIC: ${params.topic}
+SCRIPT: ${scriptContent.slice(0, 500)}
+
+Return JSON in this exact format:
+{
+  "hook": ["option1", "option2", "option3"],
+  "body": ["option1", "option2", "option3"],
+  "cta": ["option1", "option2", "option3"]
+}`
+          }
+        ],
+        max_tokens: 300,
+        temperature: 0.9,
+      });
+
+      const overlayJson = overlayResponse.choices[0]?.message?.content || "";
+      const parsed = JSON.parse(overlayJson.replace(/```json\n?|\n?```/g, ""));
+      overlayOptions = [
+        { section: "Hook", options: parsed.hook || [] },
+        { section: "Body", options: parsed.body || [] },
+        { section: "CTA", options: parsed.cta || [] },
+      ];
+    } catch (e) {
+      // Fallback overlay options
+      overlayOptions = [
+        { section: "Hook", options: ["Wait for it...", "This changes everything", "Nobody talks about this"] },
+        { section: "Body", options: ["The secret is...", "Here's what works", "Most people miss this"] },
+        { section: "CTA", options: ["Save this NOW", "Don't scroll past", "You need this"] },
+      ];
+    }
+
+    const onScreenText = overlayOptions;
 
     const cameraAngles = [
       "Talking head - center frame, eye level",
