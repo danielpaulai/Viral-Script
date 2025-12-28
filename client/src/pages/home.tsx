@@ -98,10 +98,10 @@ export default function Home() {
     deepResearch: false,
   });
 
-  const { data: recentScripts = [] } = useQuery<any[]>({
+  const { data: recentScripts = [] } = useQuery<any>({
     queryKey: ["/api/scripts"],
     select: (data) => {
-      const scriptsArray = Array.isArray(data) ? data : (data?.items ?? []);
+      const scriptsArray = Array.isArray(data) ? data : ((data as any)?.items ?? []);
       if (!Array.isArray(scriptsArray)) return [];
       return scriptsArray.slice(0, 3).map((script: any) => {
         let parsedParams = script.parameters;
