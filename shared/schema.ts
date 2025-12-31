@@ -138,6 +138,84 @@ export const pacingOptions = [
   { id: "deliberate", name: "Deliberate", description: "Slower, dramatic emphasis" },
 ] as const;
 
+// Video Types - Different content formats
+export const videoTypes = [
+  { id: "talking_head", name: "Talking Head", icon: "Mic", description: "Speak directly to camera" },
+  { id: "broll_voiceover", name: "B-Roll with Voiceover", icon: "Film", description: "No face, narration over footage" },
+  { id: "text_on_screen", name: "Text-on-Screen", icon: "Type", description: "No voice, text cards only" },
+  { id: "ai_avatar", name: "AI Avatar / Clone", icon: "Bot", description: "AI avatar speaks the script" },
+  { id: "screen_recording", name: "Screen Recording", icon: "Monitor", description: "Voice narrates over screen capture" },
+  { id: "mixed_format", name: "Mixed Format", icon: "Layers", description: "Combination of talking head + b-roll + text" },
+] as const;
+
+// Creator Style Presets - Famous creator patterns
+export const creatorStyles = [
+  { 
+    id: "default", 
+    name: "Default", 
+    icon: "Target",
+    description: "Optimized for virality",
+    characteristics: "Uses proven viral patterns, optimal hook placement, engaging structure",
+    exampleHook: "Here's something nobody tells you about [topic]..."
+  },
+  { 
+    id: "nas_daily", 
+    name: "Nas Daily", 
+    icon: "Globe",
+    description: "Fast, simple, emotional",
+    characteristics: "Opens with 'This is [subject]' or direct statement. 1-minute format, fast-paced. Simple vocabulary (Grade 3-4 level). Heavy use of 'Here's why this matters'. Ends with emotional punch.",
+    exampleHook: "This man has 47 million followers. Here's why you've never heard of him."
+  },
+  { 
+    id: "mrbeast", 
+    name: "MrBeast", 
+    icon: "Gamepad2",
+    description: "Big, bold, challenge-based",
+    characteristics: "Big bold claims upfront. Challenge/experiment framing. High energy, exclamation points. Numbers and stakes emphasized. 'I [did crazy thing]' format. Fast cuts implied.",
+    exampleHook: "I spent $100,000 testing which thumbnail gets more clicks. Here's what I found."
+  },
+  { 
+    id: "alex_hormozi", 
+    name: "Alex Hormozi", 
+    icon: "DollarSign",
+    description: "Direct, contrarian, business",
+    characteristics: "Direct, no-fluff business advice. Contrarian takes on common beliefs. 'Most people think X. They're wrong.' pattern. Framework/system reveals. Confident, authoritative tone.",
+    exampleHook: "Stop posting educational content. It's killing your sales. Here's why."
+  },
+  { 
+    id: "gary_vee", 
+    name: "Gary Vee", 
+    icon: "Flame",
+    description: "Raw, motivational, hustle",
+    characteristics: "Raw, unfiltered energy. Motivational + tactical mix. 'Listen...' or 'Here's the thing...' openers. Real talk, no polish. Short, punchy, repetitive emphasis.",
+    exampleHook: "Listen. You're not posting enough. I don't care what you think. You're not."
+  },
+  { 
+    id: "ali_abdaal", 
+    name: "Ali Abdaal", 
+    icon: "BookOpen",
+    description: "Calm, evidence-based, structured",
+    characteristics: "Calm, thoughtful delivery. Evidence-based claims. 'I've been [doing thing] for [time]...' credibility. Structured with clear takeaways. Academic but accessible.",
+    exampleHook: "I've been making YouTube videos for 6 years. Here are the 3 things I wish I knew from day one."
+  },
+  { 
+    id: "codie_sanchez", 
+    name: "Codie Sanchez", 
+    icon: "Building2",
+    description: "Contrarian wealth, insider",
+    characteristics: "'Boring business' framing. Contrarian wealth advice. 'Rich people don't [common thing]' pattern. Behind-the-scenes business reveals. Confident, insider knowledge tone.",
+    exampleHook: "Millionaires don't invest in stocks. Here's what they buy instead."
+  },
+  { 
+    id: "steven_bartlett", 
+    name: "Steven Bartlett", 
+    icon: "MessageCircle",
+    description: "Deep, philosophical, vulnerable",
+    characteristics: "Deep, philosophical questions. Vulnerability + success mix. 'The truth about [topic]...' framing. Longer, more reflective sentences. Emotional depth. Personal story integration.",
+    exampleHook: "I built a $300M company and I've never been more confused about success. Here's what I mean."
+  },
+] as const;
+
 // Platform Options
 export const platformOptions = [
   { id: "tiktok", name: "TikTok" },
@@ -283,6 +361,9 @@ export interface ScriptParameters {
   deepResearch?: boolean;
   contentStrategy?: string;
   useKnowledgeBase?: boolean;
+  videoType?: string;
+  creatorStyle?: string;
+  referenceScript?: string;
 }
 
 // Scene breakdown for production

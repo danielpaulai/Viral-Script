@@ -37,6 +37,8 @@ import {
   pricingTiers,
   knowledgeBaseTypes,
   contentStrategyCategories,
+  videoTypes,
+  creatorStyles,
   type ScriptParameters,
   type GeneratedScript,
   type KnowledgeBaseDoc,
@@ -404,6 +406,8 @@ async function generateScriptWithAI(params: ScriptParameters, knowledgeBaseDocs?
   const duration = durationOptions.find((d) => d.id === params.duration);
   const tone = toneOptions.find((t) => t.id === params.tone);
   const voice = voiceOptions.find((v) => v.id === params.voice);
+  const videoType = videoTypes.find((vt) => vt.id === params.videoType) || videoTypes[0];
+  const creatorStyle = creatorStyles.find((cs) => cs.id === params.creatorStyle) || creatorStyles[0];
   
   const selectedCta = params.selectedCtaId 
     ? ctaOptions.find(c => c.id === params.selectedCtaId)?.text 
@@ -420,6 +424,7 @@ async function generateScriptWithAI(params: ScriptParameters, knowledgeBaseDocs?
   const targetWords = wordTargets[params.duration] || wordTargets["60"];
 
   let researchContext = "";
+  let referenceAnalysis = "";
   const kbContext = knowledgeBaseDocs ? buildKnowledgeBaseContext(knowledgeBaseDocs) : "";
   
   if (params.deepResearch) {
@@ -454,6 +459,39 @@ ${params.keyFacts ? `Known facts to include: ${params.keyFacts}` : ""}`
     }
   }
 
+  // Analyze reference script if provided
+  if (params.referenceScript && params.referenceScript.trim().length > 50) {
+    try {
+      const analysisResponse = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [
+          {
+            role: "system",
+            content: `You are a viral script analyst. Analyze the given reference script and extract:
+1. Hook Type: What type of hook is used (e.g., personal experience, contrarian, question, etc.)
+2. Structure: What structure does it follow (problem-solution, listicle, story arc, etc.)
+3. Tone: What tone does it use (direct, conversational, high-energy, vulnerable, etc.)
+4. Pacing: What is the pacing (rapid-fire, balanced, deliberate)
+5. Sentence Length: Average words per sentence
+6. Unique Patterns: Any catchphrases, transition styles, or repeated patterns
+7. CTA Style: How does it close/call to action
+
+Be concise. Format as a brief analysis that can guide script generation.`
+          },
+          {
+            role: "user",
+            content: `Analyze this viral script:\n\n${params.referenceScript.slice(0, 3000)}`
+          }
+        ],
+        max_tokens: 500,
+        temperature: 0.5,
+      });
+      referenceAnalysis = analysisResponse.choices[0]?.message?.content || "";
+    } catch (error) {
+      console.error("Reference analysis failed, continuing without:", error);
+    }
+  }
+
   const knowledgeBaseInstructions = kbContext ? `
 IMPORTANT - USE THE KNOWLEDGE BASE:
 You have access to the creator's brand knowledge base below. Use this to:
@@ -470,6 +508,60 @@ ${kbContext}
 
 ` : "";
 
+  // Build video type specific instructions
+  const videoTypeInstructions: Record<string, string> = {
+    talking_head: `Format: Write a script for someone speaking directly to camera. Just the spoken words, one line per sentence.`,
+    broll_voiceover: `Format: Write voiceover text with shot descriptions. Format each segment as:
+[SHOT: Description of b-roll footage]
+VO: "Voiceover text here"
+
+Include a SHOT LIST at the end with numbered shots and durations.`,
+    text_on_screen: `Format: Write text cards that appear on screen (no voice). Format as:
+[CARD 1 - X sec]
+"Text that appears"
+[Suggested visual: description]
+
+Include MUSIC SUGGESTION and TOTAL DURATION at the end.`,
+    ai_avatar: `Format: Write for an AI avatar/clone with expression cues. Format as:
+[EXPRESSION: Description of expression/emotion]
+"Spoken text here"
+
+Include AVATAR NOTES at the end about energy and delivery.`,
+    screen_recording: `Format: Write voiceover for screen recording tutorial. Format as:
+VO: "Voiceover text"
+[SCREEN: Description of what appears on screen]
+
+Be specific about click actions and visual elements.`,
+    mixed_format: `Format: Write a mixed format script with different segments. Use labels:
+[TALKING HEAD] - for direct to camera
+[B-ROLL] with VO: - for footage with voiceover  
+[TEXT ON SCREEN] - for text cards
+Include transitions between formats.`,
+  };
+
+  // Build creator style instructions
+  const creatorStyleInstructions = creatorStyle.id !== "default" ? `
+CREATOR STYLE - MATCH THIS EXACTLY:
+Style: ${creatorStyle.name}
+Characteristics: ${creatorStyle.characteristics}
+Example Hook: "${creatorStyle.exampleHook}"
+
+Match this creator's:
+- Hook patterns and opening style
+- Sentence length and vocabulary level
+- Energy and tone throughout
+- Common phrases and transitions
+- How they close/call to action
+` : "";
+
+  // Reference script instructions
+  const referenceInstructions = referenceAnalysis ? `
+REFERENCE SCRIPT ANALYSIS - MATCH THIS STYLE:
+${referenceAnalysis}
+
+Generate a NEW script about the user's topic that follows these same patterns but with original content.
+` : "";
+
   const systemPrompt = `You are a world-class short-form video scriptwriter. Write scripts that:
 - Use punchy, conversational language (grade 4-6 reading level)
 - One short sentence or phrase per line
@@ -479,7 +571,10 @@ ${kbContext}
 - Use pattern interrupts to maintain attention
 - End with a compelling call to action
 
-IMPORTANT: Structure your script with EXACTLY these three sections:
+VIDEO TYPE: ${videoType.name}
+${videoTypeInstructions[videoType.id] || videoTypeInstructions.talking_head}
+
+${videoType.id === "talking_head" || videoType.id === "mixed_format" ? `IMPORTANT: Structure your script with EXACTLY these three sections:
 
 **HOOK**
 (First 3 seconds - must stop the scroll. One powerful opening line.)
@@ -490,14 +585,18 @@ IMPORTANT: Structure your script with EXACTLY these three sections:
 **CTA**
 (Call to action - what you want them to do next.)
 
-Use these exact labels. Do NOT include hashtags, cutscenes, B-roll notes, or production directions in the script. Just the spoken words.
+Use these exact labels.` : ""}
 
-Separate each line with a blank line for clarity.`;
+Do NOT include hashtags unless specified. Separate each line with a blank line for clarity.
+${creatorStyleInstructions}
+${referenceInstructions}`;
 
   const userPrompt = `Write a ${params.duration}-second video script (aim for ${targetWords.min}-${targetWords.max} words).
 
 ${knowledgeBaseInstructions}
 TOPIC: ${params.topic}
+VIDEO TYPE: ${videoType.name} - ${videoType.description}
+${creatorStyle.id !== "default" ? `CREATOR STYLE: ${creatorStyle.name} - ${creatorStyle.description}` : ""}
 HOOK STYLE: ${hook?.name || "The Painful Past"} - "${hook?.template || "I used to [painful thing everyone relates to]."}"
 STRUCTURE: ${structure?.name || "Problem Solver"} - ${structure?.description || "Present problem, then solution"}
 TONE: ${tone?.name || "High Energy"}
@@ -513,7 +612,8 @@ ${researchContext}
 
 Use these research findings to make your script more specific, credible, and valuable. Include real data, examples, and insights.` : ""}
 
-Write the script now. Make it punchy, specific, and impossible to scroll past. Each line should be its own paragraph.`;
+Write the script now. Make it punchy, specific, and impossible to scroll past. Each line should be its own paragraph.
+${videoType.id !== "talking_head" ? `Remember to use the ${videoType.name} format with proper labels and structure.` : ""}`;
 
   try {
     const response = await openai.chat.completions.create({
@@ -543,16 +643,19 @@ Write the script now. Make it punchy, specific, and impossible to scroll past. E
       { name: "Mixkit", url: "https://mixkit.co/free-stock-music", type: "Free" },
     ];
 
-    const productionNotes = {
-      filming: `Film close-up, direct to camera. High energy on the hook. ${researchContext ? "Script includes researched data - emphasize stats with text overlays." : ""} Natural pauses between key points. ${params.platform === "tiktok" ? "Keep cuts fast and dynamic." : "Match the pace to your audience."}`,
-      musicResources,
-      tips: [
-        "Film multiple takes - energy varies",
-        "Use the first take energy on final edit",
-        "Add captions for accessibility and engagement",
-        researchContext ? "Emphasize researched stats with text overlays" : null,
-      ].filter(Boolean),
-    };
+    // Build production notes as a string (per interface requirement)
+    const tips = [
+      "Film multiple takes - energy varies",
+      "Use the first take energy on final edit", 
+      "Add captions for accessibility and engagement",
+      researchContext ? "Emphasize researched stats with text overlays" : "",
+    ].filter(Boolean);
+    
+    const productionNotes = `FILMING: Film close-up, direct to camera. High energy on the hook. ${researchContext ? "Script includes researched data - emphasize stats with text overlays." : ""} Natural pauses between key points. ${params.platform === "tiktok" ? "Keep cuts fast and dynamic." : "Match the pace to your audience."}
+
+TIPS: ${tips.join(" | ")}
+
+MUSIC RESOURCES: Epidemic Sound, Artlist, Uppbeat, Pixabay Music, YouTube Audio Library, Mixkit`;
 
     const bRollIdeas = [
       `Screen recording demonstrating ${params.topic?.split(" ").slice(0, 3).join(" ") || "concept"}`,
@@ -649,7 +752,10 @@ Return JSON in this exact format:
       ];
     }
 
-    const onScreenText = overlayOptions;
+    // Flatten overlayOptions to a string array for the interface
+    const onScreenText = overlayOptions.flatMap(section => 
+      section.options.map(opt => `[${section.section}] ${opt}`)
+    );
 
     const cameraAngles = [
       "Talking head - center frame, eye level",

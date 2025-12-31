@@ -1,0 +1,612 @@
+# VIDEO SCRIPT WRITER APP - IMPROVEMENT REQUIREMENTS
+## Detailed Feedback Summary & Implementation Guide for Replit
+
+---
+
+## EXECUTIVE SUMMARY
+
+User tested the script writer and found outputs to be "average" compared to standard ChatGPT. The app needs significant improvements to deliver differentiated value. Three major feature additions are required:
+
+1. **Reference Script Upload** - Learn from existing viral scripts
+2. **Video Type Selection** - Not just talking head videos
+3. **Creator Style Presets** - Match famous creator styles (Nas Daily, MrBeast, etc.)
+
+---
+
+## PROBLEM 1: OUTPUT QUALITY IS "AVERAGE"
+
+### Current Issue:
+- Scripts generated are comparable to or worse than basic ChatGPT
+- No differentiation from free AI tools
+- Users see no reason to pay for this over ChatGPT
+
+### Root Cause:
+- Prompt engineering may not be specific enough
+- Not leveraging the 50 hooks and structures effectively in generation
+- Missing context that makes scripts truly viral-worthy
+
+### Required Fixes:
+
+**A. Enhance the Core Prompt Engineering:**
+```
+Current flow: User input → Generate script
+New flow: User input → Select best hook from 50 → Apply structure → Apply viral patterns → Generate → Hemingway check → Output
+```
+
+**B. Add Viral Pattern Enforcement:**
+- First line MUST use one of the 50 hook templates
+- Every script must follow a proven structure (Problem Solver, Listicle, etc.)
+- Enforce short sentences (under 10 words)
+- Auto-reject AI-sounding words and regenerate
+
+**C. Add Quality Scoring:**
+- Show "Viral Score" based on hook strength, structure, readability
+- Show "Hemingway Grade" (aim for Grade 4-6)
+- If score is below threshold, auto-improve before showing to user
+
+---
+
+## PROBLEM 2: NO REFERENCE SCRIPT FEATURE
+
+### User Request:
+> "There must be an option of uploading your own reference script. For example, if we liked a particular script of a creator, we can paste their reference script and based on that it generates a script for us."
+
+### Implementation Requirements:
+
+**A. New Input Field: "Reference Script"**
+```
+Field Name: Reference Script (Optional)
+Type: Large text area
+Placeholder: "Paste a viral script you want to learn from... The AI will analyze its structure, hook style, pacing, and tone to generate a similar script for your topic."
+Character Limit: 5000 characters
+```
+
+**B. Reference Script Analysis Engine:**
+
+When a reference script is provided, the AI should:
+
+1. **Analyze Hook Type:**
+   - Identify which of the 50 hooks it uses
+   - Extract the hook pattern/template
+
+2. **Analyze Structure:**
+   - Identify structure (Problem Solver, Listicle, Story Arc, etc.)
+   - Map the flow: Hook → Body sections → CTA
+
+3. **Analyze Style:**
+   - Sentence length patterns
+   - Vocabulary level
+   - Tone (direct, conversational, high-energy, etc.)
+   - Pacing (rapid-fire, deliberate, balanced)
+
+4. **Analyze Unique Elements:**
+   - Catchphrases or repeated patterns
+   - Transition styles
+   - How they handle the close/CTA
+
+**C. Generation with Reference:**
+```
+Prompt structure:
+"Based on the reference script analysis:
+- Hook style: [identified hook type]
+- Structure: [identified structure]
+- Tone: [identified tone]
+- Avg sentence length: [X words]
+- Unique patterns: [patterns found]
+
+Generate a NEW script about [user's topic] that follows these same patterns but with original content."
+```
+
+**D. UI Flow:**
+```
+┌─────────────────────────────────────────┐
+│  📝 Reference Script (Optional)         │
+│  ┌───────────────────────────────────┐  │
+│  │ Paste a viral script you love...  │  │
+│  │                                   │  │
+│  │                                   │  │
+│  └───────────────────────────────────┘  │
+│                                         │
+│  [Analyze Script] button                │
+│                                         │
+│  Analysis Results:                      │
+│  • Hook Type: The Painful Past (#1)     │
+│  • Structure: Story Arc                 │
+│  • Tone: Conversational                 │
+│  • Pacing: Balanced                     │
+│  • Grade Level: 4                       │
+│                                         │
+│  ☑️ Use this style for my script        │
+└─────────────────────────────────────────┘
+```
+
+---
+
+## PROBLEM 3: ONLY GENERATES "TALKING HEAD" SCRIPTS
+
+### User Request:
+> "All the videos any person does is not just Talking Head... Some videos you don't speak any word and you just show things on screen. Clone video scripts, people team dead... we require scripts for that type of videos as well."
+
+### Video Types to Support:
+
+**1. TALKING HEAD (Currently supported)**
+- Person speaks directly to camera
+- Script = What they say out loud
+- Format: Continuous spoken script
+
+**2. B-ROLL / SILENT NARRATION**
+- No one on screen speaking
+- Voiceover plays over footage
+- Script = Voiceover text + B-roll shot descriptions
+- Format: 
+  ```
+  [SHOT: Coffee being poured]
+  VO: "Most people start their morning wrong..."
+  
+  [SHOT: Person looking stressed at desk]
+  VO: "They check their phone before their brain is ready..."
+  ```
+
+**3. TEXT-ON-SCREEN (No Voice)**
+- No voiceover, no talking head
+- Text appears on screen with music
+- Popular for emotional/motivational content
+- Script = Text cards + timing + visual descriptions
+- Format:
+  ```
+  [TEXT CARD 1 - 2 sec]
+  "I used to think success meant working 80 hours"
+  [Background: Timelapse of city]
+  
+  [TEXT CARD 2 - 2 sec]  
+  "Then I burned out"
+  [Background: Person lying exhausted]
+  ```
+
+**4. CLONE/AI AVATAR VIDEOS**
+- AI avatar speaks the script
+- Requires precise timing and natural language
+- Script = What the avatar says + expression cues
+- Format:
+  ```
+  [Expression: Friendly, slight smile]
+  "Hey, I want to share something important with you."
+  
+  [Expression: Serious, leaning in]
+  "Most people get this completely wrong..."
+  ```
+
+**5. SCREEN RECORDING / TUTORIAL**
+- Voice narrates over screen capture
+- Script = Voiceover + Screen action descriptions
+- Format:
+  ```
+  VO: "First, open the app and click here..."
+  [SCREEN: Cursor clicks on Settings icon]
+  
+  VO: "Then scroll down to this option..."
+  [SCREEN: Scroll animation to Privacy section]
+  ```
+
+**6. MIXED FORMAT**
+- Combination of talking head + b-roll + text
+- Most common for professional content
+- Script includes all elements
+- Format:
+  ```
+  [TALKING HEAD]
+  "Here's something nobody tells you about LinkedIn..."
+  
+  [CUT TO: B-ROLL of LinkedIn feed scrolling]
+  VO: "Most people post educational content thinking it'll get them clients..."
+  
+  [TEXT ON SCREEN]
+  "Educational content attracts students, not buyers"
+  
+  [BACK TO TALKING HEAD]
+  "Here's what to do instead..."
+  ```
+
+### Implementation Requirements:
+
+**A. New Dropdown: "Video Type"**
+```
+Options:
+- 🎤 Talking Head (speak to camera)
+- 🎬 B-Roll with Voiceover (no face, narration over footage)
+- 📝 Text-on-Screen (no voice, text cards only)
+- 🤖 AI Avatar / Clone Video
+- 🖥️ Screen Recording / Tutorial
+- 🎭 Mixed Format (talking head + b-roll + text)
+```
+
+**B. Output Format Changes Based on Video Type:**
+
+Each video type should generate a DIFFERENT output format:
+
+**Talking Head Output:**
+```
+SCRIPT:
+
+I used to think posting every day was the secret.
+
+It's not.
+
+Here's what actually works...
+
+[continues as spoken script]
+```
+
+**B-Roll with Voiceover Output:**
+```
+SCRIPT:
+
+[SHOT 1: Close-up of phone showing notifications]
+VO: "Your phone is lying to you."
+
+[SHOT 2: Wide shot of person looking overwhelmed at desk]
+VO: "Every notification feels urgent. None of them are."
+
+[SHOT 3: Hand turning phone face-down]
+VO: "Here's what I did instead..."
+
+---
+SHOT LIST:
+1. Close-up phone with notifications (2 sec)
+2. Wide shot person at desk (3 sec)
+3. Hand turning phone over (2 sec)
+```
+
+**Text-on-Screen Output:**
+```
+SCRIPT:
+
+[CARD 1 - 2 seconds]
+"I was mass bpproaching every day"
+[Suggested visual: Tired person at computer]
+
+[CARD 2 - 2 seconds]
+"Burning out for likes that didn't pay bills"
+[Suggested visual: Social media likes animation]
+
+[CARD 3 - 3 seconds]
+"Then I satisfactory satisfactory differently"
+[Suggested visual: Lightbulb or transformation]
+
+---
+MUSIC SUGGESTION: Emotional piano, building tension
+TOTAL DURATION: ~15 seconds
+```
+
+**Clone/Avatar Output:**
+```
+SCRIPT:
+
+[EXPRESSION: Warm, welcoming]
+"Hey! Quick question for you..."
+
+[EXPRESSION: Curious, head tilt]
+"When was the last time your content actually brought in a client?"
+
+[EXPRESSION: Understanding, nodding]
+"If you had to think about it, that's the problem."
+
+[EXPRESSION: Confident, slight smile]
+"Here's the fix..."
+
+---
+AVATAR NOTES:
+- Keep energy conversational, not salesy
+- Pause briefly between sections
+- Emphasize "that's the problem" with slight lean in
+```
+
+---
+
+## PROBLEM 4: NO CREATOR STYLE PRESETS
+
+### New Feature Request:
+> "We can introduce styles like Nas Daily, MrBeast and so on..."
+
+### Creator Style Presets to Include:
+
+**1. NAS DAILY Style**
+```
+Characteristics:
+- Opens with "This is [subject]" or direct statement
+- 1-minute format, fast-paced
+- Simple vocabulary (Grade 3-4 level)
+- Heavy use of "Here's why this matters"
+- Ends with emotional punch or call to think
+- Short sentences, punchy delivery
+- Educational but emotional
+
+Example hook: "This man has 47 million followers. Here's why you've never heard of him."
+```
+
+**2. MR BEAST Style**
+```
+Characteristics:
+- Big, bold claims upfront
+- Challenge/experiment framing
+- High energy, exclamation points
+- Numbers and stakes emphasized
+- "I [did crazy thing]" format
+- Fast cuts implied in script
+- Payoff/reveal structure
+
+Example hook: "I spent $100,000 testing which thumbnail gets more clicks. Here's what I found."
+```
+
+**3. ALEX HORMOZI Style**
+```
+Characteristics:
+- Direct, no-fluff business advice
+- Contrarian takes on common beliefs
+- "Most people think X. They're wrong." pattern
+- Framework/system reveals
+- Confident, authoritative tone
+- Medium-length sentences
+- Value-dense, every line teaches
+
+Example hook: "Stop posting educational content. It's killing your sales. Here's why."
+```
+
+**4. GARY VEE Style**
+```
+Characteristics:
+- Raw, unfiltered energy
+- Motivational + tactical mix
+- "Listen..." or "Here's the thing..." openers
+- Real talk, no polish
+- Short, punchy, repetitive emphasis
+- Hustle culture references
+- Ends with actionable push
+
+Example hook: "Listen. You're not posting enough. I don't care what you think. You're not."
+```
+
+**5. ALI ABDAAL Style**
+```
+Characteristics:
+- Calm, thoughtful delivery
+- Evidence-based claims
+- "I've been [doing thing] for [time]..." credibility
+- Structured with clear takeaways
+- Slightly longer, well-paced sentences
+- Academic but accessible
+- "Here's what I learned" framing
+
+Example hook: "I've been making YouTube videos for 6 years. Here are the 3 things I wish I knew from day one."
+```
+
+**6. CODIE SANCHEZ Style**
+```
+Characteristics:
+- "Boring business" framing
+- Contrarian wealth advice
+- "Rich people don't [common thing]" pattern
+- Behind-the-scenes business reveals
+- Confident, insider knowledge tone
+- Medium energy, authoritative
+- Money/wealth focused hooks
+
+Example hook: "Millionaires don't invest in stocks. Here's what they buy instead."
+```
+
+**7. STEVEN BARTLETT Style**
+```
+Characteristics:
+- Deep, philosophical questions
+- Vulnerability + success mix
+- "The truth about [topic]..." framing
+- Longer, more reflective sentences
+- Emotional depth
+- Personal story integration
+- Ends with perspective shift
+
+Example hook: "I built a $300M company and I've never been more confused about success. Here's what I mean."
+```
+
+### Implementation:
+
+**A. New Dropdown: "Creator Style"**
+```
+Options:
+- 🎯 Default (Optimized for virality)
+- 🌍 Nas Daily (Fast, simple, emotional)
+- 🎮 MrBeast (Big, bold, challenge-based)
+- 💰 Alex Hormozi (Direct, contrarian, business)
+- 🔥 Gary Vee (Raw, motivational, hustle)
+- 📚 Ali Abdaal (Calm, evidence-based, structured)
+- 🏦 Codie Sanchez (Contrarian wealth, insider)
+- 🎙️ Steven Bartlett (Deep, philosophical, vulnerable)
+- ✨ Custom (Use reference script)
+```
+
+**B. Style Application:**
+
+When a style is selected, the AI should:
+1. Use that creator's typical hook patterns
+2. Match their sentence length and vocabulary level
+3. Apply their structural patterns
+4. Match their energy and tone
+5. Use their common phrases/transitions
+
+---
+
+## COMPLETE UI FLOW (UPDATED)
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    VIDEO SCRIPT WRITER                          │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  ┌─── QUICK PRESETS ───────────────────────────────────────┐   │
+│  │ [Business Growth] [AI & Tech] [Viral Growth] [Personal] │   │
+│  └─────────────────────────────────────────────────────────┘   │
+│                                                                 │
+│  📝 BASIC INPUTS                                                │
+│  ┌─────────────────────────────────────────────────────────┐   │
+│  │ Topic / Video Idea:                                     │   │
+│  │ [                                                     ] │   │
+│  └─────────────────────────────────────────────────────────┘   │
+│                                                                 │
+│  Platform: [TikTok ▼]     Duration: [60 seconds ▼]             │
+│                                                                 │
+│  ─────────────────────────────────────────────────────────────  │
+│                                                                 │
+│  🎬 VIDEO TYPE (NEW)                                            │
+│  ┌─────────────────────────────────────────────────────────┐   │
+│  │ [🎤 Talking Head               ▼]                       │   │
+│  │                                                         │   │
+│  │ Options:                                                │   │
+│  │ • 🎤 Talking Head (speak to camera)                     │   │
+│  │ • 🎬 B-Roll with Voiceover                              │   │
+│  │ • 📝 Text-on-Screen (no voice)                          │   │
+│  │ • 🤖 AI Avatar / Clone Video                            │   │
+│  │ • 🖥️ Screen Recording / Tutorial                        │   │
+│  │ • 🎭 Mixed Format                                       │   │
+│  └─────────────────────────────────────────────────────────┘   │
+│                                                                 │
+│  ─────────────────────────────────────────────────────────────  │
+│                                                                 │
+│  🌟 CREATOR STYLE (NEW)                                         │
+│  ┌─────────────────────────────────────────────────────────┐   │
+│  │ [🎯 Default (Optimized)        ▼]                       │   │
+│  │                                                         │   │
+│  │ Popular Styles:                                         │   │
+│  │ • 🌍 Nas Daily                                          │   │
+│  │ • 🎮 MrBeast                                            │   │
+│  │ • 💰 Alex Hormozi                                       │   │
+│  │ • 🔥 Gary Vee                                           │   │
+│  │ • 📚 Ali Abdaal                                         │   │
+│  │ • 🏦 Codie Sanchez                                      │   │
+│  │ • 🎙️ Steven Bartlett                                    │   │
+│  │ • ✨ Custom (use reference below)                       │   │
+│  └─────────────────────────────────────────────────────────┘   │
+│                                                                 │
+│  ─────────────────────────────────────────────────────────────  │
+│                                                                 │
+│  📋 REFERENCE SCRIPT (NEW - Optional)                           │
+│  ┌─────────────────────────────────────────────────────────┐   │
+│  │ Paste a viral script you want to learn from...          │   │
+│  │                                                         │   │
+│  │ The AI will analyze its:                                │   │
+│  │ • Hook style    • Structure    • Tone                   │   │
+│  │ • Pacing        • Vocabulary   • Unique patterns        │   │
+│  │                                                         │   │
+│  │ [                                                     ] │   │
+│  │ [                                                     ] │   │
+│  │ [                                                     ] │   │
+│  └─────────────────────────────────────────────────────────┘   │
+│  [🔍 Analyze Reference Script]                                  │
+│                                                                 │
+│  ─────────────────────────────────────────────────────────────  │
+│                                                                 │
+│  ⚙️ ADVANCED OPTIONS (Expandable)                               │
+│  ┌─────────────────────────────────────────────────────────┐   │
+│  │ Hook Strategy: [Auto-select best ▼]                     │   │
+│  │ Structure: [Auto-select best ▼]                         │   │
+│  │ Tone: [Conversational ▼]                                │   │
+│  │ Target Audience: [                                    ] │   │
+│  │ Call to Action: [                                     ] │   │
+│  └─────────────────────────────────────────────────────────┘   │
+│                                                                 │
+│           [🚀 GENERATE SCRIPT]                                  │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## OUTPUT CHANGES
+
+### New Output Sections:
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  ✅ SCRIPT GENERATED                                            │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  📊 QUALITY SCORES                                              │
+│  ┌─────────────────────────────────────────────────────────┐   │
+│  │ Viral Score: 94/100  ████████████████████░░  🔥         │   │
+│  │ Readability: Grade 4  ✅ Hemingway Approved              │   │
+│  │ Hook Strength: Strong  ████████████████████░░           │   │
+│  │ Word Count: 87 words (~60 seconds)                      │   │
+│  └─────────────────────────────────────────────────────────┘   │
+│                                                                 │
+│  📝 YOUR SCRIPT                                                 │
+│  ┌─────────────────────────────────────────────────────────┐   │
+│  │                                                         │   │
+│  │  [Script content based on video type selected]          │   │
+│  │                                                         │   │
+│  └─────────────────────────────────────────────────────────┘   │
+│                                                                 │
+│  🎬 SHOT LIST (if B-Roll or Mixed selected)                     │
+│  ┌─────────────────────────────────────────────────────────┐   │
+│  │ 1. [Shot description] - 2 sec                           │   │
+│  │ 2. [Shot description] - 3 sec                           │   │
+│  │ 3. [Shot description] - 2 sec                           │   │
+│  └─────────────────────────────────────────────────────────┘   │
+│                                                                 │
+│  📋 DETAILS                                                     │
+│  ┌─────────────────────────────────────────────────────────┐   │
+│  │ Hook Used: #27 - The Direct Attack                      │   │
+│  │ Structure: Problem Solver                               │   │
+│  │ Style: Alex Hormozi                                     │   │
+│  │ Video Type: Talking Head                                │   │
+│  └─────────────────────────────────────────────────────────┘   │
+│                                                                 │
+│  [📋 Copy Script] [🔄 Regenerate] [✏️ Edit] [💾 Save]           │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## PRIORITY IMPLEMENTATION ORDER
+
+### Phase 1 (Critical - Do First):
+1. ✅ Improve core prompt engineering for better base output
+2. ✅ Add Reference Script input field and analysis
+3. ✅ Add Video Type dropdown with different output formats
+
+### Phase 2 (High Value):
+4. ✅ Add Creator Style presets (Nas Daily, Hormozi, etc.)
+5. ✅ Add Quality Scoring display (Viral Score, Readability)
+6. ✅ Add Shot List output for B-Roll video types
+
+### Phase 3 (Polish):
+7. ✅ Add "Analyze Reference Script" button with breakdown
+8. ✅ Add style preview/description when hovering over creator styles
+9. ✅ Add ability to save favorite scripts and styles
+
+---
+
+## SUMMARY FOR DEVELOPERS
+
+**What to build:**
+
+1. **Reference Script Feature:**
+   - New text input field for pasting reference scripts
+   - Analysis function to identify hook, structure, tone, pacing
+   - Generation that mimics the reference style
+
+2. **Video Type Selection:**
+   - New dropdown with 6 video types
+   - Different output templates for each type
+   - Shot list generation for B-Roll types
+
+3. **Creator Style Presets:**
+   - New dropdown with 7+ creator styles
+   - Style profiles defining each creator's patterns
+   - Style application in generation prompt
+
+4. **Quality Improvements:**
+   - Stronger prompt engineering
+   - Quality scoring display
+   - Auto-improvement before output
+
+**The goal:** Make outputs significantly better than ChatGPT so users see clear value in paying for this tool.

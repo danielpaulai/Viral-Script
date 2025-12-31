@@ -38,6 +38,8 @@ import {
   quickPresets,
   ctaCategories,
   ctaOptions,
+  videoTypes,
+  creatorStyles,
   type ScriptParameters,
   type GeneratedScript,
 } from "@shared/schema";
@@ -58,6 +60,19 @@ import {
   Target,
   Lightbulb,
   BookOpen,
+  Mic,
+  Film,
+  Type,
+  Bot,
+  Monitor,
+  Layers,
+  Globe,
+  Gamepad2,
+  DollarSign,
+  Flame,
+  Building2,
+  MessageCircle,
+  FileText,
 } from "lucide-react";
 
 const presetIcons: Record<string, typeof Zap> = {
@@ -65,6 +80,26 @@ const presetIcons: Record<string, typeof Zap> = {
   ai_tech: Cpu,
   viral_growth: Zap,
   personal_brand: Heart,
+};
+
+const videoTypeIcons: Record<string, typeof Mic> = {
+  talking_head: Mic,
+  broll_voiceover: Film,
+  text_on_screen: Type,
+  ai_avatar: Bot,
+  screen_recording: Monitor,
+  mixed_format: Layers,
+};
+
+const creatorStyleIcons: Record<string, typeof Target> = {
+  default: Target,
+  nas_daily: Globe,
+  mrbeast: Gamepad2,
+  alex_hormozi: DollarSign,
+  gary_vee: Flame,
+  ali_abdaal: BookOpen,
+  codie_sanchez: Building2,
+  steven_bartlett: MessageCircle,
 };
 
 const platformWordTargets: Record<string, { min: number; max: number; label: string }> = {
@@ -98,6 +133,9 @@ export default function Home() {
     structure: "problem_solver",
     hook: "painful_past",
     deepResearch: false,
+    videoType: "talking_head",
+    creatorStyle: "default",
+    referenceScript: "",
   });
 
   const { data: recentScripts = [] } = useQuery<any>({
@@ -154,7 +192,9 @@ export default function Home() {
     const preset = quickPresets.find((p) => p.id === presetId);
     if (preset) {
       setActivePreset(presetId);
-      setFormData({
+      // Preserve videoType, creatorStyle, and referenceScript when applying presets
+      setFormData(prev => ({
+        ...prev,
         topic: preset.sampleTopic,
         targetAudience: preset.sampleAudience,
         callToAction: preset.sampleCta,
@@ -167,7 +207,7 @@ export default function Home() {
         tone: preset.tone,
         voice: preset.voice,
         deepResearch: false,
-      });
+      }));
     }
   };
 
@@ -438,6 +478,70 @@ export default function Home() {
           </div>
         </div>
 
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+          <div>
+            <Label className="text-xs font-medium mb-2 block uppercase tracking-wider">Video Type</Label>
+            <Select
+              value={formData.videoType || "talking_head"}
+              onValueChange={(value) => setFormData((prev) => ({ ...prev, videoType: value }))}
+            >
+              <SelectTrigger className="bg-white/5 border-white/10" data-testid="select-video-type">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {videoTypes.map((vt) => {
+                  const Icon = videoTypeIcons[vt.id] || Mic;
+                  return (
+                    <SelectItem key={vt.id} value={vt.id}>
+                      <div className="flex items-center gap-2">
+                        <Icon className="w-4 h-4" />
+                        <span>{vt.name}</span>
+                      </div>
+                    </SelectItem>
+                  );
+                })}
+              </SelectContent>
+            </Select>
+            <p className="text-[10px] text-muted-foreground mt-1">
+              {videoTypes.find(v => v.id === (formData.videoType || "talking_head"))?.description}
+            </p>
+          </div>
+
+          <div>
+            <Label className="text-xs font-medium mb-2 block uppercase tracking-wider">Creator Style</Label>
+            <Select
+              value={formData.creatorStyle || "default"}
+              onValueChange={(value) => setFormData((prev) => ({ ...prev, creatorStyle: value }))}
+            >
+              <SelectTrigger className="bg-white/5 border-white/10" data-testid="select-creator-style">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="max-h-80">
+                {creatorStyles.map((cs) => {
+                  const Icon = creatorStyleIcons[cs.id] || Target;
+                  return (
+                    <SelectItem key={cs.id} value={cs.id}>
+                      <div className="flex items-center gap-2">
+                        <Icon className="w-4 h-4" />
+                        <span>{cs.name}</span>
+                        <span className="text-muted-foreground text-xs">- {cs.description}</span>
+                      </div>
+                    </SelectItem>
+                  );
+                })}
+              </SelectContent>
+            </Select>
+            {formData.creatorStyle && formData.creatorStyle !== "default" && (
+              <div className="mt-2 p-2 rounded bg-white/5 border border-white/10">
+                <p className="text-[10px] text-muted-foreground mb-1">Example hook:</p>
+                <p className="text-[10px] text-white/70 italic">
+                  "{creatorStyles.find(c => c.id === formData.creatorStyle)?.exampleHook}"
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+
         <div className="mb-4">
           <Label className="text-xs font-medium mb-2 block uppercase tracking-wider">Hook Strategy (50 Viral Hooks)</Label>
           <Select
@@ -578,6 +682,29 @@ export default function Home() {
                 className="bg-white/5 border-white/10 min-h-[60px]"
                 data-testid="input-facts"
               />
+            </div>
+
+            <div>
+              <Label htmlFor="referenceScript" className="text-xs font-medium mb-2 block uppercase tracking-wider">
+                <div className="flex items-center gap-2">
+                  <FileText className="w-3 h-3 text-primary" />
+                  Reference Script (Optional)
+                </div>
+              </Label>
+              <Textarea
+                id="referenceScript"
+                value={formData.referenceScript || ""}
+                onChange={(e) => setFormData((prev) => ({ ...prev, referenceScript: e.target.value }))}
+                placeholder="Paste a viral script you want to learn from... The AI will analyze its structure, hook style, pacing, and tone to generate a similar script for your topic."
+                className="bg-white/5 border-white/10 min-h-[100px]"
+                maxLength={5000}
+                data-testid="input-reference-script"
+              />
+              <p className="text-[10px] text-muted-foreground mt-1">
+                {formData.referenceScript 
+                  ? `${formData.referenceScript.length}/5000 characters${formData.referenceScript.length < 50 ? " (min 50 chars for AI analysis)" : " - AI will analyze this script"}` 
+                  : "Paste 50+ chars for AI to analyze hook type, structure, tone, pacing, and unique patterns"}
+              </p>
             </div>
 
             <div className="flex items-center justify-between p-3 rounded-md bg-white/5 border border-white/10">

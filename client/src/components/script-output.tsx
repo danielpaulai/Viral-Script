@@ -175,6 +175,51 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
     ? "Moderate" 
     : "Complex";
 
+  // Calculate viral score based on multiple factors
+  const calculateViralScore = () => {
+    let score = 0;
+    const scriptLower = script.script.toLowerCase();
+    const firstLine = script.script.split('\n')[0] || '';
+    
+    // Grade level score (max 25 points - lower is better for virality)
+    if (script.gradeLevel <= 5) score += 25;
+    else if (script.gradeLevel <= 6) score += 20;
+    else if (script.gradeLevel <= 7) score += 15;
+    else if (script.gradeLevel <= 8) score += 10;
+    else score += 5;
+    
+    // Hook strength score (max 25 points - check first line for strong opening patterns)
+    const hookPatterns = [
+      /^stop\b/i, /^wait\b/i, /^here'?s? (why|how|what)/i, /^nobody/i, /^the truth/i,
+      /^i (used to|was|made|spent)/i, /^what if/i, /^most people/i, /^this (is|will)/i,
+      /\d+\s*(million|billion|k|\$|%|years|days|hours)/i, /^don'?t\b/i
+    ];
+    const hookMatches = hookPatterns.filter(p => p.test(firstLine)).length;
+    score += Math.min(25, hookMatches * 12 + (firstLine.length < 60 ? 5 : 0));
+    
+    // Structure score (max 25 points - based on script length and word count target)
+    const wordCount = script.wordCount;
+    const hasGoodLength = wordCount >= 30 && wordCount <= 300;
+    const hasMultipleParagraphs = script.script.split('\n').filter(l => l.trim()).length >= 3;
+    const hasCta = /follow|comment|share|save|link|subscribe|like/i.test(scriptLower);
+    if (hasGoodLength) score += 12;
+    if (hasMultipleParagraphs) score += 8;
+    if (hasCta) score += 5;
+    
+    // Engagement indicators score (max 25 points) - unique word presence
+    const engagementPatterns = [
+      /\byou\b/i, /\byour\b/i, /\bbecause\b/i, /\bnow\b/i, /\btoday\b/i, /\bfree\b/i, /\beasy\b/i
+    ];
+    const uniqueMatches = new Set(engagementPatterns.filter(p => p.test(scriptLower)));
+    score += Math.min(25, uniqueMatches.size * 4);
+    
+    return Math.min(100, Math.max(0, score));
+  };
+  
+  const viralScore = calculateViralScore();
+  const viralScoreColor = viralScore >= 75 ? "text-green-500" : viralScore >= 50 ? "text-yellow-500" : "text-red-500";
+  const viralScoreLabel = viralScore >= 75 ? "High" : viralScore >= 50 ? "Medium" : "Needs Work";
+
   const groupedHooks = hookCategories.map(cat => ({
     ...cat,
     hooks: viralHooks.filter(h => h.category === cat.id)
@@ -190,6 +235,10 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
             <span className="hidden sm:inline">|</span>
             <span className={gradeColor} data-testid="text-grade-level">
               Grade {script.gradeLevel.toFixed(1)} ({gradeLabel})
+            </span>
+            <span className="hidden sm:inline">|</span>
+            <span className={viralScoreColor} data-testid="text-viral-score">
+              Viral Score: {viralScore}% ({viralScoreLabel})
             </span>
           </div>
         </div>

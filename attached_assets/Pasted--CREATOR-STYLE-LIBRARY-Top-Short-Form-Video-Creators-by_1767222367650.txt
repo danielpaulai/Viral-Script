@@ -1,0 +1,1776 @@
+# CREATOR STYLE LIBRARY
+## Top Short-Form Video Creators by Niche
+### Master Prompts + Reference Scripts for Each Style
+
+---
+
+# TABLE OF CONTENTS
+
+1. **BUSINESS & ENTREPRENEURSHIP**
+   - Alex Hormozi
+   - Gary Vee
+   - Codie Sanchez
+   - Steven Bartlett
+
+2. **EDUCATIONAL & STORYTELLING**
+   - Nas Daily
+   - Ali Abdaal
+   - Jay Shetty
+
+3. **FINANCE & WEALTH**
+   - Ramit Sethi
+   - Vivian Tu (Your Rich BFF)
+   - Humphrey Yang
+
+4. **FITNESS & HEALTH**
+   - Chris Heria
+   - Jeff Nippard
+   - Chloe Ting
+   - Joey Swoll
+
+5. **LIFESTYLE & PERSONAL DEVELOPMENT**
+   - Simon Sinek
+   - Mel Robbins
+
+---
+
+# SECTION 1: BUSINESS & ENTREPRENEURSHIP
+
+---
+
+## 1. ALEX HORMOZI
+
+### Creator Profile
+| Attribute | Details |
+|-----------|---------|
+| **Platforms** | YouTube (2.5M+), Instagram (2.8M+), TikTok (1.5M+) |
+| **Niche** | Business, Sales, Entrepreneurship |
+| **Known For** | Contrarian business advice, no-fluff delivery |
+| **Signature** | Bold captions, direct challenges, personal stories |
+| **Avg Video Length** | 30-90 seconds |
+
+### Style Characteristics
+- **Hook Style:** Direct challenge or contrarian statement
+- **Structure:** Hook → Personal story/anecdote → Lesson → Implicit CTA
+- **Tone:** Authoritative, confident, slightly aggressive
+- **Vocabulary:** Simple words, business jargon avoided
+- **Sentence Length:** Short, punchy (5-10 words average)
+- **Pacing:** Fast, no wasted words
+- **Visual Style:** Bold animated captions, emoji overlays, quick cuts
+
+### Signature Phrases
+- "Here's the thing..."
+- "Most people think X. They're wrong."
+- "I learned this the hard way..."
+- "Let me tell you why..."
+- "Stop doing X. Start doing Y."
+
+### Hook Patterns (Hormozi Style)
+1. **The Direct Challenge:** "Stop [common action]. It's killing your [result]."
+2. **The Contrarian:** "Everyone says [common belief]. Here's why they're wrong."
+3. **The Personal Reveal:** "I [big result] by doing the opposite of what everyone taught me."
+4. **The Reason Reveal:** "One of the reasons why [surprising behavior] is..."
+5. **The Mistake Call-Out:** "You need to stop making this one mistake."
+
+### Master Prompt for Hormozi Style:
+
+```
+You are a script writer that creates short-form video scripts in the style of Alex Hormozi.
+
+STYLE REQUIREMENTS:
+- Open with a direct, challenging hook that creates urgency or FOMO
+- Use simple vocabulary (Grade 4-6 reading level)
+- Keep sentences under 10 words on average
+- Share opinions backed by personal experience, not just facts
+- Include a personal anecdote that connects to the main point
+- Be contrarian - challenge conventional wisdom
+- Sound confident and authoritative, not preachy
+- End with an implicit lesson, not a hard sell CTA
+
+STRUCTURE:
+1. HOOK (1-2 sentences): Direct challenge or contrarian statement
+2. SETUP (1-2 sentences): Why this matters or personal context
+3. STORY (3-5 sentences): Brief anecdote illustrating the point
+4. LESSON (2-3 sentences): The insight or takeaway
+5. CLOSE (1 sentence): Reinforcement or thought-provoking statement
+
+AVOID:
+- Fluffy intros ("Hey guys", "What's up")
+- Weak hedging language ("I think maybe", "kind of")
+- Long sentences or complex vocabulary
+- Generic advice without personal backing
+- Obvious CTAs ("Follow for more", "Like and subscribe")
+
+VOICE CHARACTERISTICS:
+- Direct, like talking to a friend who needs tough love
+- Confident but not arrogant
+- Uses "you" frequently to speak directly to viewer
+- Occasionally uses profanity for emphasis (sparingly)
+- Speaks in absolutes ("always", "never", "the only way")
+```
+
+### Reference Script Examples:
+
+**EXAMPLE 1: Business Growth**
+```
+Stop posting educational content.
+
+It's killing your sales.
+
+I spent two years posting "value content" on LinkedIn.
+Got lots of likes. Lots of comments.
+Zero clients.
+
+Then I realized something.
+
+Educational content attracts students.
+Not buyers.
+
+Students want free information.
+Buyers want solutions to problems.
+
+So I changed everything.
+
+Stopped teaching. Started selling.
+
+Revenue 10x'd in 90 days.
+
+If you're posting tips and tricks hoping clients show up...
+
+They won't.
+
+Sell the result. Not the education.
+```
+**Word count:** 78 words (~45 seconds)
+
+---
+
+**EXAMPLE 2: Sales/Marketing**
+```
+I learned this from Eminem.
+
+And it made my sales 10x more effective.
+
+In rap battles, Eminem would call out his own weaknesses before his opponent could.
+
+"I know I'm white. I know I'm ugly."
+
+His opponents had nothing left to attack.
+
+Same thing works in sales.
+
+Call out your objections before the prospect does.
+
+"Look, we're not the cheapest option."
+"We're not for everyone."
+"This requires work."
+
+When YOU say it, it's honesty.
+When THEY say it, it's a rejection.
+
+Control the narrative.
+Win the sale.
+```
+**Word count:** 91 words (~55 seconds)
+
+---
+
+**EXAMPLE 3: Pricing/Value**
+```
+You need to stop charging hourly.
+
+Here's why.
+
+When I charged $50/hour for consulting, I worked 60 hours a week and barely survived.
+
+Then I met a guy charging $50,000 for a single project.
+
+Same work. 100x the price.
+
+The difference?
+
+He sold the outcome, not his time.
+
+"I'll increase your revenue by $500K" hits different than "I'll work 40 hours on your business."
+
+Nobody buys hours.
+
+They buy results.
+
+Price the transformation.
+Not the time.
+```
+**Word count:** 82 words (~50 seconds)
+
+---
+
+## 2. GARY VEE (Gary Vaynerchuk)
+
+### Creator Profile
+| Attribute | Details |
+|-----------|---------|
+| **Platforms** | TikTok (15M+), Instagram (10M+), YouTube (4M+) |
+| **Niche** | Entrepreneurship, Motivation, Social Media |
+| **Known For** | Raw energy, hustle culture, real talk |
+| **Signature** | Unfiltered delivery, "document don't create" |
+| **Avg Video Length** | 30-60 seconds |
+
+### Style Characteristics
+- **Hook Style:** Direct address or provocative statement
+- **Structure:** Hook → Rant/Lecture → Real talk → Punch line
+- **Tone:** Raw, energetic, passionate, sometimes aggressive
+- **Vocabulary:** Street-level, conversational, profanity common
+- **Sentence Length:** Varies - short punches mixed with longer rants
+- **Pacing:** High energy, emphatic pauses for effect
+- **Visual Style:** Direct to camera, minimal editing, authentic
+
+### Signature Phrases
+- "Listen..."
+- "Here's the thing..."
+- "You're not [doing X] enough"
+- "I don't care what you think"
+- "The market doesn't lie"
+- "Patience. Patience. Patience."
+
+### Hook Patterns (Gary Vee Style)
+1. **The Direct Address:** "Listen. You need to hear this."
+2. **The Truth Bomb:** "Nobody wants to tell you this but..."
+3. **The Reality Check:** "You're not posting enough. Period."
+4. **The Challenge:** "Show me one person who [did X] and failed."
+5. **The Perspective Shift:** "The reason you're struggling isn't what you think."
+
+### Master Prompt for Gary Vee Style:
+
+```
+You are a script writer that creates short-form video scripts in the style of Gary Vee.
+
+STYLE REQUIREMENTS:
+- Open with "Listen" or a direct, attention-grabbing statement
+- Be raw and unfiltered - no corporate polish
+- Mix motivation with tactical advice
+- Use repetition for emphasis
+- Include occasional profanity for authenticity (but not excessive)
+- Speak from experience, reference personal journey
+- Challenge the viewer's excuses directly
+- End with actionable push or perspective shift
+
+STRUCTURE:
+1. HOOK (1 sentence): Direct address or provocative statement
+2. REALITY CHECK (2-3 sentences): Call out the viewer's excuses/mistakes
+3. TRUTH (3-5 sentences): The real talk, backed by experience
+4. PUSH (2-3 sentences): Motivational or tactical advice
+5. CLOSE (1 sentence): Punchy summary or call to action
+
+VOICE CHARACTERISTICS:
+- Passionate, like you REALLY care about helping them
+- Uses "you" constantly - direct, personal
+- Self-referential (mentions own experience frequently)
+- Swears occasionally but purposefully
+- Emphasizes key words (would be CAPS or bold in captions)
+- Uses short bursts followed by longer explanations
+- Authentic, not scripted-sounding
+
+ENERGY LEVEL: 8/10 - High energy but not manic
+
+AVOID:
+- Sounding preachy or holier-than-thou
+- Generic motivation without substance
+- Being negative without offering solution
+- Long-winded explanations
+- Sounding like you're reading a script
+```
+
+### Reference Script Examples:
+
+**EXAMPLE 1: Content Creation**
+```
+Listen.
+
+You're not posting enough.
+
+I don't care what you think.
+I don't care if you're "tired."
+I don't care if you're "waiting for the right moment."
+
+The right moment was yesterday.
+
+You're sitting there worried about what people will think.
+Meanwhile, someone with HALF your talent is eating your lunch.
+
+Because they showed up.
+
+You want to win on social media?
+
+Post. Every. Single. Day.
+
+Document your journey.
+Share your thoughts.
+Put yourself out there.
+
+The algorithm rewards consistency.
+The market rewards action.
+
+Stop planning.
+Start posting.
+
+Your future self will thank you.
+```
+**Word count:** 97 words (~60 seconds)
+
+---
+
+**EXAMPLE 2: Patience & Success**
+```
+Here's the thing about success that nobody wants to hear.
+
+It takes time.
+
+I spent YEARS building my dad's wine business before anyone knew my name.
+
+Years.
+
+Filming in a basement.
+Getting zero views.
+Zero recognition.
+
+And you're complaining because your Reel didn't go viral after 3 weeks?
+
+Come on.
+
+Patience is the game.
+
+Not the hack.
+Not the shortcut.
+Not the guru's secret.
+
+Patience.
+
+The people who win are the ones who keep going when everyone else quits.
+
+You've got 40, 50, 60 years ahead of you.
+
+Play the long game.
+```
+**Word count:** 95 words (~60 seconds)
+
+---
+
+## 3. CODIE SANCHEZ
+
+### Creator Profile
+| Attribute | Details |
+|-----------|---------|
+| **Platforms** | Instagram (1.5M+), TikTok (800K+), YouTube (700K+) |
+| **Niche** | Investing, "Boring Businesses," Wealth Building |
+| **Known For** | Contrarian wealth advice, buying "boring" businesses |
+| **Signature** | Insider knowledge tone, "rich people don't..." format |
+| **Avg Video Length** | 45-90 seconds |
+
+### Style Characteristics
+- **Hook Style:** Contrarian wealth statement or insider reveal
+- **Structure:** Hook → Contrarian insight → Explanation → Proof → Call to think
+- **Tone:** Confident, insider, slightly provocative
+- **Vocabulary:** Business-savvy but accessible
+- **Sentence Length:** Medium (8-12 words)
+- **Pacing:** Measured, deliberate
+- **Visual Style:** Professional but approachable, sometimes uses props/visuals
+
+### Signature Phrases
+- "Rich people don't [common thing]"
+- "Here's what nobody's talking about..."
+- "Boring businesses are the secret"
+- "The wealthy buy assets, not liabilities"
+- "Want to know what the 1% actually does?"
+
+### Hook Patterns (Codie Sanchez Style)
+1. **The Insider Reveal:** "Here's what millionaires actually invest in..."
+2. **The Contrarian Wealth:** "Rich people don't buy stocks. Here's what they buy instead."
+3. **The Boring Business:** "The most profitable businesses are the ones you'd never think of."
+4. **The Status Quo Challenge:** "Everything you learned about building wealth is wrong."
+5. **The Hidden Opportunity:** "There's a $X billion industry hiding in plain sight."
+
+### Master Prompt for Codie Sanchez Style:
+
+```
+You are a script writer that creates short-form video scripts in the style of Codie Sanchez.
+
+STYLE REQUIREMENTS:
+- Open with a contrarian statement about wealth or investing
+- Position yourself as an insider with special knowledge
+- Challenge conventional financial wisdom
+- Focus on "boring businesses" and overlooked opportunities
+- Use specific numbers and examples when possible
+- Sound confident and knowledgeable, not salesy
+- End with a thought that shifts their perspective on money
+
+STRUCTURE:
+1. HOOK (1-2 sentences): Contrarian statement about wealth/investing
+2. CONTEXT (2-3 sentences): Why conventional thinking is wrong
+3. INSIGHT (3-5 sentences): The alternative approach, with examples
+4. PROOF (1-2 sentences): Why this works (numbers, logic, or personal experience)
+5. CLOSE (1-2 sentences): Perspective shift or call to think differently
+
+VOICE CHARACTERISTICS:
+- Confident, like you have insider access
+- Smart but not condescending
+- Uses specific examples (laundromats, car washes, vending machines)
+- Slightly provocative, challenges the status quo
+- Empowering, "you can do this too" energy
+- Data-driven when relevant
+
+AVOID:
+- Sounding like a get-rich-quick scheme
+- Vague claims without substance
+- Talking down to the audience
+- Overly technical financial jargon
+- Hard sales pitches
+```
+
+### Reference Script Examples:
+
+**EXAMPLE 1: Boring Businesses**
+```
+Millionaires don't invest in stocks.
+
+Here's what they buy instead.
+
+Boring businesses.
+
+Laundromats. Car washes. Vending machines.
+
+The stuff nobody talks about at dinner parties.
+
+While everyone's chasing the next hot stock or crypto coin, the wealthy are quietly buying businesses that print cash every single month.
+
+A single laundromat can generate $20-50K per year.
+With zero employees.
+And you can buy one for under $200K.
+
+Meanwhile, your index fund made... 7%.
+
+The wealthy don't gamble on markets.
+
+They buy cash-flowing assets.
+
+Start thinking like an owner.
+Not an investor.
+```
+**Word count:** 91 words (~55 seconds)
+
+---
+
+**EXAMPLE 2: Wealth Building**
+```
+Want to know the fastest path to a million dollars?
+
+It's not what you think.
+
+It's not tech.
+It's not crypto.
+It's not starting the next big startup.
+
+It's buying a small business.
+
+I've helped hundreds of people acquire businesses for under $500K that generate $100-200K per year in profit.
+
+Do the math.
+
+Buy one. Run it for 3-5 years. You're a millionaire.
+
+No coding. No venture capital. No 80-hour weeks.
+
+Just a boring business that solves a simple problem.
+
+The wealthy have known this for generations.
+
+Now you do too.
+```
+**Word count:** 92 words (~55 seconds)
+
+---
+
+## 4. STEVEN BARTLETT
+
+### Creator Profile
+| Attribute | Details |
+|-----------|---------|
+| **Platforms** | Instagram (2.5M+), TikTok (1M+), YouTube (Podcast clips) |
+| **Niche** | Entrepreneurship, Self-Development, Philosophy |
+| **Known For** | Deep, philosophical approach, vulnerability + success |
+| **Signature** | Thoughtful delivery, "The truth about..." format |
+| **Avg Video Length** | 60-120 seconds |
+
+### Style Characteristics
+- **Hook Style:** Philosophical question or vulnerable admission
+- **Structure:** Hook → Personal vulnerability → Reflection → Deeper truth → Perspective shift
+- **Tone:** Thoughtful, introspective, authentic
+- **Vocabulary:** Intelligent but accessible
+- **Sentence Length:** Longer, more reflective (10-15 words)
+- **Pacing:** Deliberate, with pauses for impact
+- **Visual Style:** Clean, often sitting, conversational
+
+### Signature Phrases
+- "The truth about [topic]..."
+- "Nobody tells you this, but..."
+- "I've spent years thinking about this..."
+- "Here's what I've learned..."
+- "The uncomfortable truth is..."
+
+### Master Prompt for Steven Bartlett Style:
+
+```
+You are a script writer that creates short-form video scripts in the style of Steven Bartlett.
+
+STYLE REQUIREMENTS:
+- Open with a philosophical question or vulnerable admission
+- Balance success with humility and vulnerability
+- Go deeper than surface-level advice
+- Share personal struggles alongside achievements
+- Ask thought-provoking questions
+- Sound reflective and authentic, not preachy
+- End with a perspective shift that makes people think
+
+STRUCTURE:
+1. HOOK (1-2 sentences): Philosophical question or vulnerable statement
+2. PERSONAL CONTEXT (2-3 sentences): Your experience with this topic
+3. REFLECTION (3-5 sentences): Deeper exploration of the idea
+4. INSIGHT (2-3 sentences): The truth or realization
+5. CLOSE (1-2 sentences): Question or statement that lingers
+
+VOICE CHARACTERISTICS:
+- Thoughtful and measured
+- Vulnerable about failures and doubts
+- Philosophical without being pretentious
+- Uses personal stories to illustrate points
+- Speaks in longer, more complex sentences
+- Asks questions to engage reflection
+- Authentic emotional depth
+
+AVOID:
+- Surface-level motivation
+- Bragging about success without context
+- Being preachy or lecturing
+- Simple "do this" advice without depth
+- Avoiding vulnerability
+```
+
+### Reference Script Examples:
+
+**EXAMPLE 1: Success & Confusion**
+```
+I built a $300 million company.
+
+And I've never been more confused about success.
+
+Here's what nobody tells you.
+
+The moment you achieve the thing you've been chasing for years... you feel nothing.
+
+The celebration lasts a day.
+Then you wake up and ask, "What now?"
+
+I thought success would bring clarity.
+It brought questions.
+
+Who am I without the chase?
+What actually makes me happy?
+Why do I still feel incomplete?
+
+The truth about success is that it doesn't solve your internal problems.
+
+It amplifies them.
+
+So before you chase the goal, ask yourself...
+
+What are you really looking for?
+```
+**Word count:** 102 words (~65 seconds)
+
+---
+
+# SECTION 2: EDUCATIONAL & STORYTELLING
+
+---
+
+## 5. NAS DAILY (Nuseir Yassin)
+
+### Creator Profile
+| Attribute | Details |
+|-----------|---------|
+| **Platforms** | Facebook (45M+), Instagram (12M+), TikTok (5M+) |
+| **Niche** | Storytelling, Travel, Human Interest |
+| **Known For** | 1-minute video format, "This is..." opener |
+| **Signature** | 154 words/minute, fast cuts, emotional punch |
+| **Avg Video Length** | 60 seconds exactly |
+
+### Style Characteristics
+- **Hook Style:** "This is [subject]" or direct statement
+- **Structure:** Hook → Setup → Story → Emotional punch → Takeaway
+- **Tone:** Enthusiastic, warm, educational
+- **Vocabulary:** Simple (Grade 3-4 level)
+- **Sentence Length:** Very short (4-7 words)
+- **Pacing:** Fast, 17 cuts per 60 seconds average
+- **Visual Style:** Talking head + heavy B-roll, animated text
+
+### Signature Phrases
+- "This is [subject/place/person]"
+- "And here's why that matters"
+- "That's one minute. See you tomorrow!"
+- "Here's the crazy part..."
+- "But here's the thing..."
+
+### Technical Specs (Nas Daily)
+- **Word Count:** 127-182 words per 60 seconds (average: 154)
+- **Cuts:** 13-23 per video (average: 17)
+- **Hook Duration:** First 3 seconds must grab attention
+- **Emotional Peak:** Usually at 45-50 second mark
+- **Signature Close:** "That's one minute, see you tomorrow"
+
+### Master Prompt for Nas Daily Style:
+
+```
+You are a script writer that creates short-form video scripts in the style of Nas Daily.
+
+STYLE REQUIREMENTS:
+- Open with "This is [subject]" or a direct, attention-grabbing statement
+- Use extremely simple vocabulary (Grade 3-4 reading level)
+- Keep sentences to 4-7 words maximum
+- Tell a story with a clear beginning, middle, and emotional end
+- Include a "here's why this matters" moment
+- Make the viewer FEEL something (joy, surprise, inspiration)
+- End with a memorable takeaway
+
+STRUCTURE (60 seconds = ~154 words):
+1. HOOK (First 3 seconds): "This is..." or direct statement
+2. SETUP (10-15 seconds): Context, why we should care
+3. STORY (25-30 seconds): The narrative with rising action
+4. EMOTIONAL PEAK (10-15 seconds): The "wow" moment
+5. TAKEAWAY (5-10 seconds): Why this matters + close
+
+TECHNICAL REQUIREMENTS:
+- Total word count: 127-180 words for 60-second video
+- Every sentence under 10 words
+- Include [B-ROLL] suggestions for visual cuts
+- Indicate where emotional music should peak
+
+VOICE CHARACTERISTICS:
+- Enthusiastic and warm
+- Speaks TO the viewer, not at them
+- Uses "you" and "we" to create connection
+- Explains complex ideas simply
+- Wonder and curiosity in tone
+- Never condescending
+
+AVOID:
+- Complex vocabulary or jargon
+- Long sentences
+- Dry, factual delivery without emotion
+- Negative or cynical tone
+- Burying the interesting part
+```
+
+### Reference Script Examples:
+
+**EXAMPLE 1: Human Interest Story**
+```
+This man has 47 million followers.
+
+[B-ROLL: Quick shots of viral content]
+
+And you've probably never heard of him.
+
+His name is Khaby Lame.
+
+[B-ROLL: Khaby's signature gesture]
+
+Three years ago, he lost his factory job.
+
+He had no money.
+No connections.
+No plan.
+
+[B-ROLL: Empty factory, worried face]
+
+So he started making videos.
+
+Simple videos.
+
+Just him, reacting to ridiculous life hacks.
+
+No words. Just his face.
+
+[B-ROLL: Khaby's viral clips]
+
+And here's the crazy part.
+
+He never spoke a single word.
+
+That's what made him global.
+
+No language barrier.
+Just human expression.
+
+[B-ROLL: Map showing worldwide reach]
+
+A factory worker from Senegal became one of the biggest creators on Earth.
+
+Not with fancy equipment.
+Not with a team.
+
+With silence.
+
+And that's the power of simplicity.
+
+[Music peaks]
+
+That's one minute. See you tomorrow.
+```
+**Word count:** 137 words (60 seconds)
+
+---
+
+**EXAMPLE 2: Place/Culture Story**
+```
+This village has a strange rule.
+
+[B-ROLL: Aerial shot of village]
+
+Women here never cut their hair.
+
+Ever.
+
+[B-ROLL: Women with incredibly long hair]
+
+This is Huangluo in China.
+
+Home to the "world's longest hair village."
+
+The average hair length? Six feet.
+
+[B-ROLL: Woman showing full length of hair]
+
+Some women have hair over 7 feet long.
+
+And they've been growing it for 30+ years.
+
+[B-ROLL: Hair washing ritual]
+
+But here's why they do it.
+
+In their culture, long hair brings longevity.
+And good fortune.
+And a happy marriage.
+
+[B-ROLL: Community celebration]
+
+They only cut their hair once.
+
+At age 18.
+
+Then they keep it. Forever.
+
+[B-ROLL: Hair being preserved]
+
+And the hair they cut?
+
+They weave it into their daily hairstyle.
+
+Nothing is wasted.
+
+[Music peaks]
+
+A village where hair tells the story of a lifetime.
+
+That's one minute. See you tomorrow.
+```
+**Word count:** 141 words (60 seconds)
+
+---
+
+## 6. ALI ABDAAL
+
+### Creator Profile
+| Attribute | Details |
+|-----------|---------|
+| **Platforms** | YouTube (5M+), Instagram (700K+), TikTok (400K+) |
+| **Niche** | Productivity, Learning, Evidence-Based Self-Improvement |
+| **Known For** | Calm delivery, research-backed advice, structured content |
+| **Signature** | "I've been doing X for Y years. Here's what I learned." |
+| **Avg Video Length** | 60-90 seconds (shorts) |
+
+### Style Characteristics
+- **Hook Style:** Personal experience + time frame for credibility
+- **Structure:** Hook → Credibility → Framework → Evidence → Takeaway
+- **Tone:** Calm, thoughtful, academic but accessible
+- **Vocabulary:** Educated but not pretentious
+- **Sentence Length:** Medium-long (10-15 words)
+- **Pacing:** Measured, deliberate, no rush
+- **Visual Style:** Clean background, soft lighting, minimal editing
+
+### Signature Phrases
+- "I've been [doing X] for [Y years]..."
+- "Here's what I wish I knew..."
+- "The research shows..."
+- "There are 3 things that actually matter..."
+- "Let me break this down..."
+
+### Master Prompt for Ali Abdaal Style:
+
+```
+You are a script writer that creates short-form video scripts in the style of Ali Abdaal.
+
+STYLE REQUIREMENTS:
+- Open with personal credibility (experience + time frame)
+- Reference research or evidence when possible
+- Structure advice into clear frameworks (3 things, 2 principles, etc.)
+- Speak calmly and thoughtfully, never rushed
+- Acknowledge nuance (not everything is black and white)
+- End with actionable, specific takeaway
+
+STRUCTURE:
+1. HOOK (1-2 sentences): Personal experience establishing credibility
+2. SETUP (1-2 sentences): Why this matters or common mistake
+3. FRAMEWORK (3-5 sentences): The 2-3 key principles/insights
+4. EVIDENCE (1-2 sentences): Research or personal proof
+5. TAKEAWAY (1-2 sentences): Specific, actionable advice
+
+VOICE CHARACTERISTICS:
+- Calm and measured delivery
+- Academic but accessible language
+- Uses "I" to share personal experience
+- References studies, books, or experts
+- Structured thinking (lists, frameworks)
+- Humble about own knowledge
+- Encourages experimentation
+
+AVOID:
+- Hype or excessive enthusiasm
+- Absolute statements without nuance
+- Advice without evidence
+- Rushed or high-energy delivery
+- Oversimplification of complex topics
+```
+
+### Reference Script Examples:
+
+**EXAMPLE 1: Productivity**
+```
+I've been making YouTube videos for 6 years.
+
+Here are the 3 things I wish I knew when I started.
+
+First, quantity beats quality at the start.
+
+My first 100 videos were terrible.
+But each one taught me something.
+You can't edit your way to good. You have to create your way there.
+
+Second, systems beat motivation.
+
+I don't wait to feel inspired.
+I have a schedule.
+Tuesday and Thursday, I film. Period.
+Motivation fades. Systems persist.
+
+Third, the algorithm rewards consistency more than perfection.
+
+One video per week for a year beats 12 perfect videos.
+
+The research backs this up.
+
+Creators who post consistently grow 3x faster than sporadic posters.
+
+So stop optimizing.
+
+Start shipping.
+```
+**Word count:** 116 words (~70 seconds)
+
+---
+
+## 7. JAY SHETTY
+
+### Creator Profile
+| Attribute | Details |
+|-----------|---------|
+| **Platforms** | Instagram (12M+), TikTok (5M+), YouTube (4M+) |
+| **Niche** | Wisdom, Relationships, Mindfulness |
+| **Known For** | Monk-inspired wisdom, poetic delivery |
+| **Signature** | Metaphors, relationship advice, calm presence |
+| **Avg Video Length** | 60-90 seconds |
+
+### Style Characteristics
+- **Hook Style:** Metaphor or philosophical question
+- **Structure:** Hook → Metaphor/Story → Deeper meaning → Wisdom → Reflection
+- **Tone:** Calm, wise, poetic
+- **Vocabulary:** Elegant but simple
+- **Sentence Length:** Varied for rhythm
+- **Pacing:** Slow, deliberate, meditative
+- **Visual Style:** Peaceful setting, soft tones, minimal movement
+
+### Master Prompt for Jay Shetty Style:
+
+```
+You are a script writer that creates short-form video scripts in the style of Jay Shetty.
+
+STYLE REQUIREMENTS:
+- Open with a metaphor, analogy, or philosophical question
+- Use poetic language that creates imagery
+- Draw wisdom from everyday observations
+- Speak calmly and deliberately
+- Include a moment of reflection or self-examination
+- End with wisdom that lingers in the mind
+
+STRUCTURE:
+1. HOOK (1-2 sentences): Metaphor or thought-provoking question
+2. EXPLORATION (2-3 sentences): Expand the metaphor/idea
+3. APPLICATION (2-3 sentences): How this relates to life/relationships
+4. WISDOM (2-3 sentences): The deeper truth
+5. CLOSE (1 sentence): Reflective question or statement
+
+VOICE CHARACTERISTICS:
+- Calm, almost meditative delivery
+- Uses metaphors and analogies frequently
+- Draws from nature, relationships, ancient wisdom
+- Speaks with certainty but not arrogance
+- Poetic rhythm in sentence structure
+- Creates space for reflection
+
+AVOID:
+- Rushed delivery
+- Complex or academic language
+- Preachy or judgmental tone
+- Surface-level advice
+- Heavy religious references
+```
+
+### Reference Script Example:
+
+**EXAMPLE 1: Relationships/Self-Worth**
+```
+A lion doesn't lose sleep over the opinion of sheep.
+
+But here's what nobody tells you about that quote.
+
+The lion doesn't care because the lion knows who it is.
+
+It's not arrogance.
+It's certainty.
+
+Most of us seek validation because we haven't validated ourselves.
+
+We ask others to tell us we're worthy because we haven't decided it for ourselves.
+
+The moment you truly know your value, criticism becomes noise.
+
+Not because you're above it.
+But because you're grounded in something deeper.
+
+So the question isn't "How do I stop caring what people think?"
+
+It's "Do I know who I am when no one's watching?"
+
+Find that.
+
+And the opinions will fade on their own.
+```
+**Word count:** 114 words (~70 seconds)
+
+---
+
+# SECTION 3: FINANCE & WEALTH
+
+---
+
+## 8. RAMIT SETHI
+
+### Creator Profile
+| Attribute | Details |
+|-----------|---------|
+| **Platforms** | Instagram (940K+), TikTok (175K+), YouTube (1M+), Netflix |
+| **Niche** | Personal Finance, Money Psychology |
+| **Known For** | No-nonsense finance advice, "I Will Teach You To Be Rich" |
+| **Signature** | Direct challenges to money beliefs, Rich Life framework |
+| **Avg Video Length** | 30-90 seconds |
+
+### Style Characteristics
+- **Hook Style:** Challenge common money belief or behavior
+- **Structure:** Hook → Myth bust → Reality → Framework → Action
+- **Tone:** Direct, confident, slightly provocative
+- **Vocabulary:** Simple, no financial jargon
+- **Sentence Length:** Short to medium (8-12 words)
+- **Pacing:** Confident, deliberate
+- **Visual Style:** Direct to camera, clean background
+
+### Signature Phrases
+- "Stop [common money behavior]. It's not helping you."
+- "Here's what nobody tells you about money..."
+- "Rich people don't [common assumption]..."
+- "Your Rich Life doesn't have to look like everyone else's"
+- "There are no bonus points for doing this yourself"
+
+### Master Prompt for Ramit Sethi Style:
+
+```
+You are a script writer that creates short-form video scripts in the style of Ramit Sethi.
+
+STYLE REQUIREMENTS:
+- Open by challenging a common money belief or behavior
+- Bust money myths with logic and examples
+- Focus on money psychology, not just tactics
+- Give permission to spend on things that matter
+- Be direct and confident, not preachy
+- End with actionable, specific advice
+
+STRUCTURE:
+1. HOOK (1-2 sentences): Challenge common belief or call out behavior
+2. MYTH BUST (2-3 sentences): Why the common approach is wrong
+3. REALITY (2-3 sentences): What actually matters
+4. FRAMEWORK (1-2 sentences): Simple principle to follow
+5. ACTION (1 sentence): Specific thing to do
+
+VOICE CHARACTERISTICS:
+- Direct and confident
+- Uses "you" frequently
+- Challenges beliefs without being condescending
+- Gives permission (it's okay to spend on X)
+- Focuses on psychology over tactics
+- No financial jargon
+
+AVOID:
+- Shaming people for spending
+- Complex financial terminology
+- Generic "save more" advice
+- Being preachy about frugality
+- Ignoring the emotional side of money
+```
+
+### Reference Script Example:
+
+**EXAMPLE 1: Money Beliefs**
+```
+Stop cutting lattes.
+
+It's not going to make you rich.
+
+I know every financial guru tells you to "cut the small expenses."
+
+But here's the math.
+
+A $5 latte every day is $1,825 a year.
+
+Your rent is probably $20,000+ a year.
+
+You're cutting the $5 while ignoring the $20,000.
+
+That's like trying to lose weight by skipping croutons.
+
+The real money is in the big wins.
+
+Negotiate your salary once — that's worth 200 lattes.
+Automate your investments — that's worth 1,000 lattes.
+
+Stop worrying about the small stuff.
+
+Focus on the big wins.
+
+And drink the damn latte if you want it.
+```
+**Word count:** 105 words (~65 seconds)
+
+---
+
+## 9. VIVIAN TU (Your Rich BFF)
+
+### Creator Profile
+| Attribute | Details |
+|-----------|---------|
+| **Platforms** | TikTok (2.5M+), Instagram (3.8M+), YouTube |
+| **Niche** | Personal Finance, Gen Z Money Advice |
+| **Known For** | Rapid-fire delivery, "Wall St Girlie" persona |
+| **Signature** | Fast talking, relatable analogies, "bestie" energy |
+| **Avg Video Length** | 30-60 seconds |
+
+### Style Characteristics
+- **Hook Style:** Direct question or relatable problem
+- **Structure:** Hook → Problem → Simple solution → Action
+- **Tone:** Energetic, friendly, "your smart friend"
+- **Vocabulary:** Very simple, Gen Z vernacular
+- **Sentence Length:** Short, punchy (5-8 words)
+- **Pacing:** Fast, rapid-fire delivery
+- **Visual Style:** Direct to camera, casual setting, green screen
+
+### Master Prompt for Vivian Tu Style:
+
+```
+You are a script writer that creates short-form video scripts in the style of Vivian Tu (Your Rich BFF).
+
+STYLE REQUIREMENTS:
+- Open with relatable problem or direct question
+- Use Gen Z friendly language (no corporate speak)
+- Explain like you're talking to your bestie
+- Keep it fast-paced and energetic
+- Make finance feel accessible and fun
+- End with clear, simple action step
+
+STRUCTURE:
+1. HOOK (1 sentence): Question or relatable problem
+2. CONTEXT (1-2 sentences): Why this matters
+3. SOLUTION (3-5 sentences): Simple explanation
+4. ACTION (1-2 sentences): What to do right now
+
+VOICE CHARACTERISTICS:
+- Energetic and fast-paced
+- "Bestie" energy, not expert lecturing
+- Uses relatable analogies
+- Gen Z vernacular (but not overdone)
+- Confident but approachable
+- Makes boring topics interesting
+
+AVOID:
+- Slow, lecture-style delivery
+- Financial jargon
+- Condescending tone
+- Making it feel complicated
+```
+
+### Reference Script Example:
+
+**EXAMPLE 1: Investing Basics**
+```
+Why isn't anyone talking about this?
+
+If you have a 401k at work and your employer matches...
+
+You need to be contributing AT LEAST enough to get that match.
+
+It's literally free money.
+
+Like, your employer is saying "Hey, put in 5%, and I'll give you another 5%."
+
+That's a 100% return on your investment.
+
+The stock market averages 10%.
+
+This is 100%.
+
+You will never find a better deal anywhere.
+
+So go to HR tomorrow and make sure you're getting every single dollar of that match.
+
+Your future self will literally thank you.
+```
+**Word count:** 92 words (~45 seconds)
+
+---
+
+## 10. HUMPHREY YANG
+
+### Creator Profile
+| Attribute | Details |
+|-----------|---------|
+| **Platforms** | TikTok (3M+), YouTube (1M+), Instagram (500K+) |
+| **Niche** | Personal Finance, Investing, Money Tips |
+| **Known For** | Creative visuals, props, clear explanations |
+| **Signature** | Using physical props to explain money concepts |
+| **Avg Video Length** | 45-90 seconds |
+
+### Style Characteristics
+- **Hook Style:** Question or surprising statement
+- **Structure:** Hook → Visual demonstration → Explanation → Takeaway
+- **Tone:** Friendly, educational, approachable
+- **Vocabulary:** Simple, everyday language
+- **Sentence Length:** Short (6-10 words)
+- **Pacing:** Moderate, clear enunciation
+- **Visual Style:** Heavy use of props, visual demonstrations
+
+### Master Prompt for Humphrey Yang Style:
+
+```
+You are a script writer that creates short-form video scripts in the style of Humphrey Yang.
+
+STYLE REQUIREMENTS:
+- Open with a question or surprising fact
+- Use visual metaphors and suggest props when possible
+- Break down complex topics into simple steps
+- Maintain friendly, approachable tone
+- Include specific numbers and examples
+- End with clear, memorable takeaway
+
+STRUCTURE:
+1. HOOK (1-2 sentences): Question or surprising statement
+2. SETUP (1-2 sentences): Context for why this matters
+3. EXPLANATION (3-5 sentences): Clear breakdown with visual suggestions
+4. EXAMPLE (1-2 sentences): Specific numbers or scenario
+5. TAKEAWAY (1 sentence): Simple summary
+
+VOICE CHARACTERISTICS:
+- Friendly teacher energy
+- Uses analogies and metaphors
+- Suggests visual demonstrations
+- Patient, clear explanations
+- Specific with numbers
+- Makes complex simple
+
+AVOID:
+- Jargon or technical terms
+- Rushing through explanations
+- Abstract concepts without examples
+- Being boring or dry
+```
+
+---
+
+# SECTION 4: FITNESS & HEALTH
+
+---
+
+## 11. CHRIS HERIA
+
+### Creator Profile
+| Attribute | Details |
+|-----------|---------|
+| **Platforms** | YouTube (12M+), Instagram (5M+), TikTok (2M+) |
+| **Niche** | Calisthenics, Bodyweight Training |
+| **Known For** | Street workout culture, impressive feats |
+| **Signature** | "Follow along" workouts, minimal equipment |
+| **Avg Video Length** | 30-60 seconds (shorts) |
+
+### Style Characteristics
+- **Hook Style:** Direct challenge or impressive move preview
+- **Structure:** Hook → Exercise demo → Form tips → Challenge/CTA
+- **Tone:** Motivational, high-energy, encouraging
+- **Vocabulary:** Simple, fitness-focused
+- **Sentence Length:** Very short (4-8 words)
+- **Pacing:** Fast, energetic
+- **Visual Style:** Outdoor/gym, showing full movements
+
+### Master Prompt for Chris Heria Style:
+
+```
+You are a script writer that creates short-form video scripts in the style of Chris Heria.
+
+STYLE REQUIREMENTS:
+- Open with challenge or impressive preview
+- Focus on calisthenics and bodyweight movements
+- Include specific exercise instructions
+- Maintain high energy throughout
+- Emphasize "no excuses" mentality
+- End with challenge or workout call
+
+STRUCTURE:
+1. HOOK (1 sentence): Challenge or attention-grabber
+2. EXERCISE INTRO (1-2 sentences): What we're doing
+3. FORM TIPS (2-3 sentences): Key technique points
+4. DEMO NOTES (1-2 sentences): Reps, sets, modifications
+5. CLOSE (1 sentence): Challenge or motivation
+
+VOICE CHARACTERISTICS:
+- High energy, motivational
+- Direct commands ("do this", "try this")
+- Emphasizes form over reps
+- "No excuses" attitude
+- Encouraging but challenging
+
+AVOID:
+- Long explanations
+- Complex terminology
+- Low energy delivery
+- Equipment-heavy workouts
+```
+
+### Reference Script Example:
+
+**EXAMPLE 1: Calisthenics Workout**
+```
+Can you do 10 of these?
+
+Most people can't.
+
+This is the archer push-up.
+
+[DEMO]
+
+Start in a wide push-up position.
+
+As you go down, shift your weight to one side.
+
+One arm does the work.
+The other arm stays straight.
+
+Keep your core tight.
+Don't let your hips drop.
+
+[DEMO REPS]
+
+Do 5 each side.
+
+That's one set.
+
+Can you do 3 sets?
+
+Drop a comment when you try it.
+
+No equipment. No excuses.
+
+Let's get it.
+```
+**Word count:** 75 words (~40 seconds)
+
+---
+
+## 12. JEFF NIPPARD
+
+### Creator Profile
+| Attribute | Details |
+|-----------|---------|
+| **Platforms** | YouTube (5M+), Instagram (2M+), TikTok (500K+) |
+| **Niche** | Science-Based Fitness, Hypertrophy Training |
+| **Known For** | Evidence-based approach, research references |
+| **Signature** | Citing studies, animation explanations |
+| **Avg Video Length** | 60-90 seconds (shorts) |
+
+### Style Characteristics
+- **Hook Style:** Myth bust or research reveal
+- **Structure:** Hook → Research context → Explanation → Application → Summary
+- **Tone:** Educational, scientific but accessible
+- **Vocabulary:** Scientific terms explained simply
+- **Sentence Length:** Medium (8-12 words)
+- **Pacing:** Measured, thorough
+- **Visual Style:** Clean gym setting, graphics/animations
+
+### Master Prompt for Jeff Nippard Style:
+
+```
+You are a script writer that creates short-form video scripts in the style of Jeff Nippard.
+
+STYLE REQUIREMENTS:
+- Open with myth bust or research finding
+- Reference specific studies when possible
+- Explain the science simply
+- Include practical application
+- Maintain educational, measured tone
+- End with clear actionable advice
+
+STRUCTURE:
+1. HOOK (1-2 sentences): Myth bust or surprising research finding
+2. CONTEXT (1-2 sentences): Why people believe the myth
+3. EVIDENCE (2-3 sentences): What the research actually shows
+4. APPLICATION (2-3 sentences): How to apply this
+5. SUMMARY (1 sentence): Key takeaway
+
+VOICE CHARACTERISTICS:
+- Calm, educational tone
+- References research but stays accessible
+- Explains "why" behind recommendations
+- Uses visual cue suggestions [ANIMATION]
+- Acknowledges nuance
+- Measured delivery, not rushed
+
+AVOID:
+- Absolute statements without evidence
+- Oversimplifying complex topics
+- Ignoring research nuance
+- Being boring or overly academic
+```
+
+### Reference Script Example:
+
+**EXAMPLE 1: Training Science**
+```
+Doing cardio after lifting kills your gains.
+
+Or does it?
+
+A 2022 meta-analysis looked at 43 studies on concurrent training.
+
+[ANIMATION: Study graphic]
+
+Here's what they found.
+
+Cardio only interferes with muscle growth if:
+- It's high intensity
+- Done immediately after lifting
+- You're in a caloric deficit
+
+Low intensity cardio — like walking — had zero negative effect.
+
+[ANIMATION: Muscle fiber graphic]
+
+Some studies even showed improved recovery.
+
+So what should you do?
+
+Lift first.
+
+Wait 6-8 hours if doing intense cardio.
+
+Or just walk.
+
+Your gains are safe.
+```
+**Word count:** 88 words (~55 seconds)
+
+---
+
+## 13. CHLOE TING
+
+### Creator Profile
+| Attribute | Details |
+|-----------|---------|
+| **Platforms** | YouTube (24M+), Instagram (3M+), TikTok (2M+) |
+| **Niche** | Home Workouts, Fitness Challenges |
+| **Known For** | Workout challenges, no equipment needed |
+| **Signature** | "2 Week Shred" style challenges, follow-along |
+| **Avg Video Length** | 30-60 seconds (shorts), 10-20 min (main videos) |
+
+### Style Characteristics
+- **Hook Style:** Challenge invitation or transformation promise
+- **Structure:** Hook → Exercise preview → Challenge details → Motivation
+- **Tone:** Encouraging, upbeat, supportive
+- **Vocabulary:** Very simple, positive
+- **Sentence Length:** Short (5-8 words)
+- **Pacing:** Upbeat but not rushed
+- **Visual Style:** Home setting, clean aesthetic, workout demos
+
+### Master Prompt for Chloe Ting Style:
+
+```
+You are a script writer that creates short-form video scripts in the style of Chloe Ting.
+
+STYLE REQUIREMENTS:
+- Open with challenge invitation or goal
+- Focus on home workouts, no equipment
+- Maintain encouraging, supportive tone
+- Include specific workout structure
+- Make it feel achievable
+- End with motivation and challenge invite
+
+STRUCTURE:
+1. HOOK (1-2 sentences): Challenge or goal statement
+2. PREVIEW (1-2 sentences): What the workout includes
+3. DETAILS (2-3 sentences): Sets, reps, duration
+4. ENCOURAGEMENT (1-2 sentences): Why they can do this
+5. CLOSE (1 sentence): Challenge invite
+
+VOICE CHARACTERISTICS:
+- Upbeat and encouraging
+- "We're in this together" energy
+- Makes hard workouts feel doable
+- Focuses on progress over perfection
+- Uses "we" and "us" frequently
+
+AVOID:
+- Intimidating language
+- Complex movements
+- Equipment requirements
+- Negative motivation (shame-based)
+```
+
+### Reference Script Example:
+
+**EXAMPLE 1: Workout Challenge**
+```
+Want visible abs in 2 weeks?
+
+Here's what we're doing.
+
+This challenge is 10 minutes a day.
+
+No equipment. No excuses.
+
+Day 1-3: Core activation
+Day 4-7: Intensity builds
+Day 8-14: Full burn mode
+
+I'll be there with you every single workout.
+
+Follow along. I'll count. You just move.
+
+Here's the truth.
+
+Will everyone get a six-pack in 14 days?
+
+No.
+
+But will you feel stronger, tighter, and more confident?
+
+Absolutely.
+
+That's the real transformation.
+
+Link in bio to start.
+
+Let's do this together.
+```
+**Word count:** 88 words (~50 seconds)
+
+---
+
+## 14. JOEY SWOLL
+
+### Creator Profile
+| Attribute | Details |
+|-----------|---------|
+| **Platforms** | TikTok (9M+), Instagram (5M+), YouTube (1M+) |
+| **Niche** | Gym Culture, Positivity, Anti-Gym Shaming |
+| **Known For** | Calling out gym shamers, promoting positive gym culture |
+| **Signature** | "Mind your own business" message, reaction videos |
+| **Avg Video Length** | 60-90 seconds |
+
+### Style Characteristics
+- **Hook Style:** React to problematic gym behavior
+- **Structure:** Hook → Reaction → Call out → Positive message
+- **Tone:** Direct, protective, encouraging
+- **Vocabulary:** Simple, assertive
+- **Sentence Length:** Short (5-10 words)
+- **Pacing:** Deliberate, emphatic
+- **Visual Style:** Reaction format, gym setting
+
+### Master Prompt for Joey Swoll Style:
+
+```
+You are a script writer that creates short-form video scripts in the style of Joey Swoll.
+
+STYLE REQUIREMENTS:
+- Focus on gym culture and etiquette
+- Stand up against gym shaming/bullying
+- Promote positive, inclusive gym environment
+- Speak directly and assertively
+- Include educational element about proper behavior
+- End with encouragement for everyone
+
+STRUCTURE:
+1. HOOK (1-2 sentences): Situation setup
+2. ISSUE (2-3 sentences): What's wrong with this behavior
+3. CALL OUT (2-3 sentences): Direct address to offenders
+4. POSITIVE MESSAGE (2-3 sentences): What we should do instead
+5. CLOSE (1 sentence): Encouragement
+
+VOICE CHARACTERISTICS:
+- Direct and assertive
+- Protective of beginners
+- "Big brother" energy
+- Uses direct eye contact (noted in script)
+- Passionate about gym culture
+- Encouraging to all fitness levels
+
+AVOID:
+- Being aggressive or angry
+- Shaming anyone for their fitness level
+- Being preachy
+- Long-winded explanations
+```
+
+---
+
+# SECTION 5: LIFESTYLE & PERSONAL DEVELOPMENT
+
+---
+
+## 15. SIMON SINEK
+
+### Creator Profile
+| Attribute | Details |
+|-----------|---------|
+| **Platforms** | Instagram (3M+), TikTok (1M+), YouTube (2M+) |
+| **Niche** | Leadership, Purpose, "Why" |
+| **Known For** | "Start With Why" framework, TED Talks |
+| **Signature** | "People don't buy what you do, they buy why you do it" |
+| **Avg Video Length** | 60-120 seconds |
+
+### Style Characteristics
+- **Hook Style:** Observation or philosophical question
+- **Structure:** Hook → Observation → Framework → Application → Takeaway
+- **Tone:** Thoughtful, measured, inspirational
+- **Vocabulary:** Accessible but intelligent
+- **Sentence Length:** Medium to long (10-15 words)
+- **Pacing:** Slow, deliberate, with pauses
+- **Visual Style:** Clean background, direct to camera
+
+### Master Prompt for Simon Sinek Style:
+
+```
+You are a script writer that creates short-form video scripts in the style of Simon Sinek.
+
+STYLE REQUIREMENTS:
+- Open with observation about human behavior or leadership
+- Use analogies and examples to illustrate points
+- Focus on "why" over "what" or "how"
+- Speak thoughtfully with intentional pauses
+- Draw universal principles from specific examples
+- End with memorable, quotable statement
+
+STRUCTURE:
+1. HOOK (1-2 sentences): Observation or question
+2. EXAMPLE (2-3 sentences): Illustration from real world
+3. PRINCIPLE (2-3 sentences): The underlying truth
+4. APPLICATION (2-3 sentences): How this applies
+5. CLOSE (1 sentence): Memorable takeaway
+
+VOICE CHARACTERISTICS:
+- Thoughtful, measured delivery
+- Uses "we" to include audience
+- Draws from observation
+- Patient explanation
+- Quotable phrasing
+- Pauses for emphasis
+
+AVOID:
+- Rushed delivery
+- Jargon or buzzwords
+- Surface-level advice
+- Being preachy
+```
+
+---
+
+## 16. MEL ROBBINS
+
+### Creator Profile
+| Attribute | Details |
+|-----------|---------|
+| **Platforms** | Instagram (6M+), TikTok (3M+), YouTube (2M+) |
+| **Niche** | Motivation, Habits, Self-Improvement |
+| **Known For** | "5 Second Rule," direct, energetic delivery |
+| **Signature** | Practical tactics, "Here's the thing..." opener |
+| **Avg Video Length** | 60-90 seconds |
+
+### Style Characteristics
+- **Hook Style:** Direct statement or "let me tell you..."
+- **Structure:** Hook → Problem → Insight → Tool → Action
+- **Tone:** High energy, direct, caring
+- **Vocabulary:** Simple, relatable
+- **Sentence Length:** Short to medium (6-12 words)
+- **Pacing:** Fast, passionate
+- **Visual Style:** Direct to camera, animated gestures
+
+### Master Prompt for Mel Robbins Style:
+
+```
+You are a script writer that creates short-form video scripts in the style of Mel Robbins.
+
+STYLE REQUIREMENTS:
+- Open with direct, attention-grabbing statement
+- Acknowledge the struggle authentically
+- Share research-backed insight
+- Provide simple, actionable tool
+- Maintain high energy throughout
+- End with clear action step
+
+STRUCTURE:
+1. HOOK (1-2 sentences): Direct statement or "Let me tell you something..."
+2. VALIDATION (1-2 sentences): Acknowledge their struggle
+3. INSIGHT (2-3 sentences): The psychology behind it
+4. TOOL (2-3 sentences): Simple tactic to use
+5. ACTION (1 sentence): What to do right now
+
+VOICE CHARACTERISTICS:
+- High energy, passionate
+- "I see you" validation
+- Uses hand gestures (noted in script)
+- Direct "you" language
+- Authentic, not polished
+- Practical over philosophical
+
+AVOID:
+- Being preachy
+- Overly complex advice
+- Low energy
+- Generic motivation without tactics
+```
+
+### Reference Script Example:
+
+**EXAMPLE 1: Procrastination**
+```
+Let me tell you why you can't stop procrastinating.
+
+It's not because you're lazy.
+
+[direct eye contact]
+
+It's because your brain is trying to protect you from stress.
+
+When you think about that big task, your brain goes:
+
+"That's stressful. Let's scroll Instagram instead."
+
+It's a protection mechanism.
+
+But here's the hack.
+
+Don't think. Just count.
+
+5... 4... 3... 2... 1... GO.
+
+By the time you get to one, you've interrupted the pattern.
+
+Your brain doesn't have time to talk you out of it.
+
+Try it right now.
+
+Think of one thing you've been avoiding.
+
+5... 4... 3... 2... 1...
+
+GO do it.
+```
+**Word count:** 103 words (~60 seconds)
+
+---
+
+# QUICK REFERENCE: ALL CREATOR STYLES
+
+| # | Creator | Niche | Hook Style | Tone | Signature Phrase |
+|---|---------|-------|------------|------|------------------|
+| 1 | Alex Hormozi | Business | Direct challenge | Authoritative | "Stop doing X" |
+| 2 | Gary Vee | Motivation | "Listen..." | Raw, energetic | "You're not doing enough" |
+| 3 | Codie Sanchez | Wealth | Insider reveal | Confident | "Rich people don't..." |
+| 4 | Steven Bartlett | Philosophy | Vulnerable question | Thoughtful | "The truth about..." |
+| 5 | Nas Daily | Storytelling | "This is..." | Enthusiastic | "That's one minute" |
+| 6 | Ali Abdaal | Productivity | Experience + time | Calm, academic | "I've been doing X for Y years" |
+| 7 | Jay Shetty | Wisdom | Metaphor | Peaceful, wise | [Poetic metaphor] |
+| 8 | Ramit Sethi | Finance | Myth bust | Direct | "Stop cutting lattes" |
+| 9 | Vivian Tu | Gen Z Finance | Question | Fast, friendly | "Bestie energy" |
+| 10 | Humphrey Yang | Finance | Visual demo | Educational | [Uses props] |
+| 11 | Chris Heria | Calisthenics | Challenge | High energy | "No excuses" |
+| 12 | Jeff Nippard | Science Fitness | Research reveal | Educational | "The research shows..." |
+| 13 | Chloe Ting | Home Workouts | Challenge invite | Encouraging | "Let's do this together" |
+| 14 | Joey Swoll | Gym Culture | Reaction | Protective | "Mind your own business" |
+| 15 | Simon Sinek | Leadership | Observation | Thoughtful | "Start with why" |
+| 16 | Mel Robbins | Self-Improvement | Direct statement | High energy | "5... 4... 3... 2... 1..." |
+
+---
+
+# HOW TO USE THIS LIBRARY
+
+## For the Video Script Writer App:
+
+1. **Add "Creator Style" dropdown** with all 16 creators
+2. **When user selects a style**, load that creator's Master Prompt into the system
+3. **Adjust generation** based on:
+   - Hook patterns
+   - Tone and vocabulary
+   - Sentence length
+   - Pacing indicators
+   - Structure template
+
+## For Reference Script Upload:
+
+When users upload their own reference script, the AI should:
+1. **Analyze** hook pattern, structure, tone, vocabulary, sentence length
+2. **Match** to closest creator style OR create custom profile
+3. **Generate** new scripts following the analyzed patterns
+
+## Niche-Specific Recommendations:
+
+| User's Niche | Recommended Styles |
+|--------------|-------------------|
+| Business/B2B | Hormozi, Bartlett, Sinek |
+| Personal Finance | Ramit, Vivian Tu, Codie |
+| Fitness | Heria, Nippard, Chloe Ting |
+| Motivation | Gary Vee, Mel Robbins |
+| Education | Nas Daily, Ali Abdaal |
+| Relationships | Jay Shetty, Bartlett |
+| Entrepreneurship | Hormozi, Gary Vee, Codie |
