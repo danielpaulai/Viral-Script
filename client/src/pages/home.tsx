@@ -40,6 +40,11 @@ import {
   ctaOptions,
   videoTypes,
   creatorStyles,
+  creatorNiches,
+  extendedCreatorStyles,
+  allCreatorStyles,
+  ctaLibrary,
+  funnelStages,
   type ScriptParameters,
   type GeneratedScript,
 } from "@shared/schema";
@@ -73,6 +78,12 @@ import {
   Building2,
   MessageCircle,
   FileText,
+  Briefcase,
+  GraduationCap,
+  Wallet,
+  Dumbbell,
+  Users,
+  Star,
 } from "lucide-react";
 
 const presetIcons: Record<string, typeof Zap> = {
@@ -100,6 +111,30 @@ const creatorStyleIcons: Record<string, typeof Target> = {
   ali_abdaal: BookOpen,
   codie_sanchez: Building2,
   steven_bartlett: MessageCircle,
+  hormozi: DollarSign,
+  garyvee: Flame,
+  codie: Building2,
+  bartlett: MessageCircle,
+  nasdaily: Globe,
+  aliabdaal: BookOpen,
+  jayshetty: Star,
+  ramit: Wallet,
+  viviantu: Wallet,
+  humphrey: Wallet,
+  chrisheria: Dumbbell,
+  jeffnippard: Dumbbell,
+  chloeting: Dumbbell,
+  joeyswoll: Dumbbell,
+  simonsinek: Users,
+  melrobbins: Flame,
+};
+
+const nicheIcons: Record<string, typeof Briefcase> = {
+  business: Briefcase,
+  education: GraduationCap,
+  finance: Wallet,
+  fitness: Dumbbell,
+  lifestyle: Star,
 };
 
 const platformWordTargets: Record<string, { min: number; max: number; label: string }> = {
@@ -508,7 +543,7 @@ export default function Home() {
           </div>
 
           <div>
-            <Label className="text-xs font-medium mb-2 block uppercase tracking-wider">Creator Style</Label>
+            <Label className="text-xs font-medium mb-2 block uppercase tracking-wider">Creator Style (16 Famous Creators)</Label>
             <Select
               value={formData.creatorStyle || "default"}
               onValueChange={(value) => setFormData((prev) => ({ ...prev, creatorStyle: value }))}
@@ -516,26 +551,44 @@ export default function Home() {
               <SelectTrigger className="bg-white/5 border-white/10" data-testid="select-creator-style">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="max-h-80">
-                {creatorStyles.map((cs) => {
-                  const Icon = creatorStyleIcons[cs.id] || Target;
+              <SelectContent className="max-h-96">
+                <SelectItem value="default">
+                  <div className="flex items-center gap-2">
+                    <Target className="w-4 h-4" />
+                    <span>Default - Optimized for Virality</span>
+                  </div>
+                </SelectItem>
+                {creatorNiches.map((niche) => {
+                  const NicheIcon = nicheIcons[niche.id] || Target;
+                  const nicheCreators = extendedCreatorStyles.filter(c => c.nicheId === niche.id);
                   return (
-                    <SelectItem key={cs.id} value={cs.id}>
-                      <div className="flex items-center gap-2">
-                        <Icon className="w-4 h-4" />
-                        <span>{cs.name}</span>
-                        <span className="text-muted-foreground text-xs">- {cs.description}</span>
+                    <div key={niche.id}>
+                      <div className="px-2 py-1.5 text-xs font-semibold text-primary flex items-center gap-2">
+                        <NicheIcon className="w-3 h-3" />
+                        {niche.name}
                       </div>
-                    </SelectItem>
+                      {nicheCreators.map((cs) => {
+                        const Icon = creatorStyleIcons[cs.id] || Target;
+                        return (
+                          <SelectItem key={cs.id} value={cs.id}>
+                            <div className="flex items-center gap-2">
+                              <Icon className="w-4 h-4" />
+                              <span>{cs.name}</span>
+                              <span className="text-muted-foreground text-xs">{cs.followers}</span>
+                            </div>
+                          </SelectItem>
+                        );
+                      })}
+                    </div>
                   );
                 })}
               </SelectContent>
             </Select>
             {formData.creatorStyle && formData.creatorStyle !== "default" && (
               <div className="mt-2 p-2 rounded bg-white/5 border border-white/10">
-                <p className="text-[10px] text-muted-foreground mb-1">Example hook:</p>
+                <p className="text-[10px] text-muted-foreground mb-1">Style: {extendedCreatorStyles.find(c => c.id === formData.creatorStyle)?.tone}</p>
                 <p className="text-[10px] text-white/70 italic">
-                  "{creatorStyles.find(c => c.id === formData.creatorStyle)?.exampleHook}"
+                  "{extendedCreatorStyles.find(c => c.id === formData.creatorStyle)?.exampleHook}"
                 </p>
               </div>
             )}

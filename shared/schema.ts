@@ -216,12 +216,109 @@ export const creatorStyles = [
   },
 ] as const;
 
+// Funnel Stages for content strategy
+export const funnelStages = [
+  { id: "tofu", name: "TOFU (Top of Funnel)", description: "Awareness content to attract new audience", goal: "Engagement & Discovery" },
+  { id: "mofu", name: "MOFU (Middle of Funnel)", description: "Value content to build trust", goal: "Nurturing & Authority" },
+  { id: "bofu", name: "BOFU (Bottom of Funnel)", description: "Conversion content to drive action", goal: "Sales & Signups" },
+] as const;
+
+// CTA Library organized by funnel stage
+export const ctaLibrary = [
+  // TOFU - Engagement CTAs (Awareness, Discovery)
+  { id: "comment_experience", stage: "tofu", category: "engage", text: "Comment if you've experienced this", why: "Low friction, builds engagement" },
+  { id: "save_later", stage: "tofu", category: "save", text: "Save this for later", why: "Boosts saves, helps algorithm" },
+  { id: "share_friend", stage: "tofu", category: "engage", text: "Tag someone who needs to see this", why: "Increases reach organically" },
+  { id: "follow_more", stage: "tofu", category: "follow", text: "Follow for more [topic] tips", why: "Simple follow ask for new viewers" },
+  { id: "drop_emoji", stage: "tofu", category: "engage", text: "Drop a [relevant icon] if this resonates", why: "Quick engagement, shows agreement" },
+  { id: "what_would_you", stage: "tofu", category: "engage", text: "What would you do in this situation?", why: "Drives comments through questions" },
+  
+  // MOFU - Value Exchange CTAs (Nurturing, Trust Building)  
+  { id: "dm_guide", stage: "mofu", category: "lead", text: "DM me 'GUIDE' and I'll send you the template", why: "Captures leads via DMs" },
+  { id: "comment_word", stage: "mofu", category: "lead", text: "Comment '[WORD]' and I'll send you [resource]", why: "Public commitment + lead gen" },
+  { id: "link_bio_free", stage: "mofu", category: "link", text: "Link in bio for the free [resource]", why: "Drives traffic to lead magnet" },
+  { id: "save_reference", stage: "mofu", category: "save", text: "Save this so you don't forget", why: "Positions as reference material" },
+  { id: "part_two", stage: "mofu", category: "follow", text: "Follow for Part 2 tomorrow", why: "Creates anticipation and follows" },
+  { id: "want_more", stage: "mofu", category: "engage", text: "Want me to go deeper on this? Comment 'YES'", why: "Gauges interest + engagement" },
+  
+  // BOFU - Conversion CTAs (Sales, Action)
+  { id: "book_call", stage: "bofu", category: "action", text: "Link in bio to book a free call", why: "Direct conversion to sales call" },
+  { id: "limited_spots", stage: "bofu", category: "action", text: "Only [X] spots left - link in bio", why: "Scarcity drives action" },
+  { id: "dm_buy", stage: "bofu", category: "action", text: "DM me 'READY' to get started", why: "Low friction buying signal" },
+  { id: "join_community", stage: "bofu", category: "community", text: "Join [X] others in our community - link in bio", why: "Social proof + conversion" },
+  { id: "enrollment_open", stage: "bofu", category: "action", text: "Enrollment is open now - link in bio", why: "Clear call for time-sensitive offer" },
+  { id: "apply_now", stage: "bofu", category: "action", text: "Apply at the link in bio [limited availability]", why: "Exclusivity positioning" },
+  
+  // Evergreen CTAs (work across funnel stages)
+  { id: "subscribe_more", stage: "tofu", category: "follow", text: "Subscribe for more content like this", why: "Platform-agnostic follow ask" },
+  { id: "turn_on_notifs", stage: "mofu", category: "follow", text: "Turn on notifications so you don't miss this", why: "Increases notification follows" },
+  { id: "share_needed", stage: "tofu", category: "engage", text: "Share this with someone who needs to hear it", why: "Viral sharing prompt" },
+  { id: "which_resonates", stage: "tofu", category: "engage", text: "Which one resonates most? Comment 1, 2, or 3", why: "Easy engagement for list content" },
+  { id: "check_pinned", stage: "mofu", category: "link", text: "Check my pinned post for [resource]", why: "Drives to key content" },
+  { id: "questions_dm", stage: "mofu", category: "lead", text: "Questions? DM me anytime", why: "Opens conversation, builds rapport" },
+] as const;
+
+// Creator niches for organization
+export const creatorNiches = [
+  { id: "business", name: "Business & Entrepreneurship", description: "Business strategy, sales, and entrepreneurship advice", icon: "Briefcase" },
+  { id: "education", name: "Educational & Storytelling", description: "Educational content and compelling storytelling", icon: "GraduationCap" },
+  { id: "finance", name: "Finance & Wealth", description: "Personal finance and wealth building", icon: "Wallet" },
+  { id: "fitness", name: "Fitness & Health", description: "Workouts, nutrition, and gym culture", icon: "Dumbbell" },
+  { id: "lifestyle", name: "Lifestyle & Personal Development", description: "Leadership, purpose, and self-improvement", icon: "Heart" },
+] as const;
+
+// Extended creator styles with niche assignments (IDs match creator-styles.ts)
+export const extendedCreatorStyles = [
+  // Business & Entrepreneurship
+  { id: "hormozi", nicheId: "business", name: "Alex Hormozi", followers: "6.8M+", tone: "Authoritative, confident", exampleHook: "Stop posting educational content. It's killing your sales." },
+  { id: "garyvee", nicheId: "business", name: "Gary Vee", followers: "29M+", tone: "Raw, energetic, passionate", exampleHook: "Listen. You're not posting enough. Period." },
+  { id: "codie", nicheId: "business", name: "Codie Sanchez", followers: "3M+", tone: "Confident, insider", exampleHook: "Millionaires don't invest in stocks. Here's what they buy instead." },
+  { id: "bartlett", nicheId: "business", name: "Steven Bartlett", followers: "4.5M+", tone: "Thoughtful, introspective", exampleHook: "I built a $300M company. And I've never been more confused about success." },
+  
+  // Educational & Storytelling
+  { id: "nasdaily", nicheId: "education", name: "Nas Daily", followers: "62M+", tone: "Enthusiastic, warm", exampleHook: "This man has 47 million followers. And you've never heard of him." },
+  { id: "aliabdaal", nicheId: "education", name: "Ali Abdaal", followers: "6.2M+", tone: "Calm, evidence-based", exampleHook: "I've been studying productivity for 10 years. Here's the biggest mistake people make." },
+  { id: "jayshetty", nicheId: "education", name: "Jay Shetty", followers: "21M+", tone: "Peaceful, wise", exampleHook: "A $100 bill in a gold frame is worth $100. A $100 bill crumpled on the floor is still worth $100." },
+  
+  // Finance & Wealth
+  { id: "ramit", nicheId: "finance", name: "Ramit Sethi", followers: "2.1M+", tone: "Direct, confident", exampleHook: "Stop cutting lattes. It's not going to make you rich." },
+  { id: "viviantu", nicheId: "finance", name: "Vivian Tu", followers: "6.3M+", tone: "Energetic, friendly", exampleHook: "Why isn't anyone talking about this? You're leaving free money on the table." },
+  { id: "humphrey", nicheId: "finance", name: "Humphrey Yang", followers: "4.5M+", tone: "Friendly, educational", exampleHook: "Let me show you the power of compound interest." },
+  
+  // Fitness & Health
+  { id: "chrisheria", nicheId: "fitness", name: "Chris Heria", followers: "19M+", tone: "High energy, motivational", exampleHook: "Can you do 10 of these? Most people can't." },
+  { id: "jeffnippard", nicheId: "fitness", name: "Jeff Nippard", followers: "7.5M+", tone: "Educational, scientific", exampleHook: "Doing cardio after lifting kills your gains. Or does it?" },
+  { id: "chloeting", nicheId: "fitness", name: "Chloe Ting", followers: "29M+", tone: "Encouraging, upbeat", exampleHook: "Want visible abs in 2 weeks? Here's what we're doing." },
+  { id: "joeyswoll", nicheId: "fitness", name: "Joey Swoll", followers: "15M+", tone: "Direct, protective", exampleHook: "If you do this at the gym, you need to stop." },
+  
+  // Lifestyle & Personal Development
+  { id: "simonsinek", nicheId: "lifestyle", name: "Simon Sinek", followers: "6M+", tone: "Thoughtful, measured", exampleHook: "The best leaders don't tell people what to do. They tell them why they're doing it." },
+  { id: "melrobbins", nicheId: "lifestyle", name: "Mel Robbins", followers: "11M+", tone: "High energy, direct", exampleHook: "Let me tell you why you can't stop procrastinating. It's not because you're lazy." },
+] as const;
+
+// Combined creator styles for dropdown (extended + legacy where IDs differ)
+export const allCreatorStyles = [
+  ...extendedCreatorStyles,
+  // Add any legacy styles that have different IDs for backwards compatibility
+  ...creatorStyles.filter(legacy => 
+    !extendedCreatorStyles.some(ext => ext.id === legacy.id) && 
+    legacy.id !== "default"
+  ).map(legacy => ({
+    id: legacy.id,
+    nicheId: "business" as const,
+    name: legacy.name,
+    followers: "",
+    tone: legacy.description,
+    exampleHook: legacy.exampleHook
+  }))
+] as const;
+
 // Platform Options
 export const platformOptions = [
-  { id: "tiktok", name: "TikTok" },
-  { id: "instagram_reels", name: "Instagram Reels" },
-  { id: "youtube_shorts", name: "YouTube Shorts" },
-  { id: "linkedin", name: "LinkedIn" },
+  { id: "tiktok", name: "TikTok", optimalLength: "15-60s", style: "Trendy, fast, hooks in 1s", hashtags: "#fyp #viral" },
+  { id: "instagram_reels", name: "Instagram Reels", optimalLength: "30-90s", style: "Polished, aesthetic", hashtags: "Fewer, targeted" },
+  { id: "youtube_shorts", name: "YouTube Shorts", optimalLength: "30-60s", style: "Educational, value-packed", hashtags: "SEO-focused titles" },
+  { id: "linkedin", name: "LinkedIn", optimalLength: "30-90s", style: "Professional, insight-led", hashtags: "Industry-specific" },
 ] as const;
 
 // Duration Options

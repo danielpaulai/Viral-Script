@@ -39,10 +39,15 @@ import {
   contentStrategyCategories,
   videoTypes,
   creatorStyles,
+  extendedCreatorStyles,
+  allCreatorStyles,
+  ctaLibrary,
+  funnelStages,
   type ScriptParameters,
   type GeneratedScript,
   type KnowledgeBaseDoc,
 } from "@shared/schema";
+import { getCreatorById, creatorStyles as comprehensiveCreatorStyles } from "@shared/creator-styles";
 
 const openai = new OpenAI({
   apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY,
@@ -407,7 +412,13 @@ async function generateScriptWithAI(params: ScriptParameters, knowledgeBaseDocs?
   const tone = toneOptions.find((t) => t.id === params.tone);
   const voice = voiceOptions.find((v) => v.id === params.voice);
   const videoType = videoTypes.find((vt) => vt.id === params.videoType) || videoTypes[0];
-  const creatorStyle = creatorStyles.find((cs) => cs.id === params.creatorStyle) || creatorStyles[0];
+  
+  // Look up creator style from allCreatorStyles (combined list), then legacy list as fallback
+  const foundCreator = allCreatorStyles.find((cs) => cs.id === params.creatorStyle);
+  const legacyCreator = creatorStyles.find((cs) => cs.id === params.creatorStyle);
+  const creatorStyle = foundCreator 
+    ? { id: foundCreator.id, name: foundCreator.name, description: foundCreator.tone, characteristics: foundCreator.tone, exampleHook: foundCreator.exampleHook }
+    : legacyCreator || creatorStyles[0];
   
   const selectedCta = params.selectedCtaId 
     ? ctaOptions.find(c => c.id === params.selectedCtaId)?.text 
@@ -539,8 +550,23 @@ Be specific about click actions and visual elements.`,
 Include transitions between formats.`,
   };
 
-  // Build creator style instructions
-  const creatorStyleInstructions = creatorStyle.id !== "default" ? `
+  // Build creator style instructions - use comprehensive master prompts when available
+  let creatorStyleInstructions = "";
+  if (creatorStyle.id !== "default") {
+    const comprehensiveCreator = getCreatorById(creatorStyle.id);
+    if (comprehensiveCreator) {
+      creatorStyleInstructions = `
+CREATOR STYLE - USE THIS MASTER PROMPT:
+${comprehensiveCreator.masterPrompt}
+
+SIGNATURE PHRASES TO USE:
+${comprehensiveCreator.signaturePhrases.slice(0, 3).map(p => `- "${p}"`).join('\n')}
+
+HOOK PATTERNS:
+${comprehensiveCreator.hookPatterns.slice(0, 2).map(h => `- ${h.name}: "${h.template}"`).join('\n')}
+`;
+    } else {
+      creatorStyleInstructions = `
 CREATOR STYLE - MATCH THIS EXACTLY:
 Style: ${creatorStyle.name}
 Characteristics: ${creatorStyle.characteristics}
@@ -552,7 +578,9 @@ Match this creator's:
 - Energy and tone throughout
 - Common phrases and transitions
 - How they close/call to action
-` : "";
+`;
+    }
+  }
 
   // Reference script instructions
   const referenceInstructions = referenceAnalysis ? `
