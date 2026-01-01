@@ -15,6 +15,7 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
 import { isUnauthorizedError } from "@/lib/auth-utils";
+import { ImportStyleDialog } from "@/components/import-style-dialog";
 
 const MAX_FILES = 10;
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
@@ -346,6 +347,7 @@ export default function KnowledgeBase() {
               className="hidden"
               data-testid="input-file-upload"
             />
+            <ImportStyleDialog userPlan={user?.plan || undefined} />
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
               <Button onClick={() => openNewDialog()} data-testid="button-add-document">
