@@ -17,12 +17,17 @@ import {
   type InsertUserUsage,
   type UserSubscription,
   type InsertUserSubscription,
+  users,
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import session from "express-session";
 import createMemoryStore from "memorystore";
+import connectPgSimple from "connect-pg-simple";
+import { db, pool } from "./db";
+import { eq } from "drizzle-orm";
 
 const MemoryStore = createMemoryStore(session);
+const PgSession = connectPgSimple(session);
 
 export interface IStorage {
   sessionStore: session.Store;
@@ -73,7 +78,6 @@ export interface IStorage {
 }
 
 export class MemStorage implements IStorage {
-  private users: Map<string, User>;
   private scripts: Map<string, Script>;
   private projects: Map<string, Project>;
   private vault: Map<string, VaultItem>;
@@ -86,7 +90,6 @@ export class MemStorage implements IStorage {
   sessionStore: session.Store;
 
   constructor() {
-    this.users = new Map();
     this.scripts = new Map();
     this.projects = new Map();
     this.vault = new Map();
@@ -96,32 +99,35 @@ export class MemStorage implements IStorage {
     this.contentStrategies = new Map();
     this.userUsage = new Map();
     this.userSubscriptions = new Map();
-    this.sessionStore = new MemoryStore({
-      checkPeriod: 86400000,
+    // Use PostgreSQL session store for persistent sessions
+    this.sessionStore = new PgSession({
+      pool,
+      tableName: "sessions",
+      createTableIfMissing: false,
     });
   }
 
+  // User methods now use the database for persistence
   async getUser(id: string): Promise<User | undefined> {
-    return this.users.get(id);
+    const result = await db.select().from(users).where(eq(users.id, id));
+    return result[0];
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.username === username,
-    );
+    const result = await db.select().from(users).where(eq(users.username, username));
+    return result[0];
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = randomUUID();
-    const user: User = { 
+    const result = await db.insert(users).values({
       id,
       username: insertUser.username,
       password: insertUser.password,
-      plan: insertUser.plan ?? null,
-      planExpiresAt: insertUser.planExpiresAt ?? null,
-    };
-    this.users.set(id, user);
-    return user;
+      plan: "starter",
+      planExpiresAt: null,
+    }).returning();
+    return result[0];
   }
 
   async getScripts(): Promise<Script[]> {
@@ -236,11 +242,11 @@ export class MemStorage implements IStorage {
   }
 
   async updateUserPlan(userId: string, plan: string): Promise<User | undefined> {
-    const user = this.users.get(userId);
-    if (!user) return undefined;
-    const updated = { ...user, plan };
-    this.users.set(userId, updated);
-    return updated;
+    const result = await db.update(users)
+      .set({ plan })
+      .where(eq(users.id, userId))
+      .returning();
+    return result[0];
   }
 
   async getKnowledgeBaseDocs(userId?: string): Promise<KnowledgeBaseDoc[]> {
