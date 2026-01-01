@@ -688,8 +688,17 @@ EVERY SCRIPT MUST:
 - Include specific numbers, timeframes, or examples
 - BAD: "Post more content"
 - GOOD: "Post 3 times per day for 30 days"
+- MUST include at least 2 specific numbers/stats in every script
+- MUST mention specific platforms, tools, or methods by name
 
-3. AVOID FLUFF PHRASES - NEVER USE:
+3. BAN GENERIC PLACEHOLDER WORDS - NEVER USE:
+- "someone", "a client", "people", "they", "others" (be specific - name a type of person)
+- "results", "success", "growth" without numbers (say "47% increase" not "great results")
+- "some", "many", "most", "few" (use actual numbers)
+- "things", "stuff", "something" (be specific)
+- "recently", "soon", "sometimes" (use exact timeframes)
+
+4. AVOID FLUFF PHRASES - NEVER USE:
 - "In today's world..."
 - "Have you ever wondered..."
 - "Let me tell you something..."
@@ -772,10 +781,12 @@ ${params.keyFacts ? `KEY FACTS TO INCLUDE: ${params.keyFacts}` : ""}
 
 You MUST end the script with the EXACT CTA above. Copy it word-for-word. Do NOT change it, improve it, or write your own.
 
-${researchContext ? `RESEARCH FINDINGS TO INCORPORATE:
+${researchContext ? `=== MANDATORY RESEARCH DATA - YOU MUST USE THESE ===
 ${researchContext}
 
-Use these research findings to make your script more specific. Include real data and examples.` : ""}
+YOU MUST incorporate at least 2 stats or facts from this research into your script.
+Do NOT ignore this research. Use specific numbers, percentages, and data points.
+=== END RESEARCH DATA ===` : ""}
 
 Write the script now. Use grade 3 reading level (simple words, short sentences). Make each line its own paragraph.
 ${videoType.id !== "talking_head" ? `Remember to use the ${videoType.name} format with proper labels and structure.` : ""}`;
@@ -799,6 +810,32 @@ ${videoType.id !== "talking_head" ? `Remember to use the ${videoType.name} forma
            lastPortion.includes(normalizedCta.replace(/[.,!?]/g, ''));
   };
   
+  // Helper function to check specificity (numbers, percentages, specific data)
+  const hasSpecificData = (script: string): { specific: boolean; numberCount: number; genericWords: string[] } => {
+    // Count specific numbers/percentages in the script
+    const numberMatches = script.match(/\d+(\.\d+)?(%|x|times|days|hours|minutes|seconds|weeks|months|years)?/gi) || [];
+    const numberCount = numberMatches.length;
+    
+    // Check for generic placeholder words
+    const genericPatterns = [
+      /\bsomeone\b/gi, /\ba client\b/gi, /\bsome people\b/gi,
+      /\bmany people\b/gi, /\bmost people\b/gi,
+      /\bgreat results\b/gi, /\bamazing results\b/gi,
+      /\bsome things\b/gi, /\bstuff\b/gi,
+      /\brecently\b/gi, /\bsoon\b/gi
+    ];
+    
+    const foundGenerics: string[] = [];
+    for (const pattern of genericPatterns) {
+      const matches = script.match(pattern);
+      if (matches) foundGenerics.push(...matches);
+    }
+    
+    // Need at least 2 numbers and no more than 2 generic words
+    const specific = numberCount >= 2 && foundGenerics.length <= 2;
+    return { specific, numberCount, genericWords: foundGenerics };
+  };
+
   // Helper function to check topic relevance
   const isTopicRelevant = (script: string, topic: string): { relevant: boolean; matchedKeywords: number; totalKeywords: number } => {
     const normalizedScript = script.toLowerCase();
@@ -830,9 +867,10 @@ ${videoType.id !== "talking_head" ? `Remember to use the ${videoType.name} forma
     let hasFluff = true;
     let actionabilityCheck = { actionable: false, reasons: ["Not checked yet"] };
     let topicRelevance = { relevant: false, matchedKeywords: 0, totalKeywords: 1 };
+    let specificityCheck = { specific: false, numberCount: 0, genericWords: [] as string[] };
     
     // Retry loop for quality validation
-    while (attempts < maxAttempts && (gradeLevel > 5 || !ctaValid || hasFluff || !actionabilityCheck.actionable || !topicRelevance.relevant)) {
+    while (attempts < maxAttempts && (gradeLevel > 5 || !ctaValid || hasFluff || !actionabilityCheck.actionable || !topicRelevance.relevant || !specificityCheck.specific)) {
       attempts++;
       const temperature = attempts === 1 ? 0.8 : 0.6; // Lower temperature on retries
       
@@ -840,6 +878,12 @@ ${videoType.id !== "talking_head" ? `Remember to use the ${videoType.name} forma
       let retryHints: string[] = [];
       if (attempts > 1) {
         if (!topicRelevance.relevant) retryHints.push(`STAY ON TOPIC! Your script must be about "${params.topic}". Every sentence must relate to this topic. You only matched ${topicRelevance.matchedKeywords}/${topicRelevance.totalKeywords} topic keywords.`);
+        if (!specificityCheck.specific) {
+          const issues: string[] = [];
+          if (specificityCheck.numberCount < 2) issues.push(`ADD MORE SPECIFIC NUMBERS! You only have ${specificityCheck.numberCount} - need at least 2 stats/percentages/timeframes.`);
+          if (specificityCheck.genericWords.length > 2) issues.push(`REMOVE GENERIC WORDS: ${specificityCheck.genericWords.slice(0, 3).join(', ')}. Replace with specific names, numbers, or examples.`);
+          retryHints.push(issues.join(' '));
+        }
         if (gradeLevel > 5) retryHints.push('USE SIMPLER WORDS AND SHORTER SENTENCES.');
         if (!ctaValid) retryHints.push('USE THE EXACT CTA PROVIDED - COPY IT WORD FOR WORD.');
         if (hasFluff) retryHints.push('REMOVE ALL FLUFFY PHRASES. Get straight to the point. No "In today\'s world" or "The truth is".');
@@ -868,8 +912,9 @@ ${videoType.id !== "talking_head" ? `Remember to use the ${videoType.name} forma
       hasFluff = containsFluff(scriptContent);
       actionabilityCheck = isActionable(scriptContent);
       topicRelevance = isTopicRelevant(scriptContent, params.topic || "");
+      specificityCheck = hasSpecificData(scriptContent);
       
-      console.log(`Script generation attempt ${attempts}: grade=${gradeLevel.toFixed(1)}, ctaValid=${ctaValid}, hasFluff=${hasFluff}, actionable=${actionabilityCheck.actionable}, topicRelevant=${topicRelevance.relevant} (${topicRelevance.matchedKeywords}/${topicRelevance.totalKeywords})`);
+      console.log(`Script generation attempt ${attempts}: grade=${gradeLevel.toFixed(1)}, ctaValid=${ctaValid}, hasFluff=${hasFluff}, actionable=${actionabilityCheck.actionable}, topicRelevant=${topicRelevance.relevant} (${topicRelevance.matchedKeywords}/${topicRelevance.totalKeywords}), specific=${specificityCheck.specific} (${specificityCheck.numberCount} numbers, ${specificityCheck.genericWords.length} generic words)`);
     }
     
     // If we still failed validation after max attempts, log warning but continue
@@ -887,6 +932,9 @@ ${videoType.id !== "talking_head" ? `Remember to use the ${videoType.name} forma
     }
     if (!topicRelevance.relevant) {
       console.warn(`Script topic relevance failed: only ${topicRelevance.matchedKeywords}/${topicRelevance.totalKeywords} keywords matched for topic "${params.topic}"`);
+    }
+    if (!specificityCheck.specific) {
+      console.warn(`Script specificity failed: ${specificityCheck.numberCount} numbers found (need 2+), generic words: ${specificityCheck.genericWords.join(', ')}`);
     }
     
     const words = scriptContent.split(/\s+/).filter(Boolean);
