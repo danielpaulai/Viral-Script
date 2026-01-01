@@ -1268,23 +1268,101 @@ Return ONLY the enhanced script with no explanations or commentary.${retryHint}`
     }
   });
 
+  // Competitor Research: Scrape top-performing TikTok content for a topic
+  app.post("/api/research/competitors", async (req, res) => {
+    try {
+      const { keyword, limit = 15 } = req.body;
+      
+      if (!keyword || typeof keyword !== 'string' || keyword.trim().length < 2) {
+        return res.status(400).json({ error: "Keyword is required" });
+      }
+      
+      if (!process.env.APIFY_API_TOKEN) {
+        return res.status(400).json({ error: "Apify API token not configured" });
+      }
+      
+      console.log(`Starting competitor research for: ${keyword}`);
+      
+      // Import the Apify functions
+      const { searchTikTokByKeyword, analyzeCompetitorContent } = await import("./apify");
+      
+      // Scrape TikTok for top content
+      const searchResults = await searchTikTokByKeyword(keyword.trim(), Math.min(limit, 30));
+      
+      if (searchResults.posts.length === 0) {
+        return res.json({
+          insights: {
+            topHooks: [],
+            commonPatterns: [],
+            audienceLanguage: [],
+            provenAngles: [],
+            engagementStats: { avgViews: 0, avgLikes: 0, avgComments: 0 },
+            contentSummary: "No content found for this topic. Try a different keyword.",
+          },
+          postsAnalyzed: 0,
+        });
+      }
+      
+      // Analyze the scraped content
+      const insights = analyzeCompetitorContent(searchResults.posts);
+      
+      res.json({
+        insights,
+        postsAnalyzed: searchResults.posts.length,
+        topPosts: searchResults.posts.slice(0, 5).map(p => ({
+          text: p.text.substring(0, 200) + (p.text.length > 200 ? "..." : ""),
+          views: p.views,
+          likes: p.likes,
+          author: p.author,
+        })),
+      });
+    } catch (error) {
+      console.error("Error in competitor research:", error);
+      res.status(500).json({ error: "Failed to research competitors" });
+    }
+  });
+
   // Deep Research: Expand raw topic into detailed brief
   app.post("/api/scripts/expand-topic", async (req, res) => {
     try {
-      const { topic, targetAudience } = req.body;
+      const { topic, targetAudience, includeCompetitorResearch = false } = req.body;
       
       if (!topic || typeof topic !== 'string' || topic.trim().length < 5) {
         return res.status(400).json({ error: "Topic is required (at least 5 characters)" });
       }
       
-      const response = await openai.chat.completions.create({
-        model: "gpt-4o-mini",
-        messages: [
-          {
-            role: "system",
-            content: `You are a viral content strategist who helps creators turn raw ideas into powerful video scripts.
+      // Optional: Get competitor insights if requested and Apify is configured
+      let competitorInsights = null;
+      if (includeCompetitorResearch && process.env.APIFY_API_TOKEN) {
+        try {
+          console.log("Running competitor research for topic expansion...");
+          const { searchTikTokByKeyword, analyzeCompetitorContent } = await import("./apify");
+          const searchResults = await searchTikTokByKeyword(topic.trim(), 15);
+          if (searchResults.posts.length > 0) {
+            competitorInsights = analyzeCompetitorContent(searchResults.posts);
+          }
+        } catch (apifyError) {
+          console.error("Competitor research failed (continuing without):", apifyError);
+        }
+      }
+      
+      // Build the system prompt with optional competitor data
+      let systemPrompt = `You are a viral content strategist who helps creators turn raw ideas into powerful video scripts.
 
-When given a raw/vague topic idea, expand it into a detailed video brief. Your job is to add specificity, unique angles, and actionable elements.
+When given a raw/vague topic idea, expand it into a detailed video brief. Your job is to add specificity, unique angles, and actionable elements.`;
+
+      if (competitorInsights && competitorInsights.topHooks.length > 0) {
+        systemPrompt += `
+
+COMPETITOR RESEARCH (from top-performing TikTok posts on this topic):
+- Top hooks that worked: ${competitorInsights.topHooks.slice(0, 3).map(h => `"${h}"`).join(", ")}
+- Avg engagement: ${competitorInsights.engagementStats.avgViews.toLocaleString()} views
+- Common patterns: ${competitorInsights.commonPatterns.slice(0, 5).join(", ") || "N/A"}
+
+Use these insights to inform your brief. What angles are competitors missing? How can we do better?`;
+      }
+
+      systemPrompt += `
 
 Respond in JSON format with this exact structure:
 {
@@ -1295,8 +1373,12 @@ Respond in JSON format with this exact structure:
   "actionableTakeaway": "The ONE specific thing they can do in the next 5 minutes"
 }
 
-Make the proof points specific with numbers where possible. The unique angle should challenge common beliefs.`
-          },
+Make the proof points specific with numbers where possible. The unique angle should challenge common beliefs.`;
+      
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [
+          { role: "system", content: systemPrompt },
           {
             role: "user",
             content: `Expand this raw video idea into a detailed brief:
@@ -1333,6 +1415,12 @@ Create a powerful video brief that will make this topic stand out and go viral.`
             actionableTakeaway: brief.actionableTakeaway || "Take action today",
           },
           originalTopic: topic,
+          competitorInsights: competitorInsights ? {
+            topHooks: competitorInsights.topHooks.slice(0, 5),
+            avgViews: competitorInsights.engagementStats.avgViews,
+            avgLikes: competitorInsights.engagementStats.avgLikes,
+            postsAnalyzed: competitorInsights.provenAngles.length,
+          } : null,
         });
       } catch (parseError) {
         // Fallback if JSON parsing fails
@@ -1349,6 +1437,7 @@ Create a powerful video brief that will make this topic stand out and go viral.`
             actionableTakeaway: "Apply one insight from this video today",
           },
           originalTopic: topic,
+          competitorInsights: null,
         });
       }
     } catch (error) {

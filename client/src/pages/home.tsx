@@ -154,17 +154,26 @@ interface ExpandedBrief {
   actionableTakeaway: string;
 }
 
+interface CompetitorInsights {
+  topHooks: string[];
+  avgViews: number;
+  avgLikes: number;
+  postsAnalyzed: number;
+}
+
 export default function Home() {
   const { toast } = useToast();
   const { user } = useAuth();
   const [generatedScript, setGeneratedScript] = useState<GeneratedScript | null>(null);
   const [activePreset, setActivePreset] = useState<string | null>(null);
   const [deepResearch, setDeepResearch] = useState(false);
+  const [includeCompetitorResearch, setIncludeCompetitorResearch] = useState(false);
   const [useKnowledgeBase, setUseKnowledgeBase] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [hoveredPreset, setHoveredPreset] = useState<string | null>(null);
   const [expandedBrief, setExpandedBrief] = useState<ExpandedBrief | null>(null);
   const [showBriefEditor, setShowBriefEditor] = useState(false);
+  const [competitorInsights, setCompetitorInsights] = useState<CompetitorInsights | null>(null);
 
   const [formData, setFormData] = useState<ScriptParameters>({
     topic: "",
@@ -238,16 +247,21 @@ export default function Home() {
 
   // Topic expansion for Deep Research mode
   const expandTopicMutation = useMutation({
-    mutationFn: async ({ topic, targetAudience }: { topic: string; targetAudience?: string }) => {
-      const res = await apiRequest("POST", "/api/scripts/expand-topic", { topic, targetAudience });
+    mutationFn: async ({ topic, targetAudience, includeCompetitorResearch }: { topic: string; targetAudience?: string; includeCompetitorResearch?: boolean }) => {
+      const res = await apiRequest("POST", "/api/scripts/expand-topic", { topic, targetAudience, includeCompetitorResearch });
       return res.json();
     },
-    onSuccess: (data: { expandedBrief: ExpandedBrief }) => {
+    onSuccess: (data: { expandedBrief: ExpandedBrief; competitorInsights?: CompetitorInsights }) => {
       setExpandedBrief(data.expandedBrief);
       setShowBriefEditor(true);
+      if (data.competitorInsights) {
+        setCompetitorInsights(data.competitorInsights);
+      }
       toast({
-        title: "Topic Expanded",
-        description: "Review your video brief below.",
+        title: data.competitorInsights ? "Research Complete" : "Topic Expanded",
+        description: data.competitorInsights 
+          ? `Analyzed ${data.competitorInsights.postsAnalyzed} competitor posts.`
+          : "Review your video brief below.",
       });
     },
     onError: () => {
@@ -455,36 +469,55 @@ export default function Home() {
                 if (!checked) {
                   setExpandedBrief(null);
                   setShowBriefEditor(false);
+                  setCompetitorInsights(null);
                 }
               }}
               data-testid="switch-deep-research"
             />
           </div>
           
-          {deepResearch && formData.topic.trim().length >= 5 && !expandedBrief && (
-            <div className="mt-3 pt-3 border-t border-white/10">
-              <Button
-                onClick={() => expandTopicMutation.mutate({ 
-                  topic: formData.topic, 
-                  targetAudience: formData.targetAudience 
-                })}
-                disabled={expandTopicMutation.isPending}
-                variant="outline"
-                className="w-full"
-                data-testid="button-expand-idea"
-              >
-                {expandTopicMutation.isPending ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
-                    Expanding your idea...
-                  </>
-                ) : (
-                  <>
-                    <Lightbulb className="w-4 h-4 mr-2" />
-                    Expand My Idea
-                  </>
-                )}
-              </Button>
+          {deepResearch && (
+            <div className="mt-3 pt-3 border-t border-white/10 space-y-3">
+              <div className="flex items-center justify-between p-2 rounded bg-blue-500/10 border border-blue-500/20">
+                <div className="flex items-center gap-2">
+                  <Globe className="w-4 h-4 text-blue-400" />
+                  <div>
+                    <p className="text-xs font-medium text-white">Competitor Research</p>
+                    <p className="text-[10px] text-muted-foreground">Scrape top TikTok posts for this topic</p>
+                  </div>
+                </div>
+                <Switch
+                  checked={includeCompetitorResearch}
+                  onCheckedChange={setIncludeCompetitorResearch}
+                  data-testid="switch-competitor-research"
+                />
+              </div>
+              
+              {formData.topic.trim().length >= 5 && !expandedBrief && (
+                <Button
+                  onClick={() => expandTopicMutation.mutate({ 
+                    topic: formData.topic, 
+                    targetAudience: formData.targetAudience,
+                    includeCompetitorResearch,
+                  })}
+                  disabled={expandTopicMutation.isPending}
+                  variant="outline"
+                  className="w-full"
+                  data-testid="button-expand-idea"
+                >
+                  {expandTopicMutation.isPending ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
+                      {includeCompetitorResearch ? "Researching competitors..." : "Expanding your idea..."}
+                    </>
+                  ) : (
+                    <>
+                      <Lightbulb className="w-4 h-4 mr-2" />
+                      {includeCompetitorResearch ? "Research & Expand" : "Expand My Idea"}
+                    </>
+                  )}
+                </Button>
+              )}
             </div>
           )}
         </div>
@@ -505,6 +538,30 @@ export default function Home() {
                 Hide
               </Button>
             </div>
+
+            {competitorInsights && competitorInsights.topHooks.length > 0 && (
+              <div className="mb-4 p-3 rounded-md bg-blue-500/10 border border-blue-500/20">
+                <div className="flex items-center gap-2 mb-2">
+                  <Globe className="w-4 h-4 text-blue-400" />
+                  <span className="text-xs font-semibold text-blue-400 uppercase tracking-wider">Competitor Insights</span>
+                  <Badge className="text-[10px] bg-blue-500/20 text-blue-300 border-0">
+                    {competitorInsights.postsAnalyzed} posts analyzed
+                  </Badge>
+                </div>
+                <div className="flex gap-4 text-xs text-muted-foreground mb-2">
+                  <span>Avg Views: <span className="text-white font-mono">{competitorInsights.avgViews.toLocaleString()}</span></span>
+                  <span>Avg Likes: <span className="text-white font-mono">{competitorInsights.avgLikes.toLocaleString()}</span></span>
+                </div>
+                <p className="text-xs text-muted-foreground mb-1">Top hooks that worked:</p>
+                <ul className="space-y-1">
+                  {competitorInsights.topHooks.slice(0, 3).map((hook, i) => (
+                    <li key={i} className="text-xs text-white/80 italic pl-2 border-l-2 border-blue-500/30">
+                      "{hook.length > 80 ? hook.substring(0, 80) + "..." : hook}"
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
             
             <div className="space-y-3 text-sm">
               <div>
@@ -547,6 +604,7 @@ export default function Home() {
                 onClick={() => {
                   setExpandedBrief(null);
                   setShowBriefEditor(false);
+                  setCompetitorInsights(null);
                 }}
                 data-testid="button-edit-brief"
               >
