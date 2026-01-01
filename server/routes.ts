@@ -54,12 +54,22 @@ const openai = new OpenAI({
   baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL,
 });
 
-// Words that sound like AI - avoid these
+// Words that sound like AI - NEVER use these
 const aiWordsToAvoid = [
+  // Pretentious corporate speak
   "utilize", "leverage", "unlock", "dive into", "delve", "explore", "crucial",
   "comprehensive", "robust", "streamline", "revolutionize", "elevate", "harness",
   "optimize", "empower", "game-changing", "cutting-edge", "seamless", "actionable",
-  "innovative", "paradigm", "synergy", "holistic", "groundbreaking", "transform"
+  "innovative", "paradigm", "synergy", "holistic", "groundbreaking", "transform",
+  // Fluffy AI buzzwords
+  "journey", "landscape", "realm", "myriad", "plethora", "tapestry", "unpack",
+  "pivotal", "navigate", "foster", "cultivate", "embark", "endeavor", "encompasses",
+  "facilitates", "enhances", "bolsters", "underscores", "amplify", "catalyst",
+  // Overused AI transitions
+  "furthermore", "moreover", "in essence", "it's important to note", "at the end of the day",
+  "when it comes to", "in terms of", "needless to say", "that being said",
+  // Fancy words - use simple alternatives
+  "Subsequently", "Additionally", "Consequently", "Nevertheless", "Notwithstanding"
 ];
 
 function generateScript(params: ScriptParameters): GeneratedScript {
@@ -504,19 +514,18 @@ Be concise. Format as a brief analysis that can guide script generation.`
   }
 
   const knowledgeBaseInstructions = kbContext ? `
-IMPORTANT - USE THE KNOWLEDGE BASE:
-You have access to the creator's brand knowledge base below. Use this to:
-- Match their exact voice, tone, and speaking style
-- Reference their ICP's pain points, fears, and desires
-- Use their brand messaging pillars and UVP
-- Incorporate their specific terminology and phrases
-- Align with their content strategy and positioning
-- Make the script sound authentically like THEM, not generic
-
-=== KNOWLEDGE BASE START ===
+=== CREATOR'S KNOWLEDGE BASE - USE THIS CONTENT ===
 ${kbContext}
-=== KNOWLEDGE BASE END ===
+=== END KNOWLEDGE BASE ===
 
+CRITICAL - HOW TO USE THE KNOWLEDGE BASE ABOVE:
+1. VOICE: Write EXACTLY like the creator speaks. Copy their phrases, rhythm, and style.
+2. PAIN POINTS: Use the specific problems/fears mentioned for their audience.
+3. WORDS: Use their terminology, not generic business words.
+4. EXAMPLES: Pull from their case studies or examples when relevant.
+5. SOUND LIKE THEM: A fan should recognize this as their content.
+
+DO NOT write generic content. ONLY use ideas from the knowledge base.
 ` : "";
 
   // Build video type specific instructions
@@ -590,14 +599,20 @@ ${referenceAnalysis}
 Generate a NEW script about the user's topic that follows these same patterns but with original content.
 ` : "";
 
-  const systemPrompt = `You are a world-class short-form video scriptwriter. Write scripts that:
-- Use punchy, conversational language (grade 4-6 reading level)
-- One short sentence or phrase per line
-- Never use AI buzzwords: ${aiWordsToAvoid.slice(0, 10).join(", ")}
-- Include specific numbers, examples, and data when available
+  const systemPrompt = `You are a world-class short-form video scriptwriter who writes like a real human, NOT an AI.
+
+CRITICAL RULES - FOLLOW EXACTLY:
+1. READING LEVEL: Grade 3 reading level. Use simple, everyday words. Short sentences (5-10 words max). No jargon.
+2. SOUND HUMAN: Write like you're texting a friend. Use contractions. Be casual. No corporate speak.
+3. CTA: You MUST use the EXACT CTA provided by the user. Copy it word-for-word. Do NOT create your own CTA.
+4. ONE IDEA PER SENTENCE: Never combine multiple thoughts in one sentence.
+5. BANNED WORDS - NEVER USE: ${aiWordsToAvoid.join(", ")}
+
+Style guidelines:
+- One short sentence per line
+- Include specific numbers and examples when available
 - Create tension, curiosity, or emotional connection
 - Use pattern interrupts to maintain attention
-- End with a compelling call to action
 
 VIDEO TYPE: ${videoType.name}
 ${videoTypeInstructions[videoType.id] || videoTypeInstructions.talking_head}
@@ -633,33 +648,83 @@ PLATFORM: ${params.platform}
 ${params.contentStrategy ? `CONTENT CATEGORY: ${params.contentStrategy} (consider this funnel stage when writing)` : ""}
 ${params.targetAudience ? `TARGET AUDIENCE: ${params.targetAudience}` : ""}
 ${params.keyFacts ? `KEY FACTS TO INCLUDE: ${params.keyFacts}` : ""}
-CTA TO END WITH: ${finalCta}
+
+=== MANDATORY CTA - USE EXACTLY AS WRITTEN ===
+"${finalCta}"
+=== END CTA ===
+
+You MUST end the script with the EXACT CTA above. Copy it word-for-word. Do NOT change it, improve it, or write your own.
 
 ${researchContext ? `RESEARCH FINDINGS TO INCORPORATE:
 ${researchContext}
 
-Use these research findings to make your script more specific, credible, and valuable. Include real data, examples, and insights.` : ""}
+Use these research findings to make your script more specific. Include real data and examples.` : ""}
 
-Write the script now. Make it punchy, specific, and impossible to scroll past. Each line should be its own paragraph.
+Write the script now. Use grade 3 reading level (simple words, short sentences). Make each line its own paragraph.
 ${videoType.id !== "talking_head" ? `Remember to use the ${videoType.name} format with proper labels and structure.` : ""}`;
 
-  try {
-    const response = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: userPrompt }
-      ],
-      max_tokens: 1500,
-      temperature: 0.8,
-    });
+  // Helper function to calculate grade level
+  const calculateGradeLevel = (text: string): number => {
+    const words = text.split(/\s+/).filter(Boolean);
+    const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
+    const avgWordsPerSentence = words.length / Math.max(1, sentences.length);
+    return Math.max(3, Math.min(12, 0.39 * avgWordsPerSentence + 4));
+  };
+  
+  // Helper function to check if CTA is present in script
+  const ctaIsPresent = (script: string, cta: string): boolean => {
+    // Normalize both for comparison (lowercase, remove extra spaces)
+    const normalizedScript = script.toLowerCase().trim();
+    const normalizedCta = cta.toLowerCase().trim();
+    // Check if script ends with CTA or contains it in the last portion
+    const lastPortion = normalizedScript.slice(-300);
+    return lastPortion.includes(normalizedCta) || 
+           lastPortion.includes(normalizedCta.replace(/[.,!?]/g, ''));
+  };
 
-    const scriptContent = response.choices[0]?.message?.content || "";
+  try {
+    let scriptContent = "";
+    let attempts = 0;
+    const maxAttempts = 3;
+    let gradeLevel = 10; // Start high to trigger validation
+    let ctaValid = false;
+    
+    // Retry loop for quality validation
+    while (attempts < maxAttempts && (gradeLevel > 5 || !ctaValid)) {
+      attempts++;
+      const temperature = attempts === 1 ? 0.8 : 0.6; // Lower temperature on retries
+      
+      const retryHint = attempts > 1 
+        ? `\n\nPREVIOUS ATTEMPT FAILED. ${gradeLevel > 5 ? 'USE SIMPLER WORDS AND SHORTER SENTENCES. ' : ''}${!ctaValid ? 'USE THE EXACT CTA PROVIDED. ' : ''}Try again.`
+        : '';
+      
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userPrompt + retryHint }
+        ],
+        max_tokens: 1500,
+        temperature,
+      });
+
+      scriptContent = response.choices[0]?.message?.content || "";
+      gradeLevel = calculateGradeLevel(scriptContent);
+      ctaValid = ctaIsPresent(scriptContent, finalCta);
+      
+      console.log(`Script generation attempt ${attempts}: grade=${gradeLevel.toFixed(1)}, ctaValid=${ctaValid}`);
+    }
+    
+    // If we still failed validation after max attempts, log warning but continue
+    if (gradeLevel > 5) {
+      console.warn(`Script grade level ${gradeLevel.toFixed(1)} exceeds target (max 5) after ${maxAttempts} attempts`);
+    }
+    if (!ctaValid) {
+      console.warn(`CTA validation failed after ${maxAttempts} attempts. Expected: "${finalCta}"`);
+    }
     
     const words = scriptContent.split(/\s+/).filter(Boolean);
     const wordCount = words.length;
-    const avgWordsPerSentence = words.length / Math.max(1, scriptContent.split(/[.!?]+/).length - 1);
-    const gradeLevel = Math.max(3, Math.min(12, 0.39 * avgWordsPerSentence + 4));
 
     // Enhanced production notes with music resources
     const musicResources = [
@@ -959,76 +1024,104 @@ export async function registerRoutes(
       
       const enhancementPrompts: Record<string, string> = {
         punchier: `Make this script more punchy and attention-grabbing:
-- Use shorter, more impactful sentences
+- Use shorter sentences (5-10 words max)
 - Add more pattern interrupts
 - Make transitions snappier
 - Increase urgency and energy
-- Use more power words`,
-        clearer: `Make this script clearer and more easily understood:
-- Simplify complex sentences
-- Remove jargon and technical terms
-- Use more concrete examples
-- Improve flow and transitions
-- Target grade 4-6 reading level`,
+- Use simple power words a 3rd grader knows`,
+        clearer: `Make this script clearer and simpler:
+- Use grade 3 reading level (elementary school)
+- Replace all jargon with simple everyday words
+- Use concrete examples instead of abstract ideas
+- Short sentences, one idea per sentence
+- No business speak or corporate language`,
         storytelling: `Enhance the storytelling in this script:
 - Add more narrative elements
 - Create stronger emotional hooks
-- Add vivid details and imagery
+- Add vivid but simple details
 - Build better tension and payoff
-- Make it more relatable and human`,
+- Keep language simple (grade 3 level)`,
         engagement: `Optimize this script for maximum engagement:
 - Strengthen the hook to stop the scroll
 - Add more curiosity gaps
 - Include pattern interrupts throughout
-- Make the CTA more compelling
+- Keep the EXACT same CTA - do not change it
 - Add moments that encourage saves/shares`,
         general: `Improve this script to be more viral-worthy:
+- Use simpler words (grade 3 reading level)
 - Tighten the language (every word must earn its place)
 - Increase the hook strength
 - Add more specific details and numbers
-- Improve the flow and pacing
-- Make it impossible to scroll past`,
+- Keep the EXACT same CTA - do not change it`,
       };
       
       const enhancementPrompt = enhancementPrompts[enhancementType] || enhancementPrompts.general;
       
-      const response = await openai.chat.completions.create({
-        model: "gpt-4o-mini",
-        messages: [
-          {
-            role: "system",
-            content: `You are an expert script enhancer for short-form video content. Your job is to improve scripts to be more viral-worthy while maintaining the original message and structure.
+      // Helper functions for validation
+      const calculateGradeLevel = (text: string): number => {
+        const words = text.split(/\s+/).filter(Boolean);
+        const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
+        const avgWordsPerSentence = words.length / Math.max(1, sentences.length);
+        return Math.max(3, Math.min(12, 0.39 * avgWordsPerSentence + 4));
+      };
+      
+      // Extract CTA from original script (last section after **CTA**)
+      const extractCta = (text: string): string => {
+        const ctaMatch = text.match(/\*\*CTA\*\*[\s\S]*$/i);
+        return ctaMatch ? ctaMatch[0].trim() : '';
+      };
+      
+      const originalCta = extractCta(script);
+      
+      let enhancedScript = script;
+      let attempts = 0;
+      const maxAttempts = 2;
+      let gradeLevel = 10;
+      
+      while (attempts < maxAttempts && gradeLevel > 5) {
+        attempts++;
+        const temperature = attempts === 1 ? 0.7 : 0.5;
+        const retryHint = attempts > 1 ? '\n\nPREVIOUS ATTEMPT HAD COMPLEX LANGUAGE. USE MUCH SIMPLER WORDS.' : '';
+        
+        const response = await openai.chat.completions.create({
+          model: "gpt-4o-mini",
+          messages: [
+            {
+              role: "system",
+              content: `You are an expert script enhancer who writes like a HUMAN, not an AI.
 
-Rules:
-- Keep the same general structure (HOOK, BODY, CTA if present)
-- Don't add new topics or information not in the original
-- Make improvements subtle but impactful
-- Maintain the same approximate length (within 20%)
-- Keep the same tone and voice
-- Use grade 4-6 reading level
+CRITICAL RULES:
+1. GRADE 3 READING LEVEL: Use simple words. Short sentences (5-10 words max). No jargon.
+2. KEEP EXACT CTA: The CTA section must stay EXACTLY the same - do NOT change or improve it.
+3. SOUND HUMAN: Write like you're texting a friend. Be casual. No corporate speak.
+4. KEEP STRUCTURE: Maintain HOOK, BODY, CTA structure if present.
+5. SAME LENGTH: Stay within 20% of original word count.
+6. BANNED WORDS: leverage, unleash, game-changer, revolutionary, elevate, empower, unlock, transform, cutting-edge, dive in, unpack, seamlessly
 
 ${enhancementPrompt}`
-          },
-          {
-            role: "user",
-            content: `Enhance this script:
+            },
+            {
+              role: "user",
+              content: `Enhance this script:
 
 ${script}
 
-Return ONLY the enhanced script with no explanations or commentary.`
-          }
-        ],
-        max_tokens: 1500,
-        temperature: 0.7,
-      });
+Return ONLY the enhanced script with no explanations or commentary.${retryHint}`
+            }
+          ],
+          max_tokens: 1500,
+          temperature,
+        });
+        
+        enhancedScript = response.choices[0]?.message?.content || script;
+        gradeLevel = calculateGradeLevel(enhancedScript);
+        
+        console.log(`Enhancement attempt ${attempts}: grade=${gradeLevel.toFixed(1)}`);
+      }
       
-      const enhancedScript = response.choices[0]?.message?.content || script;
-      
-      // Calculate new metrics
+      // Calculate final metrics
       const words = enhancedScript.split(/\s+/).filter(Boolean);
       const wordCount = words.length;
-      const avgWordsPerSentence = words.length / Math.max(1, enhancedScript.split(/[.!?]+/).length - 1);
-      const gradeLevel = Math.max(3, Math.min(12, 0.39 * avgWordsPerSentence + 4));
       
       res.json({
         enhancedScript,
