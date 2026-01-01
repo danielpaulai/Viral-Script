@@ -48,6 +48,7 @@ import {
   type KnowledgeBaseDoc,
 } from "@shared/schema";
 import { getCreatorById, creatorStyles as comprehensiveCreatorStyles } from "@shared/creator-styles";
+import { scrapeTikTokProfile, scrapeInstagramProfile, analyzeCreatorStyle } from "./apify";
 
 const openai = new OpenAI({
   apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY,
@@ -1548,6 +1549,149 @@ Return ONLY the enhanced script with no explanations or commentary.${retryHint}`
       res.status(500).json({ error: "Failed to fetch subscription" });
     }
   });
+
+  // Pro Feature: Import Creator Style from Social Media
+  app.post("/api/scrape/tiktok", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({ error: "User not found" });
+      }
+
+      // Check if user has Pro or Ultimate plan
+      const user = await storage.getUser(userId);
+      if (!user || (user.plan !== "pro" && user.plan !== "ultimate")) {
+        return res.status(403).json({ 
+          error: "This feature requires a Pro or Ultimate subscription",
+          requiresPlan: "pro"
+        });
+      }
+
+      const { username } = req.body;
+      if (!username) {
+        return res.status(400).json({ error: "TikTok username is required" });
+      }
+
+      // Scrape the profile
+      const content = await scrapeTikTokProfile(username);
+      
+      // Analyze the creator's style
+      const analysis = analyzeCreatorStyle(content);
+
+      // Generate knowledge base content using AI
+      const styleDescription = await generateStyleFromAnalysis(content, analysis);
+
+      res.json({
+        success: true,
+        platform: "tiktok",
+        username: content.username,
+        postsAnalyzed: content.totalPosts,
+        analysis,
+        suggestedKnowledgeBase: styleDescription,
+      });
+    } catch (error: any) {
+      console.error("TikTok scrape error:", error);
+      res.status(500).json({ 
+        error: error.message || "Failed to scrape TikTok profile",
+        details: "Make sure the username is correct and the profile is public"
+      });
+    }
+  });
+
+  app.post("/api/scrape/instagram", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({ error: "User not found" });
+      }
+
+      // Check if user has Pro or Ultimate plan
+      const user = await storage.getUser(userId);
+      if (!user || (user.plan !== "pro" && user.plan !== "ultimate")) {
+        return res.status(403).json({ 
+          error: "This feature requires a Pro or Ultimate subscription",
+          requiresPlan: "pro"
+        });
+      }
+
+      const { username } = req.body;
+      if (!username) {
+        return res.status(400).json({ error: "Instagram username is required" });
+      }
+
+      // Scrape the profile
+      const content = await scrapeInstagramProfile(username);
+      
+      // Analyze the creator's style
+      const analysis = analyzeCreatorStyle(content);
+
+      // Generate knowledge base content using AI
+      const styleDescription = await generateStyleFromAnalysis(content, analysis);
+
+      res.json({
+        success: true,
+        platform: "instagram",
+        username: content.username,
+        postsAnalyzed: content.totalPosts,
+        analysis,
+        suggestedKnowledgeBase: styleDescription,
+      });
+    } catch (error: any) {
+      console.error("Instagram scrape error:", error);
+      res.status(500).json({ 
+        error: error.message || "Failed to scrape Instagram profile",
+        details: "Make sure the username is correct and the profile is public"
+      });
+    }
+  });
+
+  // Helper function to generate style description from analysis
+  async function generateStyleFromAnalysis(
+    content: { platform: string; username: string; posts: Array<{ text: string }> },
+    analysis: { hooks: string[]; phrases: string[]; avgLength: number; styleNotes: string; topPerformingContent: string[] }
+  ): Promise<string> {
+    try {
+      const sampleContent = content.posts.slice(0, 10).map(p => p.text).join("\n\n---\n\n");
+      
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [
+          {
+            role: "system",
+            content: `You are analyzing a content creator's style from their ${content.platform} posts. 
+Create a concise style guide that captures their unique voice, patterns, and approach.
+Write it as instructions for replicating their style in new scripts.
+Be specific about their word choices, sentence structures, and engagement techniques.`
+          },
+          {
+            role: "user",
+            content: `Analyze @${content.username}'s style from these top-performing posts:
+
+${sampleContent}
+
+Analysis data:
+- Common hooks: ${analysis.hooks.slice(0, 5).join(", ")}
+- Frequent phrases: ${analysis.phrases.slice(0, 10).join(", ")}
+- Average word count: ${analysis.avgLength}
+- Style notes: ${analysis.styleNotes}
+
+Create a style guide for writing scripts that sound exactly like this creator.`
+          }
+        ],
+        temperature: 0.7,
+        max_tokens: 800,
+      });
+
+      return response.choices[0]?.message?.content || "Style analysis could not be generated.";
+    } catch (error) {
+      console.error("Style generation error:", error);
+      return `Style Guide for @${content.username}:
+- Opening hooks: ${analysis.hooks.slice(0, 3).join("; ")}
+- Common phrases: ${analysis.phrases.slice(0, 5).join(", ")}
+- Average script length: ${analysis.avgLength} words
+- Voice characteristics: ${analysis.styleNotes}`;
+    }
+  }
 
   return httpServer;
 }
