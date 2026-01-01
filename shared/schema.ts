@@ -297,12 +297,12 @@ export const extendedCreatorStyles = [
 ] as const;
 
 // Combined creator styles for dropdown (extended + legacy where IDs differ)
+const extendedIds = extendedCreatorStyles.map(e => e.id as string);
 export const allCreatorStyles = [
   ...extendedCreatorStyles,
   // Add any legacy styles that have different IDs for backwards compatibility
   ...creatorStyles.filter(legacy => 
-    !extendedCreatorStyles.some(ext => ext.id === legacy.id) && 
-    legacy.id !== "default"
+    !extendedIds.includes(legacy.id) && legacy.id !== "default"
   ).map(legacy => ({
     id: legacy.id,
     nicheId: "business" as const,
@@ -311,7 +311,7 @@ export const allCreatorStyles = [
     tone: legacy.description,
     exampleHook: legacy.exampleHook
   }))
-] as const;
+];
 
 // Platform Options
 export const platformOptions = [
@@ -490,6 +490,8 @@ export interface GeneratedScript {
   scenes: SceneBreakdown[];
   parameters: ScriptParameters;
   createdAt: Date;
+  research?: string;
+  referenceAnalysis?: string;
 }
 
 // Database Tables

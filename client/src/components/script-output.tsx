@@ -42,6 +42,11 @@ import {
   Sparkles,
   ExternalLink,
   Image,
+  Wand2,
+  BookOpen,
+  TrendingUp,
+  MessageSquare,
+  Target,
 } from "lucide-react";
 
 interface ScriptOutputProps {
@@ -58,6 +63,39 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
   const [selectedHook, setSelectedHook] = useState<string | null>(null);
   const [customHookLine, setCustomHookLine] = useState<string | null>(null);
   const [expandedShot, setExpandedShot] = useState<string | null>(null);
+  const [showResearch, setShowResearch] = useState(false);
+  const [enhancedScript, setEnhancedScript] = useState<string | null>(null);
+  const [showEnhanceOptions, setShowEnhanceOptions] = useState(false);
+
+  const [enhancedMetrics, setEnhancedMetrics] = useState<{wordCount: number, gradeLevel: number} | null>(null);
+  
+  const enhanceScriptMutation = useMutation({
+    mutationFn: async (enhancementType: string) => {
+      const currentScript = enhancedScript || script.script;
+      const res = await apiRequest("POST", "/api/scripts/enhance", {
+        script: currentScript,
+        enhancementType,
+        parameters: script.parameters,
+      });
+      return res.json();
+    },
+    onSuccess: (data) => {
+      setEnhancedScript(data.enhancedScript);
+      setEnhancedMetrics({ wordCount: data.wordCount, gradeLevel: data.gradeLevel });
+      toast({
+        title: "Script Enhanced",
+        description: `Your script has been improved. Word count: ${data.wordCount}, Grade level: ${data.gradeLevel}`,
+      });
+      setShowEnhanceOptions(false);
+    },
+    onError: () => {
+      toast({
+        title: "Enhancement Failed",
+        description: "Could not enhance the script. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
 
   const saveToVaultMutation = useMutation({
     mutationFn: async () => {
@@ -151,27 +189,32 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
   };
 
   const getDisplayScript = () => {
+    const baseScript = enhancedScript || script.script;
     if (customHookLine) {
-      const lines = script.script.split('\n');
+      const lines = baseScript.split('\n');
       lines[0] = customHookLine;
       return lines.join('\n');
     }
-    return script.script;
+    return baseScript;
   };
 
   const currentHook = selectedHook 
     ? viralHooks.find(h => h.id === selectedHook)
     : null;
 
-  const gradeColor = script.gradeLevel <= 6 
+  // Use enhanced metrics if available, otherwise original
+  const displayWordCount = enhancedMetrics?.wordCount || script.wordCount;
+  const displayGradeLevel = enhancedMetrics?.gradeLevel || script.gradeLevel;
+  
+  const gradeColor = displayGradeLevel <= 6 
     ? "text-green-500" 
-    : script.gradeLevel <= 8 
+    : displayGradeLevel <= 8 
     ? "text-yellow-500" 
     : "text-red-500";
 
-  const gradeLabel = script.gradeLevel <= 6 
+  const gradeLabel = displayGradeLevel <= 6 
     ? "Easy" 
-    : script.gradeLevel <= 8 
+    : displayGradeLevel <= 8 
     ? "Moderate" 
     : "Complex";
 
@@ -231,10 +274,10 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
         <div>
           <h2 className="text-lg font-semibold mb-1 text-white" data-testid="text-output-title">Generated Script</h2>
           <div className="flex items-center gap-3 text-sm text-muted-foreground flex-wrap">
-            <span data-testid="text-word-count">{script.wordCount} words</span>
+            <span data-testid="text-word-count">{displayWordCount} words</span>
             <span className="hidden sm:inline">|</span>
             <span className={gradeColor} data-testid="text-grade-level">
-              Grade {script.gradeLevel.toFixed(1)} ({gradeLabel})
+              Grade {displayGradeLevel.toFixed(1)} ({gradeLabel})
             </span>
             <span className="hidden sm:inline">|</span>
             <span className={viralScoreColor} data-testid="text-viral-score">
@@ -244,6 +287,30 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
         </div>
         
         <div className="flex items-center gap-2 flex-wrap">
+          {script.research && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowResearch(!showResearch)}
+              className="bg-white/5 border-white/10"
+              data-testid="button-show-research"
+            >
+              <BookOpen className="w-4 h-4 mr-1 text-blue-400" />
+              {showResearch ? "Hide" : "View"} Research
+            </Button>
+          )}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowEnhanceOptions(!showEnhanceOptions)}
+            className="bg-white/5 border-white/10"
+            data-testid="button-enhance-script"
+            disabled={enhanceScriptMutation.isPending}
+          >
+            <Wand2 className="w-4 h-4 mr-1 text-purple-400" />
+            {enhanceScriptMutation.isPending ? "Enhancing..." : "Enhance"}
+            {showEnhanceOptions ? <ChevronUp className="w-4 h-4 ml-1" /> : <ChevronDown className="w-4 h-4 ml-1" />}
+          </Button>
           <Button
             variant="outline"
             size="sm"
@@ -267,6 +334,101 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
           </Button>
         </div>
       </div>
+
+      {/* Enhanced Script Indicator */}
+      {enhancedScript && (
+        <div className="mb-4 p-3 rounded-md bg-purple-500/10 border border-purple-500/20 flex items-center gap-2">
+          <Sparkles className="w-4 h-4 text-purple-400" />
+          <span className="text-sm text-purple-300">Script enhanced with AI</span>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => { setEnhancedScript(null); setEnhancedMetrics(null); }}
+            className="ml-auto text-xs text-muted-foreground"
+            data-testid="button-revert-enhancement"
+          >
+            Revert to original
+          </Button>
+        </div>
+      )}
+
+      {/* Research Panel */}
+      {showResearch && script.research && (
+        <div className="mb-6 p-4 rounded-md bg-blue-500/10 border border-blue-500/20">
+          <div className="flex items-center gap-2 mb-3">
+            <BookOpen className="w-4 h-4 text-blue-400" />
+            <h3 className="text-sm font-medium text-white">Research Findings</h3>
+          </div>
+          <div className="text-sm text-muted-foreground whitespace-pre-wrap">
+            {script.research}
+          </div>
+        </div>
+      )}
+
+      {/* Enhance Options Panel */}
+      {showEnhanceOptions && (
+        <div className="mb-6 p-4 rounded-md bg-purple-500/10 border border-purple-500/20">
+          <div className="flex items-center gap-2 mb-3">
+            <Wand2 className="w-4 h-4 text-purple-400" />
+            <h3 className="text-sm font-medium text-white">Enhance Your Script</h3>
+          </div>
+          <p className="text-xs text-muted-foreground mb-4">
+            Choose how you want AI to improve your script
+          </p>
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+            <button
+              onClick={() => enhanceScriptMutation.mutate('punchier')}
+              disabled={enhanceScriptMutation.isPending}
+              className="p-3 rounded-md bg-white/5 border border-white/10 text-left hover-elevate active-elevate-2"
+              data-testid="button-enhance-punchier"
+            >
+              <Zap className="w-4 h-4 text-yellow-400 mb-1" />
+              <p className="text-xs font-medium text-white">Punchier</p>
+              <p className="text-[10px] text-muted-foreground">More energy</p>
+            </button>
+            <button
+              onClick={() => enhanceScriptMutation.mutate('clearer')}
+              disabled={enhanceScriptMutation.isPending}
+              className="p-3 rounded-md bg-white/5 border border-white/10 text-left hover-elevate active-elevate-2"
+              data-testid="button-enhance-clearer"
+            >
+              <Target className="w-4 h-4 text-green-400 mb-1" />
+              <p className="text-xs font-medium text-white">Clearer</p>
+              <p className="text-[10px] text-muted-foreground">Simpler words</p>
+            </button>
+            <button
+              onClick={() => enhanceScriptMutation.mutate('storytelling')}
+              disabled={enhanceScriptMutation.isPending}
+              className="p-3 rounded-md bg-white/5 border border-white/10 text-left hover-elevate active-elevate-2"
+              data-testid="button-enhance-storytelling"
+            >
+              <MessageSquare className="w-4 h-4 text-blue-400 mb-1" />
+              <p className="text-xs font-medium text-white">Story Mode</p>
+              <p className="text-[10px] text-muted-foreground">More narrative</p>
+            </button>
+            <button
+              onClick={() => enhanceScriptMutation.mutate('engagement')}
+              disabled={enhanceScriptMutation.isPending}
+              className="p-3 rounded-md bg-white/5 border border-white/10 text-left hover-elevate active-elevate-2"
+              data-testid="button-enhance-engagement"
+            >
+              <TrendingUp className="w-4 h-4 text-red-400 mb-1" />
+              <p className="text-xs font-medium text-white">Engagement</p>
+              <p className="text-[10px] text-muted-foreground">More hooks</p>
+            </button>
+            <button
+              onClick={() => enhanceScriptMutation.mutate('general')}
+              disabled={enhanceScriptMutation.isPending}
+              className="p-3 rounded-md bg-white/5 border border-white/10 text-left hover-elevate active-elevate-2"
+              data-testid="button-enhance-general"
+            >
+              <Sparkles className="w-4 h-4 text-purple-400 mb-1" />
+              <p className="text-xs font-medium text-white">Auto Improve</p>
+              <p className="text-[10px] text-muted-foreground">Best of all</p>
+            </button>
+          </div>
+        </div>
+      )}
 
       {showHookSelector && (
         <div className="mb-6 p-4 rounded-md bg-white/5 border border-white/10">

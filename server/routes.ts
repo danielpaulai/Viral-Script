@@ -650,7 +650,7 @@ ${videoType.id !== "talking_head" ? `Remember to use the ${videoType.name} forma
         { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt }
       ],
-      max_tokens: 1000,
+      max_tokens: 1500,
       temperature: 0.8,
     });
 
@@ -871,6 +871,8 @@ Return JSON in this exact format:
       scenes,
       parameters: params,
       createdAt: new Date(),
+      research: researchContext || undefined,
+      referenceAnalysis: referenceAnalysis || undefined,
     };
   } catch (error) {
     console.error("AI script generation failed, falling back to template:", error);
@@ -943,6 +945,100 @@ export async function registerRoutes(
     } catch (error) {
       console.error("Error generating script:", error);
       res.status(500).json({ error: "Failed to generate script" });
+    }
+  });
+
+  // Enhance an existing script with AI
+  app.post("/api/scripts/enhance", async (req, res) => {
+    try {
+      const { script, enhancementType, parameters } = req.body;
+      
+      if (!script || typeof script !== 'string') {
+        return res.status(400).json({ error: "Script content is required" });
+      }
+      
+      const enhancementPrompts: Record<string, string> = {
+        punchier: `Make this script more punchy and attention-grabbing:
+- Use shorter, more impactful sentences
+- Add more pattern interrupts
+- Make transitions snappier
+- Increase urgency and energy
+- Use more power words`,
+        clearer: `Make this script clearer and more easily understood:
+- Simplify complex sentences
+- Remove jargon and technical terms
+- Use more concrete examples
+- Improve flow and transitions
+- Target grade 4-6 reading level`,
+        storytelling: `Enhance the storytelling in this script:
+- Add more narrative elements
+- Create stronger emotional hooks
+- Add vivid details and imagery
+- Build better tension and payoff
+- Make it more relatable and human`,
+        engagement: `Optimize this script for maximum engagement:
+- Strengthen the hook to stop the scroll
+- Add more curiosity gaps
+- Include pattern interrupts throughout
+- Make the CTA more compelling
+- Add moments that encourage saves/shares`,
+        general: `Improve this script to be more viral-worthy:
+- Tighten the language (every word must earn its place)
+- Increase the hook strength
+- Add more specific details and numbers
+- Improve the flow and pacing
+- Make it impossible to scroll past`,
+      };
+      
+      const enhancementPrompt = enhancementPrompts[enhancementType] || enhancementPrompts.general;
+      
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [
+          {
+            role: "system",
+            content: `You are an expert script enhancer for short-form video content. Your job is to improve scripts to be more viral-worthy while maintaining the original message and structure.
+
+Rules:
+- Keep the same general structure (HOOK, BODY, CTA if present)
+- Don't add new topics or information not in the original
+- Make improvements subtle but impactful
+- Maintain the same approximate length (within 20%)
+- Keep the same tone and voice
+- Use grade 4-6 reading level
+
+${enhancementPrompt}`
+          },
+          {
+            role: "user",
+            content: `Enhance this script:
+
+${script}
+
+Return ONLY the enhanced script with no explanations or commentary.`
+          }
+        ],
+        max_tokens: 1500,
+        temperature: 0.7,
+      });
+      
+      const enhancedScript = response.choices[0]?.message?.content || script;
+      
+      // Calculate new metrics
+      const words = enhancedScript.split(/\s+/).filter(Boolean);
+      const wordCount = words.length;
+      const avgWordsPerSentence = words.length / Math.max(1, enhancedScript.split(/[.!?]+/).length - 1);
+      const gradeLevel = Math.max(3, Math.min(12, 0.39 * avgWordsPerSentence + 4));
+      
+      res.json({
+        enhancedScript,
+        wordCount,
+        gradeLevel: Math.round(gradeLevel * 10) / 10,
+        enhancementType: enhancementType || 'general',
+      });
+    } catch (error) {
+      console.error("Error enhancing script:", error);
+      res.status(500).json({ error: "Failed to enhance script" });
     }
   });
 
