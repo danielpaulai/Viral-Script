@@ -73,6 +73,71 @@ const aiWordsToAvoid = [
   "Subsequently", "Additionally", "Consequently", "Nevertheless", "Notwithstanding"
 ];
 
+// Banned fluffy phrases - CRITICAL for quality
+const bannedFluffyPhrases = [
+  "In today's world",
+  "Have you ever wondered",
+  "Let me tell you something",
+  "The truth is",
+  "Here's the thing",
+  "At the end of the day",
+  "It's important to remember",
+  "What most people don't realize",
+  "It's not as complicated as you think",
+  "In today's digital age",
+  "Let's dive in",
+  "Without further ado",
+  "So without further ado",
+  "Ladies and gentlemen",
+  "If you're like most people",
+  "You might be wondering",
+  "Now, I know what you're thinking",
+];
+
+// Helper function to check for fluff in script
+function containsFluff(script: string): boolean {
+  const lowerScript = script.toLowerCase();
+  return bannedFluffyPhrases.some(phrase => lowerScript.includes(phrase.toLowerCase()));
+}
+
+// Helper function to check for actionability
+function isActionable(script: string): { actionable: boolean; reasons: string[] } {
+  const reasons: string[] = [];
+  const lowerScript = script.toLowerCase();
+  
+  // Check for specific numbers
+  const hasNumbers = /\d+/.test(script);
+  if (!hasNumbers) reasons.push("No specific numbers or stats");
+  
+  // Check for vague advice patterns
+  const vaguePatterns = [
+    "think about your",
+    "consider your",
+    "keep in mind",
+    "remember that",
+    "it's about",
+    "value is key",
+    "be consistent",
+    "work harder",
+    "try harder",
+  ];
+  const hasVague = vaguePatterns.some(p => lowerScript.includes(p));
+  if (hasVague) reasons.push("Contains vague advice");
+  
+  // Check for weak CTAs
+  const weakCtas = [
+    "let me know what you think",
+    "let me know your thoughts",
+    "comment below",
+    "what do you think",
+    "share your thoughts",
+  ];
+  const hasWeakCta = weakCtas.some(c => lowerScript.includes(c));
+  if (hasWeakCta) reasons.push("Weak CTA");
+  
+  return { actionable: reasons.length === 0, reasons };
+}
+
 function generateScript(params: ScriptParameters): GeneratedScript {
   const category = scriptCategories.find((c) => c.id === params.category);
   const hook = viralHooks.find((h) => h.id === params.hook);
@@ -609,6 +674,52 @@ CRITICAL RULES - FOLLOW EXACTLY:
 4. ONE IDEA PER SENTENCE: Never combine multiple thoughts in one sentence.
 5. BANNED WORDS - NEVER USE: ${aiWordsToAvoid.join(", ")}
 
+<output_quality_rules>
+EVERY SCRIPT MUST:
+
+1. BE ACTIONABLE
+- Every script must give the viewer ONE clear thing they can do immediately after watching
+- No vague advice like "think about your goals" or "consider your options"
+- Instead: Specific steps like "Open your phone. Go to Settings. Turn off notifications for 2 hours."
+
+2. HAVE CONCRETE SPECIFICS
+- Include specific numbers, timeframes, or examples
+- BAD: "Post more content"
+- GOOD: "Post 3 times per day for 30 days"
+
+3. AVOID FLUFF PHRASES - NEVER USE:
+- "In today's world..."
+- "Have you ever wondered..."
+- "Let me tell you something..."
+- "The truth is..."
+- "Here's the thing..."
+- "At the end of the day..."
+- "It's important to remember..."
+- "What most people don't realize..."
+
+4. GET TO THE POINT
+- Hook in first 2 seconds (first sentence)
+- Main value by second 3-5
+- No long intros or build-ups
+- Every sentence must earn its place
+
+5. END WITH CLEAR NEXT STEP
+- Tell them exactly what to do next
+- Make it doable in under 5 minutes
+- Be specific: "Comment 'GUIDE' below" not "Let me know what you think"
+</output_quality_rules>
+
+<quality_check>
+Before outputting any script, internally grade it 1-10 on:
+- Actionability (Can viewer do something specific after watching?)
+- Specificity (Are there concrete numbers, steps, examples?)
+- Fluff-free (No wasted sentences or vague phrases?)
+- Hook strength (Does first sentence demand attention?)
+- Clear CTA (Is the next step obvious?)
+
+If total score is below 35/50, rewrite the script before showing.
+</quality_check>
+
 Style guidelines:
 - One short sentence per line
 - Include specific numbers and examples when available
@@ -618,7 +729,7 @@ Style guidelines:
 VIDEO TYPE: ${videoType.name}
 ${videoTypeInstructions[videoType.id] || videoTypeInstructions.talking_head}
 
-${videoType.id === "talking_head" || videoType.id === "mixed_format" ? `IMPORTANT: Structure your script with EXACTLY these three sections:
+${videoType.id === "talking_head" ? `IMPORTANT: Structure your script with EXACTLY these three sections:
 
 **HOOK**
 (First 3 seconds - must stop the scroll. One powerful opening line.)
@@ -689,14 +800,27 @@ ${videoType.id !== "talking_head" ? `Remember to use the ${videoType.name} forma
     const maxAttempts = 3;
     let gradeLevel = 10; // Start high to trigger validation
     let ctaValid = false;
+    let hasFluff = true;
+    let actionabilityCheck = { actionable: false, reasons: ["Not checked yet"] };
     
     // Retry loop for quality validation
-    while (attempts < maxAttempts && (gradeLevel > 5 || !ctaValid)) {
+    while (attempts < maxAttempts && (gradeLevel > 5 || !ctaValid || hasFluff || !actionabilityCheck.actionable)) {
       attempts++;
       const temperature = attempts === 1 ? 0.8 : 0.6; // Lower temperature on retries
       
-      const retryHint = attempts > 1 
-        ? `\n\nPREVIOUS ATTEMPT FAILED. ${gradeLevel > 5 ? 'USE SIMPLER WORDS AND SHORTER SENTENCES. ' : ''}${!ctaValid ? 'USE THE EXACT CTA PROVIDED. ' : ''}Try again.`
+      // Build specific retry hints based on what failed
+      let retryHints: string[] = [];
+      if (attempts > 1) {
+        if (gradeLevel > 5) retryHints.push('USE SIMPLER WORDS AND SHORTER SENTENCES.');
+        if (!ctaValid) retryHints.push('USE THE EXACT CTA PROVIDED - COPY IT WORD FOR WORD.');
+        if (hasFluff) retryHints.push('REMOVE ALL FLUFFY PHRASES. Get straight to the point. No "In today\'s world" or "The truth is".');
+        if (!actionabilityCheck.actionable) {
+          retryHints.push(`MAKE IT MORE ACTIONABLE: ${actionabilityCheck.reasons.join(', ')}. Include specific numbers, timeframes, and clear next steps.`);
+        }
+      }
+      
+      const retryHint = retryHints.length > 0 
+        ? `\n\nPREVIOUS ATTEMPT FAILED QUALITY CHECK:\n${retryHints.join('\n')}\n\nRewrite with these fixes.`
         : '';
       
       const response = await openai.chat.completions.create({
@@ -712,8 +836,10 @@ ${videoType.id !== "talking_head" ? `Remember to use the ${videoType.name} forma
       scriptContent = response.choices[0]?.message?.content || "";
       gradeLevel = calculateGradeLevel(scriptContent);
       ctaValid = ctaIsPresent(scriptContent, finalCta);
+      hasFluff = containsFluff(scriptContent);
+      actionabilityCheck = isActionable(scriptContent);
       
-      console.log(`Script generation attempt ${attempts}: grade=${gradeLevel.toFixed(1)}, ctaValid=${ctaValid}`);
+      console.log(`Script generation attempt ${attempts}: grade=${gradeLevel.toFixed(1)}, ctaValid=${ctaValid}, hasFluff=${hasFluff}, actionable=${actionabilityCheck.actionable}`);
     }
     
     // If we still failed validation after max attempts, log warning but continue
@@ -722,6 +848,12 @@ ${videoType.id !== "talking_head" ? `Remember to use the ${videoType.name} forma
     }
     if (!ctaValid) {
       console.warn(`CTA validation failed after ${maxAttempts} attempts. Expected: "${finalCta}"`);
+    }
+    if (hasFluff) {
+      console.warn(`Script still contains fluffy phrases after ${maxAttempts} attempts`);
+    }
+    if (!actionabilityCheck.actionable) {
+      console.warn(`Script actionability issues: ${actionabilityCheck.reasons.join(', ')}`);
     }
     
     const words = scriptContent.split(/\s+/).filter(Boolean);
@@ -1133,6 +1265,95 @@ Return ONLY the enhanced script with no explanations or commentary.${retryHint}`
     } catch (error) {
       console.error("Error enhancing script:", error);
       res.status(500).json({ error: "Failed to enhance script" });
+    }
+  });
+
+  // Deep Research: Expand raw topic into detailed brief
+  app.post("/api/scripts/expand-topic", async (req, res) => {
+    try {
+      const { topic, targetAudience } = req.body;
+      
+      if (!topic || typeof topic !== 'string' || topic.trim().length < 5) {
+        return res.status(400).json({ error: "Topic is required (at least 5 characters)" });
+      }
+      
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [
+          {
+            role: "system",
+            content: `You are a viral content strategist who helps creators turn raw ideas into powerful video scripts.
+
+When given a raw/vague topic idea, expand it into a detailed video brief. Your job is to add specificity, unique angles, and actionable elements.
+
+Respond in JSON format with this exact structure:
+{
+  "coreMessage": "The ONE main point of this video (one sentence)",
+  "targetViewer": "Who specifically needs to hear this and their current struggle",
+  "uniqueAngle": "The unexpected twist or contrarian take that makes this stand out",
+  "keyProofPoints": ["Stat/example 1", "Stat/example 2", "Stat/example 3"],
+  "actionableTakeaway": "The ONE specific thing they can do in the next 5 minutes"
+}
+
+Make the proof points specific with numbers where possible. The unique angle should challenge common beliefs.`
+          },
+          {
+            role: "user",
+            content: `Expand this raw video idea into a detailed brief:
+
+TOPIC: ${topic}
+${targetAudience ? `TARGET AUDIENCE: ${targetAudience}` : ''}
+
+Create a powerful video brief that will make this topic stand out and go viral.`
+          }
+        ],
+        max_tokens: 600,
+        temperature: 0.8,
+      });
+      
+      const content = response.choices[0]?.message?.content || "";
+      
+      // Parse the JSON response
+      try {
+        const cleanedJson = content
+          .replace(/```json\s*/gi, "")
+          .replace(/```\s*/g, "")
+          .trim();
+        
+        const brief = JSON.parse(cleanedJson);
+        
+        res.json({
+          expandedBrief: {
+            coreMessage: brief.coreMessage || "Create value for your audience",
+            targetViewer: brief.targetViewer || "Content creators looking to grow",
+            uniqueAngle: brief.uniqueAngle || "A fresh perspective on the topic",
+            keyProofPoints: Array.isArray(brief.keyProofPoints) 
+              ? brief.keyProofPoints.slice(0, 3)
+              : ["Point 1", "Point 2", "Point 3"],
+            actionableTakeaway: brief.actionableTakeaway || "Take action today",
+          },
+          originalTopic: topic,
+        });
+      } catch (parseError) {
+        // Fallback if JSON parsing fails
+        res.json({
+          expandedBrief: {
+            coreMessage: `Share powerful insights about ${topic}`,
+            targetViewer: targetAudience || "People interested in this topic",
+            uniqueAngle: "A perspective most people miss",
+            keyProofPoints: [
+              "Research shows this approach works",
+              "Top performers do this differently",
+              "Most people get this wrong"
+            ],
+            actionableTakeaway: "Apply one insight from this video today",
+          },
+          originalTopic: topic,
+        });
+      }
+    } catch (error) {
+      console.error("Error expanding topic:", error);
+      res.status(500).json({ error: "Failed to expand topic" });
     }
   });
 

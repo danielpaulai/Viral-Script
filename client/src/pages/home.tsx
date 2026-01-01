@@ -52,7 +52,8 @@ import { ScriptOutput } from "@/components/script-output";
 import { 
   Sparkles, 
   ArrowRight, 
-  Zap, 
+  Zap,
+  Lightbulb, 
   TrendingUp, 
   Cpu, 
   Heart,
@@ -63,7 +64,6 @@ import {
   Eye,
   RotateCcw,
   Target,
-  Lightbulb,
   BookOpen,
   Mic,
   Film,
@@ -145,6 +145,15 @@ const platformWordTargets: Record<string, { min: number; max: number; label: str
   "180": { min: 360, max: 540, label: "3min" },
 };
 
+// Expanded Brief interface for Deep Research
+interface ExpandedBrief {
+  coreMessage: string;
+  targetViewer: string;
+  uniqueAngle: string;
+  keyProofPoints: string[];
+  actionableTakeaway: string;
+}
+
 export default function Home() {
   const { toast } = useToast();
   const { user } = useAuth();
@@ -154,6 +163,8 @@ export default function Home() {
   const [useKnowledgeBase, setUseKnowledgeBase] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [hoveredPreset, setHoveredPreset] = useState<string | null>(null);
+  const [expandedBrief, setExpandedBrief] = useState<ExpandedBrief | null>(null);
+  const [showBriefEditor, setShowBriefEditor] = useState(false);
 
   const [formData, setFormData] = useState<ScriptParameters>({
     topic: "",
@@ -209,6 +220,8 @@ export default function Home() {
     },
     onSuccess: (data: GeneratedScript) => {
       setGeneratedScript(data);
+      setExpandedBrief(null); // Clear brief after generating
+      setShowBriefEditor(false);
       toast({
         title: "Script Generated",
         description: "Your video script is ready!",
@@ -218,6 +231,29 @@ export default function Home() {
       toast({
         title: "Error",
         description: "Failed to generate script. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Topic expansion for Deep Research mode
+  const expandTopicMutation = useMutation({
+    mutationFn: async ({ topic, targetAudience }: { topic: string; targetAudience?: string }) => {
+      const res = await apiRequest("POST", "/api/scripts/expand-topic", { topic, targetAudience });
+      return res.json();
+    },
+    onSuccess: (data: { expandedBrief: ExpandedBrief }) => {
+      setExpandedBrief(data.expandedBrief);
+      setShowBriefEditor(true);
+      toast({
+        title: "Topic Expanded",
+        description: "Review your video brief below.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to expand topic. Try again.",
         variant: "destructive",
       });
     },
@@ -390,12 +426,135 @@ export default function Home() {
           <Textarea
             id="topic"
             value={formData.topic}
-            onChange={(e) => setFormData((prev) => ({ ...prev, topic: e.target.value }))}
+            onChange={(e) => {
+              setFormData((prev) => ({ ...prev, topic: e.target.value }));
+              // Clear expanded brief when topic changes
+              if (expandedBrief) setExpandedBrief(null);
+            }}
             placeholder="e.g., Why most people fail at content creation..."
             className="bg-white/5 border-white/10 min-h-[80px] text-base"
             data-testid="input-topic"
           />
         </div>
+
+        <div className="mb-4 p-3 rounded-md bg-white/5 border border-white/10">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Search className="w-4 h-4 text-primary" />
+              <div>
+                <p className="text-sm font-medium text-white">Deep Research Mode</p>
+                <p className="text-[10px] text-muted-foreground">
+                  {deepResearch ? "AI expands your idea into a detailed brief first" : "Turn ON if your idea is raw/basic"}
+                </p>
+              </div>
+            </div>
+            <Switch
+              checked={deepResearch}
+              onCheckedChange={(checked) => {
+                setDeepResearch(checked);
+                if (!checked) {
+                  setExpandedBrief(null);
+                  setShowBriefEditor(false);
+                }
+              }}
+              data-testid="switch-deep-research"
+            />
+          </div>
+          
+          {deepResearch && formData.topic.trim().length >= 5 && !expandedBrief && (
+            <div className="mt-3 pt-3 border-t border-white/10">
+              <Button
+                onClick={() => expandTopicMutation.mutate({ 
+                  topic: formData.topic, 
+                  targetAudience: formData.targetAudience 
+                })}
+                disabled={expandTopicMutation.isPending}
+                variant="outline"
+                className="w-full"
+                data-testid="button-expand-idea"
+              >
+                {expandTopicMutation.isPending ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
+                    Expanding your idea...
+                  </>
+                ) : (
+                  <>
+                    <Lightbulb className="w-4 h-4 mr-2" />
+                    Expand My Idea
+                  </>
+                )}
+              </Button>
+            </div>
+          )}
+        </div>
+
+        {expandedBrief && showBriefEditor && (
+          <div className="mb-4 p-4 rounded-md bg-primary/5 border border-primary/20">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <FileText className="w-4 h-4 text-primary" />
+                <span className="text-sm font-semibold text-primary uppercase tracking-wider">Expanded Video Brief</span>
+              </div>
+              <Button 
+                size="sm" 
+                variant="ghost" 
+                onClick={() => setShowBriefEditor(false)}
+                className="text-xs"
+              >
+                Hide
+              </Button>
+            </div>
+            
+            <div className="space-y-3 text-sm">
+              <div>
+                <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Core Message</p>
+                <p className="text-white">{expandedBrief.coreMessage}</p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Target Viewer</p>
+                <p className="text-white/80">{expandedBrief.targetViewer}</p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Unique Angle</p>
+                <p className="text-white/80">{expandedBrief.uniqueAngle}</p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Key Proof Points</p>
+                <ul className="list-disc list-inside text-white/80">
+                  {expandedBrief.keyProofPoints.map((point, i) => (
+                    <li key={i}>{point}</li>
+                  ))}
+                </ul>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Actionable Takeaway</p>
+                <p className="text-primary font-medium">{expandedBrief.actionableTakeaway}</p>
+              </div>
+            </div>
+            
+            <div className="flex gap-2 mt-4 pt-3 border-t border-primary/20">
+              <Button
+                onClick={handleGenerate}
+                disabled={generateMutation.isPending}
+                className="flex-1"
+                data-testid="button-generate-from-brief"
+              >
+                {generateMutation.isPending ? "Generating..." : "Generate Script from Brief"}
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setExpandedBrief(null);
+                  setShowBriefEditor(false);
+                }}
+                data-testid="button-edit-brief"
+              >
+                Edit Topic
+              </Button>
+            </div>
+          </div>
+        )}
 
         {currentHook && formData.topic && (
           <div className="mb-4 p-3 rounded-md bg-primary/10 border border-primary/20">
@@ -513,85 +672,29 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
-          <div>
-            <Label className="text-xs font-medium mb-2 block uppercase tracking-wider">Video Type</Label>
-            <Select
-              value={formData.videoType || "talking_head"}
-              onValueChange={(value) => setFormData((prev) => ({ ...prev, videoType: value }))}
-            >
-              <SelectTrigger className="bg-white/5 border-white/10" data-testid="select-video-type">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {videoTypes.map((vt) => {
-                  const Icon = videoTypeIcons[vt.id] || Mic;
-                  return (
-                    <SelectItem key={vt.id} value={vt.id}>
-                      <div className="flex items-center gap-2">
-                        <Icon className="w-4 h-4" />
-                        <span>{vt.name}</span>
-                      </div>
-                    </SelectItem>
-                  );
-                })}
-              </SelectContent>
-            </Select>
-            <p className="text-[10px] text-muted-foreground mt-1">
-              {videoTypes.find(v => v.id === (formData.videoType || "talking_head"))?.description}
-            </p>
-          </div>
-
-          <div>
-            <Label className="text-xs font-medium mb-2 block uppercase tracking-wider">Creator Style (16 Famous Creators)</Label>
-            <Select
-              value={formData.creatorStyle || "default"}
-              onValueChange={(value) => setFormData((prev) => ({ ...prev, creatorStyle: value }))}
-            >
-              <SelectTrigger className="bg-white/5 border-white/10" data-testid="select-creator-style">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent className="max-h-96">
-                <SelectItem value="default">
-                  <div className="flex items-center gap-2">
-                    <Target className="w-4 h-4" />
-                    <span>Default - Optimized for Virality</span>
-                  </div>
-                </SelectItem>
-                {creatorNiches.map((niche) => {
-                  const NicheIcon = nicheIcons[niche.id] || Target;
-                  const nicheCreators = extendedCreatorStyles.filter(c => c.nicheId === niche.id);
-                  return (
-                    <div key={niche.id}>
-                      <div className="px-2 py-1.5 text-xs font-semibold text-primary flex items-center gap-2">
-                        <NicheIcon className="w-3 h-3" />
-                        {niche.name}
-                      </div>
-                      {nicheCreators.map((cs) => {
-                        const Icon = creatorStyleIcons[cs.id] || Target;
-                        return (
-                          <SelectItem key={cs.id} value={cs.id}>
-                            <div className="flex items-center gap-2">
-                              <Icon className="w-4 h-4" />
-                              <span>{cs.name}</span>
-                              <span className="text-muted-foreground text-xs">{cs.followers}</span>
-                            </div>
-                          </SelectItem>
-                        );
-                      })}
-                    </div>
-                  );
-                })}
-              </SelectContent>
-            </Select>
-            {formData.creatorStyle && formData.creatorStyle !== "default" && (
-              <div className="mt-2 p-2 rounded bg-white/5 border border-white/10">
-                <p className="text-[10px] text-muted-foreground mb-1">Style: {extendedCreatorStyles.find(c => c.id === formData.creatorStyle)?.tone}</p>
-                <p className="text-[10px] text-white/70 italic">
-                  "{extendedCreatorStyles.find(c => c.id === formData.creatorStyle)?.exampleHook}"
-                </p>
-              </div>
-            )}
+        <div className="mb-4">
+          <Label className="text-xs font-medium mb-2 block uppercase tracking-wider">Video Type</Label>
+          <div className="grid grid-cols-3 gap-2">
+            {videoTypes.map((vt) => {
+              const Icon = videoTypeIcons[vt.id] || Mic;
+              const isSelected = (formData.videoType || "talking_head") === vt.id;
+              return (
+                <button
+                  key={vt.id}
+                  onClick={() => setFormData((prev) => ({ ...prev, videoType: vt.id }))}
+                  className={`p-3 rounded-md text-center transition-all hover-elevate ${
+                    isSelected
+                      ? "bg-primary/20 border border-primary/50"
+                      : "bg-white/5 border border-white/10"
+                  }`}
+                  data-testid={`button-video-type-${vt.id}`}
+                >
+                  <Icon className={`w-5 h-5 mx-auto mb-1 ${isSelected ? "text-primary" : "text-white/70"}`} />
+                  <p className={`text-xs font-medium ${isSelected ? "text-white" : "text-white/80"}`}>{vt.name}</p>
+                  <p className="text-[10px] text-muted-foreground">{vt.description}</p>
+                </button>
+              );
+            })}
           </div>
         </div>
 
@@ -760,21 +863,56 @@ export default function Home() {
               </p>
             </div>
 
-            <div className="flex items-center justify-between p-3 rounded-md bg-white/5 border border-white/10">
-              <div className="flex items-center gap-3">
-                <Search className="w-4 h-4 text-muted-foreground" />
-                <div>
-                  <p className="text-sm font-medium text-white">Deep Research Mode</p>
-                  <p className="text-[10px] text-muted-foreground">
-                    AI researches your topic before generating
+            <div>
+              <Label className="text-xs font-medium mb-2 block uppercase tracking-wider">Creator Style (16 Famous Creators)</Label>
+              <Select
+                value={formData.creatorStyle || "default"}
+                onValueChange={(value) => setFormData((prev) => ({ ...prev, creatorStyle: value }))}
+              >
+                <SelectTrigger className="bg-white/5 border-white/10" data-testid="select-creator-style">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="max-h-96">
+                  <SelectItem value="default">
+                    <div className="flex items-center gap-2">
+                      <Target className="w-4 h-4" />
+                      <span>Default - Optimized for Virality</span>
+                    </div>
+                  </SelectItem>
+                  {creatorNiches.map((niche) => {
+                    const NicheIcon = nicheIcons[niche.id] || Target;
+                    const nicheCreators = extendedCreatorStyles.filter(c => c.nicheId === niche.id);
+                    return (
+                      <div key={niche.id}>
+                        <div className="px-2 py-1.5 text-xs font-semibold text-primary flex items-center gap-2">
+                          <NicheIcon className="w-3 h-3" />
+                          {niche.name}
+                        </div>
+                        {nicheCreators.map((cs) => {
+                          const Icon = creatorStyleIcons[cs.id] || Target;
+                          return (
+                            <SelectItem key={cs.id} value={cs.id}>
+                              <div className="flex items-center gap-2">
+                                <Icon className="w-4 h-4" />
+                                <span>{cs.name}</span>
+                                <span className="text-muted-foreground text-xs">{cs.followers}</span>
+                              </div>
+                            </SelectItem>
+                          );
+                        })}
+                      </div>
+                    );
+                  })}
+                </SelectContent>
+              </Select>
+              {formData.creatorStyle && formData.creatorStyle !== "default" && (
+                <div className="mt-2 p-2 rounded bg-white/5 border border-white/10">
+                  <p className="text-[10px] text-muted-foreground mb-1">Style: {extendedCreatorStyles.find(c => c.id === formData.creatorStyle)?.tone}</p>
+                  <p className="text-[10px] text-white/70 italic">
+                    "{extendedCreatorStyles.find(c => c.id === formData.creatorStyle)?.exampleHook}"
                   </p>
                 </div>
-              </div>
-              <Switch
-                checked={deepResearch}
-                onCheckedChange={setDeepResearch}
-                data-testid="switch-deep-research"
-              />
+              )}
             </div>
 
             <div className="flex items-center justify-between p-3 rounded-md bg-primary/10 border border-primary/20">

@@ -138,11 +138,15 @@ export const pacingOptions = [
   { id: "deliberate", name: "Deliberate", description: "Slower, dramatic emphasis" },
 ] as const;
 
-// Video Types - Different content formats
+// Video Types - Simplified to 3 most-used formats
 export const videoTypes = [
-  { id: "talking_head", name: "Talking Head", icon: "Mic", description: "Speak directly to camera" },
-  { id: "broll_voiceover", name: "B-Roll with Voiceover", icon: "Film", description: "No face, narration over footage" },
-  { id: "text_on_screen", name: "Text-on-Screen", icon: "Type", description: "No voice, text cards only" },
+  { id: "talking_head", name: "Talking Head", icon: "Mic", description: "You speak directly to camera" },
+  { id: "broll_voiceover", name: "B-Roll + Voiceover", icon: "Film", description: "Voice over footage, no face" },
+  { id: "text_on_screen", name: "Text on Screen", icon: "Type", description: "No voice, just text cards" },
+] as const;
+
+// Extended video types (for Pro/Ultimate users or future expansion)
+export const extendedVideoTypes = [
   { id: "ai_avatar", name: "AI Avatar / Clone", icon: "Bot", description: "AI avatar speaks the script" },
   { id: "screen_recording", name: "Screen Recording", icon: "Monitor", description: "Voice narrates over screen capture" },
   { id: "mixed_format", name: "Mixed Format", icon: "Layers", description: "Combination of talking head + b-roll + text" },
