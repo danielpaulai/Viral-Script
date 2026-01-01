@@ -668,11 +668,13 @@ Generate a NEW script about the user's topic that follows these same patterns bu
   const systemPrompt = `You are a world-class short-form video scriptwriter who writes like a real human, NOT an AI.
 
 CRITICAL RULES - FOLLOW EXACTLY:
-1. READING LEVEL: Grade 3 reading level. Use simple, everyday words. Short sentences (5-10 words max). No jargon.
-2. SOUND HUMAN: Write like you're texting a friend. Use contractions. Be casual. No corporate speak.
-3. CTA: You MUST use the EXACT CTA provided by the user. Copy it word-for-word. Do NOT create your own CTA.
-4. ONE IDEA PER SENTENCE: Never combine multiple thoughts in one sentence.
-5. BANNED WORDS - NEVER USE: ${aiWordsToAvoid.join(", ")}
+1. TOPIC RELEVANCE (MOST IMPORTANT): Your script MUST be 100% about the EXACT topic provided. Every sentence must directly relate to the topic. Do NOT go off on tangents. Do NOT write about something else. If the topic is "How to get leads from LinkedIn" - EVERY sentence must be about LinkedIn lead generation.
+
+2. READING LEVEL: Grade 3 reading level. Use simple, everyday words. Short sentences (5-10 words max). No jargon.
+3. SOUND HUMAN: Write like you're texting a friend. Use contractions. Be casual. No corporate speak.
+4. CTA: You MUST use the EXACT CTA provided by the user. Copy it word-for-word. Do NOT create your own CTA.
+5. ONE IDEA PER SENTENCE: Never combine multiple thoughts in one sentence.
+6. BANNED WORDS - NEVER USE: ${aiWordsToAvoid.join(", ")}
 
 <output_quality_rules>
 EVERY SCRIPT MUST:
@@ -749,7 +751,10 @@ ${referenceInstructions}`;
   const userPrompt = `Write a ${params.duration}-second video script (aim for ${targetWords.min}-${targetWords.max} words).
 
 ${knowledgeBaseInstructions}
-TOPIC: ${params.topic}
+=== YOUR TOPIC - STAY 100% ON THIS ===
+${params.topic}
+=== EVERY SENTENCE MUST BE ABOUT THIS EXACT TOPIC ===
+
 VIDEO TYPE: ${videoType.name} - ${videoType.description}
 ${creatorStyle.id !== "default" ? `CREATOR STYLE: ${creatorStyle.name} - ${creatorStyle.description}` : ""}
 HOOK STYLE: ${hook?.name || "The Painful Past"} - "${hook?.template || "I used to [painful thing everyone relates to]."}"
@@ -793,6 +798,28 @@ ${videoType.id !== "talking_head" ? `Remember to use the ${videoType.name} forma
     return lastPortion.includes(normalizedCta) || 
            lastPortion.includes(normalizedCta.replace(/[.,!?]/g, ''));
   };
+  
+  // Helper function to check topic relevance
+  const isTopicRelevant = (script: string, topic: string): { relevant: boolean; matchedKeywords: number; totalKeywords: number } => {
+    const normalizedScript = script.toLowerCase();
+    // Extract meaningful keywords from topic (ignore common words)
+    const stopWords = new Set(['how', 'to', 'the', 'a', 'an', 'in', 'on', 'for', 'of', 'and', 'or', 'is', 'are', 'be', 'with', 'from', 'your', 'you', 'i', 'my', 'at', 'by']);
+    const topicKeywords = topic.toLowerCase()
+      .split(/\s+/)
+      .filter(word => word.length > 2 && !stopWords.has(word))
+      .map(word => word.replace(/[^a-z]/g, ''));
+    
+    // Check how many topic keywords appear in the script
+    const matchedKeywords = topicKeywords.filter(keyword => 
+      keyword.length > 0 && normalizedScript.includes(keyword)
+    ).length;
+    
+    // At least 50% of topic keywords should appear in the script
+    const relevanceThreshold = 0.5;
+    const relevant = topicKeywords.length === 0 || (matchedKeywords / topicKeywords.length) >= relevanceThreshold;
+    
+    return { relevant, matchedKeywords, totalKeywords: topicKeywords.length };
+  };
 
   try {
     let scriptContent = "";
@@ -802,15 +829,17 @@ ${videoType.id !== "talking_head" ? `Remember to use the ${videoType.name} forma
     let ctaValid = false;
     let hasFluff = true;
     let actionabilityCheck = { actionable: false, reasons: ["Not checked yet"] };
+    let topicRelevance = { relevant: false, matchedKeywords: 0, totalKeywords: 1 };
     
     // Retry loop for quality validation
-    while (attempts < maxAttempts && (gradeLevel > 5 || !ctaValid || hasFluff || !actionabilityCheck.actionable)) {
+    while (attempts < maxAttempts && (gradeLevel > 5 || !ctaValid || hasFluff || !actionabilityCheck.actionable || !topicRelevance.relevant)) {
       attempts++;
       const temperature = attempts === 1 ? 0.8 : 0.6; // Lower temperature on retries
       
       // Build specific retry hints based on what failed
       let retryHints: string[] = [];
       if (attempts > 1) {
+        if (!topicRelevance.relevant) retryHints.push(`STAY ON TOPIC! Your script must be about "${params.topic}". Every sentence must relate to this topic. You only matched ${topicRelevance.matchedKeywords}/${topicRelevance.totalKeywords} topic keywords.`);
         if (gradeLevel > 5) retryHints.push('USE SIMPLER WORDS AND SHORTER SENTENCES.');
         if (!ctaValid) retryHints.push('USE THE EXACT CTA PROVIDED - COPY IT WORD FOR WORD.');
         if (hasFluff) retryHints.push('REMOVE ALL FLUFFY PHRASES. Get straight to the point. No "In today\'s world" or "The truth is".');
@@ -838,8 +867,9 @@ ${videoType.id !== "talking_head" ? `Remember to use the ${videoType.name} forma
       ctaValid = ctaIsPresent(scriptContent, finalCta);
       hasFluff = containsFluff(scriptContent);
       actionabilityCheck = isActionable(scriptContent);
+      topicRelevance = isTopicRelevant(scriptContent, params.topic || "");
       
-      console.log(`Script generation attempt ${attempts}: grade=${gradeLevel.toFixed(1)}, ctaValid=${ctaValid}, hasFluff=${hasFluff}, actionable=${actionabilityCheck.actionable}`);
+      console.log(`Script generation attempt ${attempts}: grade=${gradeLevel.toFixed(1)}, ctaValid=${ctaValid}, hasFluff=${hasFluff}, actionable=${actionabilityCheck.actionable}, topicRelevant=${topicRelevance.relevant} (${topicRelevance.matchedKeywords}/${topicRelevance.totalKeywords})`);
     }
     
     // If we still failed validation after max attempts, log warning but continue
@@ -854,6 +884,9 @@ ${videoType.id !== "talking_head" ? `Remember to use the ${videoType.name} forma
     }
     if (!actionabilityCheck.actionable) {
       console.warn(`Script actionability issues: ${actionabilityCheck.reasons.join(', ')}`);
+    }
+    if (!topicRelevance.relevant) {
+      console.warn(`Script topic relevance failed: only ${topicRelevance.matchedKeywords}/${topicRelevance.totalKeywords} keywords matched for topic "${params.topic}"`);
     }
     
     const words = scriptContent.split(/\s+/).filter(Boolean);
