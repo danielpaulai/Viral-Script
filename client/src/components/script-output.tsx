@@ -359,7 +359,7 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
             <BookOpen className="w-4 h-4 text-blue-400" />
             <h3 className="text-sm font-medium text-white">Research Findings</h3>
           </div>
-          <div className="text-sm text-muted-foreground whitespace-pre-wrap">
+          <div className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">
             {script.research}
           </div>
         </div>
@@ -605,7 +605,7 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
                         <Copy className="w-3 h-3" />
                       </Button>
                     </div>
-                    <p className="font-mono text-sm text-white/90">{hookLine}</p>
+                    <p className="font-mono text-sm text-white/90 leading-relaxed">{hookLine}</p>
                   </div>
 
                   {/* Body Section */}
@@ -622,7 +622,7 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
                         <Copy className="w-3 h-3" />
                       </Button>
                     </div>
-                    <p className="font-mono text-sm text-white/90 whitespace-pre-wrap">{bodyLines}</p>
+                    <p className="font-mono text-sm text-white/90 whitespace-pre-wrap leading-relaxed">{bodyLines}</p>
                   </div>
 
                   {/* CTA Section */}
@@ -639,7 +639,7 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
                         <Copy className="w-3 h-3" />
                       </Button>
                     </div>
-                    <p className="font-mono text-sm text-white/90">{ctaLine}</p>
+                    <p className="font-mono text-sm text-white/90 leading-relaxed">{ctaLine}</p>
                   </div>
                 </>
               );
@@ -666,7 +666,7 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
                         </div>
                         <Badge variant="outline" className="text-xs border-white/20">{scene.energy}</Badge>
                       </div>
-                      <p className="text-sm text-white/80 mb-2 line-clamp-2">{scene.lines}</p>
+                      <p className="text-sm text-white/80 mb-2 line-clamp-2 leading-relaxed">{scene.lines}</p>
                       <div className="flex items-center gap-1 text-xs text-muted-foreground">
                         <Camera className="w-3 h-3" />
                         <span>{scene.camera}</span>
