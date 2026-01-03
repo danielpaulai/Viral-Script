@@ -385,7 +385,7 @@ function extractTacticsAndTools(text: string): { tactics: string[], tools: strin
     }
   }
   
-  return { tactics: [...new Set(tactics)], tools: [...new Set(tools)] };
+  return { tactics: Array.from(new Set(tactics)), tools: Array.from(new Set(tools)) };
 }
 
 // Research top creators for a specific topic

@@ -465,6 +465,27 @@ export interface ScriptParameters {
   videoType?: string;
   creatorStyle?: string;
   referenceScript?: string;
+  contentSkeleton?: {
+    topicSummary: string;
+    targetAudience: string;
+    uniqueAngle: string;
+    sections: Array<{
+      id: string;
+      title: string;
+      objective: string;
+      keyMoments: string[];
+      suggestedDuration: string;
+    }>;
+    researchFacts: Array<{
+      id: string;
+      fact: string;
+      source?: string;
+      credibility: "high" | "medium" | "low";
+      isUsed: boolean;
+    }>;
+    suggestedHooks: string[];
+    isLocked: boolean;
+  };
 }
 
 // Scene breakdown for production

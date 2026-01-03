@@ -899,15 +899,24 @@ ${videoType.id !== "talking_head" ? `Remember to use the ${videoType.name} forma
     let actionabilityCheck = { actionable: false, reasons: ["Not checked yet"] };
     let topicRelevance = { relevant: false, matchedKeywords: 0, totalKeywords: 1 };
     let specificityCheck = { specific: false, numberCount: 0, genericWords: [] as string[] };
+    let wordCountValid = false;
+    let currentWordCount = 0;
     
     // Retry loop for quality validation
-    while (attempts < maxAttempts && (gradeLevel > 5 || !ctaValid || hasFluff || !actionabilityCheck.actionable || !topicRelevance.relevant || !specificityCheck.specific)) {
+    while (attempts < maxAttempts && (gradeLevel > 5 || !ctaValid || hasFluff || !actionabilityCheck.actionable || !topicRelevance.relevant || !specificityCheck.specific || !wordCountValid)) {
       attempts++;
       const temperature = attempts === 1 ? 0.8 : 0.6; // Lower temperature on retries
       
       // Build specific retry hints based on what failed
       let retryHints: string[] = [];
       if (attempts > 1) {
+        if (!wordCountValid) {
+          if (currentWordCount < targetWords.min) {
+            retryHints.push(`SCRIPT IS TOO SHORT! You wrote ${currentWordCount} words but need ${targetWords.min}-${targetWords.max} words for a ${params.duration}-second video. ADD MORE CONTENT.`);
+          } else if (currentWordCount > targetWords.max) {
+            retryHints.push(`SCRIPT IS TOO LONG! You wrote ${currentWordCount} words but need only ${targetWords.min}-${targetWords.max} words for a ${params.duration}-second video. CUT IT DOWN.`);
+          }
+        }
         if (!topicRelevance.relevant) retryHints.push(`STAY ON TOPIC! Your script must be about "${params.topic}". Every sentence must relate to this topic. You only matched ${topicRelevance.matchedKeywords}/${topicRelevance.totalKeywords} topic keywords.`);
         if (!specificityCheck.specific) {
           const issues: string[] = [];
@@ -945,10 +954,18 @@ ${videoType.id !== "talking_head" ? `Remember to use the ${videoType.name} forma
       topicRelevance = isTopicRelevant(scriptContent, params.topic || "");
       specificityCheck = hasSpecificData(scriptContent);
       
-      console.log(`Script generation attempt ${attempts}: grade=${gradeLevel.toFixed(1)}, ctaValid=${ctaValid}, hasFluff=${hasFluff}, actionable=${actionabilityCheck.actionable}, topicRelevant=${topicRelevance.relevant} (${topicRelevance.matchedKeywords}/${topicRelevance.totalKeywords}), specific=${specificityCheck.specific} (${specificityCheck.numberCount} numbers, ${specificityCheck.genericWords.length} generic words)`);
+      // Word count validation
+      const scriptWords = scriptContent.split(/\s+/).filter(Boolean);
+      currentWordCount = scriptWords.length;
+      wordCountValid = currentWordCount >= targetWords.min && currentWordCount <= targetWords.max;
+      
+      console.log(`Script generation attempt ${attempts}: words=${currentWordCount} (target ${targetWords.min}-${targetWords.max}), grade=${gradeLevel.toFixed(1)}, ctaValid=${ctaValid}, hasFluff=${hasFluff}, actionable=${actionabilityCheck.actionable}, topicRelevant=${topicRelevance.relevant} (${topicRelevance.matchedKeywords}/${topicRelevance.totalKeywords}), specific=${specificityCheck.specific} (${specificityCheck.numberCount} numbers, ${specificityCheck.genericWords.length} generic words)`);
     }
     
     // If we still failed validation after max attempts, log warning but continue
+    if (!wordCountValid) {
+      console.warn(`Word count validation failed: ${currentWordCount} words (target ${targetWords.min}-${targetWords.max}) after ${maxAttempts} attempts`);
+    }
     if (gradeLevel > 5) {
       console.warn(`Script grade level ${gradeLevel.toFixed(1)} exceeds target (max 5) after ${maxAttempts} attempts`);
     }
@@ -968,8 +985,7 @@ ${videoType.id !== "talking_head" ? `Remember to use the ${videoType.name} forma
       console.warn(`Script specificity failed: ${specificityCheck.numberCount} numbers found (need 2+), generic words: ${specificityCheck.genericWords.join(', ')}`);
     }
     
-    const words = scriptContent.split(/\s+/).filter(Boolean);
-    const wordCount = words.length;
+    const wordCount = currentWordCount;
 
     // Enhanced production notes with music resources
     const musicResources = [
