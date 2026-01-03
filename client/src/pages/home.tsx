@@ -49,6 +49,9 @@ import {
   funnelStages,
   type ScriptParameters,
   type GeneratedScript,
+  type ContentSkeleton,
+  type ContentSection,
+  type ResearchFact,
 } from "@shared/schema";
 import { ScriptOutput } from "@/components/script-output";
 import { 
@@ -86,6 +89,14 @@ import {
   Dumbbell,
   Users,
   Star,
+  Lock,
+  Unlock,
+  Plus,
+  X,
+  Check,
+  Edit3,
+  Trash2,
+  Loader2,
 } from "lucide-react";
 
 const presetIcons: Record<string, typeof Zap> = {
@@ -176,6 +187,8 @@ export default function Home() {
   const [expandedBrief, setExpandedBrief] = useState<ExpandedBrief | null>(null);
   const [showBriefEditor, setShowBriefEditor] = useState(false);
   const [competitorInsights, setCompetitorInsights] = useState<CompetitorInsights | null>(null);
+  const [contentSkeleton, setContentSkeleton] = useState<ContentSkeleton | null>(null);
+  const [isSkeletonLocked, setIsSkeletonLocked] = useState(false);
 
   const [formData, setFormData] = useState<ScriptParameters>({
     topic: "",
@@ -274,6 +287,87 @@ export default function Home() {
       });
     },
   });
+
+  // Content Skeleton generation for enhanced Deep Research mode
+  const skeletonMutation = useMutation({
+    mutationFn: async ({ topic, targetAudience, includeCompetitorResearch }: { topic: string; targetAudience?: string; includeCompetitorResearch?: boolean }) => {
+      const res = await apiRequest("POST", "/api/scripts/generate-skeleton", { topic, targetAudience, includeCompetitorResearch });
+      return res.json();
+    },
+    onSuccess: (data: { skeleton: ContentSkeleton; originalTopic: string }) => {
+      setContentSkeleton(data.skeleton);
+      setIsSkeletonLocked(false);
+      toast({
+        title: "Outline Generated",
+        description: "Review and edit your content skeleton below.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to generate outline. Try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Update a section in the skeleton
+  const updateSkeletonSection = (sectionId: string, updates: Partial<ContentSection>) => {
+    if (!contentSkeleton) return;
+    setContentSkeleton({
+      ...contentSkeleton,
+      sections: contentSkeleton.sections.map(s => 
+        s.id === sectionId ? { ...s, ...updates } : s
+      ),
+    });
+  };
+
+  // Toggle a fact's usage status
+  const toggleFactUsed = (factId: string) => {
+    if (!contentSkeleton) return;
+    setContentSkeleton({
+      ...contentSkeleton,
+      researchFacts: contentSkeleton.researchFacts.map(f =>
+        f.id === factId ? { ...f, isUsed: !f.isUsed } : f
+      ),
+    });
+  };
+
+  // Add a key moment to a section
+  const addKeyMoment = (sectionId: string) => {
+    if (!contentSkeleton) return;
+    setContentSkeleton({
+      ...contentSkeleton,
+      sections: contentSkeleton.sections.map(s => 
+        s.id === sectionId ? { ...s, keyMoments: [...s.keyMoments, "New key point..."] } : s
+      ),
+    });
+  };
+
+  // Remove a key moment from a section
+  const removeKeyMoment = (sectionId: string, momentIndex: number) => {
+    if (!contentSkeleton) return;
+    setContentSkeleton({
+      ...contentSkeleton,
+      sections: contentSkeleton.sections.map(s => 
+        s.id === sectionId ? { ...s, keyMoments: s.keyMoments.filter((_, i) => i !== momentIndex) } : s
+      ),
+    });
+  };
+
+  // Update a key moment
+  const updateKeyMoment = (sectionId: string, momentIndex: number, value: string) => {
+    if (!contentSkeleton) return;
+    setContentSkeleton({
+      ...contentSkeleton,
+      sections: contentSkeleton.sections.map(s => 
+        s.id === sectionId ? { 
+          ...s, 
+          keyMoments: s.keyMoments.map((m, i) => i === momentIndex ? value : m) 
+        } : s
+      ),
+    });
+  };
 
   const handlePresetClick = (presetId: string) => {
     const preset = quickPresets.find((p) => p.id === presetId);
@@ -444,8 +538,12 @@ export default function Home() {
             value={formData.topic}
             onChange={(e) => {
               setFormData((prev) => ({ ...prev, topic: e.target.value }));
-              // Clear expanded brief when topic changes
+              // Clear research content when topic changes
               if (expandedBrief) setExpandedBrief(null);
+              if (contentSkeleton) {
+                setContentSkeleton(null);
+                setIsSkeletonLocked(false);
+              }
             }}
             placeholder="e.g., Why most people fail at content creation..."
             className="bg-white/5 border-white/10 min-h-[80px] text-base"
@@ -472,6 +570,8 @@ export default function Home() {
                   setExpandedBrief(null);
                   setShowBriefEditor(false);
                   setCompetitorInsights(null);
+                  setContentSkeleton(null);
+                  setIsSkeletonLocked(false);
                 }
               }}
               data-testid="switch-deep-research"
@@ -485,7 +585,7 @@ export default function Home() {
                   <Globe className="w-4 h-4 text-blue-400" />
                   <div>
                     <p className="text-xs font-medium text-white">Competitor Research</p>
-                    <p className="text-[10px] text-muted-foreground">Scrape top TikTok posts for this topic</p>
+                    <p className="text-[10px] text-muted-foreground">Analyze top TikTok posts for this topic</p>
                   </div>
                 </div>
                 <Switch
@@ -495,27 +595,26 @@ export default function Home() {
                 />
               </div>
               
-              {formData.topic.trim().length >= 5 && !expandedBrief && (
+              {formData.topic.trim().length >= 5 && !contentSkeleton && (
                 <Button
-                  onClick={() => expandTopicMutation.mutate({ 
+                  onClick={() => skeletonMutation.mutate({ 
                     topic: formData.topic, 
                     targetAudience: formData.targetAudience,
                     includeCompetitorResearch,
                   })}
-                  disabled={expandTopicMutation.isPending}
-                  variant="outline"
+                  disabled={skeletonMutation.isPending}
                   className="w-full"
-                  data-testid="button-expand-idea"
+                  data-testid="button-generate-outline"
                 >
-                  {expandTopicMutation.isPending ? (
+                  {skeletonMutation.isPending ? (
                     <>
-                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
-                      {includeCompetitorResearch ? "Researching competitors..." : "Expanding your idea..."}
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      {includeCompetitorResearch ? "Researching & building outline..." : "Building content outline..."}
                     </>
                   ) : (
                     <>
-                      <Lightbulb className="w-4 h-4 mr-2" />
-                      {includeCompetitorResearch ? "Research & Expand" : "Expand My Idea"}
+                      <FileText className="w-4 h-4 mr-2" />
+                      Generate Content Outline
                     </>
                   )}
                 </Button>
@@ -523,6 +622,239 @@ export default function Home() {
             </div>
           )}
         </div>
+
+        {contentSkeleton && (
+          <div className="mb-4 p-4 rounded-lg bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/30">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <FileText className="w-5 h-5 text-primary" />
+                <span className="text-sm font-bold text-primary uppercase tracking-wider">Content Skeleton</span>
+                {isSkeletonLocked && (
+                  <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
+                    <Lock className="w-3 h-3 mr-1" />
+                    Locked
+                  </Badge>
+                )}
+              </div>
+              <div className="flex items-center gap-2">
+                {!isSkeletonLocked && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      setContentSkeleton(null);
+                      setIsSkeletonLocked(false);
+                    }}
+                    className="text-xs"
+                  >
+                    <RotateCcw className="w-3 h-3 mr-1" />
+                    Reset
+                  </Button>
+                )}
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="p-3 rounded-md bg-white/5 border border-white/10">
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Topic Summary</p>
+                  {isSkeletonLocked ? (
+                    <p className="text-sm text-white">{contentSkeleton.topicSummary}</p>
+                  ) : (
+                    <Textarea
+                      value={contentSkeleton.topicSummary}
+                      onChange={(e) => setContentSkeleton({ ...contentSkeleton, topicSummary: e.target.value })}
+                      className="text-sm bg-transparent border-0 p-0 min-h-[60px] resize-none focus-visible:ring-0"
+                    />
+                  )}
+                </div>
+                <div className="p-3 rounded-md bg-white/5 border border-white/10">
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Unique Angle</p>
+                  {isSkeletonLocked ? (
+                    <p className="text-sm text-white">{contentSkeleton.uniqueAngle}</p>
+                  ) : (
+                    <Textarea
+                      value={contentSkeleton.uniqueAngle}
+                      onChange={(e) => setContentSkeleton({ ...contentSkeleton, uniqueAngle: e.target.value })}
+                      className="text-sm bg-transparent border-0 p-0 min-h-[60px] resize-none focus-visible:ring-0"
+                    />
+                  )}
+                </div>
+              </div>
+
+              {contentSkeleton.researchFacts.length > 0 && (
+                <div>
+                  <p className="text-xs font-semibold text-primary uppercase tracking-wider mb-2">Research Facts</p>
+                  <div className="grid gap-2">
+                    {contentSkeleton.researchFacts.map((fact) => (
+                      <div
+                        key={fact.id}
+                        className={`p-2 rounded-md border transition-all ${
+                          fact.isUsed
+                            ? "bg-primary/10 border-primary/30"
+                            : "bg-white/5 border-white/10 opacity-50"
+                        }`}
+                      >
+                        <div className="flex items-start gap-2">
+                          {!isSkeletonLocked && (
+                            <button
+                              onClick={() => toggleFactUsed(fact.id)}
+                              className={`mt-0.5 w-4 h-4 rounded border flex items-center justify-center ${
+                                fact.isUsed ? "bg-primary border-primary" : "border-white/30"
+                              }`}
+                            >
+                              {fact.isUsed && <Check className="w-3 h-3 text-white" />}
+                            </button>
+                          )}
+                          <div className="flex-1">
+                            <p className="text-sm text-white">{fact.fact}</p>
+                            <div className="flex items-center gap-2 mt-1">
+                              <Badge 
+                                variant="outline" 
+                                className={`text-[10px] ${
+                                  fact.credibility === "high" ? "border-green-500/50 text-green-400" :
+                                  fact.credibility === "medium" ? "border-yellow-500/50 text-yellow-400" :
+                                  "border-red-500/50 text-red-400"
+                                }`}
+                              >
+                                {fact.credibility}
+                              </Badge>
+                              {fact.source && (
+                                <span className="text-[10px] text-muted-foreground">{fact.source}</span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div>
+                <p className="text-xs font-semibold text-primary uppercase tracking-wider mb-2">Video Sections</p>
+                <div className="space-y-3">
+                  {contentSkeleton.sections.map((section, sectionIndex) => (
+                    <div
+                      key={section.id}
+                      className="p-3 rounded-md bg-white/5 border border-white/10"
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <span className="w-6 h-6 rounded-full bg-primary/20 text-primary text-xs font-bold flex items-center justify-center">
+                            {sectionIndex + 1}
+                          </span>
+                          {isSkeletonLocked ? (
+                            <span className="font-medium text-sm text-white">{section.title}</span>
+                          ) : (
+                            <Input
+                              value={section.title}
+                              onChange={(e) => updateSkeletonSection(section.id, { title: e.target.value })}
+                              className="h-7 text-sm font-medium bg-transparent border-0 p-0 focus-visible:ring-0"
+                            />
+                          )}
+                        </div>
+                        <span className="text-[10px] text-muted-foreground font-mono">{section.suggestedDuration}</span>
+                      </div>
+                      
+                      <p className="text-xs text-muted-foreground mb-2">{section.objective}</p>
+                      
+                      <div className="space-y-1.5">
+                        {section.keyMoments.map((moment, momentIndex) => (
+                          <div key={momentIndex} className="flex items-center gap-2">
+                            <span className="text-xs text-muted-foreground">-</span>
+                            {isSkeletonLocked ? (
+                              <span className="text-xs text-white/80">{moment}</span>
+                            ) : (
+                              <>
+                                <Input
+                                  value={moment}
+                                  onChange={(e) => updateKeyMoment(section.id, momentIndex, e.target.value)}
+                                  className="flex-1 h-6 text-xs bg-transparent border-0 p-0 focus-visible:ring-0 text-white/80"
+                                />
+                                <button
+                                  onClick={() => removeKeyMoment(section.id, momentIndex)}
+                                  className="text-red-400/70 hover:text-red-400"
+                                >
+                                  <X className="w-3 h-3" />
+                                </button>
+                              </>
+                            )}
+                          </div>
+                        ))}
+                        {!isSkeletonLocked && (
+                          <button
+                            onClick={() => addKeyMoment(section.id)}
+                            className="flex items-center gap-1 text-xs text-primary/70 hover:text-primary mt-1"
+                          >
+                            <Plus className="w-3 h-3" />
+                            Add point
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {contentSkeleton.suggestedHooks.length > 0 && (
+                <div>
+                  <p className="text-xs font-semibold text-primary uppercase tracking-wider mb-2">Suggested Hooks</p>
+                  <div className="space-y-2">
+                    {contentSkeleton.suggestedHooks.map((hook, i) => (
+                      <div key={i} className="p-2 rounded bg-white/5 border border-white/10">
+                        <p className="text-xs text-white/80 italic">"{hook}"</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="pt-3 border-t border-primary/20">
+                {!isSkeletonLocked ? (
+                  <Button
+                    onClick={() => setIsSkeletonLocked(true)}
+                    className="w-full"
+                    data-testid="button-lock-skeleton"
+                  >
+                    <Lock className="w-4 h-4 mr-2" />
+                    Lock In & Continue to Script Options
+                  </Button>
+                ) : (
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => setIsSkeletonLocked(false)}
+                      className="flex-1"
+                      data-testid="button-unlock-skeleton"
+                    >
+                      <Unlock className="w-4 h-4 mr-2" />
+                      Unlock & Edit
+                    </Button>
+                    <Button
+                      onClick={handleGenerate}
+                      disabled={generateMutation.isPending}
+                      className="flex-1"
+                      data-testid="button-generate-from-skeleton"
+                    >
+                      {generateMutation.isPending ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Generating...
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="w-4 h-4 mr-2" />
+                          Generate Script
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
 
         {expandedBrief && showBriefEditor && (
           <div className="mb-4 p-4 rounded-md bg-primary/5 border border-primary/20">
