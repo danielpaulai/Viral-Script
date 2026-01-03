@@ -401,7 +401,17 @@ export default function Home() {
       });
       return;
     }
-    generateMutation.mutate({ ...formData, deepResearch, useKnowledgeBase });
+    // Pass skeleton data when locked
+    const skeletonData = isSkeletonLocked && contentSkeleton ? {
+      contentSkeleton: {
+        topicSummary: contentSkeleton.topicSummary,
+        uniqueAngle: contentSkeleton.uniqueAngle,
+        sections: contentSkeleton.sections,
+        researchFacts: contentSkeleton.researchFacts.filter(f => f.isUsed),
+        suggestedHooks: contentSkeleton.suggestedHooks,
+      }
+    } : {};
+    generateMutation.mutate({ ...formData, deepResearch, useKnowledgeBase, ...skeletonData });
   };
 
   const currentHook = useMemo(() => {

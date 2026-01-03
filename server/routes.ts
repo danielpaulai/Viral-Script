@@ -757,12 +757,43 @@ Do NOT include hashtags unless specified. Separate each line with a blank line f
 ${creatorStyleInstructions}
 ${referenceInstructions}`;
 
+  // Build skeleton context if provided
+  let skeletonContext = "";
+  if (params.contentSkeleton) {
+    const skeleton = params.contentSkeleton;
+    skeletonContext = `
+=== LOCKED CONTENT SKELETON - FOLLOW THIS STRUCTURE EXACTLY ===
+Topic Summary: ${skeleton.topicSummary}
+Unique Angle: ${skeleton.uniqueAngle}
+
+SECTIONS TO COVER (in this order):
+${skeleton.sections.map((s: any, i: number) => `
+${i + 1}. ${s.title} (${s.suggestedDuration})
+   Objective: ${s.objective}
+   Key Moments:
+${s.keyMoments.map((m: string) => `   - ${m}`).join('\n')}
+`).join('')}
+
+${skeleton.researchFacts && skeleton.researchFacts.length > 0 ? `
+RESEARCH FACTS TO INCLUDE:
+${skeleton.researchFacts.map((f: any) => `- ${f.fact}${f.source ? ` (${f.source})` : ''}`).join('\n')}
+` : ''}
+
+${skeleton.suggestedHooks && skeleton.suggestedHooks.length > 0 ? `
+SUGGESTED HOOK ANGLES:
+${skeleton.suggestedHooks.map((h: string) => `- "${h}"`).join('\n')}
+` : ''}
+=== END CONTENT SKELETON ===
+`;
+  }
+
   const userPrompt = `Write a ${params.duration}-second video script (aim for ${targetWords.min}-${targetWords.max} words).
 
 ${knowledgeBaseInstructions}
 === YOUR TOPIC - STAY 100% ON THIS ===
 ${params.topic}
 === EVERY SENTENCE MUST BE ABOUT THIS EXACT TOPIC ===
+${skeletonContext}
 
 VIDEO TYPE: ${videoType.name} - ${videoType.description}
 ${creatorStyle.id !== "default" ? `CREATOR STYLE: ${creatorStyle.name} - ${creatorStyle.description}` : ""}
