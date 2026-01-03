@@ -298,6 +298,248 @@ function formatNumber(num: number): string {
   return num.toString();
 }
 
+// Research growing creators for a topic - find real examples with growth metrics
+export interface CreatorGrowthData {
+  username: string;
+  platform: "tiktok" | "instagram";
+  contentSample: string;
+  views: number;
+  likes: number;
+  engagementRate: number;
+  tacticsUsed: string[];
+  toolsMentioned: string[];
+}
+
+export interface TopicResearchResult {
+  growingCreators: CreatorGrowthData[];
+  workingStrategies: string[];
+  toolsAndAutomations: string[];
+  trendingAngles: string[];
+  avgEngagement: number;
+  researchTimestamp: string;
+}
+
+// Extract tactics and tools from content
+function extractTacticsAndTools(text: string): { tactics: string[], tools: string[] } {
+  const tactics: string[] = [];
+  const tools: string[] = [];
+  
+  const lowerText = text.toLowerCase();
+  
+  // Common automation/tools
+  const toolPatterns = [
+    { pattern: /manychat|many chat/gi, tool: "ManyChat" },
+    { pattern: /dm automation/gi, tool: "DM Automation" },
+    { pattern: /chatgpt|chat gpt/gi, tool: "ChatGPT" },
+    { pattern: /canva/gi, tool: "Canva" },
+    { pattern: /capcut|cap cut/gi, tool: "CapCut" },
+    { pattern: /notion/gi, tool: "Notion" },
+    { pattern: /calendly/gi, tool: "Calendly" },
+    { pattern: /stan store|stan\.store/gi, tool: "Stan Store" },
+    { pattern: /linktree|link tree/gi, tool: "Linktree" },
+    { pattern: /beacons/gi, tool: "Beacons" },
+    { pattern: /gumroad/gi, tool: "Gumroad" },
+    { pattern: /kajabi/gi, tool: "Kajabi" },
+    { pattern: /teachable/gi, tool: "Teachable" },
+    { pattern: /convertkit/gi, tool: "ConvertKit" },
+    { pattern: /mailchimp/gi, tool: "Mailchimp" },
+    { pattern: /substack/gi, tool: "Substack" },
+    { pattern: /later/gi, tool: "Later (Scheduling)" },
+    { pattern: /buffer/gi, tool: "Buffer" },
+    { pattern: /hootsuite/gi, tool: "Hootsuite" },
+    { pattern: /opus clip/gi, tool: "Opus Clip" },
+    { pattern: /descript/gi, tool: "Descript" },
+    { pattern: /riverside/gi, tool: "Riverside.fm" },
+  ];
+  
+  // Common tactics/strategies
+  const tacticPatterns = [
+    { pattern: /hook.{0,10}(first|opening|3 sec)/gi, tactic: "Strong hook in first 3 seconds" },
+    { pattern: /carousel/gi, tactic: "Carousel posts" },
+    { pattern: /collab|collaboration/gi, tactic: "Creator collaborations" },
+    { pattern: /duet|stitch/gi, tactic: "Duets/Stitches with trending content" },
+    { pattern: /trending (sound|audio)/gi, tactic: "Using trending sounds" },
+    { pattern: /comment (back|reply|response)/gi, tactic: "Replying to comments" },
+    { pattern: /post.{0,10}(daily|every day|3x|twice)/gi, tactic: "Consistent posting schedule" },
+    { pattern: /dm.{0,10}(free|guide|resource)/gi, tactic: "DM for freebie strategy" },
+    { pattern: /lead magnet/gi, tactic: "Lead magnet funnel" },
+    { pattern: /story.{0,10}(engagement|poll|question)/gi, tactic: "Story engagement tactics" },
+    { pattern: /live.{0,10}(stream|weekly|daily)/gi, tactic: "Regular live streams" },
+    { pattern: /series|episode/gi, tactic: "Content series format" },
+    { pattern: /(3|5|7).{0,10}steps/gi, tactic: "Step-by-step breakdown format" },
+    { pattern: /behind the scenes|bts/gi, tactic: "Behind-the-scenes content" },
+    { pattern: /faceless/gi, tactic: "Faceless content strategy" },
+    { pattern: /repurpos/gi, tactic: "Content repurposing" },
+    { pattern: /batch.{0,10}(content|create|record)/gi, tactic: "Batch content creation" },
+  ];
+  
+  for (const { pattern, tool } of toolPatterns) {
+    if (pattern.test(lowerText)) {
+      tools.push(tool);
+    }
+  }
+  
+  for (const { pattern, tactic } of tacticPatterns) {
+    if (pattern.test(lowerText)) {
+      tactics.push(tactic);
+    }
+  }
+  
+  return { tactics: [...new Set(tactics)], tools: [...new Set(tools)] };
+}
+
+// Research top creators for a specific topic
+export async function researchGrowingCreators(topic: string, limit: number = 20): Promise<TopicResearchResult> {
+  if (!APIFY_TOKEN) {
+    throw new Error("APIFY_API_TOKEN is not configured");
+  }
+
+  const client = new ApifyClient({ token: APIFY_TOKEN });
+  
+  // Generate search keywords from topic
+  const keywords = [
+    topic,
+    `${topic} tips`,
+    `${topic} strategy`,
+    `${topic} growth`,
+  ].slice(0, 2);
+  
+  const allPosts: Array<{
+    id: string;
+    text: string;
+    views: number;
+    likes: number;
+    comments: number;
+    shares: number;
+    author: string;
+    engagementRate: number;
+  }> = [];
+  
+  try {
+    for (const keyword of keywords) {
+      const input = {
+        searchQueries: [keyword],
+        resultsPerPage: Math.ceil(limit / keywords.length),
+        shouldDownloadVideos: false,
+        shouldDownloadCovers: false,
+        shouldDownloadSubtitles: false,
+        shouldDownloadSlideshowImages: false,
+      };
+
+      const run = await client.actor("clockworks/free-tiktok-scraper").call(input, {
+        waitSecs: 120,
+      });
+
+      const { items } = await client.dataset(run.defaultDatasetId).listItems();
+
+      const posts = (items as unknown as TikTokSearchResult[])
+        .filter((item) => item.desc && item.stats && item.stats.playCount > 10000)
+        .map((item) => {
+          const views = item.stats?.playCount || 0;
+          const likes = item.stats?.diggCount || 0;
+          const engagementRate = views > 0 ? ((likes + (item.stats?.commentCount || 0)) / views) * 100 : 0;
+          return {
+            id: item.id,
+            text: item.desc || "",
+            views,
+            likes,
+            comments: item.stats?.commentCount || 0,
+            shares: item.stats?.shareCount || 0,
+            author: item.author?.uniqueId || "unknown",
+            engagementRate,
+          };
+        });
+      
+      allPosts.push(...posts);
+    }
+    
+    // Sort by engagement rate and views
+    allPosts.sort((a, b) => (b.views * b.engagementRate) - (a.views * a.engagementRate));
+    
+    // Dedupe by author, keep best post per creator
+    const seenAuthors = new Set<string>();
+    const uniquePosts = allPosts.filter(p => {
+      if (seenAuthors.has(p.author)) return false;
+      seenAuthors.add(p.author);
+      return true;
+    }).slice(0, 15);
+    
+    // Extract growing creators with their tactics
+    const growingCreators: CreatorGrowthData[] = uniquePosts.map(post => {
+      const { tactics, tools } = extractTacticsAndTools(post.text);
+      return {
+        username: post.author,
+        platform: "tiktok" as const,
+        contentSample: post.text.slice(0, 200),
+        views: post.views,
+        likes: post.likes,
+        engagementRate: Math.round(post.engagementRate * 100) / 100,
+        tacticsUsed: tactics,
+        toolsMentioned: tools,
+      };
+    });
+    
+    // Aggregate working strategies and tools
+    const allTactics: string[] = [];
+    const allTools: string[] = [];
+    const trendingAngles: string[] = [];
+    
+    for (const creator of growingCreators) {
+      allTactics.push(...creator.tacticsUsed);
+      allTools.push(...creator.toolsMentioned);
+    }
+    
+    // Get top hooks as trending angles
+    trendingAngles.push(...uniquePosts.slice(0, 8).map(p => {
+      const firstLine = p.text.split(/[\n.!?]/)[0]?.trim();
+      return firstLine?.slice(0, 100) || "";
+    }).filter(Boolean));
+    
+    // Count and sort by frequency
+    const tacticCounts: Record<string, number> = {};
+    for (const t of allTactics) {
+      tacticCounts[t] = (tacticCounts[t] || 0) + 1;
+    }
+    const toolCounts: Record<string, number> = {};
+    for (const t of allTools) {
+      toolCounts[t] = (toolCounts[t] || 0) + 1;
+    }
+    
+    const workingStrategies = Object.entries(tacticCounts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 8)
+      .map(([tactic]) => tactic);
+    
+    const toolsAndAutomations = Object.entries(toolCounts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 6)
+      .map(([tool]) => tool);
+    
+    const avgEngagement = uniquePosts.length > 0
+      ? Math.round(uniquePosts.reduce((sum, p) => sum + p.engagementRate, 0) / uniquePosts.length * 100) / 100
+      : 0;
+    
+    return {
+      growingCreators,
+      workingStrategies,
+      toolsAndAutomations,
+      trendingAngles,
+      avgEngagement,
+      researchTimestamp: new Date().toISOString(),
+    };
+  } catch (error) {
+    console.error("Creator research error:", error);
+    return {
+      growingCreators: [],
+      workingStrategies: [],
+      toolsAndAutomations: [],
+      trendingAngles: [],
+      avgEngagement: 0,
+      researchTimestamp: new Date().toISOString(),
+    };
+  }
+}
+
 export function analyzeCreatorStyle(content: ScrapedContent): {
   hooks: string[];
   phrases: string[];

@@ -1567,82 +1567,112 @@ Create a powerful video brief that will make this topic stand out and go viral.`
         return res.status(400).json({ error: "Topic is required (at least 5 characters)" });
       }
       
-      // Get competitor insights if requested
-      let competitorData: string[] = [];
+      // Research real creators and working strategies
+      let creatorResearch: any = null;
+      let creatorDataForPrompt = "";
+      
       if (includeCompetitorResearch && process.env.APIFY_API_TOKEN) {
         try {
-          const { searchTikTokByKeyword, analyzeCompetitorContent } = await import("./apify");
-          const searchResults = await searchTikTokByKeyword(topic.trim(), 15);
-          if (searchResults.posts.length > 0) {
-            const insights = analyzeCompetitorContent(searchResults.posts);
-            competitorData = [
-              ...insights.topHooks.slice(0, 3).map((h: string) => `Top Hook: "${h}"`),
-              `Avg Views: ${insights.engagementStats.avgViews.toLocaleString()}`,
-              ...insights.commonPatterns.slice(0, 3).map((p: string) => `Pattern: ${p}`),
-            ];
+          const { researchGrowingCreators } = await import("./apify");
+          creatorResearch = await researchGrowingCreators(topic.trim(), 20);
+          
+          if (creatorResearch.growingCreators.length > 0) {
+            const topCreators = creatorResearch.growingCreators.slice(0, 10);
+            creatorDataForPrompt = `
+=== REAL CREATOR RESEARCH DATA (Use these examples) ===
+
+TOP PERFORMING CREATORS ON THIS TOPIC:
+${topCreators.map((c: any, i: number) => `${i + 1}. @${c.username} - ${(c.views / 1000).toFixed(0)}K views, ${c.engagementRate}% engagement
+   Hook: "${c.contentSample.split(/[\n.!?]/)[0]?.slice(0, 80) || 'N/A'}..."
+   ${c.tacticsUsed.length > 0 ? `Tactics: ${c.tacticsUsed.join(', ')}` : ''}
+   ${c.toolsMentioned.length > 0 ? `Tools: ${c.toolsMentioned.join(', ')}` : ''}`).join('\n')}
+
+WORKING STRATEGIES (from top creators):
+${creatorResearch.workingStrategies.length > 0 ? creatorResearch.workingStrategies.map((s: string) => `- ${s}`).join('\n') : '- Analyze what makes their content work'}
+
+TOOLS & AUTOMATIONS BEING USED:
+${creatorResearch.toolsAndAutomations.length > 0 ? creatorResearch.toolsAndAutomations.map((t: string) => `- ${t}`).join('\n') : '- Research common tools in this niche'}
+
+TRENDING HOOK ANGLES:
+${creatorResearch.trendingAngles.slice(0, 5).map((a: string) => `- "${a}"`).join('\n')}
+
+AVG ENGAGEMENT RATE: ${creatorResearch.avgEngagement}%
+=== END RESEARCH DATA ===`;
           }
         } catch (apifyError) {
-          console.error("Competitor research failed:", apifyError);
+          console.error("Creator research failed:", apifyError);
         }
       }
       
-      const systemPrompt = `You are an expert content strategist who creates detailed video outlines.
+      const systemPrompt = `You are an expert viral content strategist. Your job is to create SPECIFIC, DATA-DRIVEN content skeletons that reference REAL creators and working tactics.
 
-Given a topic, create a comprehensive CONTENT SKELETON that helps the creator understand exactly what their video will contain before they write the script.
+${creatorDataForPrompt}
 
-${competitorData.length > 0 ? `COMPETITOR INSIGHTS:\n${competitorData.join('\n')}\n\nUse these to find gaps and unique angles.` : ''}
+CRITICAL RULES:
+1. NEVER use generic stats like "1 billion monthly users" or "X% of people"
+2. ALWAYS reference specific creators (use @username format) from the research
+3. ALWAYS mention specific tools, automations, or tactics that are working NOW
+4. Facts must be ACTIONABLE - "Creator @xyz gained 50K followers using ManyChat automation" NOT "social media is growing"
+5. Every research fact must include a specific creator example OR a specific tactic with numbers
 
 Respond with a JSON object in this EXACT format:
 {
-  "topicSummary": "One clear sentence explaining what this video is about",
-  "targetAudience": "Specific description of who needs this content",
-  "uniqueAngle": "The contrarian or unexpected perspective that makes this stand out",
+  "topicSummary": "One clear sentence about what this video teaches",
+  "targetAudience": "Specific person who needs this (e.g., 'coaches with 1-10K followers wanting to monetize')",
+  "uniqueAngle": "The contrarian/unexpected perspective - what most creators get WRONG",
   "sections": [
     {
       "id": "section_1",
-      "title": "Hook & Problem Setup",
-      "objective": "What this section accomplishes",
-      "keyMoments": ["Specific thing to say/show 1", "Specific thing 2"],
-      "suggestedDuration": "0:00-0:10"
+      "title": "Hook - Pattern Interrupt",
+      "objective": "Stop the scroll with something unexpected",
+      "keyMoments": ["Specific controversial or curiosity-gap statement", "Reference to what's working NOW"],
+      "suggestedDuration": "0:00-0:05"
     },
     {
       "id": "section_2", 
-      "title": "Main Point 1",
-      "objective": "What this section accomplishes",
-      "keyMoments": ["Specific point with data", "Example or story"],
-      "suggestedDuration": "0:10-0:25"
+      "title": "The Problem/Mistake",
+      "objective": "Show what most people do wrong",
+      "keyMoments": ["Common mistake with specific example", "Why this fails (with data)"],
+      "suggestedDuration": "0:05-0:15"
     },
     {
       "id": "section_3",
-      "title": "Main Point 2", 
-      "objective": "What this section accomplishes",
-      "keyMoments": ["Specific point with proof", "Actionable tip"],
-      "suggestedDuration": "0:25-0:40"
+      "title": "The Strategy That Works",
+      "objective": "Reveal the working approach with proof",
+      "keyMoments": ["Specific tactic/tool with creator example", "Step-by-step breakdown", "Expected results"],
+      "suggestedDuration": "0:15-0:35"
     },
     {
       "id": "section_4",
       "title": "Call to Action",
-      "objective": "Drive viewer to next step",
-      "keyMoments": ["Clear CTA", "Reason to act now"],
-      "suggestedDuration": "0:40-0:45"
+      "objective": "Drive immediate action",
+      "keyMoments": ["Clear next step", "Urgency element"],
+      "suggestedDuration": "0:35-0:45"
     }
   ],
   "researchFacts": [
-    {"id": "fact_1", "fact": "Specific stat or finding with number", "source": "Where this came from", "credibility": "high"},
-    {"id": "fact_2", "fact": "Another specific fact", "source": "Source name", "credibility": "medium"},
-    {"id": "fact_3", "fact": "Third fact with data", "source": "Source", "credibility": "high"}
+    {"id": "fact_1", "fact": "@creatorname gained X followers in 30 days using [specific tactic]", "source": "TikTok research", "credibility": "high"},
+    {"id": "fact_2", "fact": "Creators using [tool] see X% higher engagement than those who don't", "source": "Platform data", "credibility": "high"},
+    {"id": "fact_3", "fact": "[Specific tactic] is working NOW - top 10 creators all use it", "source": "Current trends", "credibility": "high"},
+    {"id": "fact_4", "fact": "The #1 mistake: [specific thing] - only X% of creators avoid it", "source": "Content analysis", "credibility": "medium"}
   ],
   "suggestedHooks": [
-    "Opening line option 1 that grabs attention",
-    "Opening line option 2 with curiosity gap",
-    "Opening line option 3 with bold claim"
-  ]
+    "Hook referencing a specific creator's success",
+    "Hook challenging what everyone thinks is true",
+    "Hook with a specific number or timeframe"
+  ],
+  "workingTactics": ["Tactic 1 with tool name", "Tactic 2 with specific approach"],
+  "toolsToMention": ["Tool 1", "Tool 2"]
 }
 
-IMPORTANT: 
-- Each keyMoment must be SPECIFIC and ACTIONABLE, not vague
-- Facts must include actual numbers or data points
-- Sections should flow logically and cover the topic completely`;
+BANNED CONTENT (NEVER include):
+- Generic platform stats (X billion users, X% growth)
+- Vague claims without creator examples
+- "Studies show" without specific source
+- Placeholder facts you made up
+- Generic advice like "post consistently"
+
+IF YOU DON'T HAVE REAL DATA: Be honest and say "Research needed" rather than making up fake stats.`;
 
       const response = await openai.chat.completions.create({
         model: "gpt-4o-mini",
@@ -1650,15 +1680,21 @@ IMPORTANT:
           { role: "system", content: systemPrompt },
           {
             role: "user",
-            content: `Create a detailed content skeleton for this video topic:
+            content: `Create a data-driven content skeleton for this video topic:
 
 TOPIC: ${topic}
 ${targetAudience ? `TARGET AUDIENCE: ${targetAudience}` : ''}
 
-Generate a comprehensive outline with specific facts, sections, and key moments.`
+Requirements:
+1. Include at least 4 research facts with SPECIFIC creator examples or tactics
+2. Each section must have 2-3 specific key moments (not vague)
+3. Suggest hooks that reference real data or creators
+4. List specific tools/automations that are working NOW
+
+DO NOT make up fake statistics. Use the research data provided, or clearly state when more research is needed.`
           }
         ],
-        max_tokens: 1500,
+        max_tokens: 2000,
         temperature: 0.7,
       });
       
@@ -1672,46 +1708,74 @@ Generate a comprehensive outline with specific facts, sections, and key moments.
         
         const skeleton = JSON.parse(cleanedJson);
         
-        // Normalize the response to match our interface
+        // Validate that we have real data, not generic stats
+        const bannedPatterns = [
+          /\d+\s*(billion|million)\s*(users|people|monthly)/i,
+          /studies show/i,
+          /research (shows|indicates)/i,
+          /according to (studies|research)/i,
+        ];
+        
+        // Filter out any generic facts
+        const validFacts = (skeleton.researchFacts || []).filter((f: any) => {
+          const factText = f.fact || "";
+          return !bannedPatterns.some(p => p.test(factText));
+        });
+        
+        // Normalize the response
         const normalizedSkeleton = {
           topicSummary: skeleton.topicSummary || topic,
-          targetAudience: skeleton.targetAudience || targetAudience || "Content consumers interested in this topic",
-          uniqueAngle: skeleton.uniqueAngle || "A fresh perspective on this topic",
+          targetAudience: skeleton.targetAudience || targetAudience || "Creators who want real results",
+          uniqueAngle: skeleton.uniqueAngle || "A contrarian take that challenges common wisdom",
           sections: (skeleton.sections || []).map((s: any, i: number) => ({
             id: s.id || `section_${i + 1}`,
             title: s.title || `Section ${i + 1}`,
-            objective: s.objective || "Cover key points",
-            keyMoments: Array.isArray(s.keyMoments) ? s.keyMoments : [],
+            objective: s.objective || "Deliver value",
+            keyMoments: Array.isArray(s.keyMoments) ? s.keyMoments.filter((m: string) => m && m.length > 5) : [],
             suggestedDuration: s.suggestedDuration || "0:00-0:15",
           })),
-          researchFacts: (skeleton.researchFacts || []).map((f: any, i: number) => ({
+          researchFacts: validFacts.slice(0, 6).map((f: any, i: number) => ({
             id: f.id || `fact_${i + 1}`,
-            fact: f.fact || "Key insight",
-            source: f.source || "Research",
+            fact: f.fact || "Research needed",
+            source: f.source || "Needs verification",
             credibility: f.credibility || "medium",
             isUsed: true,
           })),
-          competitorInsights: competitorData.length > 0 ? competitorData : undefined,
+          competitorInsights: creatorResearch ? {
+            topCreators: creatorResearch.growingCreators.slice(0, 5).map((c: any) => ({
+              username: c.username,
+              views: c.views,
+              engagementRate: c.engagementRate,
+              tactics: c.tacticsUsed,
+              tools: c.toolsMentioned,
+            })),
+            workingStrategies: creatorResearch.workingStrategies,
+            toolsAndAutomations: creatorResearch.toolsAndAutomations,
+          } : undefined,
           suggestedHooks: Array.isArray(skeleton.suggestedHooks) ? skeleton.suggestedHooks : [],
+          workingTactics: skeleton.workingTactics || [],
+          toolsToMention: skeleton.toolsToMention || creatorResearch?.toolsAndAutomations || [],
           isLocked: false,
         };
         
         res.json({ skeleton: normalizedSkeleton, originalTopic: topic });
       } catch (parseError) {
         console.error("Failed to parse skeleton JSON:", parseError);
-        // Return a fallback skeleton
         res.json({
           skeleton: {
             topicSummary: topic,
-            targetAudience: targetAudience || "Your target audience",
-            uniqueAngle: "What makes your take unique",
+            targetAudience: targetAudience || "Your ideal viewer",
+            uniqueAngle: "Research specific creators to find your unique angle",
             sections: [
-              { id: "section_1", title: "Hook", objective: "Grab attention", keyMoments: ["Strong opening line"], suggestedDuration: "0:00-0:05" },
-              { id: "section_2", title: "Main Content", objective: "Deliver value", keyMoments: ["Key point 1", "Key point 2"], suggestedDuration: "0:05-0:40" },
-              { id: "section_3", title: "CTA", objective: "Drive action", keyMoments: ["Clear call to action"], suggestedDuration: "0:40-0:45" },
+              { id: "section_1", title: "Hook", objective: "Stop the scroll", keyMoments: ["Research trending hooks in your niche"], suggestedDuration: "0:00-0:05" },
+              { id: "section_2", title: "Problem", objective: "Show the mistake", keyMoments: ["Find what top creators say people do wrong"], suggestedDuration: "0:05-0:15" },
+              { id: "section_3", title: "Solution", objective: "Reveal the tactic", keyMoments: ["Reference a specific working strategy"], suggestedDuration: "0:15-0:35" },
+              { id: "section_4", title: "CTA", objective: "Drive action", keyMoments: ["Clear next step"], suggestedDuration: "0:35-0:45" },
             ],
-            researchFacts: [],
-            suggestedHooks: ["Try a compelling hook here"],
+            researchFacts: [
+              { id: "fact_1", fact: "Research needed - enable competitor research for real data", source: "Enable Apify", credibility: "low", isUsed: true }
+            ],
+            suggestedHooks: ["Enable competitor research to get real hook examples"],
             isLocked: false,
           },
           originalTopic: topic,
