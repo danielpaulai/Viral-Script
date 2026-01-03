@@ -82,10 +82,13 @@ export function setupAuth(app: Express) {
 
   app.post("/api/register", async (req, res, next) => {
     try {
+      console.log("Registration attempt:", { username: req.body?.username });
+      
       const parsed = authCredentialsSchema.safeParse(req.body);
       
       if (!parsed.success) {
         const errors = parsed.error.errors.map(e => e.message).join(", ");
+        console.log("Registration validation failed:", errors);
         return res.status(400).json({ message: errors });
       }
 
@@ -93,21 +96,29 @@ export function setupAuth(app: Express) {
 
       const existingUser = await storage.getUserByUsername(username);
       if (existingUser) {
+        console.log("Registration failed: username already exists");
         return res.status(400).json({ message: "Username already exists" });
       }
 
+      console.log("Creating new user:", username);
       const user = await storage.createUser({
         username,
         password: await hashPassword(password),
       });
+      console.log("User created successfully:", user.id);
 
       req.login(user, (err) => {
-        if (err) return next(err);
+        if (err) {
+          console.error("Login after registration failed:", err);
+          return next(err);
+        }
         const { password: _, ...safeUser } = user;
+        console.log("Registration complete, user logged in:", safeUser.id);
         res.status(201).json(safeUser);
       });
     } catch (error) {
-      next(error);
+      console.error("Registration error:", error);
+      res.status(500).json({ message: "Registration failed. Please try again." });
     }
   });
 
