@@ -25,6 +25,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Card } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
 import { apiRequest } from "@/lib/queryClient";
@@ -757,37 +759,74 @@ export default function Home() {
         </div>
 
         <div className="mb-4">
-          <Label className="text-xs font-medium mb-2 block uppercase tracking-wider">Hook Strategy (50 Viral Hooks)</Label>
-          <Select
-            value={formData.hook}
-            onValueChange={(value) => setFormData((prev) => ({ ...prev, hook: value }))}
-          >
-            <SelectTrigger className="bg-white/5 border-white/10" data-testid="select-hook">
-              <SelectValue placeholder="Select a viral hook..." />
-            </SelectTrigger>
-            <SelectContent className="max-h-[400px] w-[400px]">
-              {hookCategories.map((category) => (
-                <div key={category.id}>
-                  <div className="px-2 py-2 text-xs font-semibold text-primary border-b border-white/10 bg-white/5">{category.name}</div>
+          <Label className="text-xs font-medium mb-3 block uppercase tracking-wider">Hook Strategy (50 Viral Hooks)</Label>
+          
+          <Tabs defaultValue="personal_experience" className="w-full">
+            <ScrollArea className="w-full">
+              <TabsList className="w-full h-auto flex flex-wrap gap-1 bg-white/5 p-1.5 rounded-lg mb-3">
+                {hookCategories.map((category) => (
+                  <TabsTrigger 
+                    key={category.id} 
+                    value={category.id}
+                    className="text-xs px-3 py-1.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                  >
+                    {category.name}
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+            </ScrollArea>
+            
+            {hookCategories.map((category) => (
+              <TabsContent key={category.id} value={category.id} className="mt-0">
+                <p className="text-xs text-muted-foreground mb-3">{category.description}</p>
+                <div className="grid gap-2 max-h-[280px] overflow-y-auto pr-1">
                   {viralHooks
                     .filter((h) => h.category === category.id)
-                    .map((hook) => (
-                      <SelectItem key={hook.id} value={hook.id} className="py-2">
-                        <div className="flex flex-col gap-0.5">
-                          <span className="font-medium text-sm">{hook.name}</span>
-                          <span className="text-[11px] text-muted-foreground italic">"{hook.example}"</span>
-                        </div>
-                      </SelectItem>
-                    ))}
+                    .map((hook) => {
+                      const isSelected = formData.hook === hook.id;
+                      return (
+                        <button
+                          key={hook.id}
+                          onClick={() => setFormData((prev) => ({ ...prev, hook: hook.id }))}
+                          className={`w-full text-left p-3 rounded-lg transition-all hover-elevate ${
+                            isSelected
+                              ? "bg-primary/20 border-2 border-primary/60"
+                              : "bg-white/5 border border-white/10"
+                          }`}
+                          data-testid={`button-hook-${hook.id}`}
+                        >
+                          <div className="flex items-start justify-between gap-2 mb-1.5">
+                            <span className={`font-medium text-sm ${isSelected ? "text-primary" : "text-white"}`}>
+                              {hook.name}
+                            </span>
+                            {isSelected && (
+                              <Badge variant="outline" className="text-[10px] border-primary/50 text-primary shrink-0">
+                                Selected
+                              </Badge>
+                            )}
+                          </div>
+                          <p className="text-xs text-white/80 italic leading-relaxed mb-1.5">
+                            "{hook.example}"
+                          </p>
+                          <p className="text-[11px] text-muted-foreground leading-relaxed">
+                            {hook.why}
+                          </p>
+                        </button>
+                      );
+                    })}
                 </div>
-              ))}
-            </SelectContent>
-          </Select>
+              </TabsContent>
+            ))}
+          </Tabs>
+
           {currentHook && (
-            <div className="mt-2 p-3 rounded bg-white/5 border border-white/10">
-              <p className="text-[11px] text-muted-foreground mb-1">Template: <span className="text-white/80">"{currentHook.template}"</span></p>
-              <p className="text-[11px] text-white/70 italic">Example: "{currentHook.example}"</p>
-              <p className="text-[10px] text-muted-foreground mt-1.5">Why it works: {currentHook.why}</p>
+            <div className="mt-3 p-3 rounded-lg bg-primary/10 border border-primary/30">
+              <div className="flex items-center gap-2 mb-2">
+                <Zap className="w-4 h-4 text-primary" />
+                <span className="text-sm font-medium text-primary">Your Hook</span>
+              </div>
+              <p className="text-sm text-white/90 italic">"{currentHook.example}"</p>
+              <p className="text-xs text-muted-foreground mt-2">Template: {currentHook.template}</p>
             </div>
           )}
         </div>
