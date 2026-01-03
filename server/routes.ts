@@ -1527,6 +1527,171 @@ Create a powerful video brief that will make this topic stand out and go viral.`
     }
   });
 
+  // Generate Content Skeleton for Deep Research Mode
+  app.post("/api/scripts/generate-skeleton", async (req, res) => {
+    try {
+      const { topic, targetAudience, includeCompetitorResearch = false } = req.body;
+      
+      if (!topic || typeof topic !== 'string' || topic.trim().length < 5) {
+        return res.status(400).json({ error: "Topic is required (at least 5 characters)" });
+      }
+      
+      // Get competitor insights if requested
+      let competitorData: string[] = [];
+      if (includeCompetitorResearch && process.env.APIFY_API_TOKEN) {
+        try {
+          const { searchTikTokByKeyword, analyzeCompetitorContent } = await import("./apify");
+          const searchResults = await searchTikTokByKeyword(topic.trim(), 15);
+          if (searchResults.posts.length > 0) {
+            const insights = analyzeCompetitorContent(searchResults.posts);
+            competitorData = [
+              ...insights.topHooks.slice(0, 3).map((h: string) => `Top Hook: "${h}"`),
+              `Avg Views: ${insights.engagementStats.avgViews.toLocaleString()}`,
+              ...insights.commonPatterns.slice(0, 3).map((p: string) => `Pattern: ${p}`),
+            ];
+          }
+        } catch (apifyError) {
+          console.error("Competitor research failed:", apifyError);
+        }
+      }
+      
+      const systemPrompt = `You are an expert content strategist who creates detailed video outlines.
+
+Given a topic, create a comprehensive CONTENT SKELETON that helps the creator understand exactly what their video will contain before they write the script.
+
+${competitorData.length > 0 ? `COMPETITOR INSIGHTS:\n${competitorData.join('\n')}\n\nUse these to find gaps and unique angles.` : ''}
+
+Respond with a JSON object in this EXACT format:
+{
+  "topicSummary": "One clear sentence explaining what this video is about",
+  "targetAudience": "Specific description of who needs this content",
+  "uniqueAngle": "The contrarian or unexpected perspective that makes this stand out",
+  "sections": [
+    {
+      "id": "section_1",
+      "title": "Hook & Problem Setup",
+      "objective": "What this section accomplishes",
+      "keyMoments": ["Specific thing to say/show 1", "Specific thing 2"],
+      "suggestedDuration": "0:00-0:10"
+    },
+    {
+      "id": "section_2", 
+      "title": "Main Point 1",
+      "objective": "What this section accomplishes",
+      "keyMoments": ["Specific point with data", "Example or story"],
+      "suggestedDuration": "0:10-0:25"
+    },
+    {
+      "id": "section_3",
+      "title": "Main Point 2", 
+      "objective": "What this section accomplishes",
+      "keyMoments": ["Specific point with proof", "Actionable tip"],
+      "suggestedDuration": "0:25-0:40"
+    },
+    {
+      "id": "section_4",
+      "title": "Call to Action",
+      "objective": "Drive viewer to next step",
+      "keyMoments": ["Clear CTA", "Reason to act now"],
+      "suggestedDuration": "0:40-0:45"
+    }
+  ],
+  "researchFacts": [
+    {"id": "fact_1", "fact": "Specific stat or finding with number", "source": "Where this came from", "credibility": "high"},
+    {"id": "fact_2", "fact": "Another specific fact", "source": "Source name", "credibility": "medium"},
+    {"id": "fact_3", "fact": "Third fact with data", "source": "Source", "credibility": "high"}
+  ],
+  "suggestedHooks": [
+    "Opening line option 1 that grabs attention",
+    "Opening line option 2 with curiosity gap",
+    "Opening line option 3 with bold claim"
+  ]
+}
+
+IMPORTANT: 
+- Each keyMoment must be SPECIFIC and ACTIONABLE, not vague
+- Facts must include actual numbers or data points
+- Sections should flow logically and cover the topic completely`;
+
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [
+          { role: "system", content: systemPrompt },
+          {
+            role: "user",
+            content: `Create a detailed content skeleton for this video topic:
+
+TOPIC: ${topic}
+${targetAudience ? `TARGET AUDIENCE: ${targetAudience}` : ''}
+
+Generate a comprehensive outline with specific facts, sections, and key moments.`
+          }
+        ],
+        max_tokens: 1500,
+        temperature: 0.7,
+      });
+      
+      const content = response.choices[0]?.message?.content || "";
+      
+      try {
+        const cleanedJson = content
+          .replace(/```json\s*/gi, "")
+          .replace(/```\s*/g, "")
+          .trim();
+        
+        const skeleton = JSON.parse(cleanedJson);
+        
+        // Normalize the response to match our interface
+        const normalizedSkeleton = {
+          topicSummary: skeleton.topicSummary || topic,
+          targetAudience: skeleton.targetAudience || targetAudience || "Content consumers interested in this topic",
+          uniqueAngle: skeleton.uniqueAngle || "A fresh perspective on this topic",
+          sections: (skeleton.sections || []).map((s: any, i: number) => ({
+            id: s.id || `section_${i + 1}`,
+            title: s.title || `Section ${i + 1}`,
+            objective: s.objective || "Cover key points",
+            keyMoments: Array.isArray(s.keyMoments) ? s.keyMoments : [],
+            suggestedDuration: s.suggestedDuration || "0:00-0:15",
+          })),
+          researchFacts: (skeleton.researchFacts || []).map((f: any, i: number) => ({
+            id: f.id || `fact_${i + 1}`,
+            fact: f.fact || "Key insight",
+            source: f.source || "Research",
+            credibility: f.credibility || "medium",
+            isUsed: true,
+          })),
+          competitorInsights: competitorData.length > 0 ? competitorData : undefined,
+          suggestedHooks: Array.isArray(skeleton.suggestedHooks) ? skeleton.suggestedHooks : [],
+          isLocked: false,
+        };
+        
+        res.json({ skeleton: normalizedSkeleton, originalTopic: topic });
+      } catch (parseError) {
+        console.error("Failed to parse skeleton JSON:", parseError);
+        // Return a fallback skeleton
+        res.json({
+          skeleton: {
+            topicSummary: topic,
+            targetAudience: targetAudience || "Your target audience",
+            uniqueAngle: "What makes your take unique",
+            sections: [
+              { id: "section_1", title: "Hook", objective: "Grab attention", keyMoments: ["Strong opening line"], suggestedDuration: "0:00-0:05" },
+              { id: "section_2", title: "Main Content", objective: "Deliver value", keyMoments: ["Key point 1", "Key point 2"], suggestedDuration: "0:05-0:40" },
+              { id: "section_3", title: "CTA", objective: "Drive action", keyMoments: ["Clear call to action"], suggestedDuration: "0:40-0:45" },
+            ],
+            researchFacts: [],
+            suggestedHooks: ["Try a compelling hook here"],
+            isLocked: false,
+          },
+          originalTopic: topic,
+        });
+      }
+    } catch (error) {
+      console.error("Error generating skeleton:", error);
+      res.status(500).json({ error: "Failed to generate content skeleton" });
+    }
+  });
+
   app.get("/api/scripts", async (req, res) => {
     try {
       const scripts = await storage.getScripts();
