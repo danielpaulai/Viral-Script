@@ -116,9 +116,15 @@ export function setupAuth(app: Express) {
         console.log("Registration complete, user logged in:", safeUser.id);
         res.status(201).json(safeUser);
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Registration error:", error);
-      res.status(500).json({ message: "Registration failed. Please try again." });
+      const errorMessage = error?.message || "Unknown error";
+      const errorCode = error?.code || "";
+      console.error("Registration error details:", { message: errorMessage, code: errorCode, stack: error?.stack });
+      res.status(500).json({ 
+        message: "Registration failed. Please try again.",
+        detail: process.env.NODE_ENV === "development" ? errorMessage : undefined
+      });
     }
   });
 

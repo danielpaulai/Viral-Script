@@ -405,6 +405,7 @@ export default function Home() {
     const skeletonData = isSkeletonLocked && contentSkeleton ? {
       contentSkeleton: {
         topicSummary: contentSkeleton.topicSummary,
+        targetAudience: formData.targetAudience || "",
         uniqueAngle: contentSkeleton.uniqueAngle,
         sections: contentSkeleton.sections.map(s => ({
           id: s.id,
@@ -415,6 +416,7 @@ export default function Home() {
         })),
         researchFacts: contentSkeleton.researchFacts.filter(f => f.isUsed),
         suggestedHooks: contentSkeleton.suggestedHooks,
+        isLocked: true,
       }
     } : {};
     generateMutation.mutate({ ...formData, deepResearch, useKnowledgeBase, ...skeletonData });
