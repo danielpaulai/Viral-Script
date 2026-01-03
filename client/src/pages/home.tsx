@@ -401,12 +401,18 @@ export default function Home() {
       });
       return;
     }
-    // Pass skeleton data when locked
+    // Pass skeleton data when locked - filter out placeholder key moments
     const skeletonData = isSkeletonLocked && contentSkeleton ? {
       contentSkeleton: {
         topicSummary: contentSkeleton.topicSummary,
         uniqueAngle: contentSkeleton.uniqueAngle,
-        sections: contentSkeleton.sections,
+        sections: contentSkeleton.sections.map(s => ({
+          id: s.id,
+          title: s.title,
+          objective: s.objective,
+          suggestedDuration: s.suggestedDuration,
+          keyMoments: s.keyMoments.filter(m => m.trim() && m !== "New key point..."),
+        })),
         researchFacts: contentSkeleton.researchFacts.filter(f => f.isUsed),
         suggestedHooks: contentSkeleton.suggestedHooks,
       }
