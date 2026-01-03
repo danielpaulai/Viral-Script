@@ -498,6 +498,34 @@ export interface GeneratedScript {
   referenceAnalysis?: string;
 }
 
+// Content Skeleton for Deep Research Mode
+export interface ResearchFact {
+  id: string;
+  fact: string;
+  source?: string;
+  credibility: "high" | "medium" | "low";
+  isUsed: boolean;
+}
+
+export interface ContentSection {
+  id: string;
+  title: string;
+  objective: string;
+  keyMoments: string[];
+  suggestedDuration: string;
+}
+
+export interface ContentSkeleton {
+  topicSummary: string;
+  targetAudience: string;
+  uniqueAngle: string;
+  sections: ContentSection[];
+  researchFacts: ResearchFact[];
+  competitorInsights?: string[];
+  suggestedHooks: string[];
+  isLocked: boolean;
+}
+
 // Database Tables
 export const scripts = pgTable("scripts", {
   id: varchar("id", { length: 36 }).primaryKey(),
