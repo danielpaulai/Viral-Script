@@ -765,15 +765,18 @@ export default function Home() {
             <SelectTrigger className="bg-white/5 border-white/10" data-testid="select-hook">
               <SelectValue placeholder="Select a viral hook..." />
             </SelectTrigger>
-            <SelectContent className="max-h-80">
+            <SelectContent className="max-h-[400px] w-[400px]">
               {hookCategories.map((category) => (
                 <div key={category.id}>
-                  <div className="px-2 py-1.5 text-xs font-semibold text-primary">{category.name}</div>
+                  <div className="px-2 py-2 text-xs font-semibold text-primary border-b border-white/10 bg-white/5">{category.name}</div>
                   {viralHooks
                     .filter((h) => h.category === category.id)
                     .map((hook) => (
-                      <SelectItem key={hook.id} value={hook.id}>
-                        {hook.name}
+                      <SelectItem key={hook.id} value={hook.id} className="py-2">
+                        <div className="flex flex-col gap-0.5">
+                          <span className="font-medium text-sm">{hook.name}</span>
+                          <span className="text-[11px] text-muted-foreground italic">"{hook.example}"</span>
+                        </div>
                       </SelectItem>
                     ))}
                 </div>
@@ -781,9 +784,10 @@ export default function Home() {
             </SelectContent>
           </Select>
           {currentHook && (
-            <div className="mt-2 p-2 rounded bg-white/5 border border-white/10">
-              <p className="text-[10px] text-muted-foreground mb-1">Template: "{currentHook.template}"</p>
-              <p className="text-[10px] text-white/70">"{currentHook.example}"</p>
+            <div className="mt-2 p-3 rounded bg-white/5 border border-white/10">
+              <p className="text-[11px] text-muted-foreground mb-1">Template: <span className="text-white/80">"{currentHook.template}"</span></p>
+              <p className="text-[11px] text-white/70 italic">Example: "{currentHook.example}"</p>
+              <p className="text-[10px] text-muted-foreground mt-1.5">Why it works: {currentHook.why}</p>
             </div>
           )}
         </div>
