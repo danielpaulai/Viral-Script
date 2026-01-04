@@ -732,6 +732,38 @@ export const insertContentStrategySchema = createInsertSchema(contentStrategies)
 export type InsertContentStrategy = z.infer<typeof insertContentStrategySchema>;
 export type ContentStrategy = typeof contentStrategies.$inferSelect;
 
+// Script Versions Table (Version History)
+export const scriptVersions = pgTable("script_versions", {
+  id: varchar("id", { length: 36 }).primaryKey(),
+  scriptId: varchar("script_id", { length: 36 }).notNull(),
+  userId: varchar("user_id", { length: 255 }),
+  version: text("version").notNull().default("1"),
+  label: text("label"),
+  script: text("script").notNull(),
+  wordCount: text("word_count"),
+  gradeLevel: text("grade_level"),
+  parameters: jsonb("parameters"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertScriptVersionSchema = createInsertSchema(scriptVersions).omit({ id: true, createdAt: true });
+export type InsertScriptVersion = z.infer<typeof insertScriptVersionSchema>;
+export type ScriptVersion = typeof scriptVersions.$inferSelect;
+
+// Collaborative Sessions Table
+export const collaborativeSessions = pgTable("collaborative_sessions", {
+  id: varchar("id", { length: 36 }).primaryKey(),
+  scriptId: varchar("script_id", { length: 36 }).notNull(),
+  ownerId: varchar("owner_id", { length: 255 }).notNull(),
+  activeEditors: jsonb("active_editors").default([]),
+  lastActivity: timestamp("last_activity").defaultNow(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertCollaborativeSessionSchema = createInsertSchema(collaborativeSessions).omit({ id: true, createdAt: true });
+export type InsertCollaborativeSession = z.infer<typeof insertCollaborativeSessionSchema>;
+export type CollaborativeSession = typeof collaborativeSessions.$inferSelect;
+
 // User Usage Tracking Table
 export const userUsage = pgTable("user_usage", {
   id: varchar("id", { length: 36 }).primaryKey(),

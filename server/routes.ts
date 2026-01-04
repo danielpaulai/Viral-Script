@@ -2571,5 +2571,228 @@ Create a style guide for writing scripts that sound exactly like this creator.`
     }
   }
 
+  // ============ VERSION HISTORY ROUTES ============
+  
+  // Get all versions for a script
+  app.get("/api/scripts/:id/versions", isAuthenticated, async (req, res) => {
+    try {
+      const versions = await storage.getScriptVersions(req.params.id);
+      res.json({ versions });
+    } catch (error) {
+      console.error("Error fetching versions:", error);
+      res.status(500).json({ error: "Failed to fetch version history" });
+    }
+  });
+
+  // Create a new version (save current state)
+  app.post("/api/scripts/:id/versions", isAuthenticated, async (req, res) => {
+    try {
+      const { label, script, wordCount, gradeLevel, parameters } = req.body;
+      const userId = (req.user as any)?.id;
+      
+      const version = await storage.createScriptVersion({
+        scriptId: req.params.id,
+        userId,
+        label,
+        script,
+        wordCount: wordCount?.toString(),
+        gradeLevel: gradeLevel?.toString(),
+        parameters,
+      });
+      
+      res.json({ version, message: "Version saved successfully" });
+    } catch (error) {
+      console.error("Error creating version:", error);
+      res.status(500).json({ error: "Failed to save version" });
+    }
+  });
+
+  // Revert to a specific version
+  app.post("/api/scripts/:id/versions/:versionId/revert", isAuthenticated, async (req, res) => {
+    try {
+      const version = await storage.getScriptVersion(req.params.versionId);
+      if (!version) {
+        return res.status(404).json({ error: "Version not found" });
+      }
+      
+      // Update the main script with this version's content
+      const updatedScript = await storage.updateScript(req.params.id, {
+        script: version.script,
+      });
+      
+      // Create a new version marking this as a revert
+      await storage.createScriptVersion({
+        scriptId: req.params.id,
+        userId: (req.user as any)?.id,
+        label: `Reverted to v${version.version}`,
+        script: version.script,
+        wordCount: version.wordCount,
+        gradeLevel: version.gradeLevel,
+        parameters: version.parameters as any,
+      });
+      
+      res.json({ 
+        script: updatedScript, 
+        message: `Reverted to version ${version.version}` 
+      });
+    } catch (error) {
+      console.error("Error reverting version:", error);
+      res.status(500).json({ error: "Failed to revert to version" });
+    }
+  });
+
+  // ============ COLLABORATIVE EDITING WEBSOCKET ============
+  
+  // Track active collaborative sessions
+  const collaborativeSessions = new Map<string, {
+    scriptId: string;
+    editors: Map<string, { id: string; name: string; color: string; lastSeen: Date }>;
+    currentContent: string;
+  }>();
+
+  // WebSocket handling for real-time collaboration
+  const wss = new (await import("ws")).WebSocketServer({ server: httpServer, path: "/ws/collaborate" });
+  
+  wss.on("connection", (ws, req) => {
+    let sessionId: string = "";
+    let editorId: string = "";
+    
+    ws.on("message", (data) => {
+      try {
+        const message = JSON.parse(data.toString());
+        
+        switch (message.type) {
+          case "join": {
+            sessionId = message.scriptId || "";
+            editorId = message.editorId || randomUUID();
+            
+            if (!sessionId) return;
+            
+            // Create or join session
+            if (!collaborativeSessions.has(sessionId)) {
+              collaborativeSessions.set(sessionId, {
+                scriptId: sessionId,
+                editors: new Map(),
+                currentContent: message.initialContent || "",
+              });
+            }
+            
+            const session = collaborativeSessions.get(sessionId)!;
+            const editorColors = ["#FF6B6B", "#4ECDC4", "#45B7D1", "#96CEB4", "#FFEAA7", "#DDA0DD"];
+            const color = editorColors[session.editors.size % editorColors.length];
+            
+            session.editors.set(editorId, {
+              id: editorId,
+              name: message.editorName || `Editor ${session.editors.size + 1}`,
+              color,
+              lastSeen: new Date(),
+            });
+            
+            // Send current state to new editor
+            ws.send(JSON.stringify({
+              type: "sync",
+              content: session.currentContent,
+              editors: Array.from(session.editors.values()),
+              yourId: editorId,
+              yourColor: color,
+            }));
+            
+            // Broadcast new editor to others
+            broadcastToSession(sessionId, {
+              type: "editor_joined",
+              editor: session.editors.get(editorId),
+              editors: Array.from(session.editors.values()),
+            }, editorId);
+            break;
+          }
+          
+          case "update": {
+            if (!sessionId || !editorId) return;
+            
+            const session = collaborativeSessions.get(sessionId);
+            if (!session) return;
+            
+            session.currentContent = message.content;
+            session.editors.get(editorId)!.lastSeen = new Date();
+            
+            // Broadcast update to all other editors
+            broadcastToSession(sessionId, {
+              type: "content_update",
+              content: message.content,
+              editorId,
+              cursorPosition: message.cursorPosition,
+            }, editorId);
+            break;
+          }
+          
+          case "cursor": {
+            if (!sessionId || !editorId) return;
+            
+            // Broadcast cursor position
+            broadcastToSession(sessionId, {
+              type: "cursor_update",
+              editorId,
+              position: message.position,
+              selection: message.selection,
+            }, editorId);
+            break;
+          }
+          
+          case "leave": {
+            if (sessionId && editorId) {
+              const session = collaborativeSessions.get(sessionId);
+              if (session) {
+                session.editors.delete(editorId);
+                broadcastToSession(sessionId, {
+                  type: "editor_left",
+                  editorId,
+                  editors: Array.from(session.editors.values()),
+                });
+                
+                // Clean up empty sessions
+                if (session.editors.size === 0) {
+                  collaborativeSessions.delete(sessionId);
+                }
+              }
+            }
+            break;
+          }
+        }
+      } catch (error) {
+        console.error("WebSocket message error:", error);
+      }
+    });
+    
+    ws.on("close", () => {
+      if (sessionId && editorId) {
+        const session = collaborativeSessions.get(sessionId);
+        if (session) {
+          session.editors.delete(editorId);
+          broadcastToSession(sessionId, {
+            type: "editor_left",
+            editorId,
+            editors: Array.from(session.editors.values()),
+          });
+          
+          if (session.editors.size === 0) {
+            collaborativeSessions.delete(sessionId);
+          }
+        }
+      }
+    });
+  });
+  
+  function broadcastToSession(sessionId: string, message: any, excludeEditorId?: string) {
+    const session = collaborativeSessions.get(sessionId);
+    if (!session) return;
+    
+    const messageStr = JSON.stringify(message);
+    wss.clients.forEach((client) => {
+      if (client.readyState === 1) { // WebSocket.OPEN
+        client.send(messageStr);
+      }
+    });
+  }
+
   return httpServer;
 }

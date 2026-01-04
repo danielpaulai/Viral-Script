@@ -17,6 +17,8 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { viralHooks, hookCategories, type GeneratedScript } from "@shared/schema";
 import { shotPresets, musicResources, getShotRecommendations } from "@/data/shot-presets";
+import { VersionHistory } from "@/components/version-history";
+import { CollaborativeEditor } from "@/components/collaborative-editor";
 import {
   Copy,
   RefreshCw,
@@ -47,6 +49,8 @@ import {
   TrendingUp,
   MessageSquare,
   Target,
+  History,
+  Users,
 } from "lucide-react";
 
 interface ScriptOutputProps {
@@ -71,6 +75,8 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
   const [boostSuggestions, setBoostSuggestions] = useState<Array<{area: string, issue: string, fix: string}> | null>(null);
   const [boostImprovements, setBoostImprovements] = useState<{gradeLevelBefore: number, gradeLevelAfter: number, hookStrengthBefore: number, hookStrengthAfter: number, weakAreasFixed: number} | null>(null);
   const [showBoostPanel, setShowBoostPanel] = useState(false);
+  const [showVersionHistory, setShowVersionHistory] = useState(false);
+  const [showCollabEditor, setShowCollabEditor] = useState(false);
 
   const boostViralityMutation = useMutation({
     mutationFn: async () => {
@@ -1348,7 +1354,72 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
           <Shuffle className="w-4 h-4 mr-1" />
           Random Hook
         </Button>
+        
+        {script.id && (
+          <Button
+            variant="outline"
+            size="sm"
+            className="bg-white/5 border-white/10"
+            onClick={() => setShowVersionHistory(true)}
+            data-testid="button-version-history"
+          >
+            <History className="w-4 h-4 mr-1" />
+            History
+          </Button>
+        )}
+        
+        {script.id && (
+          <Button
+            variant="outline"
+            size="sm"
+            className="bg-white/5 border-white/10"
+            onClick={() => setShowCollabEditor(true)}
+            data-testid="button-collaborate"
+          >
+            <Users className="w-4 h-4 mr-1" />
+            Collaborate
+          </Button>
+        )}
       </div>
+      
+      {showVersionHistory && script.id && (
+        <div className="mt-4">
+          <VersionHistory
+            scriptId={script.id}
+            currentScript={enhancedScript || script.script}
+            wordCount={enhancedMetrics?.wordCount || script.wordCount || 0}
+            gradeLevel={enhancedMetrics?.gradeLevel || script.gradeLevel || 0}
+            parameters={script.parameters}
+            onRevert={(restoredScript) => {
+              setEnhancedScript(restoredScript);
+              toast({
+                title: "Version Restored",
+                description: "The script has been reverted to the selected version.",
+              });
+            }}
+          />
+        </div>
+      )}
+      
+      {showCollabEditor && script.id && (
+        <div className="mt-4 p-4 rounded-lg bg-white/5 border border-white/10">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-sm font-medium flex items-center gap-2">
+              <Users className="w-4 h-4" />
+              Collaborative Editor
+            </h3>
+            <Button variant="ghost" size="sm" onClick={() => setShowCollabEditor(false)}>
+              Close
+            </Button>
+          </div>
+          <CollaborativeEditor
+            scriptId={script.id}
+            initialContent={enhancedScript || script.script}
+            isEnabled={true}
+            onContentChange={(content) => setEnhancedScript(content)}
+          />
+        </div>
+      )}
     </Card>
   );
 }

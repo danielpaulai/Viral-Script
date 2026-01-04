@@ -54,6 +54,8 @@ import {
   type ResearchFact,
 } from "@shared/schema";
 import { ScriptOutput } from "@/components/script-output";
+import { GenerationProgress } from "@/components/generation-progress";
+import { useVoiceCommand } from "@/hooks/use-voice-command";
 import { 
   Sparkles, 
   ArrowRight, 
@@ -71,6 +73,7 @@ import {
   Target,
   BookOpen,
   Mic,
+  MicOff,
   Film,
   Type,
   Bot,
@@ -200,6 +203,30 @@ interface ViralExamplesResult {
   dominantFormats: string[];
   dominantHookTypes: string[];
   bestPerformingDuration: string;
+}
+
+function VoiceInputButton({ onTranscript }: { onTranscript: (text: string) => void }) {
+  const { isListening, isSupported, transcript, toggleListening } = useVoiceCommand({
+    onResult: (text) => {
+      onTranscript(text.trim());
+    },
+  });
+
+  if (!isSupported) return null;
+
+  return (
+    <Button
+      type="button"
+      size="icon"
+      variant="ghost"
+      onClick={toggleListening}
+      className={`absolute right-2 top-2 ${isListening ? "text-red-500 animate-pulse" : "text-muted-foreground"}`}
+      title={isListening ? "Stop listening" : "Speak your idea"}
+      data-testid="button-voice-input"
+    >
+      {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+    </Button>
+  );
 }
 
 export default function Home() {
@@ -668,22 +695,26 @@ export default function Home() {
           <Label htmlFor="topic" className="text-xs font-medium mb-2 block uppercase tracking-wider">
             Topic / Video Idea <span className="text-primary">*</span>
           </Label>
-          <Textarea
-            id="topic"
-            value={formData.topic}
-            onChange={(e) => {
-              setFormData((prev) => ({ ...prev, topic: e.target.value }));
-              // Clear research content when topic changes
-              if (expandedBrief) setExpandedBrief(null);
-              if (contentSkeleton) {
-                setContentSkeleton(null);
-                setIsSkeletonLocked(false);
-              }
-            }}
-            placeholder="e.g., Why most people fail at content creation..."
-            className="bg-white/5 border-white/10 min-h-[80px] text-base"
-            data-testid="input-topic"
-          />
+          <div className="relative">
+            <Textarea
+              id="topic"
+              value={formData.topic}
+              onChange={(e) => {
+                setFormData((prev) => ({ ...prev, topic: e.target.value }));
+                if (expandedBrief) setExpandedBrief(null);
+                if (contentSkeleton) {
+                  setContentSkeleton(null);
+                  setIsSkeletonLocked(false);
+                }
+              }}
+              placeholder="e.g., Why most people fail at content creation..."
+              className="bg-white/5 border-white/10 min-h-[80px] text-base pr-12"
+              data-testid="input-topic"
+            />
+            <VoiceInputButton 
+              onTranscript={(text) => setFormData(prev => ({ ...prev, topic: prev.topic + " " + text }))}
+            />
+          </div>
         </div>
 
         <div className="mb-4 p-3 rounded-md bg-white/5 border border-white/10">
@@ -1753,6 +1784,11 @@ export default function Home() {
         </Button>
       </Card>
 
+      <GenerationProgress 
+        isGenerating={generateMutation.isPending} 
+        hasResearch={deepResearch}
+      />
+      
       {generatedScript && (
         <ScriptOutput 
           script={generatedScript} 

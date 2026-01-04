@@ -17,6 +17,8 @@ import {
   type InsertUserUsage,
   type UserSubscription,
   type InsertUserSubscription,
+  type ScriptVersion,
+  type InsertScriptVersion,
   users,
 } from "@shared/schema";
 import { randomUUID } from "crypto";
@@ -75,6 +77,11 @@ export interface IStorage {
   
   getUserSubscription(userId: string): Promise<UserSubscription | undefined>;
   createOrUpdateSubscription(userId: string, data: Partial<InsertUserSubscription>): Promise<UserSubscription>;
+  
+  // Version History
+  getScriptVersions(scriptId: string): Promise<ScriptVersion[]>;
+  createScriptVersion(version: InsertScriptVersion): Promise<ScriptVersion>;
+  getScriptVersion(id: string): Promise<ScriptVersion | undefined>;
 }
 
 export class MemStorage implements IStorage {
@@ -88,6 +95,7 @@ export class MemStorage implements IStorage {
   private userUsage: Map<string, UserUsage>;
   private userSubscriptions: Map<string, UserSubscription>;
   private usersMemory: Map<string, User>;
+  private scriptVersions: Map<string, ScriptVersion>;
   sessionStore: session.Store;
 
   constructor() {
@@ -101,6 +109,7 @@ export class MemStorage implements IStorage {
     this.userUsage = new Map();
     this.userSubscriptions = new Map();
     this.usersMemory = new Map();
+    this.scriptVersions = new Map();
     // Use memory session store for reliability across environments
     this.sessionStore = new MemoryStore({
       checkPeriod: 86400000, // prune expired entries every 24h
@@ -497,6 +506,39 @@ export class MemStorage implements IStorage {
     };
     this.userSubscriptions.set(userId, subscription);
     return subscription;
+  }
+
+  // Version History methods
+  async getScriptVersions(scriptId: string): Promise<ScriptVersion[]> {
+    const versions: ScriptVersion[] = [];
+    this.scriptVersions.forEach((v) => {
+      if (v.scriptId === scriptId) versions.push(v);
+    });
+    return versions.sort((a, b) => 
+      new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
+    );
+  }
+
+  async createScriptVersion(version: InsertScriptVersion): Promise<ScriptVersion> {
+    const existingVersions = await this.getScriptVersions(version.scriptId);
+    const newVersion: ScriptVersion = {
+      id: randomUUID(),
+      scriptId: version.scriptId,
+      userId: version.userId || null,
+      version: String(existingVersions.length + 1),
+      label: version.label || null,
+      script: version.script,
+      wordCount: version.wordCount || null,
+      gradeLevel: version.gradeLevel || null,
+      parameters: version.parameters || null,
+      createdAt: new Date(),
+    };
+    this.scriptVersions.set(newVersion.id, newVersion);
+    return newVersion;
+  }
+
+  async getScriptVersion(id: string): Promise<ScriptVersion | undefined> {
+    return this.scriptVersions.get(id);
   }
 }
 
