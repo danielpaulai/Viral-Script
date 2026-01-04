@@ -97,6 +97,7 @@ import {
   Edit3,
   Trash2,
   Loader2,
+  ExternalLink,
 } from "lucide-react";
 
 const presetIcons: Record<string, typeof Zap> = {
@@ -188,6 +189,7 @@ interface ViralExample {
   estimatedWordCount: number;
   formatType: string;
   hookType: string;
+  videoUrl: string;
 }
 
 interface ViralExamplesResult {
@@ -864,10 +866,23 @@ export default function Home() {
                         </div>
                       </div>
                       <p className="text-sm text-white leading-relaxed">{example.fullCaption}</p>
-                      <div className="flex items-center gap-2 mt-2 text-[10px] text-muted-foreground">
-                        <span>{example.estimatedWordCount} words</span>
-                        <span className="capitalize">{example.formatType.replace("_", " ")}</span>
-                        <span>{example.engagementRate}% engagement</span>
+                      <div className="flex items-center justify-between gap-2 mt-2">
+                        <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+                          <span>{example.estimatedWordCount} words</span>
+                          <span className="capitalize">{example.formatType.replace("-", " ")}</span>
+                          <span>{example.engagementRate}% engagement</span>
+                        </div>
+                        <a
+                          href={example.videoUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          className="flex items-center gap-1 text-[10px] text-pink-400 hover:text-pink-300 transition-colors"
+                          data-testid={`link-viral-example-${example.id}`}
+                        >
+                          <ExternalLink className="w-3 h-3" />
+                          View on TikTok
+                        </a>
                       </div>
                     </div>
                   ))}

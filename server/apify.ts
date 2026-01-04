@@ -556,6 +556,7 @@ export interface ViralExample {
   estimatedWordCount: number;
   formatType: "hook-story-cta" | "listicle" | "tutorial" | "rant" | "question" | "unknown";
   hookType: "contrarian" | "question" | "statistic" | "personal" | "challenge" | "unknown";
+  videoUrl: string;
 }
 
 export interface ViralExamplesResult {
@@ -652,6 +653,9 @@ export async function fetchViralExamples(
         const hookLine = fullCaption.split(/[\n.!?]/)[0]?.trim() || "";
         const wordCount = fullCaption.split(/\s+/).length;
 
+        const authorHandle = item.author?.uniqueId || "unknown";
+        const videoUrl = `https://www.tiktok.com/@${authorHandle}/video/${item.id}`;
+
         return {
           id: item.id,
           fullCaption,
@@ -661,11 +665,12 @@ export async function fetchViralExamples(
           comments,
           shares,
           engagementRate: Math.round(engagementRate * 100) / 100,
-          author: item.author?.uniqueId || "unknown",
+          author: authorHandle,
           authorFollowers: item.author?.followerCount,
           videoDuration: item.video?.duration,
           estimatedWordCount: wordCount,
           formatType: detectFormatType(fullCaption),
+          videoUrl,
           hookType: detectHookType(hookLine),
         };
       })
