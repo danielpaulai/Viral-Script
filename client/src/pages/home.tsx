@@ -369,6 +369,58 @@ export default function Home() {
     });
   };
 
+  // Add a new section
+  const addSection = () => {
+    if (!contentSkeleton) return;
+    const newSection: ContentSection = {
+      id: `section-${Date.now()}`,
+      title: "New Section",
+      objective: "Define the objective for this section",
+      suggestedDuration: "15s",
+      keyMoments: ["Add key points here"],
+    };
+    setContentSkeleton({
+      ...contentSkeleton,
+      sections: [...contentSkeleton.sections, newSection],
+    });
+  };
+
+  // Remove a section
+  const removeSection = (sectionId: string) => {
+    if (!contentSkeleton || contentSkeleton.sections.length <= 1) return;
+    setContentSkeleton({
+      ...contentSkeleton,
+      sections: contentSkeleton.sections.filter(s => s.id !== sectionId),
+    });
+  };
+
+  // Update a suggested hook
+  const updateSuggestedHook = (index: number, value: string) => {
+    if (!contentSkeleton) return;
+    setContentSkeleton({
+      ...contentSkeleton,
+      suggestedHooks: contentSkeleton.suggestedHooks.map((h, i) => i === index ? value : h),
+    });
+  };
+
+  // Add a suggested hook
+  const addSuggestedHook = () => {
+    if (!contentSkeleton) return;
+    setContentSkeleton({
+      ...contentSkeleton,
+      suggestedHooks: [...contentSkeleton.suggestedHooks, "New hook idea..."],
+    });
+  };
+
+  // Remove a suggested hook
+  const removeSuggestedHook = (index: number) => {
+    if (!contentSkeleton) return;
+    setContentSkeleton({
+      ...contentSkeleton,
+      suggestedHooks: contentSkeleton.suggestedHooks.filter((_, i) => i !== index),
+    });
+  };
+
   const handlePresetClick = (presetId: string) => {
     const preset = quickPresets.find((p) => p.id === presetId);
     if (preset) {
@@ -647,10 +699,15 @@ export default function Home() {
               <div className="flex items-center gap-2">
                 <FileText className="w-5 h-5 text-primary" />
                 <span className="text-sm font-bold text-primary uppercase tracking-wider">Content Skeleton</span>
-                {isSkeletonLocked && (
+                {isSkeletonLocked ? (
                   <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
                     <Lock className="w-3 h-3 mr-1" />
                     Locked
+                  </Badge>
+                ) : (
+                  <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30">
+                    <Edit3 className="w-3 h-3 mr-1" />
+                    Editing Mode
                   </Badge>
                 )}
               </div>
@@ -750,7 +807,21 @@ export default function Home() {
               )}
 
               <div>
-                <p className="text-xs font-semibold text-primary uppercase tracking-wider mb-2">Video Sections</p>
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-xs font-semibold text-primary uppercase tracking-wider">Video Sections</p>
+                  {!isSkeletonLocked && (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={addSection}
+                      className="h-6 text-xs"
+                      data-testid="button-add-section"
+                    >
+                      <Plus className="w-3 h-3 mr-1" />
+                      Add Section
+                    </Button>
+                  )}
+                </div>
                 <div className="space-y-3">
                   {contentSkeleton.sections.map((section, sectionIndex) => (
                     <div
@@ -772,10 +843,41 @@ export default function Home() {
                             />
                           )}
                         </div>
-                        <span className="text-[10px] text-muted-foreground font-mono">{section.suggestedDuration}</span>
+                        <div className="flex items-center gap-2">
+                          {isSkeletonLocked ? (
+                            <span className="text-[10px] text-muted-foreground font-mono">{section.suggestedDuration}</span>
+                          ) : (
+                            <>
+                              <Input
+                                value={section.suggestedDuration}
+                                onChange={(e) => updateSkeletonSection(section.id, { suggestedDuration: e.target.value })}
+                                className="h-5 w-16 text-[10px] font-mono bg-transparent border border-white/20 px-1 focus-visible:ring-0"
+                                placeholder="10s"
+                              />
+                              {contentSkeleton.sections.length > 1 && (
+                                <button
+                                  onClick={() => removeSection(section.id)}
+                                  className="text-red-400/70 hover:text-red-400"
+                                  title="Remove section"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              )}
+                            </>
+                          )}
+                        </div>
                       </div>
                       
-                      <p className="text-xs text-muted-foreground mb-2">{section.objective}</p>
+                      {isSkeletonLocked ? (
+                        <p className="text-xs text-muted-foreground mb-2">{section.objective}</p>
+                      ) : (
+                        <Textarea
+                          value={section.objective}
+                          onChange={(e) => updateSkeletonSection(section.id, { objective: e.target.value })}
+                          className="text-xs text-muted-foreground bg-transparent border border-white/20 p-2 min-h-[40px] resize-none focus-visible:ring-0 mb-2"
+                          placeholder="Section objective..."
+                        />
+                      )}
                       
                       <div className="space-y-1.5">
                         {section.keyMoments.map((moment, momentIndex) => (
@@ -815,13 +917,43 @@ export default function Home() {
                 </div>
               </div>
 
-              {contentSkeleton.suggestedHooks.length > 0 && (
+              {(contentSkeleton.suggestedHooks.length > 0 || !isSkeletonLocked) && (
                 <div>
-                  <p className="text-xs font-semibold text-primary uppercase tracking-wider mb-2">Suggested Hooks</p>
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-xs font-semibold text-primary uppercase tracking-wider">Suggested Hooks</p>
+                    {!isSkeletonLocked && (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={addSuggestedHook}
+                        className="h-6 text-xs"
+                        data-testid="button-add-hook"
+                      >
+                        <Plus className="w-3 h-3 mr-1" />
+                        Add Hook
+                      </Button>
+                    )}
+                  </div>
                   <div className="space-y-2">
                     {contentSkeleton.suggestedHooks.map((hook, i) => (
                       <div key={i} className="p-2 rounded bg-white/5 border border-white/10">
-                        <p className="text-xs text-white/80 italic">"{hook}"</p>
+                        {isSkeletonLocked ? (
+                          <p className="text-xs text-white/80 italic">"{hook}"</p>
+                        ) : (
+                          <div className="flex items-center gap-2">
+                            <Input
+                              value={hook}
+                              onChange={(e) => updateSuggestedHook(i, e.target.value)}
+                              className="flex-1 h-6 text-xs bg-transparent border-0 p-0 focus-visible:ring-0 text-white/80 italic"
+                            />
+                            <button
+                              onClick={() => removeSuggestedHook(i)}
+                              className="text-red-400/70 hover:text-red-400"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
