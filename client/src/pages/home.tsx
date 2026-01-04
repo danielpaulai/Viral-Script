@@ -753,23 +753,21 @@ export default function Home() {
                       </>
                     )}
                   </Button>
-                  {user && (user.plan === "pro" || user.plan === "ultimate") && (
-                    <Button
-                      variant="outline"
-                      onClick={() => viralExamplesMutation.mutate({ topic: formData.topic, limit: 5 })}
-                      disabled={viralExamplesMutation.isPending || skeletonMutation.isPending}
-                      data-testid="button-viral-examples"
-                    >
-                      {viralExamplesMutation.isPending ? (
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                      ) : (
-                        <>
-                          <TrendingUp className="w-4 h-4 mr-1" />
-                          Viral Examples
-                        </>
-                      )}
-                    </Button>
-                  )}
+                  <Button
+                    variant="outline"
+                    onClick={() => viralExamplesMutation.mutate({ topic: formData.topic, limit: 5 })}
+                    disabled={viralExamplesMutation.isPending || skeletonMutation.isPending}
+                    data-testid="button-viral-examples"
+                  >
+                    {viralExamplesMutation.isPending ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <>
+                        <TrendingUp className="w-4 h-4 mr-1" />
+                        Viral Examples
+                      </>
+                    )}
+                  </Button>
                 </div>
               )}
             </div>

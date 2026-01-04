@@ -2302,15 +2302,6 @@ DO NOT make up fake statistics. Use the research data provided, or clearly state
         return res.status(401).json({ error: "User not found" });
       }
 
-      // Check if user has Pro or Ultimate plan
-      const user = await storage.getUser(userId);
-      if (!user || (user.plan !== "pro" && user.plan !== "ultimate")) {
-        return res.status(403).json({ 
-          error: "Viral Examples requires a Pro or Ultimate subscription",
-          requiresPlan: "pro"
-        });
-      }
-
       const { topic, limit = 5 } = req.body;
       if (!topic || typeof topic !== 'string' || topic.trim().length < 3) {
         return res.status(400).json({ error: "Topic is required (at least 3 characters)" });
