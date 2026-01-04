@@ -32,6 +32,8 @@ function getDatabaseUrl(): string | null {
 }
 
 const databaseUrl = getDatabaseUrl();
+console.log("[DB] Environment:", process.env.REPLIT_DEPLOYMENT ? "PRODUCTION" : "DEVELOPMENT");
+console.log("[DB] DATABASE_URL available:", !!databaseUrl);
 
 // Create pool and db only if we have a database URL
 export let pool: pg.Pool | null = null;
