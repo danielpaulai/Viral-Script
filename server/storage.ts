@@ -105,7 +105,7 @@ export class MemStorage implements IStorage {
     });
   }
 
-  // User methods now use the database for persistence
+  // User methods use the database for persistence
   async getUser(id: string): Promise<User | undefined> {
     const result = await db.select().from(users).where(eq(users.id, id));
     return result[0];
