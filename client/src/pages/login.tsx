@@ -1,11 +1,11 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Sparkles, ArrowRight, Zap, FileText, CheckCircle2, Loader2 } from "lucide-react";
+import { Sparkles, Zap, FileText, CheckCircle2, Loader2 } from "lucide-react";
 import { Link, useLocation } from "wouter";
-import { useAuth } from "@/hooks/use-auth";
+import { useQuery } from "@tanstack/react-query";
+import { getQueryFn } from "@/lib/queryClient";
+import type { User } from "@shared/schema";
 
 const benefits = [
   "50+ viral hook templates",
@@ -18,11 +18,11 @@ const benefits = [
 
 export default function Login() {
   const [, setLocation] = useLocation();
-  const { loginMutation, registerMutation, user } = useAuth();
-  const [isRegister, setIsRegister] = useState(false);
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  
+  const { data: user, isLoading } = useQuery<User | undefined>({
+    queryKey: ["/api/auth/user"],
+    queryFn: getQueryFn({ on401: "returnNull" }),
+  });
 
   useEffect(() => {
     if (user) {
@@ -30,20 +30,17 @@ export default function Login() {
     }
   }, [user, setLocation]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (isRegister) {
-      if (password !== confirmPassword) {
-        return;
-      }
-      registerMutation.mutate({ username, password });
-    } else {
-      loginMutation.mutate({ username, password });
-    }
+  const handleLogin = () => {
+    window.location.href = "/api/login";
   };
 
-  const isPending = loginMutation.isPending || registerMutation.isPending;
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background flex">
@@ -99,108 +96,32 @@ export default function Login() {
 
           <Card className="bg-card border-card-border">
             <CardHeader className="text-center">
-              <CardTitle className="text-2xl">
-                {isRegister ? "Create an account" : "Welcome back"}
-              </CardTitle>
+              <CardTitle className="text-2xl">Welcome</CardTitle>
               <CardDescription>
-                {isRegister 
-                  ? "Sign up to start creating viral scripts" 
-                  : "Sign in to continue creating"}
+                Sign in to start creating viral scripts
               </CardDescription>
             </CardHeader>
-            <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="username">Username</Label>
-                  <Input
-                    id="username"
-                    type="text"
-                    placeholder="Enter your username"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    required
-                    disabled={isPending}
-                    data-testid="input-username"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="password">Password</Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    placeholder="Enter your password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    disabled={isPending}
-                    data-testid="input-password"
-                  />
-                </div>
-
-                {isRegister && (
-                  <div className="space-y-2">
-                    <Label htmlFor="confirmPassword">Confirm Password</Label>
-                    <Input
-                      id="confirmPassword"
-                      type="password"
-                      placeholder="Confirm your password"
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                      required
-                      disabled={isPending}
-                      data-testid="input-confirm-password"
-                    />
-                    {password !== confirmPassword && confirmPassword && (
-                      <p className="text-sm text-destructive">Passwords do not match</p>
-                    )}
-                  </div>
-                )}
-
-                <Button 
-                  type="submit"
-                  className="w-full"
-                  size="lg"
-                  disabled={isPending || (isRegister && password !== confirmPassword)}
-                  data-testid="button-submit"
-                >
-                  {isPending ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : isRegister ? (
-                    "Create account"
-                  ) : (
-                    "Sign in"
-                  )}
-                </Button>
-              </form>
-
-              <div className="mt-6 text-center">
-                <button 
-                  onClick={() => setIsRegister(!isRegister)}
-                  className="text-sm text-muted-foreground hover:text-foreground"
-                  data-testid="button-toggle-mode"
-                >
-                  {isRegister ? (
-                    <>Already have an account? <span className="text-primary">Sign in</span></>
-                  ) : (
-                    <>Don't have an account? <span className="text-primary">Sign up</span></>
-                  )}
-                </button>
-              </div>
+            <CardContent className="space-y-4">
+              <Button 
+                onClick={handleLogin} 
+                className="w-full" 
+                size="lg"
+                data-testid="button-login"
+              >
+                <Sparkles className="w-4 h-4 mr-2" />
+                Continue with Replit
+              </Button>
+              
+              <p className="text-center text-xs text-muted-foreground">
+                By continuing, you agree to our Terms of Service and Privacy Policy
+              </p>
             </CardContent>
           </Card>
 
-          <div className="mt-8 text-center">
-            <Link href="/">
-              <Button variant="ghost" size="sm" className="gap-2" data-testid="button-back-home">
-                <ArrowRight className="w-4 h-4 rotate-180" />
-                Back to home
-              </Button>
+          <p className="text-center text-sm text-muted-foreground mt-6">
+            <Link href="/" className="hover:text-foreground transition-colors">
+              Back to home
             </Link>
-          </div>
-
-          <p className="mt-8 text-center text-xs text-muted-foreground">
-            By signing in, you agree to our Terms of Service and Privacy Policy.
           </p>
         </div>
       </div>

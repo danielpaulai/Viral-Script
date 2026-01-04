@@ -4,7 +4,7 @@ import { storage } from "./storage";
 import { randomUUID } from "crypto";
 import OpenAI from "openai";
 import multer from "multer";
-import { setupAuth } from "./auth";
+import { setupAuth, isAuthenticated, registerAuthRoutes } from "./replit_integrations/auth";
 import { extractTextFromFile, truncateText, SUPPORTED_MIME_TYPES, MAX_FILE_SIZE, MAX_FILES } from "./ocr-utils";
 
 const upload = multer({
@@ -1206,18 +1206,12 @@ Return JSON in this exact format:
   }
 }
 
-function isAuthenticated(req: any, res: any, next: any) {
-  if (req.isAuthenticated()) {
-    return next();
-  }
-  res.status(401).json({ message: "Unauthorized" });
-}
-
 export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
-  setupAuth(app);
+  await setupAuth(app);
+  registerAuthRoutes(app);
   
   app.get("/api/ctas", (req, res) => {
     res.json({

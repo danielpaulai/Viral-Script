@@ -675,28 +675,13 @@ export const contentStrategyCategories = [
   { id: "hot_takes", name: "Hot Takes", description: "Contrarian views, industry critiques, bold opinions", color: "red" },
 ] as const;
 
-// Keep User types for compatibility
-export const users = pgTable("users", {
-  id: varchar("id").primaryKey(),
-  username: text("username").notNull().unique(),
-  password: text("password").notNull(),
-  plan: text("plan").default("starter"),
-  planExpiresAt: timestamp("plan_expires_at"),
-});
-
-export const insertUserSchema = createInsertSchema(users).pick({
-  username: true,
-  password: true,
-});
-
+// User types are now from ./models/auth (Replit Auth)
+// Additional validation schema for auth
 export const authCredentialsSchema = z.object({
   username: z.string().min(3, "Username must be at least 3 characters"),
   password: z.string().min(6, "Password must be at least 6 characters"),
 });
-
-export type InsertUser = z.infer<typeof insertUserSchema>;
 export type AuthCredentials = z.infer<typeof authCredentialsSchema>;
-export type User = typeof users.$inferSelect;
 
 // Knowledge Base Documents Table
 export const knowledgeBase = pgTable("knowledge_base", {
