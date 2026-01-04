@@ -174,6 +174,32 @@ interface CompetitorInsights {
   postsAnalyzed: number;
 }
 
+// Viral Examples from TikTok
+interface ViralExample {
+  id: string;
+  fullCaption: string;
+  hookLine: string;
+  views: number;
+  likes: number;
+  comments: number;
+  shares: number;
+  engagementRate: number;
+  author: string;
+  estimatedWordCount: number;
+  formatType: string;
+  hookType: string;
+}
+
+interface ViralExamplesResult {
+  examples: ViralExample[];
+  topicKeyword: string;
+  avgViews: number;
+  avgEngagement: number;
+  dominantFormats: string[];
+  dominantHookTypes: string[];
+  bestPerformingDuration: string;
+}
+
 export default function Home() {
   const { toast } = useToast();
   const { user } = useAuth();
@@ -189,6 +215,8 @@ export default function Home() {
   const [competitorInsights, setCompetitorInsights] = useState<CompetitorInsights | null>(null);
   const [contentSkeleton, setContentSkeleton] = useState<ContentSkeleton | null>(null);
   const [isSkeletonLocked, setIsSkeletonLocked] = useState(false);
+  const [viralExamples, setViralExamples] = useState<ViralExamplesResult | null>(null);
+  const [showViralExamples, setShowViralExamples] = useState(false);
 
   const [formData, setFormData] = useState<ScriptParameters>({
     topic: "",
@@ -290,8 +318,18 @@ export default function Home() {
 
   // Content Skeleton generation for enhanced Deep Research mode
   const skeletonMutation = useMutation({
-    mutationFn: async ({ topic, targetAudience, includeCompetitorResearch }: { topic: string; targetAudience?: string; includeCompetitorResearch?: boolean }) => {
-      const res = await apiRequest("POST", "/api/scripts/generate-skeleton", { topic, targetAudience, includeCompetitorResearch });
+    mutationFn: async ({ topic, targetAudience, includeCompetitorResearch, viralExamplesData }: { 
+      topic: string; 
+      targetAudience?: string; 
+      includeCompetitorResearch?: boolean;
+      viralExamplesData?: ViralExamplesResult | null;
+    }) => {
+      const res = await apiRequest("POST", "/api/scripts/generate-skeleton", { 
+        topic, 
+        targetAudience, 
+        includeCompetitorResearch,
+        viralExamples: viralExamplesData,
+      });
       return res.json();
     },
     onSuccess: (data: { skeleton: ContentSkeleton; originalTopic: string }) => {
@@ -306,6 +344,31 @@ export default function Home() {
       toast({
         title: "Error",
         description: "Failed to generate outline. Try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Viral Examples - fetch top TikTok captions for inspiration
+  const viralExamplesMutation = useMutation({
+    mutationFn: async ({ topic, limit = 5 }: { topic: string; limit?: number }) => {
+      const res = await apiRequest("POST", "/api/viral-examples", { topic, limit });
+      return res.json();
+    },
+    onSuccess: (data: ViralExamplesResult & { success: boolean }) => {
+      if (data.success) {
+        setViralExamples(data);
+        setShowViralExamples(true);
+        toast({
+          title: "Viral Examples Found",
+          description: `Found ${data.examples.length} top-performing captions for inspiration.`,
+        });
+      }
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error?.message || "Failed to fetch viral examples.",
         variant: "destructive",
       });
     },
@@ -666,32 +729,155 @@ export default function Home() {
               </div>
               
               {formData.topic.trim().length >= 5 && !contentSkeleton && (
-                <Button
-                  onClick={() => skeletonMutation.mutate({ 
-                    topic: formData.topic, 
-                    targetAudience: formData.targetAudience,
-                    includeCompetitorResearch,
-                  })}
-                  disabled={skeletonMutation.isPending}
-                  className="w-full"
-                  data-testid="button-generate-outline"
-                >
-                  {skeletonMutation.isPending ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      {includeCompetitorResearch ? "Researching & building outline..." : "Building content outline..."}
-                    </>
-                  ) : (
-                    <>
-                      <FileText className="w-4 h-4 mr-2" />
-                      Generate Content Outline
-                    </>
+                <div className="flex gap-2">
+                  <Button
+                    onClick={() => skeletonMutation.mutate({ 
+                      topic: formData.topic, 
+                      targetAudience: formData.targetAudience,
+                      includeCompetitorResearch,
+                      viralExamplesData: viralExamples,
+                    })}
+                    disabled={skeletonMutation.isPending || viralExamplesMutation.isPending}
+                    className="flex-1"
+                    data-testid="button-generate-outline"
+                  >
+                    {skeletonMutation.isPending ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        {includeCompetitorResearch ? "Researching..." : "Building outline..."}
+                      </>
+                    ) : (
+                      <>
+                        <FileText className="w-4 h-4 mr-2" />
+                        Generate Outline
+                      </>
+                    )}
+                  </Button>
+                  {user && (user.plan === "pro" || user.plan === "ultimate") && (
+                    <Button
+                      variant="outline"
+                      onClick={() => viralExamplesMutation.mutate({ topic: formData.topic, limit: 5 })}
+                      disabled={viralExamplesMutation.isPending || skeletonMutation.isPending}
+                      data-testid="button-viral-examples"
+                    >
+                      {viralExamplesMutation.isPending ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <>
+                          <TrendingUp className="w-4 h-4 mr-1" />
+                          Viral Examples
+                        </>
+                      )}
+                    </Button>
                   )}
-                </Button>
+                </div>
               )}
             </div>
           )}
         </div>
+
+        {/* Viral Examples Panel */}
+        {viralExamples && showViralExamples && (
+          <div className="mb-4 p-4 rounded-lg bg-gradient-to-br from-pink-500/10 to-purple-500/10 border border-pink-500/30">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <TrendingUp className="w-5 h-5 text-pink-400" />
+                <span className="text-sm font-bold text-pink-400 uppercase tracking-wider">Viral Examples</span>
+                <Badge className="bg-pink-500/20 text-pink-300 border-pink-500/30">
+                  {viralExamples.examples.length} found
+                </Badge>
+              </div>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => setShowViralExamples(false)}
+                className="text-xs"
+              >
+                <X className="w-3 h-3" />
+              </Button>
+            </div>
+
+            {/* Insights Summary */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-4">
+              <div className="p-2 rounded bg-white/5 border border-white/10 text-center">
+                <p className="text-[10px] text-muted-foreground uppercase">Avg Views</p>
+                <p className="text-sm font-bold text-white">
+                  {viralExamples.avgViews >= 1000000 
+                    ? `${(viralExamples.avgViews / 1000000).toFixed(1)}M`
+                    : viralExamples.avgViews >= 1000 
+                      ? `${(viralExamples.avgViews / 1000).toFixed(0)}K`
+                      : viralExamples.avgViews}
+                </p>
+              </div>
+              <div className="p-2 rounded bg-white/5 border border-white/10 text-center">
+                <p className="text-[10px] text-muted-foreground uppercase">Avg Engagement</p>
+                <p className="text-sm font-bold text-white">{viralExamples.avgEngagement}%</p>
+              </div>
+              <div className="p-2 rounded bg-white/5 border border-white/10 text-center">
+                <p className="text-[10px] text-muted-foreground uppercase">Best Duration</p>
+                <p className="text-sm font-bold text-white">{viralExamples.bestPerformingDuration}</p>
+              </div>
+              <div className="p-2 rounded bg-white/5 border border-white/10 text-center">
+                <p className="text-[10px] text-muted-foreground uppercase">Top Format</p>
+                <p className="text-sm font-bold text-white capitalize">{viralExamples.dominantFormats[0] || "Mixed"}</p>
+              </div>
+            </div>
+
+            {/* Viral Captions */}
+            <div className="space-y-3">
+              <p className="text-xs font-semibold text-pink-400 uppercase tracking-wider">Top Performing Captions</p>
+              <ScrollArea className="h-[300px]">
+                <div className="space-y-3 pr-4">
+                  {viralExamples.examples.map((example, i) => (
+                    <div
+                      key={example.id}
+                      className="p-3 rounded-md bg-white/5 border border-white/10 hover-elevate cursor-pointer"
+                      onClick={() => {
+                        navigator.clipboard.writeText(example.fullCaption);
+                        toast({
+                          title: "Copied",
+                          description: "Caption copied to clipboard",
+                        });
+                      }}
+                    >
+                      <div className="flex items-start justify-between gap-2 mb-2">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-bold text-pink-400">#{i + 1}</span>
+                          <Badge variant="secondary" className="text-[10px]">
+                            @{example.author}
+                          </Badge>
+                          <Badge variant="outline" className="text-[10px] capitalize">
+                            {example.hookType}
+                          </Badge>
+                        </div>
+                        <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+                          <span className="flex items-center gap-1">
+                            <Eye className="w-3 h-3" />
+                            {example.views >= 1000000 
+                              ? `${(example.views / 1000000).toFixed(1)}M`
+                              : `${(example.views / 1000).toFixed(0)}K`}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <Heart className="w-3 h-3" />
+                            {example.likes >= 1000 
+                              ? `${(example.likes / 1000).toFixed(0)}K`
+                              : example.likes}
+                          </span>
+                        </div>
+                      </div>
+                      <p className="text-sm text-white leading-relaxed">{example.fullCaption}</p>
+                      <div className="flex items-center gap-2 mt-2 text-[10px] text-muted-foreground">
+                        <span>{example.estimatedWordCount} words</span>
+                        <span className="capitalize">{example.formatType.replace("_", " ")}</span>
+                        <span>{example.engagementRate}% engagement</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </ScrollArea>
+            </div>
+          </div>
+        )}
 
         {contentSkeleton && (
           <div className="mb-4 p-4 rounded-lg bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/30">

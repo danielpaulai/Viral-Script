@@ -540,6 +540,204 @@ export async function researchGrowingCreators(topic: string, limit: number = 20)
   }
 }
 
+// VIRAL EXAMPLES - Fetch top performing TikTok captions for inspiration
+export interface ViralExample {
+  id: string;
+  fullCaption: string;
+  hookLine: string;
+  views: number;
+  likes: number;
+  comments: number;
+  shares: number;
+  engagementRate: number;
+  author: string;
+  authorFollowers?: number;
+  videoDuration?: number;
+  estimatedWordCount: number;
+  formatType: "hook-story-cta" | "listicle" | "tutorial" | "rant" | "question" | "unknown";
+  hookType: "contrarian" | "question" | "statistic" | "personal" | "challenge" | "unknown";
+}
+
+export interface ViralExamplesResult {
+  examples: ViralExample[];
+  topicKeyword: string;
+  avgViews: number;
+  avgEngagement: number;
+  dominantFormats: string[];
+  dominantHookTypes: string[];
+  bestPerformingDuration: string;
+  fetchedAt: string;
+}
+
+// Detect format type from caption
+function detectFormatType(text: string): ViralExample["formatType"] {
+  const lowerText = text.toLowerCase();
+  
+  if (/\d+\s*(things?|ways?|tips?|steps?|reasons?)/i.test(text)) return "listicle";
+  if (/how to|step \d|first,|then,|next,/i.test(text)) return "tutorial";
+  if (/\?/.test(text.split(/[.!]/)[0] || "")) return "question";
+  if (/i was|i used to|my story|i learned/i.test(lowerText)) return "hook-story-cta";
+  if (/honestly|rant|unpopular opinion|hot take/i.test(lowerText)) return "rant";
+  
+  return "unknown";
+}
+
+// Detect hook type from first line
+function detectHookType(hookLine: string): ViralExample["hookType"] {
+  const lower = hookLine.toLowerCase();
+  
+  if (/\?$/.test(hookLine)) return "question";
+  if (/\d+%|\d+x|\$\d+|\d+k|\d+ (million|billion)/i.test(hookLine)) return "statistic";
+  if (/stop|don't|wrong|never|actually|myth/i.test(lower)) return "contrarian";
+  if (/i was|i used to|my|when i/i.test(lower)) return "personal";
+  if (/try this|do this|here's how|watch this/i.test(lower)) return "challenge";
+  
+  return "unknown";
+}
+
+// Fetch viral examples for a topic
+export async function fetchViralExamples(
+  topic: string, 
+  limit: number = 10
+): Promise<ViralExamplesResult> {
+  if (!APIFY_TOKEN) {
+    throw new Error("APIFY_API_TOKEN is not configured");
+  }
+
+  const client = new ApifyClient({ token: APIFY_TOKEN });
+
+  try {
+    const input = {
+      searchQueries: [topic],
+      resultsPerPage: Math.min(limit * 2, 30),
+      shouldDownloadVideos: false,
+      shouldDownloadCovers: false,
+      shouldDownloadSubtitles: false,
+      shouldDownloadSlideshowImages: false,
+    };
+
+    const run = await client.actor("clockworks/free-tiktok-scraper").call(input, {
+      waitSecs: 120,
+    });
+
+    const { items } = await client.dataset(run.defaultDatasetId).listItems();
+
+    interface TikTokItem {
+      id: string;
+      desc: string;
+      stats: {
+        playCount: number;
+        diggCount: number;
+        commentCount: number;
+        shareCount: number;
+      };
+      author: {
+        uniqueId: string;
+        followerCount?: number;
+      };
+      video?: {
+        duration?: number;
+      };
+    }
+
+    const posts = (items as unknown as TikTokItem[])
+      .filter((item) => item.desc && item.stats && item.stats.playCount > 50000)
+      .map((item) => {
+        const views = item.stats?.playCount || 0;
+        const likes = item.stats?.diggCount || 0;
+        const comments = item.stats?.commentCount || 0;
+        const shares = item.stats?.shareCount || 0;
+        const engagementRate = views > 0 ? ((likes + comments + shares) / views) * 100 : 0;
+        const fullCaption = item.desc || "";
+        const hookLine = fullCaption.split(/[\n.!?]/)[0]?.trim() || "";
+        const wordCount = fullCaption.split(/\s+/).length;
+
+        return {
+          id: item.id,
+          fullCaption,
+          hookLine,
+          views,
+          likes,
+          comments,
+          shares,
+          engagementRate: Math.round(engagementRate * 100) / 100,
+          author: item.author?.uniqueId || "unknown",
+          authorFollowers: item.author?.followerCount,
+          videoDuration: item.video?.duration,
+          estimatedWordCount: wordCount,
+          formatType: detectFormatType(fullCaption),
+          hookType: detectHookType(hookLine),
+        };
+      })
+      .sort((a, b) => b.views - a.views)
+      .slice(0, limit);
+
+    // Calculate aggregates
+    const avgViews = posts.length > 0 
+      ? Math.round(posts.reduce((sum, p) => sum + p.views, 0) / posts.length)
+      : 0;
+    const avgEngagement = posts.length > 0
+      ? Math.round(posts.reduce((sum, p) => sum + p.engagementRate, 0) / posts.length * 100) / 100
+      : 0;
+
+    // Find dominant formats
+    const formatCounts: Record<string, number> = {};
+    const hookCounts: Record<string, number> = {};
+    
+    for (const p of posts) {
+      formatCounts[p.formatType] = (formatCounts[p.formatType] || 0) + 1;
+      hookCounts[p.hookType] = (hookCounts[p.hookType] || 0) + 1;
+    }
+
+    const dominantFormats = Object.entries(formatCounts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 3)
+      .map(([format]) => format);
+
+    const dominantHookTypes = Object.entries(hookCounts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 3)
+      .map(([hook]) => hook);
+
+    // Analyze duration patterns
+    const durations = posts
+      .filter(p => p.videoDuration)
+      .map(p => p.videoDuration!);
+    
+    let bestPerformingDuration = "30-60 seconds";
+    if (durations.length > 0) {
+      const avgDuration = durations.reduce((a, b) => a + b, 0) / durations.length;
+      if (avgDuration < 20) bestPerformingDuration = "Under 20 seconds";
+      else if (avgDuration < 45) bestPerformingDuration = "20-45 seconds";
+      else if (avgDuration < 90) bestPerformingDuration = "45-90 seconds";
+      else bestPerformingDuration = "Over 90 seconds";
+    }
+
+    return {
+      examples: posts as ViralExample[],
+      topicKeyword: topic,
+      avgViews,
+      avgEngagement,
+      dominantFormats,
+      dominantHookTypes,
+      bestPerformingDuration,
+      fetchedAt: new Date().toISOString(),
+    };
+  } catch (error) {
+    console.error("Viral examples fetch error:", error);
+    return {
+      examples: [],
+      topicKeyword: topic,
+      avgViews: 0,
+      avgEngagement: 0,
+      dominantFormats: [],
+      dominantHookTypes: [],
+      bestPerformingDuration: "Unknown",
+      fetchedAt: new Date().toISOString(),
+    };
+  }
+}
+
 export function analyzeCreatorStyle(content: ScrapedContent): {
   hooks: string[];
   phrases: string[];

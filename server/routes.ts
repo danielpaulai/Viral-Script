@@ -1577,7 +1577,7 @@ Create a powerful video brief that will make this topic stand out and go viral.`
   // Generate Content Skeleton for Deep Research Mode
   app.post("/api/scripts/generate-skeleton", async (req, res) => {
     try {
-      const { topic, targetAudience, includeCompetitorResearch = false } = req.body;
+      const { topic, targetAudience, includeCompetitorResearch = false, viralExamples } = req.body;
       
       if (!topic || typeof topic !== 'string' || topic.trim().length < 5) {
         return res.status(400).json({ error: "Topic is required (at least 5 characters)" });
@@ -1586,6 +1586,34 @@ Create a powerful video brief that will make this topic stand out and go viral.`
       // Research real creators and working strategies
       let creatorResearch: any = null;
       let creatorDataForPrompt = "";
+      let viralExamplesPrompt = "";
+      
+      // If viral examples are provided, use them to enhance the prompt
+      if (viralExamples && Array.isArray(viralExamples.examples) && viralExamples.examples.length > 0) {
+        viralExamplesPrompt = `
+=== VIRAL EXAMPLES (Real TikTok captions that went viral on this topic) ===
+
+PERFORMANCE INSIGHTS:
+- Average Views: ${viralExamples.avgViews >= 1000000 ? `${(viralExamples.avgViews / 1000000).toFixed(1)}M` : `${Math.round(viralExamples.avgViews / 1000)}K`}
+- Average Engagement: ${viralExamples.avgEngagement}%
+- Best Performing Duration: ${viralExamples.bestPerformingDuration}
+- Top Formats: ${viralExamples.dominantFormats?.join(', ') || 'Mixed'}
+- Top Hook Types: ${viralExamples.dominantHookTypes?.join(', ') || 'Various'}
+
+TOP VIRAL CAPTIONS (study these patterns):
+${viralExamples.examples.slice(0, 5).map((ex: any, i: number) => `
+${i + 1}. @${ex.author} (${Math.round(ex.views / 1000)}K views, ${ex.engagementRate}% engagement)
+   Hook Type: ${ex.hookType} | Format: ${ex.formatType}
+   Caption: "${ex.fullCaption}"
+`).join('')}
+
+USE THESE PATTERNS:
+- Study the hook styles that got views
+- Match the caption length and format
+- Emulate the engagement patterns
+=== END VIRAL EXAMPLES ===
+`;
+      }
       
       if (includeCompetitorResearch && process.env.APIFY_API_TOKEN) {
         try {
@@ -1622,6 +1650,7 @@ AVG ENGAGEMENT RATE: ${creatorResearch.avgEngagement}%
       
       const systemPrompt = `You are an expert viral content strategist. Your job is to create SPECIFIC, DATA-DRIVEN content skeletons that reference REAL creators and working tactics.
 
+${viralExamplesPrompt}
 ${creatorDataForPrompt}
 
 CRITICAL RULES:
@@ -2261,6 +2290,51 @@ DO NOT make up fake statistics. Use the research data provided, or clearly state
       res.status(500).json({ 
         error: error.message || "Failed to scrape TikTok profile",
         details: "Make sure the username is correct and the profile is public"
+      });
+    }
+  });
+
+  // Viral Examples API - Fetch top TikTok captions for inspiration
+  app.post("/api/viral-examples", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({ error: "User not found" });
+      }
+
+      // Check if user has Pro or Ultimate plan
+      const user = await storage.getUser(userId);
+      if (!user || (user.plan !== "pro" && user.plan !== "ultimate")) {
+        return res.status(403).json({ 
+          error: "Viral Examples requires a Pro or Ultimate subscription",
+          requiresPlan: "pro"
+        });
+      }
+
+      const { topic, limit = 5 } = req.body;
+      if (!topic || typeof topic !== 'string' || topic.trim().length < 3) {
+        return res.status(400).json({ error: "Topic is required (at least 3 characters)" });
+      }
+
+      if (!process.env.APIFY_API_TOKEN) {
+        return res.status(503).json({ 
+          error: "Viral Examples feature is not configured",
+          details: "APIFY_API_TOKEN is required"
+        });
+      }
+
+      const { fetchViralExamples } = await import("./apify");
+      const result = await fetchViralExamples(topic.trim(), Math.min(limit, 10));
+
+      res.json({
+        success: true,
+        ...result,
+      });
+    } catch (error: any) {
+      console.error("Viral examples error:", error);
+      res.status(500).json({ 
+        error: error.message || "Failed to fetch viral examples",
+        details: "Please try again or use a different topic"
       });
     }
   });
