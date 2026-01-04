@@ -99,11 +99,9 @@ export class MemStorage implements IStorage {
     this.contentStrategies = new Map();
     this.userUsage = new Map();
     this.userSubscriptions = new Map();
-    // Use PostgreSQL session store for persistent sessions
-    this.sessionStore = new PgSession({
-      pool,
-      tableName: "sessions",
-      createTableIfMissing: false,
+    // Use memory session store for reliability across environments
+    this.sessionStore = new MemoryStore({
+      checkPeriod: 86400000, // prune expired entries every 24h
     });
   }
 
