@@ -1,11 +1,11 @@
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Sparkles, Zap, FileText, CheckCircle2, Loader2 } from "lucide-react";
 import { Link, useLocation } from "wouter";
-import { useQuery } from "@tanstack/react-query";
-import { getQueryFn } from "@/lib/queryClient";
-import type { User } from "@shared/schema";
+import { useAuth } from "@/hooks/use-auth";
 
 const benefits = [
   "50+ viral hook templates",
@@ -18,11 +18,11 @@ const benefits = [
 
 export default function Login() {
   const [, setLocation] = useLocation();
-  
-  const { data: user, isLoading } = useQuery<User | undefined>({
-    queryKey: ["/api/auth/user"],
-    queryFn: getQueryFn({ on401: "returnNull" }),
-  });
+  const { loginMutation, registerMutation, user } = useAuth();
+  const [isRegister, setIsRegister] = useState(false);
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
   useEffect(() => {
     if (user) {
@@ -30,17 +30,20 @@ export default function Login() {
     }
   }, [user, setLocation]);
 
-  const handleLogin = () => {
-    window.location.href = "/api/login";
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (isRegister) {
+      if (password !== confirmPassword) {
+        return;
+      }
+      registerMutation.mutate({ username, password });
+    } else {
+      loginMutation.mutate({ username, password });
+    }
   };
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
-      </div>
-    );
-  }
+  const isPending = loginMutation.isPending || registerMutation.isPending;
 
   return (
     <div className="min-h-screen bg-background flex">
@@ -96,25 +99,86 @@ export default function Login() {
 
           <Card className="bg-card border-card-border">
             <CardHeader className="text-center">
-              <CardTitle className="text-2xl">Welcome</CardTitle>
+              <CardTitle className="text-2xl">
+                {isRegister ? "Create an account" : "Welcome back"}
+              </CardTitle>
               <CardDescription>
-                Sign in to start creating viral scripts
+                {isRegister 
+                  ? "Sign up to start creating viral scripts" 
+                  : "Sign in to continue creating"}
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <Button 
-                onClick={handleLogin} 
-                className="w-full" 
-                size="lg"
-                data-testid="button-login"
-              >
-                <Sparkles className="w-4 h-4 mr-2" />
-                Continue with Replit
-              </Button>
-              
-              <p className="text-center text-xs text-muted-foreground">
-                By continuing, you agree to our Terms of Service and Privacy Policy
-              </p>
+            <CardContent>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="username">Email</Label>
+                  <Input
+                    id="username"
+                    type="email"
+                    placeholder="you@example.com"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    required
+                    disabled={isPending}
+                    data-testid="input-username"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="password">Password</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    placeholder="Enter your password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    disabled={isPending}
+                    data-testid="input-password"
+                  />
+                </div>
+                {isRegister && (
+                  <div className="space-y-2">
+                    <Label htmlFor="confirmPassword">Confirm Password</Label>
+                    <Input
+                      id="confirmPassword"
+                      type="password"
+                      placeholder="Confirm your password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      required
+                      disabled={isPending}
+                      data-testid="input-confirm-password"
+                    />
+                    {password !== confirmPassword && confirmPassword && (
+                      <p className="text-xs text-destructive">Passwords do not match</p>
+                    )}
+                  </div>
+                )}
+                <Button 
+                  type="submit" 
+                  className="w-full" 
+                  disabled={isPending || (isRegister && password !== confirmPassword)}
+                  data-testid="button-submit"
+                >
+                  {isPending ? (
+                    <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                  ) : null}
+                  {isRegister ? "Create Account" : "Sign In"}
+                </Button>
+              </form>
+
+              <div className="mt-4 text-center text-sm">
+                <button
+                  type="button"
+                  onClick={() => setIsRegister(!isRegister)}
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                  data-testid="button-toggle-mode"
+                >
+                  {isRegister 
+                    ? "Already have an account? Sign in" 
+                    : "Don't have an account? Sign up"}
+                </button>
+              </div>
             </CardContent>
           </Card>
 

@@ -60,7 +60,7 @@ export function setupAuth(app: Express) {
     new LocalStrategy(async (username, password, done) => {
       try {
         const user = await storage.getUserByUsername(username);
-        if (!user || !(await comparePasswords(password, user.password))) {
+        if (!user || !user.password || !(await comparePasswords(password, user.password))) {
           return done(null, false, { message: "Invalid username or password" });
         }
         return done(null, user);
@@ -154,4 +154,11 @@ export function setupAuth(app: Express) {
     const { password: _, ...safeUser } = req.user as SelectUser;
     res.json(safeUser);
   });
+}
+
+export function isAuthenticated(req: any, res: any, next: any) {
+  if (req.isAuthenticated()) {
+    return next();
+  }
+  res.status(401).json({ message: "Unauthorized" });
 }
