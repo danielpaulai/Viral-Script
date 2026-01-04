@@ -46,8 +46,16 @@ Script generation uses predefined catalogs:
 ### AI-Powered Script Generation
 - **OpenAI Integration**: Uses gpt-4o-mini via Replit AI Integrations (no API key needed, charges to user's Replit credits)
 - **Deep Research Mode**: Two-phase AI approach - first researches topic (stats, expert quotes, contrarian takes), then generates script with enhanced context
+- **Viral Examples Feature** (Pro/Ultimate only): Fetches real viral TikTok captions for inspiration, including engagement metrics, format detection, and hook type analysis
 - **Word Count Targets**: Platform/duration specific (15s: 30-45, 30s: 60-90, 60s: 120-180, 90s: 180-270, 180s: 360-540 words)
 - **Fallback**: Automatically falls back to template-based generation if AI fails
+
+### Apify TikTok Integration
+- **Viral Examples API**: `/api/viral-examples` fetches top viral TikTok captions by topic
+- **Full Caption Extraction**: Pulls complete captions, duration patterns, engagement breakdown
+- **Format & Hook Detection**: Automatically categorizes content by format type (listicle, story, tutorial, etc.) and hook type (question, statistic, contrarian, etc.)
+- **Aggregate Analytics**: Calculates avgViews, avgEngagement, dominantFormats, bestPerformingDuration
+- **Skeleton Enhancement**: Viral examples data is fed into the AI prompt to improve content skeleton quality
 
 ### Key Design Decisions
 
