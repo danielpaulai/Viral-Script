@@ -622,39 +622,61 @@ export async function fetchViralExamples(
     });
 
     const { items } = await client.dataset(run.defaultDatasetId).listItems();
+    
+    console.log(`[Viral Examples] Raw items count: ${items.length}`);
+    if (items.length > 0) {
+      console.log(`[Viral Examples] First item keys:`, Object.keys(items[0] as any));
+    }
 
     interface TikTokItem {
       id: string;
-      desc: string;
-      stats: {
-        playCount: number;
-        diggCount: number;
-        commentCount: number;
-        shareCount: number;
+      desc?: string;
+      text?: string;
+      stats?: {
+        playCount?: number;
+        diggCount?: number;
+        commentCount?: number;
+        shareCount?: number;
       };
-      author: {
-        uniqueId: string;
+      playCount?: number;
+      diggCount?: number;
+      commentCount?: number;
+      shareCount?: number;
+      author?: {
+        uniqueId?: string;
         followerCount?: number;
       };
+      authorMeta?: {
+        name?: string;
+        id?: string;
+      };
       video?: {
+        duration?: number;
+      };
+      videoMeta?: {
         duration?: number;
       };
     }
 
     const posts = (items as unknown as TikTokItem[])
-      .filter((item) => item.desc && item.stats && item.stats.playCount > 50000)
+      .filter((item) => {
+        const hasCaption = !!(item.desc || item.text);
+        const views = item.stats?.playCount || item.playCount || 0;
+        return hasCaption && views > 1000;
+      })
       .map((item) => {
-        const views = item.stats?.playCount || 0;
-        const likes = item.stats?.diggCount || 0;
-        const comments = item.stats?.commentCount || 0;
-        const shares = item.stats?.shareCount || 0;
+        const views = item.stats?.playCount || item.playCount || 0;
+        const likes = item.stats?.diggCount || item.diggCount || 0;
+        const comments = item.stats?.commentCount || item.commentCount || 0;
+        const shares = item.stats?.shareCount || item.shareCount || 0;
         const engagementRate = views > 0 ? ((likes + comments + shares) / views) * 100 : 0;
-        const fullCaption = item.desc || "";
+        const fullCaption = item.desc || item.text || "";
         const hookLine = fullCaption.split(/[\n.!?]/)[0]?.trim() || "";
         const wordCount = fullCaption.split(/\s+/).length;
 
-        const authorHandle = item.author?.uniqueId || "unknown";
+        const authorHandle = item.author?.uniqueId || item.authorMeta?.name || item.authorMeta?.id || "unknown";
         const videoUrl = `https://www.tiktok.com/@${authorHandle}/video/${item.id}`;
+        const duration = item.video?.duration || item.videoMeta?.duration;
 
         return {
           id: item.id,
@@ -667,7 +689,7 @@ export async function fetchViralExamples(
           engagementRate: Math.round(engagementRate * 100) / 100,
           author: authorHandle,
           authorFollowers: item.author?.followerCount,
-          videoDuration: item.video?.duration,
+          videoDuration: duration,
           estimatedWordCount: wordCount,
           formatType: detectFormatType(fullCaption),
           videoUrl,
