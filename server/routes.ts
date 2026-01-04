@@ -666,11 +666,16 @@ Generate a NEW script about the user's topic that follows these same patterns bu
 ` : "";
 
   const systemPrompt = `You are a world-class short-form video scriptwriter who writes like a real human, NOT an AI.
-
+${creatorStyleInstructions ? `
+=== CREATOR STYLE EMULATION (HIGHEST PRIORITY) ===
+${creatorStyleInstructions}
+You MUST emulate this creator's exact style, including their signature phrases, hook patterns, sentence structure, and energy. This takes precedence over general rules below when there's a conflict.
+=== END CREATOR STYLE ===
+` : ''}
 CRITICAL RULES - FOLLOW EXACTLY:
 1. TOPIC RELEVANCE (MOST IMPORTANT): Your script MUST be 100% about the EXACT topic provided. Every sentence must directly relate to the topic. Do NOT go off on tangents. Do NOT write about something else. If the topic is "How to get leads from LinkedIn" - EVERY sentence must be about LinkedIn lead generation.
 
-2. READING LEVEL: Grade 3 reading level. Use simple, everyday words. Short sentences (5-10 words max). No jargon.
+2. READING LEVEL: Grade 3-6 reading level. Use simple, everyday words. Short sentences. No jargon.
 3. SOUND HUMAN: Write like you're texting a friend. Use contractions. Be casual. No corporate speak.
 4. CTA: You MUST use the EXACT CTA provided by the user. Copy it word-for-word. Do NOT create your own CTA.
 5. ONE IDEA PER SENTENCE: Never combine multiple thoughts in one sentence.
@@ -698,15 +703,11 @@ EVERY SCRIPT MUST:
 - "things", "stuff", "something" (be specific)
 - "recently", "soon", "sometimes" (use exact timeframes)
 
-4. AVOID FLUFF PHRASES - NEVER USE:
+4. AVOID FLUFF PHRASES (unless part of creator style signature):
 - "In today's world..."
 - "Have you ever wondered..."
-- "Let me tell you something..."
-- "The truth is..."
-- "Here's the thing..."
 - "At the end of the day..."
 - "It's important to remember..."
-- "What most people don't realize..."
 
 4. GET TO THE POINT
 - Hook in first 2 seconds (first sentence)
@@ -754,7 +755,6 @@ ${videoType.id === "talking_head" ? `IMPORTANT: Structure your script with EXACT
 Use these exact labels.` : ""}
 
 Do NOT include hashtags unless specified. Separate each line with a blank line for clarity.
-${creatorStyleInstructions}
 ${referenceInstructions}`;
 
   // Build skeleton context if provided
@@ -796,7 +796,14 @@ ${params.topic}
 ${skeletonContext}
 
 VIDEO TYPE: ${videoType.name} - ${videoType.description}
-${creatorStyle.id !== "default" ? `CREATOR STYLE: ${creatorStyle.name} - ${creatorStyle.description}` : ""}
+${creatorStyle.id !== "default" ? `
+=== EMULATE THIS CREATOR'S STYLE EXACTLY ===
+CREATOR: ${creatorStyle.name}
+STYLE: ${creatorStyle.description}
+- Use their signature phrases and hook patterns
+- Match their sentence structure and energy level
+- Sound like THEM speaking, not generic content
+===` : ""}
 HOOK STYLE: ${hook?.name || "The Painful Past"} - "${hook?.template || "I used to [painful thing everyone relates to]."}"
 STRUCTURE: ${structure?.name || "Problem Solver"} - ${structure?.description || "Present problem, then solution"}
 TONE: ${tone?.name || "High Energy"}
