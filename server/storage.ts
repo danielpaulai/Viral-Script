@@ -1,6 +1,6 @@
 import {
   type User,
-  type InsertUser,
+  type UpsertUser,
   type Script,
   type InsertScript,
   type Project,
@@ -34,7 +34,7 @@ export interface IStorage {
   
   getUser(id: string): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
-  createUser(user: InsertUser): Promise<User>;
+  createUser(user: UpsertUser): Promise<User>;
   updateUserPlan(userId: string, plan: string): Promise<User | undefined>;
   
   getScripts(): Promise<Script[]>;
@@ -116,7 +116,7 @@ export class MemStorage implements IStorage {
     return result[0];
   }
 
-  async createUser(insertUser: InsertUser): Promise<User> {
+  async createUser(insertUser: UpsertUser): Promise<User> {
     const id = randomUUID();
     const result = await db.insert(users).values({
       id,
