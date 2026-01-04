@@ -7,6 +7,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { AuthProvider, useAuth } from "@/hooks/use-auth";
+import { ThemeProvider } from "@/components/theme-provider";
+import { ThemeToggle } from "@/components/theme-toggle";
 import Home from "@/pages/home";
 import Scripts from "@/pages/scripts";
 import Projects from "@/pages/projects";
@@ -55,8 +57,9 @@ function AuthenticatedApp() {
       <div className="flex min-h-screen w-full bg-background">
         <AppSidebar />
         <SidebarInset className="flex-1">
-          <header className="sticky top-0 z-50 flex h-12 items-center gap-2 border-b border-border bg-background/95 backdrop-blur px-4">
+          <header className="sticky top-0 z-50 flex h-12 items-center justify-between gap-2 border-b border-border bg-background/95 backdrop-blur px-4">
             <SidebarTrigger data-testid="button-sidebar-toggle" />
+            <ThemeToggle />
           </header>
           <main className="flex-1">
             <AuthenticatedRouter />
@@ -97,12 +100,14 @@ function AppContent() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <AuthProvider>
-          <AppContent />
-        </AuthProvider>
-        <Toaster />
-      </TooltipProvider>
+      <ThemeProvider defaultTheme="dark" storageKey="vswp-theme">
+        <TooltipProvider>
+          <AuthProvider>
+            <AppContent />
+          </AuthProvider>
+          <Toaster />
+        </TooltipProvider>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }

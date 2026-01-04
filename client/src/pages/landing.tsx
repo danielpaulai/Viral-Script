@@ -19,11 +19,14 @@ import {
   Quote,
   Check,
   XCircle,
-  Star
+  Star,
+  Moon,
+  Sun
 } from "lucide-react";
 import { Link } from "wouter";
 import { pricingTiers } from "@shared/schema";
 import { useState, useEffect, useCallback } from "react";
+import { useTheme } from "@/components/theme-provider";
 
 // Feature images - Gemini generated hyper-realistic visuals
 import viralHooksImg from "@assets/Gemini_Generated_Image_l5rfhel5rfhel5rf_1766959322314.jpeg";
@@ -278,7 +281,7 @@ function useScrollAnimation() {
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            setVisibleSections((prev) => new Set([...prev, entry.target.id]));
+            setVisibleSections((prev) => new Set(Array.from(prev).concat([entry.target.id])));
           }
         });
       },
@@ -300,6 +303,7 @@ export default function Landing() {
   const [scrolled, setScrolled] = useState(false);
   const [selectedFeature, setSelectedFeature] = useState<number | null>(null);
   const visibleSections = useScrollAnimation();
+  const { theme, setTheme } = useTheme();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -347,6 +351,13 @@ export default function Landing() {
 
             {/* CTA */}
             <div className="hidden md:flex items-center gap-4">
+              <button
+                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                className="p-2 rounded-md text-[#b8bec1] hover:text-white hover:bg-white/10 transition-colors"
+                data-testid="button-theme-toggle-landing"
+              >
+                {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+              </button>
               <Link href="/login">
                 <span className="text-xs font-medium text-white hover:text-[#b8bec1] transition-colors cursor-pointer" data-testid="button-nav-login">Log in</span>
               </Link>
