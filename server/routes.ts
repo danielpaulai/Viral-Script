@@ -1396,6 +1396,152 @@ Return ONLY the enhanced script with no explanations or commentary.${retryHint}`
     }
   });
 
+  // Boost Virality: Analyze script and improve viral score
+  app.post("/api/scripts/boost", async (req, res) => {
+    try {
+      const { script, parameters, viralExamples } = req.body;
+      
+      if (!script || typeof script !== 'string') {
+        return res.status(400).json({ error: "Script content is required" });
+      }
+      
+      // Calculate current viral score breakdown
+      const scriptLower = script.toLowerCase();
+      const firstLine = script.split('\n')[0] || '';
+      
+      // Grade level analysis
+      const words = script.split(/\s+/).filter(Boolean);
+      const sentences = script.split(/[.!?]+/).filter(s => s.trim().length > 0);
+      const avgWordsPerSentence = words.length / Math.max(1, sentences.length);
+      const gradeLevel = Math.max(3, Math.min(12, 0.39 * avgWordsPerSentence + 4));
+      
+      // Hook strength analysis
+      const hookPatterns = [/^stop/i, /^don't/i, /^why/i, /^how/i, /^what if/i, /\?$/, /^here's/i, /^the \d+/i, /^i\s/i, /^\d+/];
+      const hookStrength = hookPatterns.filter(p => p.test(firstLine)).length;
+      
+      // Specificity analysis - count numbers and specific details
+      const numberMatches = script.match(/\d+/g) || [];
+      const specificityScore = Math.min(25, numberMatches.length * 5);
+      
+      // Engagement patterns
+      const engagementPatterns = [/\byou\b/i, /\byour\b/i, /\bbecause\b/i, /\bnow\b/i, /\btoday\b/i];
+      const engagementMatches = engagementPatterns.filter(p => p.test(scriptLower)).length;
+      
+      // Identify weak areas
+      const weakAreas: string[] = [];
+      if (gradeLevel > 6) weakAreas.push("reading_level");
+      if (hookStrength < 2) weakAreas.push("hook");
+      if (specificityScore < 15) weakAreas.push("specificity");
+      if (engagementMatches < 3) weakAreas.push("engagement");
+      if (avgWordsPerSentence > 12) weakAreas.push("sentence_length");
+      
+      // Build viral examples context for the AI
+      let viralContext = "";
+      if (viralExamples && Array.isArray(viralExamples.examples) && viralExamples.examples.length > 0) {
+        viralContext = `
+VIRAL BENCHMARKS (study these proven patterns):
+${viralExamples.examples.slice(0, 3).map((ex: any) => `- "${ex.hookLine}" (${Math.round(ex.views / 1000)}K views, ${ex.engagementRate}% engagement)`).join('\n')}
+
+Top hook types working: ${viralExamples.dominantHookTypes?.join(', ') || 'various'}
+Avg engagement: ${viralExamples.avgEngagement}%
+`;
+      }
+      
+      // Build improvement instructions based on weak areas
+      const improvementInstructions: string[] = [];
+      if (weakAreas.includes("reading_level")) {
+        improvementInstructions.push("SIMPLIFY LANGUAGE: Use grade 3 reading level. Replace complex words with simple ones. Max 8 words per sentence.");
+      }
+      if (weakAreas.includes("hook")) {
+        improvementInstructions.push("STRENGTHEN HOOK: The first line must stop the scroll. Use a contrarian take, shocking stat, or direct question. Make it impossible to ignore.");
+      }
+      if (weakAreas.includes("specificity")) {
+        improvementInstructions.push("ADD SPECIFICS: Include exact numbers, real examples, and concrete details. Replace vague claims with precise data.");
+      }
+      if (weakAreas.includes("engagement")) {
+        improvementInstructions.push("BOOST ENGAGEMENT: Add more 'you' and 'your'. Create curiosity gaps. Add pattern interrupts.");
+      }
+      if (weakAreas.includes("sentence_length")) {
+        improvementInstructions.push("SHORTEN SENTENCES: Break long sentences into 2-3 shorter ones. One idea per sentence. Faster rhythm.");
+      }
+      
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [
+          {
+            role: "system",
+            content: `You are a viral content optimization expert. Your job is to boost the virality score of scripts.
+
+CRITICAL RULES:
+1. KEEP THE EXACT SAME CTA - Do NOT change the call-to-action section at all
+2. KEEP THE SAME STRUCTURE - Maintain HOOK, BODY, CTA format
+3. KEEP SIMILAR LENGTH - Stay within 15% of original word count
+4. SOUND HUMAN - Write like a real person, not an AI
+5. NO AI WORDS: Never use leverage, unlock, dive into, game-changing, elevate, empower, unlock, transform
+
+${viralContext}
+
+SPECIFIC IMPROVEMENTS NEEDED:
+${improvementInstructions.join('\n\n')}
+
+Return ONLY the improved script with no explanations.`
+          },
+          {
+            role: "user",
+            content: `Boost the virality of this script:
+
+${script}
+
+Focus on the weak areas identified. Return ONLY the improved script.`
+          }
+        ],
+        max_tokens: 1500,
+        temperature: 0.7,
+      });
+      
+      const boostedScript = response.choices[0]?.message?.content || script;
+      
+      // Calculate new metrics
+      const newWords = boostedScript.split(/\s+/).filter(Boolean);
+      const newSentences = boostedScript.split(/[.!?]+/).filter(s => s.trim().length > 0);
+      const newAvgWordsPerSentence = newWords.length / Math.max(1, newSentences.length);
+      const newGradeLevel = Math.max(3, Math.min(12, 0.39 * newAvgWordsPerSentence + 4));
+      
+      // Calculate new hook strength
+      const newFirstLine = boostedScript.split('\n')[0] || '';
+      const newHookStrength = hookPatterns.filter(p => p.test(newFirstLine)).length;
+      
+      // Build suggestions list
+      const suggestions = weakAreas.map(area => {
+        switch(area) {
+          case "reading_level": return { area: "Reading Level", issue: `Grade ${gradeLevel.toFixed(1)} is too high`, fix: "Simplified language to grade 3-5 level" };
+          case "hook": return { area: "Hook Strength", issue: "Hook lacks pattern interrupts", fix: "Added stronger opening with proven viral patterns" };
+          case "specificity": return { area: "Specificity", issue: "Not enough concrete details", fix: "Added specific numbers and examples" };
+          case "engagement": return { area: "Engagement", issue: "Low audience connection words", fix: "Added more 'you/your' and curiosity gaps" };
+          case "sentence_length": return { area: "Sentence Length", issue: `Avg ${avgWordsPerSentence.toFixed(0)} words per sentence`, fix: "Shortened to 5-8 words per sentence" };
+          default: return { area: "General", issue: "Needs improvement", fix: "Applied viral optimization" };
+        }
+      });
+      
+      res.json({
+        boostedScript,
+        wordCount: newWords.length,
+        gradeLevel: Math.round(newGradeLevel * 10) / 10,
+        suggestions,
+        improvements: {
+          gradeLevelBefore: Math.round(gradeLevel * 10) / 10,
+          gradeLevelAfter: Math.round(newGradeLevel * 10) / 10,
+          hookStrengthBefore: hookStrength,
+          hookStrengthAfter: newHookStrength,
+          weakAreasFixed: weakAreas.length,
+        }
+      });
+    } catch (error) {
+      console.error("Error boosting script:", error);
+      res.status(500).json({ error: "Failed to boost script virality" });
+    }
+  });
+
   // Competitor Research: Scrape top-performing TikTok content for a topic
   app.post("/api/research/competitors", async (req, res) => {
     try {

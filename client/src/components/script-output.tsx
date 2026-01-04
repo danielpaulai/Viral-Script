@@ -68,6 +68,38 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
   const [showEnhanceOptions, setShowEnhanceOptions] = useState(false);
 
   const [enhancedMetrics, setEnhancedMetrics] = useState<{wordCount: number, gradeLevel: number} | null>(null);
+  const [boostSuggestions, setBoostSuggestions] = useState<Array<{area: string, issue: string, fix: string}> | null>(null);
+  const [boostImprovements, setBoostImprovements] = useState<{gradeLevelBefore: number, gradeLevelAfter: number, hookStrengthBefore: number, hookStrengthAfter: number, weakAreasFixed: number} | null>(null);
+  const [showBoostPanel, setShowBoostPanel] = useState(false);
+
+  const boostViralityMutation = useMutation({
+    mutationFn: async () => {
+      const currentScript = enhancedScript || script.script;
+      const res = await apiRequest("POST", "/api/scripts/boost", {
+        script: currentScript,
+        parameters: script.parameters,
+      });
+      return res.json();
+    },
+    onSuccess: (data) => {
+      setEnhancedScript(data.boostedScript);
+      setEnhancedMetrics({ wordCount: data.wordCount, gradeLevel: data.gradeLevel });
+      setBoostSuggestions(data.suggestions);
+      setBoostImprovements(data.improvements);
+      setShowBoostPanel(true);
+      toast({
+        title: "Virality Boosted",
+        description: `Fixed ${data.improvements.weakAreasFixed} weak areas. Grade level: ${data.gradeLevel}`,
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Boost Failed",
+        description: "Could not boost script virality. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
   
   const enhanceScriptMutation = useMutation({
     mutationFn: async (enhancementType: string) => {
@@ -218,17 +250,20 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
     ? "Moderate" 
     : "Complex";
 
-  // Calculate viral score based on multiple factors
+  // Calculate viral score based on multiple factors - uses current displayed script
   const calculateViralScore = () => {
     let score = 0;
-    const scriptLower = script.script.toLowerCase();
-    const firstLine = script.script.split('\n')[0] || '';
+    const currentScript = getDisplayScript();
+    const scriptLower = currentScript.toLowerCase();
+    const firstLine = currentScript.split('\n')[0] || '';
+    const currentGrade = displayGradeLevel;
+    const currentWordCount = displayWordCount;
     
     // Grade level score (max 25 points - lower is better for virality)
-    if (script.gradeLevel <= 5) score += 25;
-    else if (script.gradeLevel <= 6) score += 20;
-    else if (script.gradeLevel <= 7) score += 15;
-    else if (script.gradeLevel <= 8) score += 10;
+    if (currentGrade <= 5) score += 25;
+    else if (currentGrade <= 6) score += 20;
+    else if (currentGrade <= 7) score += 15;
+    else if (currentGrade <= 8) score += 10;
     else score += 5;
     
     // Hook strength score (max 25 points - check first line for strong opening patterns)
@@ -241,9 +276,8 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
     score += Math.min(25, hookMatches * 12 + (firstLine.length < 60 ? 5 : 0));
     
     // Structure score (max 25 points - based on script length and word count target)
-    const wordCount = script.wordCount;
-    const hasGoodLength = wordCount >= 30 && wordCount <= 300;
-    const hasMultipleParagraphs = script.script.split('\n').filter(l => l.trim()).length >= 3;
+    const hasGoodLength = currentWordCount >= 30 && currentWordCount <= 300;
+    const hasMultipleParagraphs = currentScript.split('\n').filter(l => l.trim()).length >= 3;
     const hasCta = /follow|comment|share|save|link|subscribe|like/i.test(scriptLower);
     if (hasGoodLength) score += 12;
     if (hasMultipleParagraphs) score += 8;
@@ -283,6 +317,23 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
             <span className={viralScoreColor} data-testid="text-viral-score">
               Viral Score: {viralScore}% ({viralScoreLabel})
             </span>
+            {viralScore < 75 && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => boostViralityMutation.mutate()}
+                disabled={boostViralityMutation.isPending}
+                className="ml-2 bg-gradient-to-r from-orange-500/20 to-red-500/20 border-orange-500/50 text-orange-400 hover:text-orange-300"
+                data-testid="button-boost-virality"
+              >
+                {boostViralityMutation.isPending ? (
+                  <div className="w-3 h-3 border-2 border-orange-400/30 border-t-orange-400 rounded-full animate-spin mr-1" />
+                ) : (
+                  <TrendingUp className="w-3 h-3 mr-1" />
+                )}
+                Boost Score
+              </Button>
+            )}
           </div>
         </div>
         
@@ -343,12 +394,76 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => { setEnhancedScript(null); setEnhancedMetrics(null); }}
+            onClick={() => { 
+              setEnhancedScript(null); 
+              setEnhancedMetrics(null); 
+              setBoostSuggestions(null);
+              setBoostImprovements(null);
+              setShowBoostPanel(false);
+            }}
             className="ml-auto text-xs text-muted-foreground"
             data-testid="button-revert-enhancement"
           >
             Revert to original
           </Button>
+        </div>
+      )}
+
+      {/* Boost Virality Panel */}
+      {showBoostPanel && boostSuggestions && boostSuggestions.length > 0 && (
+        <div className="mb-4 p-4 rounded-md bg-gradient-to-br from-orange-500/10 to-red-500/10 border border-orange-500/30">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <TrendingUp className="w-4 h-4 text-orange-400" />
+              <span className="text-sm font-medium text-orange-400">Virality Improvements Applied</span>
+              {boostImprovements && (
+                <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
+                  {boostImprovements.weakAreasFixed} fixes
+                </Badge>
+              )}
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowBoostPanel(false)}
+              className="text-xs text-muted-foreground"
+            >
+              Hide
+            </Button>
+          </div>
+          
+          {boostImprovements && (
+            <div className="grid grid-cols-2 gap-3 mb-3">
+              <div className="p-2 rounded bg-white/5 border border-white/10">
+                <p className="text-[10px] text-muted-foreground uppercase mb-1">Grade Level</p>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-red-400">{boostImprovements.gradeLevelBefore}</span>
+                  <span className="text-xs text-muted-foreground">→</span>
+                  <span className="text-sm text-green-400 font-bold">{boostImprovements.gradeLevelAfter}</span>
+                </div>
+              </div>
+              <div className="p-2 rounded bg-white/5 border border-white/10">
+                <p className="text-[10px] text-muted-foreground uppercase mb-1">Hook Strength</p>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-red-400">{boostImprovements.hookStrengthBefore}/10</span>
+                  <span className="text-xs text-muted-foreground">→</span>
+                  <span className="text-sm text-green-400 font-bold">{boostImprovements.hookStrengthAfter}/10</span>
+                </div>
+              </div>
+            </div>
+          )}
+          
+          <div className="space-y-2">
+            {boostSuggestions.map((suggestion, i) => (
+              <div key={i} className="flex items-start gap-2 text-xs">
+                <Check className="w-3 h-3 text-green-400 mt-0.5 flex-shrink-0" />
+                <div>
+                  <span className="font-medium text-white">{suggestion.area}:</span>{" "}
+                  <span className="text-muted-foreground">{suggestion.fix}</span>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
