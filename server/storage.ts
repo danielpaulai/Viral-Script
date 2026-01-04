@@ -23,7 +23,7 @@ import { randomUUID } from "crypto";
 import session from "express-session";
 import createMemoryStore from "memorystore";
 import connectPgSimple from "connect-pg-simple";
-import { db, pool } from "./db";
+import { db, pool, isDatabaseAvailable } from "./db";
 import { eq } from "drizzle-orm";
 
 const MemoryStore = createMemoryStore(session);
@@ -87,6 +87,7 @@ export class MemStorage implements IStorage {
   private contentStrategies: Map<string, ContentStrategy>;
   private userUsage: Map<string, UserUsage>;
   private userSubscriptions: Map<string, UserSubscription>;
+  private usersMemory: Map<string, User>;
   sessionStore: session.Store;
 
   constructor() {
@@ -99,33 +100,81 @@ export class MemStorage implements IStorage {
     this.contentStrategies = new Map();
     this.userUsage = new Map();
     this.userSubscriptions = new Map();
+    this.usersMemory = new Map();
     // Use memory session store for reliability across environments
     this.sessionStore = new MemoryStore({
       checkPeriod: 86400000, // prune expired entries every 24h
     });
   }
 
-  // User methods use the database for persistence
+  // User methods with database fallback to memory
   async getUser(id: string): Promise<User | undefined> {
-    const result = await db.select().from(users).where(eq(users.id, id));
-    return result[0];
+    // Try database first, fall back to memory
+    if (db) {
+      try {
+        const result = await db.select().from(users).where(eq(users.id, id));
+        if (result[0]) return result[0];
+      } catch (e) {
+        console.log("Database query failed, using memory:", (e as Error).message);
+      }
+    }
+    return this.usersMemory.get(id);
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    const result = await db.select().from(users).where(eq(users.username, username));
-    return result[0];
+    // Try database first, fall back to memory
+    if (db) {
+      try {
+        const result = await db.select().from(users).where(eq(users.username, username));
+        if (result[0]) return result[0];
+      } catch (e) {
+        console.log("Database query failed, using memory:", (e as Error).message);
+      }
+    }
+    // Check memory storage
+    const memUsers = Array.from(this.usersMemory.values());
+    for (const user of memUsers) {
+      if (user.username === username) return user;
+    }
+    return undefined;
   }
 
   async createUser(insertUser: UpsertUser): Promise<User> {
     const id = randomUUID();
-    const result = await db.insert(users).values({
+    const now = new Date();
+    
+    // Try database first
+    if (db) {
+      try {
+        const result = await db.insert(users).values({
+          id,
+          username: insertUser.username,
+          password: insertUser.password,
+          plan: "starter",
+          planExpiresAt: null,
+        }).returning();
+        if (result[0]) return result[0];
+      } catch (e) {
+        console.log("Database insert failed, using memory:", (e as Error).message);
+      }
+    }
+    
+    // Fall back to memory storage
+    const user: User = {
       id,
-      username: insertUser.username,
-      password: insertUser.password,
+      username: insertUser.username || null,
+      password: insertUser.password || null,
+      email: null,
+      firstName: null,
+      lastName: null,
+      profileImageUrl: null,
       plan: "starter",
       planExpiresAt: null,
-    }).returning();
-    return result[0];
+      createdAt: now,
+      updatedAt: now,
+    };
+    this.usersMemory.set(id, user);
+    return user;
   }
 
   async getScripts(): Promise<Script[]> {
@@ -240,11 +289,26 @@ export class MemStorage implements IStorage {
   }
 
   async updateUserPlan(userId: string, plan: string): Promise<User | undefined> {
-    const result = await db.update(users)
-      .set({ plan })
-      .where(eq(users.id, userId))
-      .returning();
-    return result[0];
+    // Try database first
+    if (db) {
+      try {
+        const result = await db.update(users)
+          .set({ plan })
+          .where(eq(users.id, userId))
+          .returning();
+        if (result[0]) return result[0];
+      } catch (e) {
+        console.log("Database update failed, using memory:", (e as Error).message);
+      }
+    }
+    // Fall back to memory
+    const user = this.usersMemory.get(userId);
+    if (user) {
+      const updated = { ...user, plan, updatedAt: new Date() };
+      this.usersMemory.set(userId, updated);
+      return updated;
+    }
+    return undefined;
   }
 
   async getKnowledgeBaseDocs(userId?: string): Promise<KnowledgeBaseDoc[]> {

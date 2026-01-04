@@ -5,8 +5,11 @@ import * as fs from "fs";
 
 const { Pool } = pg;
 
+// Track if database is available
+export let isDatabaseAvailable = false;
+
 // Get database URL - in production it may be in /tmp/replitdb
-function getDatabaseUrl(): string {
+function getDatabaseUrl(): string | null {
   // First check environment variable
   if (process.env.DATABASE_URL) {
     return process.env.DATABASE_URL;
@@ -25,11 +28,34 @@ function getDatabaseUrl(): string {
     console.log("Could not read /tmp/replitdb:", e);
   }
   
-  throw new Error(
-    "DATABASE_URL must be set. Did you forget to provision a database?",
-  );
+  return null;
 }
 
 const databaseUrl = getDatabaseUrl();
-export const pool = new Pool({ connectionString: databaseUrl });
-export const db = drizzle(pool, { schema });
+
+// Create pool and db only if we have a database URL
+export let pool: pg.Pool | null = null;
+export let db: ReturnType<typeof drizzle> | null = null;
+
+if (databaseUrl) {
+  try {
+    pool = new Pool({ 
+      connectionString: databaseUrl,
+      connectionTimeoutMillis: 5000,
+    });
+    db = drizzle(pool, { schema });
+    
+    // Test connection
+    pool.query('SELECT 1').then(() => {
+      isDatabaseAvailable = true;
+      console.log("Database connection successful");
+    }).catch((err) => {
+      console.log("Database connection failed, using memory storage:", err.message);
+      isDatabaseAvailable = false;
+    });
+  } catch (e) {
+    console.log("Failed to create database pool:", e);
+  }
+} else {
+  console.log("No DATABASE_URL found, using memory storage");
+}
