@@ -715,6 +715,32 @@ export default function Home() {
               onTranscript={(text) => setFormData(prev => ({ ...prev, topic: prev.topic + " " + text }))}
             />
           </div>
+          
+          {/* Viral Examples button - always visible when topic is entered */}
+          {formData.topic.trim().length >= 3 && (
+            <div className="mt-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => viralExamplesMutation.mutate({ topic: formData.topic, limit: 8 })}
+                disabled={viralExamplesMutation.isPending}
+                className="bg-pink-500/10 border-pink-500/30 text-pink-400"
+                data-testid="button-viral-examples-main"
+              >
+                {viralExamplesMutation.isPending ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Finding viral examples...
+                  </>
+                ) : (
+                  <>
+                    <TrendingUp className="w-4 h-4 mr-2" />
+                    Get Viral Examples
+                  </>
+                )}
+              </Button>
+            </div>
+          )}
         </div>
 
         <div className="mb-4 p-3 rounded-md bg-white/5 border border-white/10">

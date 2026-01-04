@@ -658,11 +658,18 @@ export async function fetchViralExamples(
       };
     }
 
+    // Log sample item to see actual structure
+    if (items.length > 0) {
+      const sampleItem = items[0] as any;
+      console.log(`[Viral Examples] Sample item structure:`, JSON.stringify(sampleItem, null, 2).substring(0, 1000));
+    }
+
     const posts = (items as unknown as TikTokItem[])
       .filter((item) => {
         const hasCaption = !!(item.desc || item.text);
         const views = item.stats?.playCount || item.playCount || 0;
-        return hasCaption && views > 1000;
+        console.log(`[Viral Examples] Item check - hasCaption: ${hasCaption}, views: ${views}, desc length: ${(item.desc || item.text || '').length}`);
+        return hasCaption; // Remove view filter temporarily to see what we get
       })
       .map((item) => {
         const views = item.stats?.playCount || item.playCount || 0;
