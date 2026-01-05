@@ -50,8 +50,9 @@ Script generation uses predefined catalogs:
 - **Word Count Targets**: Platform/duration specific (15s: 30-45, 30s: 60-90, 60s: 120-180, 90s: 180-270, 180s: 360-540 words)
 - **Fallback**: Automatically falls back to template-based generation if AI fails
 
-### Apify TikTok Integration
-- **Viral Examples API**: `/api/viral-examples` fetches top viral TikTok captions by topic
+### Apify Social Media Integration
+- **TikTok Viral Examples API**: `/api/viral-examples` fetches top viral TikTok captions by topic
+- **Instagram Viral Examples API**: `/api/viral-examples/instagram` fetches top Instagram Reels/posts by hashtag
 - **Full Caption Extraction**: Pulls complete captions, duration patterns, engagement breakdown
 - **Format & Hook Detection**: Automatically categorizes content by format type (listicle, story, tutorial, etc.) and hook type (question, statistic, contrarian, etc.)
 - **Aggregate Analytics**: Calculates avgViews, avgEngagement, dominantFormats, bestPerformingDuration
@@ -63,7 +64,7 @@ Script generation uses predefined catalogs:
 
 **Memory-First Storage**: The `IStorage` interface with `MemStorage` implementation allows rapid development. PostgreSQL integration is configured via Drizzle ORM but storage currently uses in-memory maps.
 
-**Dark Theme Default**: The application uses a dark color scheme optimized for content creators who often work in low-light environments.
+**Light/Dark Theme Toggle**: The application supports both light and dark themes with a toggle in the header. Dark theme is the default, optimized for content creators who often work in low-light environments. Theme preference is persisted in localStorage.
 
 ## External Dependencies
 

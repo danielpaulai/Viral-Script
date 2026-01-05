@@ -2465,12 +2465,50 @@ DO NOT make up fake statistics. Use the research data provided, or clearly state
 
       res.json({
         success: true,
+        platform: "tiktok",
         ...result,
       });
     } catch (error: any) {
       console.error("Viral examples error:", error);
       res.status(500).json({ 
         error: error.message || "Failed to fetch viral examples",
+        details: "Please try again or use a different topic"
+      });
+    }
+  });
+
+  // Instagram Viral Examples API - Fetch top Instagram captions for inspiration
+  app.post("/api/viral-examples/instagram", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({ error: "User not found" });
+      }
+
+      const { topic, limit = 5 } = req.body;
+      if (!topic || typeof topic !== 'string' || topic.trim().length < 3) {
+        return res.status(400).json({ error: "Topic is required (at least 3 characters)" });
+      }
+
+      if (!process.env.APIFY_API_TOKEN) {
+        return res.status(503).json({ 
+          error: "Instagram Viral Examples feature is not configured",
+          details: "APIFY_API_TOKEN is required"
+        });
+      }
+
+      const { fetchInstagramViralExamples } = await import("./apify");
+      const result = await fetchInstagramViralExamples(topic.trim(), Math.min(limit, 10));
+
+      res.json({
+        success: true,
+        platform: "instagram",
+        ...result,
+      });
+    } catch (error: any) {
+      console.error("Instagram viral examples error:", error);
+      res.status(500).json({ 
+        error: error.message || "Failed to fetch Instagram viral examples",
         details: "Please try again or use a different topic"
       });
     }

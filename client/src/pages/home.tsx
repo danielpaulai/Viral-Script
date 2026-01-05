@@ -102,6 +102,7 @@ import {
   Loader2,
   ExternalLink,
 } from "lucide-react";
+import { SiTiktok, SiInstagram } from "react-icons/si";
 
 const presetIcons: Record<string, typeof Zap> = {
   business_growth: TrendingUp,
@@ -244,8 +245,9 @@ export default function Home() {
   const [competitorInsights, setCompetitorInsights] = useState<CompetitorInsights | null>(null);
   const [contentSkeleton, setContentSkeleton] = useState<ContentSkeleton | null>(null);
   const [isSkeletonLocked, setIsSkeletonLocked] = useState(false);
-  const [viralExamples, setViralExamples] = useState<ViralExamplesResult | null>(null);
+  const [viralExamples, setViralExamples] = useState<ViralExamplesResult & { platform?: string } | null>(null);
   const [showViralExamples, setShowViralExamples] = useState(false);
+  const [viralSearchPlatform, setViralSearchPlatform] = useState<"tiktok" | "instagram" | null>(null);
 
   const [formData, setFormData] = useState<ScriptParameters>({
     topic: "",
@@ -378,23 +380,27 @@ export default function Home() {
     },
   });
 
-  // Viral Examples - fetch top TikTok captions for inspiration
+  // Viral Examples - fetch top TikTok/Instagram captions for inspiration
   const viralExamplesMutation = useMutation({
-    mutationFn: async ({ topic, limit = 5 }: { topic: string; limit?: number }) => {
-      const res = await apiRequest("POST", "/api/viral-examples", { topic, limit });
+    mutationFn: async ({ topic, limit = 5, platform = "tiktok" }: { topic: string; limit?: number; platform?: "tiktok" | "instagram" }) => {
+      setViralSearchPlatform(platform);
+      const endpoint = platform === "instagram" ? "/api/viral-examples/instagram" : "/api/viral-examples";
+      const res = await apiRequest("POST", endpoint, { topic, limit });
       return res.json();
     },
-    onSuccess: (data: ViralExamplesResult & { success: boolean }) => {
+    onSuccess: (data: ViralExamplesResult & { success: boolean; platform?: string }) => {
+      setViralSearchPlatform(null);
       if (data.success) {
         setViralExamples(data);
         setShowViralExamples(true);
         toast({
-          title: "Viral Examples Found",
+          title: `${data.platform === "instagram" ? "Instagram" : "TikTok"} Viral Examples Found`,
           description: `Found ${data.examples.length} top-performing captions for inspiration.`,
         });
       }
     },
     onError: (error: any) => {
+      setViralSearchPlatform(null);
       toast({
         title: "Error",
         description: error?.message || "Failed to fetch viral examples.",
@@ -716,26 +722,46 @@ export default function Home() {
             />
           </div>
           
-          {/* Viral Examples button - always visible when topic is entered */}
+          {/* Viral Examples buttons - TikTok & Instagram */}
           {formData.topic.trim().length >= 3 && (
-            <div className="mt-2">
+            <div className="mt-2 flex flex-wrap gap-2">
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => viralExamplesMutation.mutate({ topic: formData.topic, limit: 8 })}
-                disabled={viralExamplesMutation.isPending}
+                onClick={() => viralExamplesMutation.mutate({ topic: formData.topic, limit: 8, platform: "tiktok" })}
+                disabled={viralSearchPlatform !== null}
                 className="bg-pink-500/10 border-pink-500/30 text-pink-400"
-                data-testid="button-viral-examples-main"
+                data-testid="button-viral-examples-tiktok"
               >
-                {viralExamplesMutation.isPending ? (
+                {viralSearchPlatform === "tiktok" ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Finding viral examples...
+                    Searching TikTok...
                   </>
                 ) : (
                   <>
-                    <TrendingUp className="w-4 h-4 mr-2" />
-                    Get Viral Examples
+                    <SiTiktok className="w-3 h-3 mr-2" />
+                    TikTok Viral
+                  </>
+                )}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => viralExamplesMutation.mutate({ topic: formData.topic, limit: 8, platform: "instagram" })}
+                disabled={viralSearchPlatform !== null}
+                className="bg-purple-500/10 border-purple-500/30 text-purple-400"
+                data-testid="button-viral-examples-instagram"
+              >
+                {viralSearchPlatform === "instagram" ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Searching Instagram...
+                  </>
+                ) : (
+                  <>
+                    <SiInstagram className="w-3 h-3 mr-2" />
+                    Instagram Viral
                   </>
                 )}
               </Button>
@@ -835,12 +861,18 @@ export default function Home() {
 
         {/* Viral Examples Panel */}
         {viralExamples && showViralExamples && (
-          <div className="mb-4 p-4 rounded-lg bg-gradient-to-br from-pink-500/10 to-purple-500/10 border border-pink-500/30">
+          <div className={`mb-4 p-4 rounded-lg border ${viralExamples.platform === "instagram" ? "bg-gradient-to-br from-purple-500/10 to-pink-500/10 border-purple-500/30" : "bg-gradient-to-br from-pink-500/10 to-purple-500/10 border-pink-500/30"}`}>
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
-                <TrendingUp className="w-5 h-5 text-pink-400" />
-                <span className="text-sm font-bold text-pink-400 uppercase tracking-wider">Viral Examples</span>
-                <Badge className="bg-pink-500/20 text-pink-300 border-pink-500/30">
+                {viralExamples.platform === "instagram" ? (
+                  <SiInstagram className="w-5 h-5 text-purple-400" />
+                ) : (
+                  <SiTiktok className="w-5 h-5 text-pink-400" />
+                )}
+                <span className={`text-sm font-bold uppercase tracking-wider ${viralExamples.platform === "instagram" ? "text-purple-400" : "text-pink-400"}`}>
+                  {viralExamples.platform === "instagram" ? "Instagram" : "TikTok"} Viral Examples
+                </span>
+                <Badge className={viralExamples.platform === "instagram" ? "bg-purple-500/20 text-purple-300 border-purple-500/30" : "bg-pink-500/20 text-pink-300 border-pink-500/30"}>
                   {viralExamples.examples.length} found
                 </Badge>
               </div>

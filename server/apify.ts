@@ -854,3 +854,151 @@ export function analyzeCreatorStyle(content: ScrapedContent): {
     topPerformingContent,
   };
 }
+
+// Fetch Instagram viral examples for a topic (hashtag-based search)
+export async function fetchInstagramViralExamples(
+  topic: string, 
+  limit: number = 10
+): Promise<ViralExamplesResult> {
+  if (!APIFY_TOKEN) {
+    throw new Error("APIFY_API_TOKEN is not configured");
+  }
+
+  const client = new ApifyClient({ token: APIFY_TOKEN });
+
+  try {
+    // Convert topic to hashtag format
+    const hashtag = topic.toLowerCase().replace(/\s+/g, "").replace(/[^a-z0-9]/g, "");
+    
+    const input = {
+      hashtags: [hashtag],
+      resultsLimit: Math.min(limit * 2, 30),
+      resultsType: "posts",
+    };
+
+    console.log(`[Instagram Viral] Searching hashtag: #${hashtag}`);
+
+    const run = await client.actor("apify/instagram-hashtag-scraper").call(input, {
+      waitSecs: 120,
+    });
+
+    const { items } = await client.dataset(run.defaultDatasetId).listItems();
+    
+    console.log(`[Instagram Viral] Raw items count: ${items.length}`);
+
+    interface InstagramItem {
+      id: string;
+      caption?: string;
+      shortCode?: string;
+      likesCount?: number;
+      commentsCount?: number;
+      videoViewCount?: number;
+      ownerUsername?: string;
+      ownerFullName?: string;
+      type?: string;
+      videoDuration?: number;
+      timestamp?: string;
+    }
+
+    const posts = (items as unknown as InstagramItem[])
+      .filter((item) => item.caption && item.caption.length > 20)
+      .map((item) => {
+        const views = item.videoViewCount || item.likesCount || 0;
+        const likes = item.likesCount || 0;
+        const comments = item.commentsCount || 0;
+        const engagementRate = views > 0 ? ((likes + comments) / views) * 100 : 0;
+        const fullCaption = item.caption || "";
+        const hookLine = fullCaption.split(/[\n.!?]/)[0]?.trim() || "";
+        const wordCount = fullCaption.split(/\s+/).length;
+
+        const authorHandle = item.ownerUsername || "unknown";
+        const postUrl = item.shortCode 
+          ? `https://www.instagram.com/p/${item.shortCode}/`
+          : `https://www.instagram.com/${authorHandle}/`;
+
+        return {
+          id: item.id || item.shortCode || String(Date.now()),
+          fullCaption,
+          hookLine,
+          views,
+          likes,
+          comments,
+          shares: 0,
+          engagementRate: Math.round(engagementRate * 100) / 100,
+          author: authorHandle,
+          authorFollowers: undefined,
+          videoDuration: item.videoDuration,
+          estimatedWordCount: wordCount,
+          formatType: detectFormatType(fullCaption),
+          videoUrl: postUrl,
+          hookType: detectHookType(hookLine),
+        };
+      })
+      .sort((a, b) => b.views - a.views)
+      .slice(0, limit);
+
+    // Calculate aggregates
+    const avgViews = posts.length > 0 
+      ? Math.round(posts.reduce((sum, p) => sum + p.views, 0) / posts.length)
+      : 0;
+    const avgEngagement = posts.length > 0
+      ? Math.round(posts.reduce((sum, p) => sum + p.engagementRate, 0) / posts.length * 100) / 100
+      : 0;
+
+    // Find dominant formats
+    const formatCounts: Record<string, number> = {};
+    const hookCounts: Record<string, number> = {};
+    
+    for (const p of posts) {
+      formatCounts[p.formatType] = (formatCounts[p.formatType] || 0) + 1;
+      hookCounts[p.hookType] = (hookCounts[p.hookType] || 0) + 1;
+    }
+
+    const dominantFormats = Object.entries(formatCounts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 3)
+      .map(([format]) => format);
+
+    const dominantHookTypes = Object.entries(hookCounts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 3)
+      .map(([hook]) => hook);
+
+    // Analyze duration patterns
+    const durations = posts
+      .filter(p => p.videoDuration)
+      .map(p => p.videoDuration!);
+    
+    let bestPerformingDuration = "30-60 seconds";
+    if (durations.length > 0) {
+      const avgDuration = durations.reduce((a, b) => a + b, 0) / durations.length;
+      if (avgDuration < 20) bestPerformingDuration = "Under 20 seconds";
+      else if (avgDuration < 45) bestPerformingDuration = "20-45 seconds";
+      else if (avgDuration < 90) bestPerformingDuration = "45-90 seconds";
+      else bestPerformingDuration = "Over 90 seconds";
+    }
+
+    return {
+      examples: posts as ViralExample[],
+      topicKeyword: topic,
+      avgViews,
+      avgEngagement,
+      dominantFormats,
+      dominantHookTypes,
+      bestPerformingDuration,
+      fetchedAt: new Date().toISOString(),
+    };
+  } catch (error) {
+    console.error("Instagram viral examples fetch error:", error);
+    return {
+      examples: [],
+      topicKeyword: topic,
+      avgViews: 0,
+      avgEngagement: 0,
+      dominantFormats: [],
+      dominantHookTypes: [],
+      bestPerformingDuration: "Unknown",
+      fetchedAt: new Date().toISOString(),
+    };
+  }
+}
