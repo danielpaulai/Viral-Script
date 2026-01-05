@@ -129,14 +129,23 @@ export function setupAuth(app: Express) {
   });
 
   app.post("/api/login", (req, res, next) => {
+    console.log("Login attempt:", { username: req.body?.username });
     passport.authenticate("local", (err: any, user: SelectUser | false, info: { message: string }) => {
-      if (err) return next(err);
+      if (err) {
+        console.error("Login passport error:", err);
+        return res.status(500).json({ message: "Login failed. Please try again." });
+      }
       if (!user) {
+        console.log("Login failed: invalid credentials");
         return res.status(401).json({ message: info?.message || "Invalid credentials" });
       }
-      req.login(user, (err) => {
-        if (err) return next(err);
+      req.login(user, (loginErr) => {
+        if (loginErr) {
+          console.error("Login session error:", loginErr);
+          return res.status(500).json({ message: "Session creation failed. Please try again." });
+        }
         const { password: _, ...safeUser } = user;
+        console.log("Login successful:", safeUser.id);
         res.status(200).json(safeUser);
       });
     })(req, res, next);
