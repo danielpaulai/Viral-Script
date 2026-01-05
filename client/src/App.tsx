@@ -19,6 +19,7 @@ import KnowledgeBase from "@/pages/knowledge-base";
 import Settings from "@/pages/settings";
 import Landing from "@/pages/landing";
 import Login from "@/pages/login";
+import ResetPassword from "@/pages/reset-password";
 import NotFound from "@/pages/not-found";
 
 function LoginRedirect() {
@@ -34,6 +35,7 @@ function AuthenticatedRouter() {
     <Switch>
       <Route path="/" component={Home} />
       <Route path="/login" component={LoginRedirect} />
+      <Route path="/reset-password" component={ResetPassword} />
       <Route path="/scripts" component={Scripts} />
       <Route path="/projects" component={Projects} />
       <Route path="/calendar" component={CalendarPage} />
@@ -75,6 +77,7 @@ function PublicRouter() {
     <Switch>
       <Route path="/" component={Landing} />
       <Route path="/login" component={Login} />
+      <Route path="/reset-password" component={ResetPassword} />
       <Route path="/pricing" component={Pricing} />
       <Route component={Landing} />
     </Switch>

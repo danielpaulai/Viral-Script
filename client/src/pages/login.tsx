@@ -6,6 +6,9 @@ import { Label } from "@/components/ui/label";
 import { Sparkles, Zap, FileText, CheckCircle2, Loader2 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 
 const benefits = [
   "50+ viral hook templates",
@@ -23,6 +26,11 @@ export default function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState("");
+  const [forgotLoading, setForgotLoading] = useState(false);
+  const [forgotSuccess, setForgotSuccess] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
     if (user) {
@@ -40,6 +48,28 @@ export default function Login() {
       registerMutation.mutate({ username, password });
     } else {
       loginMutation.mutate({ username, password });
+    }
+  };
+
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setForgotLoading(true);
+    
+    try {
+      await apiRequest("POST", "/api/forgot-password", { email: forgotEmail });
+      setForgotSuccess(true);
+      toast({
+        title: "Check your email",
+        description: "If an account exists, we've sent a password reset link.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to send reset email. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setForgotLoading(false);
     }
   };
 
@@ -124,7 +154,22 @@ export default function Login() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="password">Password</Label>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="password">Password</Label>
+                    {!isRegister && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setForgotEmail(username);
+                          setShowForgotPassword(true);
+                        }}
+                        className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                        data-testid="button-forgot-password"
+                      >
+                        Forgot password?
+                      </button>
+                    )}
+                  </div>
                   <Input
                     id="password"
                     type="password"
@@ -189,6 +234,64 @@ export default function Login() {
           </p>
         </div>
       </div>
+
+      <Dialog open={showForgotPassword} onOpenChange={(open) => {
+        setShowForgotPassword(open);
+        if (!open) {
+          setForgotSuccess(false);
+        }
+      }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Reset your password</DialogTitle>
+            <DialogDescription>
+              Enter your email address and we'll send you a link to reset your password.
+            </DialogDescription>
+          </DialogHeader>
+          {forgotSuccess ? (
+            <div className="py-4 text-center">
+              <CheckCircle2 className="w-12 h-12 text-green-500 mx-auto mb-4" />
+              <p className="text-sm text-muted-foreground">
+                If an account exists with this email, you'll receive a password reset link shortly.
+              </p>
+              <Button 
+                className="mt-4" 
+                onClick={() => setShowForgotPassword(false)}
+                data-testid="button-close-forgot-dialog"
+              >
+                Close
+              </Button>
+            </div>
+          ) : (
+            <form onSubmit={handleForgotPassword} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="forgot-email">Email</Label>
+                <Input
+                  id="forgot-email"
+                  type="email"
+                  placeholder="you@example.com"
+                  value={forgotEmail}
+                  onChange={(e) => setForgotEmail(e.target.value)}
+                  required
+                  disabled={forgotLoading}
+                  data-testid="input-forgot-email"
+                />
+              </div>
+              <Button 
+                type="submit" 
+                className="w-full" 
+                disabled={forgotLoading || !forgotEmail}
+                data-testid="button-send-reset"
+              >
+                {forgotLoading ? (
+                  <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                ) : null}
+                Send Reset Link
+              </Button>
+            </form>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

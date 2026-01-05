@@ -4,7 +4,7 @@ import { storage } from "./storage";
 import { randomUUID } from "crypto";
 import OpenAI from "openai";
 import multer from "multer";
-import { setupAuth, isAuthenticated } from "./auth";
+import { setupAuth, isAuthenticated, setupPasswordReset } from "./auth";
 import { extractTextFromFile, truncateText, SUPPORTED_MIME_TYPES, MAX_FILE_SIZE, MAX_FILES } from "./ocr-utils";
 
 const upload = multer({
@@ -1218,6 +1218,7 @@ export async function registerRoutes(
   app: Express
 ): Promise<Server> {
   setupAuth(app);
+  setupPasswordReset(app);
   
   app.get("/api/ctas", (req, res) => {
     res.json({

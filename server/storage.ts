@@ -19,7 +19,10 @@ import {
   type InsertUserSubscription,
   type ScriptVersion,
   type InsertScriptVersion,
+  type PasswordResetToken,
+  type InsertPasswordResetToken,
   users,
+  passwordResetTokens,
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import session from "express-session";
@@ -82,6 +85,12 @@ export interface IStorage {
   getScriptVersions(scriptId: string): Promise<ScriptVersion[]>;
   createScriptVersion(version: InsertScriptVersion): Promise<ScriptVersion>;
   getScriptVersion(id: string): Promise<ScriptVersion | undefined>;
+  
+  // Password Reset
+  createPasswordResetToken(data: { userId: string; token: string; expiresAt: Date }): Promise<PasswordResetToken>;
+  getPasswordResetToken(token: string): Promise<PasswordResetToken | undefined>;
+  markPasswordResetTokenUsed(token: string): Promise<void>;
+  updateUserPassword(userId: string, hashedPassword: string): Promise<void>;
 }
 
 export class MemStorage implements IStorage {
@@ -539,6 +548,76 @@ export class MemStorage implements IStorage {
 
   async getScriptVersion(id: string): Promise<ScriptVersion | undefined> {
     return this.scriptVersions.get(id);
+  }
+
+  // Password Reset Token methods
+  async createPasswordResetToken(data: { userId: string; token: string; expiresAt: Date }): Promise<PasswordResetToken> {
+    const id = randomUUID();
+    const now = new Date();
+    
+    // Use database
+    if (db) {
+      try {
+        const result = await db.insert(passwordResetTokens).values({
+          id,
+          userId: data.userId,
+          token: data.token,
+          expiresAt: data.expiresAt,
+          createdAt: now,
+        }).returning();
+        if (result[0]) return result[0];
+      } catch (e) {
+        console.error("Failed to create password reset token:", (e as Error).message);
+        throw e;
+      }
+    }
+    
+    throw new Error("Database not available for password reset");
+  }
+
+  async getPasswordResetToken(token: string): Promise<PasswordResetToken | undefined> {
+    if (db) {
+      try {
+        const result = await db.select().from(passwordResetTokens).where(eq(passwordResetTokens.token, token));
+        return result[0];
+      } catch (e) {
+        console.error("Failed to get password reset token:", (e as Error).message);
+      }
+    }
+    return undefined;
+  }
+
+  async markPasswordResetTokenUsed(token: string): Promise<void> {
+    if (db) {
+      try {
+        await db.update(passwordResetTokens)
+          .set({ usedAt: new Date() })
+          .where(eq(passwordResetTokens.token, token));
+      } catch (e) {
+        console.error("Failed to mark token as used:", (e as Error).message);
+      }
+    }
+  }
+
+  async updateUserPassword(userId: string, hashedPassword: string): Promise<void> {
+    if (db) {
+      try {
+        await db.update(users)
+          .set({ password: hashedPassword, updatedAt: new Date() })
+          .where(eq(users.id, userId));
+      } catch (e) {
+        console.error("Failed to update user password:", (e as Error).message);
+        throw e;
+      }
+    } else {
+      // Update in memory
+      const user = this.usersMemory.get(userId);
+      if (user) {
+        user.password = hashedPassword;
+        user.updatedAt = new Date();
+        this.usersMemory.set(userId, user);
+      }
+    }
   }
 }
 
