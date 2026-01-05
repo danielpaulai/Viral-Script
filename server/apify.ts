@@ -772,6 +772,228 @@ export async function fetchViralExamples(
   }
 }
 
+// AP5 Social Media Monitoring - Enhanced strategic insights for script generation
+export interface AP5StrategicInsights {
+  keyInsights: string[];
+  painPoints: string[];
+  emotionalDrivers: string[];
+  provenCTAIdeas: string[];
+  objectionCrushers: string[];
+  swipeableFacts: string[];
+  contentAngles: string[];
+  topicSummary: string;
+  researchDepth: "basic" | "comprehensive";
+  fetchedAt: string;
+}
+
+// Fetch strategic insights using AP5 Social Media Monitoring actor
+export async function fetchAP5Insights(
+  topic: string,
+  options: {
+    platforms?: string[];
+    includeCompetitors?: boolean;
+    limit?: number;
+  } = {}
+): Promise<AP5StrategicInsights> {
+  if (!APIFY_TOKEN) {
+    console.log("[AP5] No APIFY_API_TOKEN, returning empty insights");
+    return getEmptyAP5Insights(topic);
+  }
+
+  const client = new ApifyClient({ token: APIFY_TOKEN });
+  
+  try {
+    console.log(`[AP5] Fetching strategic insights for topic: ${topic}`);
+    
+    const input = {
+      searchTerms: [topic],
+      maxItems: options.limit || 20,
+      platforms: options.platforms || ["tiktok", "instagram"],
+      includeAnalytics: true,
+    };
+
+    const run = await client.actor("ay04FddyeCI9hkXJG").call(input, {
+      waitSecs: 180,
+    });
+
+    console.log(`[AP5] Run completed: ${run.id}`);
+
+    const { items } = await client.dataset(run.defaultDatasetId).listItems();
+    
+    console.log(`[AP5] Retrieved ${items.length} items`);
+
+    if (!items || items.length === 0) {
+      console.log("[AP5] No items returned, using fallback analysis");
+      return getEmptyAP5Insights(topic);
+    }
+
+    // Process and extract insights from AP5 data
+    const insights = processAP5Data(items, topic);
+    
+    return insights;
+  } catch (error) {
+    console.error("[AP5] Error fetching insights:", error);
+    return getEmptyAP5Insights(topic);
+  }
+}
+
+function getEmptyAP5Insights(topic: string): AP5StrategicInsights {
+  return {
+    keyInsights: [],
+    painPoints: [],
+    emotionalDrivers: [],
+    provenCTAIdeas: [],
+    objectionCrushers: [],
+    swipeableFacts: [],
+    contentAngles: [],
+    topicSummary: `Research for "${topic}" - no enhanced data available`,
+    researchDepth: "basic",
+    fetchedAt: new Date().toISOString(),
+  };
+}
+
+function processAP5Data(items: any[], topic: string): AP5StrategicInsights {
+  const allText = items
+    .map(item => item.text || item.caption || item.content || item.description || "")
+    .filter(Boolean);
+  
+  const keyInsights: string[] = [];
+  const painPoints: string[] = [];
+  const emotionalDrivers: string[] = [];
+  const provenCTAIdeas: string[] = [];
+  const objectionCrushers: string[] = [];
+  const swipeableFacts: string[] = [];
+  const contentAngles: string[] = [];
+
+  // Extract pain points (problems mentioned)
+  const painPointPatterns = [
+    /struggle[sd]? with ([^.!?\n]{10,80})/gi,
+    /problem is ([^.!?\n]{10,80})/gi,
+    /tired of ([^.!?\n]{10,80})/gi,
+    /sick of ([^.!?\n]{10,80})/gi,
+    /can't seem to ([^.!?\n]{10,80})/gi,
+    /keep failing at ([^.!?\n]{10,80})/gi,
+    /why (do|does|is|are) ([^.!?\n]{10,60})\?/gi,
+  ];
+
+  // Extract emotional drivers
+  const emotionPatterns = [
+    /feel[s]? (so |like |really )?([a-z]+ed|[a-z]+ing)/gi,
+    /imagine ([^.!?\n]{10,60})/gi,
+    /finally ([^.!?\n]{10,60})/gi,
+    /what if ([^.!?\n]{10,60})/gi,
+  ];
+
+  // Extract CTAs and calls to action
+  const ctaPatterns = [
+    /(comment|drop|type|dm|save|share|follow) [^.!?\n]{5,40}/gi,
+    /link in bio/gi,
+    /check out [^.!?\n]{5,40}/gi,
+    /grab your [^.!?\n]{5,40}/gi,
+  ];
+
+  // Extract statistics and facts
+  const factPatterns = [
+    /\d+%[^.!?\n]{5,60}/gi,
+    /\$\d+[^.!?\n]{5,60}/gi,
+    /\d+ (out of|in) \d+/gi,
+    /studies show[^.!?\n]{10,80}/gi,
+    /research (shows|proves|found)[^.!?\n]{10,80}/gi,
+  ];
+
+  // Extract objection handlers
+  const objectionPatterns = [
+    /but what (if|about)[^.!?\n]{10,60}/gi,
+    /you might think[^.!?\n]{10,60}/gi,
+    /i know what you're thinking[^.!?\n]{10,60}/gi,
+    /here's (the thing|why)[^.!?\n]{10,60}/gi,
+  ];
+
+  for (const text of allText) {
+    // Extract pain points
+    for (const pattern of painPointPatterns) {
+      const matches = text.match(pattern);
+      if (matches) {
+        painPoints.push(...matches.slice(0, 2));
+      }
+    }
+
+    // Extract emotional drivers
+    for (const pattern of emotionPatterns) {
+      const matches = text.match(pattern);
+      if (matches) {
+        emotionalDrivers.push(...matches.slice(0, 2));
+      }
+    }
+
+    // Extract CTAs
+    for (const pattern of ctaPatterns) {
+      const matches = text.match(pattern);
+      if (matches) {
+        provenCTAIdeas.push(...matches.slice(0, 2));
+      }
+    }
+
+    // Extract facts
+    for (const pattern of factPatterns) {
+      const matches = text.match(pattern);
+      if (matches) {
+        swipeableFacts.push(...matches.slice(0, 2));
+      }
+    }
+
+    // Extract objection handlers
+    for (const pattern of objectionPatterns) {
+      const matches = text.match(pattern);
+      if (matches) {
+        objectionCrushers.push(...matches.slice(0, 2));
+      }
+    }
+
+    // Extract content angles (first lines as hooks/angles)
+    const firstLine = text.split(/[\n.!?]/)[0]?.trim();
+    if (firstLine && firstLine.length > 10 && firstLine.length < 100) {
+      contentAngles.push(firstLine);
+    }
+  }
+
+  // Extract key insights from high-engagement content
+  const sortedItems = items
+    .filter(item => item.engagement || item.likes || item.views)
+    .sort((a, b) => {
+      const engA = a.engagement || a.likes || a.views || 0;
+      const engB = b.engagement || b.likes || b.views || 0;
+      return engB - engA;
+    });
+
+  for (const item of sortedItems.slice(0, 5)) {
+    const text = item.text || item.caption || item.content || "";
+    if (text.length > 20) {
+      keyInsights.push(text.slice(0, 150) + (text.length > 150 ? "..." : ""));
+    }
+  }
+
+  // Deduplicate and limit results
+  const dedupe = (arr: string[]) => Array.from(new Set(arr.map(s => s.trim()))).slice(0, 8);
+
+  const topicSummary = items.length > 0
+    ? `Analyzed ${items.length} posts about "${topic}". Found ${painPoints.length} pain points, ${swipeableFacts.length} facts, and ${contentAngles.length} content angles.`
+    : `Limited data available for "${topic}"`;
+
+  return {
+    keyInsights: dedupe(keyInsights),
+    painPoints: dedupe(painPoints),
+    emotionalDrivers: dedupe(emotionalDrivers),
+    provenCTAIdeas: dedupe(provenCTAIdeas),
+    objectionCrushers: dedupe(objectionCrushers),
+    swipeableFacts: dedupe(swipeableFacts),
+    contentAngles: dedupe(contentAngles),
+    topicSummary,
+    researchDepth: items.length >= 10 ? "comprehensive" : "basic",
+    fetchedAt: new Date().toISOString(),
+  };
+}
+
 export function analyzeCreatorStyle(content: ScrapedContent): {
   hooks: string[];
   phrases: string[];

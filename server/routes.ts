@@ -1733,6 +1733,47 @@ Create a powerful video brief that will make this topic stand out and go viral.`
       let creatorResearch: any = null;
       let creatorDataForPrompt = "";
       let viralExamplesPrompt = "";
+      let ap5InsightsPrompt = "";
+      
+      // Fetch AP5 strategic insights if Apify is configured
+      if (process.env.APIFY_API_TOKEN) {
+        try {
+          const { fetchAP5Insights } = await import("./apify");
+          const ap5Data = await fetchAP5Insights(topic.trim(), { limit: 20 });
+          
+          if (ap5Data && ap5Data.researchDepth !== "basic") {
+            ap5InsightsPrompt = `
+=== STRATEGIC INSIGHTS (from AP5 Social Media Monitoring) ===
+
+KEY INSIGHTS FROM TOP CONTENT:
+${ap5Data.keyInsights.slice(0, 5).map((insight, i) => `${i + 1}. "${insight}"`).join('\n')}
+
+PAIN POINTS YOUR AUDIENCE HAS:
+${ap5Data.painPoints.slice(0, 5).map(pain => `- ${pain}`).join('\n')}
+
+EMOTIONAL DRIVERS (what makes them engage):
+${ap5Data.emotionalDrivers.slice(0, 5).map(em => `- ${em}`).join('\n')}
+
+PROVEN CTA IDEAS (that work on this topic):
+${ap5Data.provenCTAIdeas.slice(0, 5).map(cta => `- ${cta}`).join('\n')}
+
+OBJECTION CRUSHERS (how top creators handle doubts):
+${ap5Data.objectionCrushers.slice(0, 5).map(obj => `- ${obj}`).join('\n')}
+
+SWIPEABLE FACTS/STATS:
+${ap5Data.swipeableFacts.slice(0, 5).map(fact => `- ${fact}`).join('\n')}
+
+CONTENT ANGLES THAT WORK:
+${ap5Data.contentAngles.slice(0, 5).map(angle => `- "${angle}"`).join('\n')}
+
+Research Summary: ${ap5Data.topicSummary}
+=== END STRATEGIC INSIGHTS ===
+`;
+          }
+        } catch (ap5Error) {
+          console.error("AP5 insights fetch failed (continuing without):", ap5Error);
+        }
+      }
       
       // If viral examples are provided, use them to enhance the prompt
       if (viralExamples && Array.isArray(viralExamples.examples) && viralExamples.examples.length > 0) {
@@ -1796,6 +1837,7 @@ AVG ENGAGEMENT RATE: ${creatorResearch.avgEngagement}%
       
       const systemPrompt = `You are an expert viral content strategist. Your job is to create SPECIFIC, DATA-DRIVEN content skeletons that reference REAL creators and working tactics.
 
+${ap5InsightsPrompt}
 ${viralExamplesPrompt}
 ${creatorDataForPrompt}
 
@@ -2472,6 +2514,45 @@ DO NOT make up fake statistics. Use the research data provided, or clearly state
       console.error("Viral examples error:", error);
       res.status(500).json({ 
         error: error.message || "Failed to fetch viral examples",
+        details: "Please try again or use a different topic"
+      });
+    }
+  });
+
+  // AP5 Strategic Insights API - Enhanced research for script generation
+  app.post("/api/strategic-insights", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({ error: "User not found" });
+      }
+
+      const { topic, platforms, limit = 20 } = req.body;
+      if (!topic || typeof topic !== 'string' || topic.trim().length < 3) {
+        return res.status(400).json({ error: "Topic is required (at least 3 characters)" });
+      }
+
+      if (!process.env.APIFY_API_TOKEN) {
+        return res.status(503).json({ 
+          error: "Strategic Insights feature is not configured",
+          details: "APIFY_API_TOKEN is required"
+        });
+      }
+
+      const { fetchAP5Insights } = await import("./apify");
+      const result = await fetchAP5Insights(topic.trim(), {
+        platforms: platforms || ["tiktok", "instagram"],
+        limit: Math.min(limit, 30),
+      });
+
+      res.json({
+        success: true,
+        ...result,
+      });
+    } catch (error: any) {
+      console.error("Strategic insights error:", error);
+      res.status(500).json({ 
+        error: error.message || "Failed to fetch strategic insights",
         details: "Please try again or use a different topic"
       });
     }
