@@ -805,7 +805,7 @@ export async function fetchAP5Insights(
     console.log(`[Strategic Insights] Fetching insights for topic: ${topic}`);
     
     // Use existing TikTok scraper to get viral content, then extract insights
-    const viralData = await fetchViralTikTokExamples(topic, { limit: options.limit || 15 });
+    const viralData = await fetchViralExamples(topic, options.limit || 15);
     
     if (!viralData || viralData.examples.length === 0) {
       console.log("[Strategic Insights] No viral examples found, returning basic insights");
@@ -815,7 +815,7 @@ export async function fetchAP5Insights(
     console.log(`[Strategic Insights] Processing ${viralData.examples.length} viral examples`);
 
     // Convert viral examples to the format processAP5Data expects
-    const items = viralData.examples.map(ex => ({
+    const items = viralData.examples.map((ex: any) => ({
       text: ex.caption,
       views: ex.views,
       likes: ex.likes,

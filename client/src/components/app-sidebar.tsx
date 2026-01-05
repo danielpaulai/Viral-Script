@@ -13,6 +13,7 @@ import {
   LogOut,
   Settings,
   Layout,
+  BarChart3,
 } from "lucide-react";
 import {
   Sidebar,
@@ -30,6 +31,7 @@ import {
 
 const mainNavItems = [
   { href: "/", label: "Home", icon: Home },
+  { href: "/competitive", label: "Video Analysis", icon: BarChart3 },
   { href: "/scripts", label: "Scripts", icon: FileText },
   { href: "/templates", label: "Templates", icon: Layout },
   { href: "/projects", label: "Projects", icon: FolderOpen },

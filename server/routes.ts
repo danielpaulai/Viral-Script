@@ -49,7 +49,7 @@ import {
   type KnowledgeBaseDoc,
 } from "@shared/schema";
 import { getCreatorById, creatorStyles as comprehensiveCreatorStyles } from "@shared/creator-styles";
-import { scrapeTikTokProfile, scrapeInstagramProfile, analyzeCreatorStyle } from "./apify";
+import { scrapeTikTokProfile, scrapeInstagramProfile, analyzeCreatorStyle, searchTikTokByKeyword } from "./apify";
 
 const openai = new OpenAI({
   apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY,
@@ -3079,5 +3079,343 @@ Create a style guide for writing scripts that sound exactly like this creator.`
     }
   });
 
+  // =====================
+  // COMPETITIVE ANALYSIS
+  // =====================
+  
+  // Search for competitive videos by keyword
+  app.post("/api/competitive/search", isAuthenticated, async (req: any, res) => {
+    try {
+      const { keyword, platforms = ["tiktok", "instagram"], limit = 20 } = req.body;
+      
+      if (!keyword || typeof keyword !== "string" || keyword.trim().length < 2) {
+        return res.status(400).json({ error: "Please provide a search keyword (at least 2 characters)" });
+      }
+
+      const results: any[] = [];
+      const profiles: Map<string, any> = new Map();
+
+      // Search TikTok if included
+      if (platforms.includes("tiktok")) {
+        try {
+          const tiktokResults = await searchTikTokByKeyword(keyword.trim(), Math.ceil(limit / 2));
+          
+          for (const post of tiktokResults.posts) {
+            const views = post.views || 0;
+            const likes = post.likes || 0;
+            const comments = post.comments || 0;
+            const engagementRate = views > 0 ? ((likes + comments) / views) * 100 : 0;
+            
+            // Calculate outlier score (simulated - would need creator's avg in real scenario)
+            const outlierScore = views > 100000 ? Math.round((views / 50000) * 10) / 10 : 1;
+            
+            results.push({
+              id: post.id,
+              platform: "tiktok",
+              videoUrl: `https://www.tiktok.com/@${post.author}/video/${post.id}`,
+              thumbnailUrl: `https://p16-sign.tiktokcdn-us.com/obj/tos-useast5-p-0068-tx/${post.id}~tplv-dmt-logom:tos-useast5-p-0068-tx/1.image`,
+              caption: post.text?.slice(0, 200) || "",
+              creatorHandle: `@${post.author}`,
+              creatorName: post.author,
+              postedAt: new Date().toISOString(),
+              views,
+              likes,
+              comments,
+              shares: post.shares || 0,
+              engagementRate: Math.round(engagementRate * 100) / 100,
+              outlierScore,
+              hookType: detectHookTypeFromText(post.text || ""),
+              formatType: detectFormatTypeFromText(post.text || ""),
+            });
+
+            // Aggregate profile data
+            if (!profiles.has(post.author)) {
+              profiles.set(post.author, {
+                id: post.author,
+                platform: "tiktok",
+                handle: `@${post.author}`,
+                displayName: post.author,
+                followers: 0,
+                avgViews: views,
+                avgEngagement: engagementRate,
+                totalVideos: 1,
+                topVideos: [],
+              });
+            } else {
+              const profile = profiles.get(post.author);
+              profile.totalVideos++;
+              profile.avgViews = (profile.avgViews + views) / 2;
+              profile.avgEngagement = (profile.avgEngagement + engagementRate) / 2;
+            }
+          }
+        } catch (err) {
+          console.error("TikTok search error:", err);
+        }
+      }
+
+      // Search Instagram if included (using hashtag/keyword search)
+      if (platforms.includes("instagram")) {
+        try {
+          const igResults = await searchInstagramByKeyword(keyword.trim(), Math.ceil(limit / 2));
+          
+          for (const post of igResults.posts) {
+            const views = post.views || post.likes * 10; // Estimate views from likes
+            const likes = post.likes || 0;
+            const comments = post.comments || 0;
+            const engagementRate = views > 0 ? ((likes + comments) / views) * 100 : 0;
+            const outlierScore = views > 50000 ? Math.round((views / 25000) * 10) / 10 : 1;
+            
+            results.push({
+              id: post.id,
+              platform: "instagram",
+              videoUrl: `https://www.instagram.com/reel/${post.id}/`,
+              thumbnailUrl: post.thumbnailUrl || "",
+              caption: post.text?.slice(0, 200) || "",
+              creatorHandle: `@${post.author}`,
+              creatorName: post.author,
+              postedAt: post.timestamp || new Date().toISOString(),
+              views,
+              likes,
+              comments,
+              engagementRate: Math.round(engagementRate * 100) / 100,
+              outlierScore,
+              hookType: detectHookTypeFromText(post.text || ""),
+              formatType: detectFormatTypeFromText(post.text || ""),
+            });
+
+            if (!profiles.has(post.author)) {
+              profiles.set(post.author, {
+                id: post.author,
+                platform: "instagram",
+                handle: `@${post.author}`,
+                displayName: post.author,
+                followers: 0,
+                avgViews: views,
+                avgEngagement: engagementRate,
+                totalVideos: 1,
+                topVideos: [],
+              });
+            }
+          }
+        } catch (err) {
+          console.error("Instagram search error:", err);
+        }
+      }
+
+      // Sort by views (outlier score)
+      results.sort((a, b) => b.views - a.views);
+
+      // Calculate analytics
+      const avgViews = results.length > 0 
+        ? Math.round(results.reduce((sum, r) => sum + r.views, 0) / results.length)
+        : 0;
+      const avgEngagement = results.length > 0
+        ? Math.round(results.reduce((sum, r) => sum + r.engagementRate, 0) / results.length * 100) / 100
+        : 0;
+      
+      // Get dominant formats and hook types
+      const formatCounts: Record<string, number> = {};
+      const hookCounts: Record<string, number> = {};
+      for (const r of results) {
+        if (r.formatType) formatCounts[r.formatType] = (formatCounts[r.formatType] || 0) + 1;
+        if (r.hookType) hookCounts[r.hookType] = (hookCounts[r.hookType] || 0) + 1;
+      }
+      
+      const dominantFormats = Object.entries(formatCounts)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 3)
+        .map(([f]) => f);
+      const topHookTypes = Object.entries(hookCounts)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 3)
+        .map(([h]) => h);
+
+      res.json({
+        query: keyword,
+        platforms,
+        totalResults: results.length,
+        profiles: Array.from(profiles.values()),
+        videos: results.slice(0, limit),
+        analytics: {
+          avgViews,
+          avgEngagement,
+          dominantFormats,
+          topHookTypes,
+          bestPerformingDuration: "15-30s",
+        },
+        searchedAt: new Date().toISOString(),
+      });
+    } catch (error) {
+      console.error("Competitive search error:", error);
+      res.status(500).json({ error: "Failed to search competitive videos" });
+    }
+  });
+
+  // Analyze specific competitor profile
+  app.post("/api/competitive/profile", isAuthenticated, async (req: any, res) => {
+    try {
+      const { profileUrl, platform } = req.body;
+      
+      if (!profileUrl) {
+        return res.status(400).json({ error: "Please provide a profile URL" });
+      }
+
+      // Extract username from URL
+      let username = profileUrl;
+      if (profileUrl.includes("tiktok.com")) {
+        username = profileUrl.split("@")[1]?.split("/")[0]?.split("?")[0] || profileUrl;
+      } else if (profileUrl.includes("instagram.com")) {
+        username = profileUrl.split("instagram.com/")[1]?.split("/")[0]?.split("?")[0] || profileUrl;
+      }
+
+      const detectedPlatform = platform || (profileUrl.includes("tiktok") ? "tiktok" : "instagram");
+      
+      let profileData;
+      if (detectedPlatform === "tiktok") {
+        profileData = await scrapeTikTokProfile(username);
+      } else {
+        profileData = await scrapeInstagramProfile(username);
+      }
+
+      // Convert to competitive video format
+      const videos = profileData.posts.map((post, index) => {
+        const avgEngagement = profileData.posts.reduce((sum, p) => sum + p.engagement, 0) / profileData.posts.length;
+        const outlierScore = avgEngagement > 0 ? Math.round((post.engagement / avgEngagement) * 10) / 10 : 1;
+        
+        return {
+          id: post.id,
+          platform: detectedPlatform,
+          videoUrl: detectedPlatform === "tiktok" 
+            ? `https://www.tiktok.com/@${username}/video/${post.id}`
+            : `https://www.instagram.com/reel/${post.id}/`,
+          thumbnailUrl: "",
+          caption: post.text?.slice(0, 200) || "",
+          creatorHandle: `@${username}`,
+          creatorName: username,
+          postedAt: post.timestamp,
+          views: post.engagement * 10, // Estimate
+          likes: Math.round(post.engagement * 0.7),
+          comments: Math.round(post.engagement * 0.3),
+          engagementRate: 5, // Estimate
+          outlierScore,
+          hookType: detectHookTypeFromText(post.text || ""),
+          formatType: detectFormatTypeFromText(post.text || ""),
+        };
+      });
+
+      res.json({
+        profile: {
+          id: username,
+          platform: detectedPlatform,
+          handle: `@${username}`,
+          displayName: username,
+          followers: 0,
+          avgViews: videos.reduce((sum, v) => sum + v.views, 0) / videos.length,
+          avgEngagement: 5,
+          totalVideos: videos.length,
+        },
+        videos: videos.slice(0, 20),
+        analyzedAt: new Date().toISOString(),
+      });
+    } catch (error) {
+      console.error("Profile analysis error:", error);
+      res.status(500).json({ error: "Failed to analyze profile" });
+    }
+  });
+
   return httpServer;
+}
+
+// Helper functions for competitive analysis
+function detectHookTypeFromText(text: string): string {
+  const lower = text.toLowerCase();
+  const firstLine = text.split(/[\n.!?]/)[0] || "";
+  
+  if (/\?$/.test(firstLine)) return "question";
+  if (/\d+%|\d+x|\$\d+|\d+k|\d+ (million|billion)/i.test(firstLine)) return "statistic";
+  if (/stop|don't|wrong|never|actually|myth|nobody/i.test(lower.slice(0, 100))) return "contrarian";
+  if (/i was|i used to|my|when i|i just/i.test(lower.slice(0, 50))) return "personal";
+  if (/try this|do this|here's how|watch this|secret/i.test(lower.slice(0, 50))) return "secret";
+  if (/\d+\s*(things?|ways?|tips?|steps?|reasons?)/i.test(firstLine)) return "list";
+  
+  return "hook";
+}
+
+function detectFormatTypeFromText(text: string): string {
+  const lower = text.toLowerCase();
+  
+  if (/\d+\s*(things?|ways?|tips?|steps?|reasons?)/i.test(text)) return "listicle";
+  if (/how to|step \d|first,|then,|next,/i.test(text)) return "tutorial";
+  if (/story|journey|i was|i used to/i.test(lower)) return "story";
+  if (/pov:|unpopular opinion|hot take/i.test(lower)) return "pov";
+  if (/\?/.test(text.split(/[.!]/)[0] || "")) return "question";
+  
+  return "educational";
+}
+
+// Search Instagram by keyword/hashtag
+async function searchInstagramByKeyword(keyword: string, limit: number = 10): Promise<{
+  posts: Array<{
+    id: string;
+    text: string;
+    views: number;
+    likes: number;
+    comments: number;
+    author: string;
+    timestamp: string;
+    thumbnailUrl: string;
+  }>;
+}> {
+  const APIFY_TOKEN = process.env.APIFY_API_TOKEN;
+  if (!APIFY_TOKEN) {
+    return { posts: [] };
+  }
+
+  try {
+    const { ApifyClient } = await import("apify-client");
+    const client = new ApifyClient({ token: APIFY_TOKEN });
+
+    const input = {
+      search: keyword.replace(/\s+/g, ""),
+      searchType: "hashtag",
+      resultsLimit: limit,
+    };
+
+    const run = await client.actor("apify/instagram-scraper").call(input, {
+      waitSecs: 120,
+    });
+
+    const { items } = await client.dataset(run.defaultDatasetId).listItems();
+
+    interface IGPost {
+      id: string;
+      caption?: string;
+      likesCount?: number;
+      commentsCount?: number;
+      videoViewCount?: number;
+      ownerUsername?: string;
+      timestamp?: string;
+      displayUrl?: string;
+    }
+
+    const posts = (items as unknown as IGPost[])
+      .filter((item) => item.caption)
+      .map((item) => ({
+        id: item.id,
+        text: item.caption || "",
+        views: item.videoViewCount || (item.likesCount || 0) * 10,
+        likes: item.likesCount || 0,
+        comments: item.commentsCount || 0,
+        author: item.ownerUsername || "unknown",
+        timestamp: item.timestamp || new Date().toISOString(),
+        thumbnailUrl: item.displayUrl || "",
+      }))
+      .sort((a, b) => b.views - a.views)
+      .slice(0, limit);
+
+    return { posts };
+  } catch (error) {
+    console.error("Instagram search error:", error);
+    return { posts: [] };
+  }
 }

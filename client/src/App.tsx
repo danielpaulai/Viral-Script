@@ -17,6 +17,7 @@ import Vault from "@/pages/vault";
 import Pricing from "@/pages/pricing";
 import KnowledgeBase from "@/pages/knowledge-base";
 import Templates from "@/pages/templates";
+import Competitive from "@/pages/competitive";
 import Settings from "@/pages/settings";
 import Landing from "@/pages/landing";
 import Login from "@/pages/login";
@@ -37,6 +38,7 @@ function AuthenticatedRouter() {
       <Route path="/" component={Home} />
       <Route path="/login" component={LoginRedirect} />
       <Route path="/reset-password" component={ResetPassword} />
+      <Route path="/competitive" component={Competitive} />
       <Route path="/scripts" component={Scripts} />
       <Route path="/projects" component={Projects} />
       <Route path="/calendar" component={CalendarPage} />
