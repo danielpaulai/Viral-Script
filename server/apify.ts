@@ -786,7 +786,8 @@ export interface AP5StrategicInsights {
   fetchedAt: string;
 }
 
-// Fetch strategic insights using AP5 Social Media Monitoring actor
+// Fetch strategic insights by reusing existing TikTok scraper data
+// This extracts insights from viral content captions for strategic skeleton enhancement
 export async function fetchAP5Insights(
   topic: string,
   options: {
@@ -796,43 +797,44 @@ export async function fetchAP5Insights(
   } = {}
 ): Promise<AP5StrategicInsights> {
   if (!APIFY_TOKEN) {
-    console.log("[AP5] No APIFY_API_TOKEN, returning empty insights");
+    console.log("[Strategic Insights] No APIFY_API_TOKEN, returning empty insights");
     return getEmptyAP5Insights(topic);
   }
-
-  const client = new ApifyClient({ token: APIFY_TOKEN });
   
   try {
-    console.log(`[AP5] Fetching strategic insights for topic: ${topic}`);
+    console.log(`[Strategic Insights] Fetching insights for topic: ${topic}`);
     
-    const input = {
-      searchTerms: [topic],
-      maxItems: options.limit || 20,
-      platforms: options.platforms || ["tiktok", "instagram"],
-      includeAnalytics: true,
-    };
-
-    const run = await client.actor("ay04FddyeCI9hkXJG").call(input, {
-      waitSecs: 180,
-    });
-
-    console.log(`[AP5] Run completed: ${run.id}`);
-
-    const { items } = await client.dataset(run.defaultDatasetId).listItems();
+    // Use existing TikTok scraper to get viral content, then extract insights
+    const viralData = await fetchViralTikTokExamples(topic, { limit: options.limit || 15 });
     
-    console.log(`[AP5] Retrieved ${items.length} items`);
-
-    if (!items || items.length === 0) {
-      console.log("[AP5] No items returned, using fallback analysis");
+    if (!viralData || viralData.examples.length === 0) {
+      console.log("[Strategic Insights] No viral examples found, returning basic insights");
       return getEmptyAP5Insights(topic);
     }
 
-    // Process and extract insights from AP5 data
+    console.log(`[Strategic Insights] Processing ${viralData.examples.length} viral examples`);
+
+    // Convert viral examples to the format processAP5Data expects
+    const items = viralData.examples.map(ex => ({
+      text: ex.caption,
+      views: ex.views,
+      likes: ex.likes,
+      shares: ex.shares,
+      comments: ex.comments,
+      hashtags: ex.hashtags,
+      creator: ex.creator,
+    }));
+
+    // Process and extract insights from the viral content
     const insights = processAP5Data(items, topic);
+    
+    // Add aggregate stats to the summary
+    insights.topicSummary = `Analysis of ${viralData.examples.length} viral videos on "${topic}" with avg ${viralData.avgViews.toLocaleString()} views. Top formats: ${viralData.dominantFormats.slice(0, 2).join(', ')}. Best hooks: ${viralData.dominantHookTypes.slice(0, 2).join(', ')}.`;
+    insights.researchDepth = viralData.examples.length >= 5 ? "comprehensive" : "basic";
     
     return insights;
   } catch (error) {
-    console.error("[AP5] Error fetching insights:", error);
+    console.error("[Strategic Insights] Error fetching insights:", error);
     return getEmptyAP5Insights(topic);
   }
 }
