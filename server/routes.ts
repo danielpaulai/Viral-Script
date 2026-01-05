@@ -3113,7 +3113,7 @@ Create a style guide for writing scripts that sound exactly like this creator.`
               id: post.id,
               platform: "tiktok",
               videoUrl: `https://www.tiktok.com/@${post.author}/video/${post.id}`,
-              thumbnailUrl: `https://p16-sign.tiktokcdn-us.com/obj/tos-useast5-p-0068-tx/${post.id}~tplv-dmt-logom:tos-useast5-p-0068-tx/1.image`,
+              thumbnailUrl: "",
               caption: post.text?.slice(0, 200) || "",
               creatorHandle: `@${post.author}`,
               creatorName: post.author,
