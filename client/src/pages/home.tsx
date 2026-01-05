@@ -57,7 +57,7 @@ import { ScriptOutput } from "@/components/script-output";
 import { GenerationProgress } from "@/components/generation-progress";
 import { useVoiceCommand } from "@/hooks/use-voice-command";
 import { 
-  Sparkles, 
+  Wand2, 
   ArrowRight, 
   Zap,
   Lightbulb, 
@@ -680,7 +680,7 @@ export default function Home() {
       <Card className="p-4 md:p-6 glass-card rounded-md mb-6" data-testid="card-script-parameters">
         <div className="mb-4">
           <div className="flex items-center gap-2 mb-3">
-            <Sparkles className="w-4 h-4 text-primary" />
+            <Wand2 className="w-4 h-4 text-primary" />
             <span className="text-xs font-semibold text-primary tracking-widest uppercase">Quick Start</span>
           </div>
           
@@ -1308,7 +1308,7 @@ export default function Home() {
                         </>
                       ) : (
                         <>
-                          <Sparkles className="w-4 h-4 mr-2" />
+                          <Wand2 className="w-4 h-4 mr-2" />
                           Generate Script
                         </>
                       )}

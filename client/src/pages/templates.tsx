@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Plus, FileText, Trash2, Edit2, Loader2, LogIn, ChevronDown, Layout, Clock, Mic, BookOpen, Sparkles, Play } from "lucide-react";
+import { Plus, FileText, Trash2, Edit2, Loader2, LogIn, ChevronDown, Layout, Clock, Mic, BookOpen, Wand2, Play } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
@@ -589,7 +589,7 @@ export default function Templates() {
                 </div>
                 <div className="space-y-1.5 text-sm text-muted-foreground">
                   <div className="flex items-center gap-2">
-                    <Sparkles className="w-3.5 h-3.5" />
+                    <Wand2 className="w-3.5 h-3.5" />
                     <span className="truncate">{getHookName(template.hook)}</span>
                   </div>
                   <div className="flex items-center gap-2">

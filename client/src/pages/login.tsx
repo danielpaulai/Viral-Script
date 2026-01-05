@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Sparkles, Zap, FileText, CheckCircle2, Loader2 } from "lucide-react";
+import { Feather, Zap, FileText, CheckCircle2, Loader2 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -82,7 +82,7 @@ export default function Login() {
         <div className="relative z-10 max-w-lg">
           <div className="flex items-center gap-2 mb-8">
             <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
-              <Sparkles className="w-6 h-6 text-primary-foreground" />
+              <Feather className="w-6 h-6 text-primary-foreground" />
             </div>
             <span className="font-bold text-2xl">Script Writer Pro</span>
           </div>
@@ -122,7 +122,7 @@ export default function Login() {
         <div className="w-full max-w-md">
           <div className="flex items-center gap-2 mb-8 lg:hidden">
             <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-              <Sparkles className="w-5 h-5 text-primary-foreground" />
+              <Feather className="w-5 h-5 text-primary-foreground" />
             </div>
             <span className="font-bold text-xl">Script Writer Pro</span>
           </div>

@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Sparkles, Loader2, CheckCircle2, XCircle } from "lucide-react";
+import { Feather, Loader2, CheckCircle2, XCircle } from "lucide-react";
 import { Link, useLocation, useSearch } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -142,7 +142,7 @@ export default function ResetPassword() {
       <div className="w-full max-w-md">
         <div className="flex items-center gap-2 justify-center mb-8">
           <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
-            <Sparkles className="w-6 h-6 text-primary-foreground" />
+            <Feather className="w-6 h-6 text-primary-foreground" />
           </div>
           <span className="font-bold text-2xl">Script Writer Pro</span>
         </div>

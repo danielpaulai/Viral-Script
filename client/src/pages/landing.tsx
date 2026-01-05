@@ -11,12 +11,11 @@ import {
   ArrowRight,
   Play,
   ChevronDown,
-  Sparkles,
+  Feather,
   Menu,
   X,
   Users,
   Briefcase,
-  Quote,
   Check,
   XCircle,
   Star,
@@ -202,35 +201,6 @@ const faqs = [
   }
 ];
 
-const testimonials = [
-  {
-    name: "Sarah Chen",
-    handle: "@sarahcreates",
-    role: "Content Creator",
-    followers: "1.2M followers",
-    avatar: "SC",
-    quote: "Went from struggling for hours to write one script to generating 10 viral-worthy hooks in minutes. My engagement tripled in the first month.",
-    metric: "3x engagement"
-  },
-  {
-    name: "Marcus Johnson",
-    handle: "@marcusjfit",
-    role: "Fitness Coach",
-    followers: "450K followers",
-    avatar: "MJ",
-    quote: "The Hemingway analysis is a game-changer. Every script reads at the perfect level for social. My save rate is through the roof.",
-    metric: "5x save rate"
-  },
-  {
-    name: "Elena Rodriguez",
-    handle: "@elenavlogs",
-    role: "Travel Creator",
-    followers: "890K followers",
-    avatar: "ER",
-    quote: "Finally, an AI that actually sounds like ME. The Voice DNA feature learned my style perfectly. My audience can't tell the difference.",
-    metric: "2x posting frequency"
-  }
-];
 
 const useCases = [
   {
@@ -335,9 +305,9 @@ export default function Landing() {
             <Link href="/">
               <div className="flex items-center gap-2 cursor-pointer group">
                 <div className="w-7 h-7 rounded-md bg-primary flex items-center justify-center shadow-[0_0_15px_-3px_rgba(233,13,65,0.4)]">
-                  <Sparkles className="w-4 h-4 text-primary-foreground" />
+                  <Feather className="w-4 h-4 text-primary-foreground" />
                 </div>
-                <span className="text-sm font-semibold tracking-tight text-white">Script<span className="text-primary">.</span>Pro</span>
+                <span className="text-sm font-semibold tracking-tight text-white">Viral Script Pro</span>
               </div>
             </Link>
             
@@ -744,55 +714,6 @@ export default function Landing() {
         }
       `}</style>
 
-      {/* Testimonials Section */}
-      <section 
-        id="testimonials" 
-        data-animate
-        className={`py-24 relative overflow-hidden transition-all duration-700 ${visibleSections.has('testimonials') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
-      >
-        <div className="max-w-7xl mx-auto px-6 lg:px-8">
-          <div className="flex items-center gap-2 mb-4 justify-center">
-            <span className="h-px w-8 bg-primary" />
-            <h2 className="text-xs font-semibold text-primary tracking-widest uppercase">Testimonials</h2>
-            <span className="h-px w-8 bg-primary" />
-          </div>
-          <h3 className="text-3xl md:text-4xl font-semibold text-white mb-12 tracking-tight text-center">
-            Creators love Script.Pro
-          </h3>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {testimonials.map((testimonial, idx) => (
-              <div 
-                key={idx}
-                className="p-6 rounded-2xl bg-[rgba(20,20,22,0.4)] backdrop-blur-lg border border-white/[0.06] hover:border-primary/30 transition-all"
-                data-testid={`testimonial-${idx}`}
-              >
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-semibold text-sm">
-                    {testimonial.avatar}
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-white">{testimonial.name}</p>
-                    <p className="text-xs text-[#b8bec1]">{testimonial.handle}</p>
-                  </div>
-                </div>
-                <Quote className="w-6 h-6 text-primary/30 mb-2" />
-                <p className="text-sm text-[#b8bec1] leading-relaxed mb-4">
-                  {testimonial.quote}
-                </p>
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-[#b8bec1]">{testimonial.followers}</span>
-                  <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-green-500/10 text-green-400 text-xs font-medium">
-                    <TrendingUp className="w-3 h-3" />
-                    {testimonial.metric}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* How It Works */}
       <section id="method" className="py-24 relative overflow-hidden">
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
@@ -876,7 +797,7 @@ export default function Landing() {
             <span className="h-px w-8 bg-primary" />
           </div>
           <h3 className="text-3xl md:text-4xl font-semibold text-white mb-6 tracking-tight text-center">
-            How creators use Script.Pro
+            How creators use Viral Script Pro
           </h3>
           <p className="text-[#b8bec1] text-sm leading-relaxed mb-12 text-center max-w-xl mx-auto">
             Whether you're building a personal brand or scaling content for clients.
@@ -945,7 +866,7 @@ export default function Landing() {
                           </div>
                         </div>
                         <span className="inline-flex items-center gap-1 rounded-full bg-primary/20 px-2 py-1 text-[10px] font-medium text-primary ring-1 ring-primary/40">
-                          <Sparkles className="w-3 h-3" />
+                          <Star className="w-3 h-3" />
                           Popular
                         </span>
                       </div>
@@ -1029,7 +950,7 @@ export default function Landing() {
             <span className="h-px w-8 bg-primary" />
           </div>
           <h3 className="text-3xl md:text-4xl font-semibold text-white mb-6 tracking-tight text-center">
-            Why Script.Pro vs ChatGPT?
+            Why Viral Script Pro vs ChatGPT?
           </h3>
           <p className="text-[#b8bec1] text-sm leading-relaxed mb-12 text-center max-w-xl mx-auto">
             Generic AI isn't built for short-form video. We are.
@@ -1039,7 +960,7 @@ export default function Landing() {
             {/* Table Header */}
             <div className="grid grid-cols-4 gap-4 p-4 border-b border-white/[0.06] bg-white/5">
               <div className="text-xs font-medium text-[#b8bec1]">Feature</div>
-              <div className="text-xs font-medium text-primary text-center">Script.Pro</div>
+              <div className="text-xs font-medium text-primary text-center">Viral Script Pro</div>
               <div className="text-xs font-medium text-[#b8bec1] text-center">ChatGPT</div>
               <div className="text-xs font-medium text-[#b8bec1] text-center">Other Tools</div>
             </div>
@@ -1080,7 +1001,7 @@ export default function Landing() {
           <div className="mt-8 text-center">
             <Link href="/login">
               <Button className="gap-2 shadow-[0_0_20px_-5px_rgba(233,13,65,0.3)]" data-testid="button-compare-cta">
-                Try Script.Pro Free
+                Try Viral Script Pro Free
                 <ArrowRight className="w-4 h-4" />
               </Button>
             </Link>
@@ -1149,9 +1070,9 @@ export default function Landing() {
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <div className="w-6 h-6 rounded-md bg-primary flex items-center justify-center">
-              <Sparkles className="w-3 h-3 text-primary-foreground" />
+              <Feather className="w-3 h-3 text-primary-foreground" />
             </div>
-            <span className="text-sm font-medium text-white">Script<span className="text-primary">.</span>Pro</span>
+            <span className="text-sm font-medium text-white">Viral Script Pro</span>
           </div>
           <p className="text-xs text-[#b8bec1]">
             Built for content creators who want to grow.

@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Download, Crown, Sparkles, CheckCircle2 } from "lucide-react";
+import { Loader2, Download, Crown, Star, CheckCircle2 } from "lucide-react";
 import { SiTiktok, SiInstagram } from "react-icons/si";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -181,7 +181,7 @@ export function ImportStyleDialog({ userPlan, onImportComplete }: ImportStyleDia
         <Button variant="outline" className="gap-2" data-testid="button-import-style">
           <Download className="h-4 w-4" />
           Import Your Style
-          <Sparkles className="h-3 w-3 ml-1 text-yellow-500" />
+          <Star className="h-3 w-3 ml-1 text-yellow-500" />
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">

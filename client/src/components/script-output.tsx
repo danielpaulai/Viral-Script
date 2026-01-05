@@ -41,7 +41,6 @@ import {
   Film,
   Clapperboard,
   Timer,
-  Sparkles,
   ExternalLink,
   Image,
   Wand2,
@@ -395,7 +394,7 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
       {/* Enhanced Script Indicator */}
       {enhancedScript && (
         <div className="mb-4 p-3 rounded-md bg-purple-500/10 border border-purple-500/20 flex items-center gap-2">
-          <Sparkles className="w-4 h-4 text-purple-400" />
+          <Wand2 className="w-4 h-4 text-purple-400" />
           <span className="text-sm text-purple-300">Script enhanced with AI</span>
           <Button
             variant="ghost"
@@ -543,7 +542,7 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
               className="p-3 rounded-md bg-white/5 border border-white/10 text-left hover-elevate active-elevate-2"
               data-testid="button-enhance-general"
             >
-              <Sparkles className="w-4 h-4 text-purple-400 mb-1" />
+              <Wand2 className="w-4 h-4 text-purple-400 mb-1" />
               <p className="text-xs font-medium text-white">Auto Improve</p>
               <p className="text-[10px] text-muted-foreground">Best of all</p>
             </button>
@@ -869,7 +868,7 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
             {script.transitions && script.transitions.length > 0 && (
               <div className="p-4 rounded-md bg-white/5 border border-white/10">
                 <div className="flex items-center gap-2 mb-3">
-                  <Sparkles className="w-4 h-4 text-primary" />
+                  <Wand2 className="w-4 h-4 text-primary" />
                   <h4 className="text-sm font-semibold text-white">Transitions & Effects</h4>
                 </div>
                 <div className="flex flex-wrap gap-2">

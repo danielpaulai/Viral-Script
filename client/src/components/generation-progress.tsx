@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { Sparkles, Search, FileText, CheckCircle, Loader2 } from "lucide-react";
+import { Wand2, Search, FileText, CheckCircle, Loader2 } from "lucide-react";
 
 interface GenerationStep {
   id: string;
   label: string;
-  icon: typeof Sparkles;
+  icon: typeof Wand2;
   description: string;
 }
 
@@ -14,7 +14,7 @@ const generationSteps: GenerationStep[] = [
   { id: "init", label: "Initializing", icon: Loader2, description: "Preparing request..." },
   { id: "research", label: "Researching", icon: Search, description: "Gathering insights..." },
   { id: "drafting", label: "Drafting", icon: FileText, description: "Writing script..." },
-  { id: "formatting", label: "Formatting", icon: Sparkles, description: "Polishing content..." },
+  { id: "formatting", label: "Formatting", icon: Wand2, description: "Polishing content..." },
   { id: "complete", label: "Complete", icon: CheckCircle, description: "Script ready!" },
 ];
 
