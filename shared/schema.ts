@@ -797,3 +797,31 @@ export const userSubscriptions = pgTable("user_subscriptions", {
 export const insertUserSubscriptionSchema = createInsertSchema(userSubscriptions).omit({ id: true, createdAt: true, updatedAt: true });
 export type InsertUserSubscription = z.infer<typeof insertUserSubscriptionSchema>;
 export type UserSubscription = typeof userSubscriptions.$inferSelect;
+
+// Script Templates Table - Custom user-created templates
+export const scriptTemplates = pgTable("script_templates", {
+  id: varchar("id", { length: 36 }).primaryKey(),
+  userId: varchar("user_id", { length: 255 }).notNull(),
+  name: text("name").notNull(),
+  description: text("description"),
+  platform: text("platform").notNull().default("tiktok"),
+  duration: text("duration").notNull().default("90"),
+  category: text("category").notNull().default("content_creation"),
+  structure: text("structure").notNull().default("problem_solver"),
+  hook: text("hook").notNull().default("painful_past"),
+  tone: text("tone"),
+  voice: text("voice"),
+  pacing: text("pacing"),
+  videoType: text("video_type").default("talking_head"),
+  creatorStyle: text("creator_style").default("default"),
+  defaultTargetAudience: text("default_target_audience"),
+  defaultCta: text("default_cta"),
+  isPublic: text("is_public").default("false"),
+  usageCount: text("usage_count").default("0"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertScriptTemplateSchema = createInsertSchema(scriptTemplates).omit({ id: true, createdAt: true, updatedAt: true });
+export type InsertScriptTemplate = z.infer<typeof insertScriptTemplateSchema>;
+export type ScriptTemplate = typeof scriptTemplates.$inferSelect;

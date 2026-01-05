@@ -43,6 +43,7 @@ import {
   allCreatorStyles,
   ctaLibrary,
   funnelStages,
+  insertScriptTemplateSchema,
   type ScriptParameters,
   type GeneratedScript,
   type KnowledgeBaseDoc,
@@ -2913,6 +2914,170 @@ Create a style guide for writing scripts that sound exactly like this creator.`
       }
     });
   }
+
+  // ================== SCRIPT TEMPLATES API ==================
+  
+  // Get all templates for current user
+  app.get("/api/templates", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+      const templates = await storage.getScriptTemplates(userId);
+      res.json(templates);
+    } catch (error) {
+      console.error("Error fetching templates:", error);
+      res.status(500).json({ error: "Failed to fetch templates" });
+    }
+  });
+
+  // Get single template by ID (requires authentication + ownership or public)
+  app.get("/api/templates/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.id;
+      const template = await storage.getScriptTemplate(req.params.id);
+      if (!template) {
+        return res.status(404).json({ error: "Template not found" });
+      }
+      
+      // Check ownership or public access
+      if (template.userId !== userId && template.isPublic !== "true") {
+        return res.status(403).json({ error: "Not authorized to view this template" });
+      }
+      
+      res.json(template);
+    } catch (error) {
+      console.error("Error fetching template:", error);
+      res.status(500).json({ error: "Failed to fetch template" });
+    }
+  });
+
+  // Create new template
+  app.post("/api/templates", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+      
+      // Validate input using Zod schema
+      const validationResult = insertScriptTemplateSchema.safeParse({
+        ...req.body,
+        userId,
+        isPublic: req.body.isPublic ? "true" : "false",
+      });
+      
+      if (!validationResult.success) {
+        return res.status(400).json({ 
+          error: "Invalid template data", 
+          details: validationResult.error.issues 
+        });
+      }
+      
+      const data = validationResult.data;
+      
+      if (!data.name || data.name.trim().length === 0) {
+        return res.status(400).json({ error: "Template name is required" });
+      }
+      
+      const template = await storage.createScriptTemplate({
+        userId,
+        name: data.name.trim(),
+        description: data.description || null,
+        platform: data.platform || "tiktok",
+        duration: data.duration || "90",
+        category: data.category || "content_creation",
+        structure: data.structure || "problem_solver",
+        hook: data.hook || "painful_past",
+        tone: data.tone || null,
+        voice: data.voice || null,
+        pacing: data.pacing || null,
+        videoType: data.videoType || "talking_head",
+        creatorStyle: data.creatorStyle || "default",
+        defaultTargetAudience: data.defaultTargetAudience || null,
+        defaultCta: data.defaultCta || null,
+        isPublic: data.isPublic || "false",
+      });
+      
+      res.json(template);
+    } catch (error) {
+      console.error("Error creating template:", error);
+      res.status(500).json({ error: "Failed to create template" });
+    }
+  });
+
+  // Update template
+  app.patch("/api/templates/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+      
+      const template = await storage.getScriptTemplate(req.params.id);
+      if (!template) {
+        return res.status(404).json({ error: "Template not found" });
+      }
+      
+      if (template.userId !== userId) {
+        return res.status(403).json({ error: "Not authorized to update this template" });
+      }
+      
+      const updated = await storage.updateScriptTemplate(req.params.id, req.body);
+      res.json(updated);
+    } catch (error) {
+      console.error("Error updating template:", error);
+      res.status(500).json({ error: "Failed to update template" });
+    }
+  });
+
+  // Delete template
+  app.delete("/api/templates/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+      
+      const template = await storage.getScriptTemplate(req.params.id);
+      if (!template) {
+        return res.status(404).json({ error: "Template not found" });
+      }
+      
+      if (template.userId !== userId) {
+        return res.status(403).json({ error: "Not authorized to delete this template" });
+      }
+      
+      await storage.deleteScriptTemplate(req.params.id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting template:", error);
+      res.status(500).json({ error: "Failed to delete template" });
+    }
+  });
+
+  // Use template (increment usage count)
+  app.post("/api/templates/:id/use", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.id;
+      const template = await storage.getScriptTemplate(req.params.id);
+      if (!template) {
+        return res.status(404).json({ error: "Template not found" });
+      }
+      
+      // Only allow usage tracking for own templates or public templates
+      if (template.userId !== userId && template.isPublic !== "true") {
+        return res.status(403).json({ error: "Not authorized to use this template" });
+      }
+      
+      await storage.incrementTemplateUsage(req.params.id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error using template:", error);
+      res.status(500).json({ error: "Failed to use template" });
+    }
+  });
 
   return httpServer;
 }

@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -266,6 +266,32 @@ export default function Home() {
     creatorStyle: "default",
     referenceScript: "",
   });
+
+  // Load template settings from sessionStorage when navigating from Templates page
+  useEffect(() => {
+    const storedSettings = sessionStorage.getItem("templateSettings");
+    if (storedSettings) {
+      try {
+        const settings = JSON.parse(storedSettings);
+        setFormData(prev => ({
+          ...prev,
+          platform: settings.platform || prev.platform,
+          duration: settings.duration || prev.duration,
+          category: settings.category || prev.category,
+          structure: settings.structure || prev.structure,
+          hook: settings.hook || prev.hook,
+          videoType: settings.videoType || prev.videoType,
+          creatorStyle: settings.creatorStyle || prev.creatorStyle,
+          targetAudience: settings.targetAudience || prev.targetAudience,
+          callToAction: settings.callToAction || prev.callToAction,
+        }));
+        // Clear after loading
+        sessionStorage.removeItem("templateSettings");
+      } catch (e) {
+        console.error("Failed to parse template settings:", e);
+      }
+    }
+  }, []);
 
   const { data: recentScripts = [] } = useQuery<any>({
     queryKey: ["/api/scripts"],

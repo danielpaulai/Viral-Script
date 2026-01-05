@@ -16,6 +16,7 @@ import CalendarPage from "@/pages/calendar";
 import Vault from "@/pages/vault";
 import Pricing from "@/pages/pricing";
 import KnowledgeBase from "@/pages/knowledge-base";
+import Templates from "@/pages/templates";
 import Settings from "@/pages/settings";
 import Landing from "@/pages/landing";
 import Login from "@/pages/login";
@@ -42,6 +43,7 @@ function AuthenticatedRouter() {
       <Route path="/vault" component={Vault} />
       <Route path="/pricing" component={Pricing} />
       <Route path="/knowledge-base" component={KnowledgeBase} />
+      <Route path="/templates" component={Templates} />
       <Route path="/settings" component={Settings} />
       <Route component={NotFound} />
     </Switch>

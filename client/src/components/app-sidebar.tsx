@@ -12,6 +12,7 @@ import {
   HelpCircle,
   LogOut,
   Settings,
+  Layout,
 } from "lucide-react";
 import {
   Sidebar,
@@ -30,6 +31,7 @@ import {
 const mainNavItems = [
   { href: "/", label: "Home", icon: Home },
   { href: "/scripts", label: "Scripts", icon: FileText },
+  { href: "/templates", label: "Templates", icon: Layout },
   { href: "/projects", label: "Projects", icon: FolderOpen },
   { href: "/vault", label: "Vault", icon: Archive },
   { href: "/calendar", label: "Calendar", icon: Calendar },

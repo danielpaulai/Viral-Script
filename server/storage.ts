@@ -21,6 +21,8 @@ import {
   type InsertScriptVersion,
   type PasswordResetToken,
   type InsertPasswordResetToken,
+  type ScriptTemplate,
+  type InsertScriptTemplate,
   users,
   passwordResetTokens,
 } from "@shared/schema";
@@ -91,6 +93,14 @@ export interface IStorage {
   getPasswordResetToken(token: string): Promise<PasswordResetToken | undefined>;
   markPasswordResetTokenUsed(token: string): Promise<void>;
   updateUserPassword(userId: string, hashedPassword: string): Promise<void>;
+  
+  // Script Templates
+  getScriptTemplates(userId: string): Promise<ScriptTemplate[]>;
+  getScriptTemplate(id: string): Promise<ScriptTemplate | undefined>;
+  createScriptTemplate(template: InsertScriptTemplate): Promise<ScriptTemplate>;
+  updateScriptTemplate(id: string, template: Partial<InsertScriptTemplate>): Promise<ScriptTemplate | undefined>;
+  deleteScriptTemplate(id: string): Promise<boolean>;
+  incrementTemplateUsage(id: string): Promise<void>;
 }
 
 export class MemStorage implements IStorage {
@@ -105,6 +115,7 @@ export class MemStorage implements IStorage {
   private userSubscriptions: Map<string, UserSubscription>;
   private usersMemory: Map<string, User>;
   private scriptVersions: Map<string, ScriptVersion>;
+  private scriptTemplates: Map<string, ScriptTemplate>;
   sessionStore: session.Store;
 
   constructor() {
@@ -119,6 +130,7 @@ export class MemStorage implements IStorage {
     this.userSubscriptions = new Map();
     this.usersMemory = new Map();
     this.scriptVersions = new Map();
+    this.scriptTemplates = new Map();
     // Use memory session store for reliability across environments
     this.sessionStore = new MemoryStore({
       checkPeriod: 86400000, // prune expired entries every 24h
@@ -617,6 +629,76 @@ export class MemStorage implements IStorage {
         user.updatedAt = new Date();
         this.usersMemory.set(userId, user);
       }
+    }
+  }
+
+  // Script Template methods
+  async getScriptTemplates(userId: string): Promise<ScriptTemplate[]> {
+    const templates = Array.from(this.scriptTemplates.values())
+      .filter(t => t.userId === userId || t.isPublic === "true")
+      .sort((a, b) => {
+        const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        return dateB - dateA;
+      });
+    return templates;
+  }
+
+  async getScriptTemplate(id: string): Promise<ScriptTemplate | undefined> {
+    return this.scriptTemplates.get(id);
+  }
+
+  async createScriptTemplate(template: InsertScriptTemplate): Promise<ScriptTemplate> {
+    const id = randomUUID();
+    const now = new Date();
+    const newTemplate: ScriptTemplate = {
+      id,
+      userId: template.userId,
+      name: template.name,
+      description: template.description || null,
+      platform: template.platform || "tiktok",
+      duration: template.duration || "90",
+      category: template.category || "content_creation",
+      structure: template.structure || "problem_solver",
+      hook: template.hook || "painful_past",
+      tone: template.tone || null,
+      voice: template.voice || null,
+      pacing: template.pacing || null,
+      videoType: template.videoType || "talking_head",
+      creatorStyle: template.creatorStyle || "default",
+      defaultTargetAudience: template.defaultTargetAudience || null,
+      defaultCta: template.defaultCta || null,
+      isPublic: template.isPublic || "false",
+      usageCount: "0",
+      createdAt: now,
+      updatedAt: now,
+    };
+    this.scriptTemplates.set(id, newTemplate);
+    return newTemplate;
+  }
+
+  async updateScriptTemplate(id: string, updates: Partial<InsertScriptTemplate>): Promise<ScriptTemplate | undefined> {
+    const template = this.scriptTemplates.get(id);
+    if (!template) return undefined;
+    
+    const updated: ScriptTemplate = {
+      ...template,
+      ...updates,
+      updatedAt: new Date(),
+    };
+    this.scriptTemplates.set(id, updated);
+    return updated;
+  }
+
+  async deleteScriptTemplate(id: string): Promise<boolean> {
+    return this.scriptTemplates.delete(id);
+  }
+
+  async incrementTemplateUsage(id: string): Promise<void> {
+    const template = this.scriptTemplates.get(id);
+    if (template) {
+      template.usageCount = String(parseInt(template.usageCount || "0") + 1);
+      this.scriptTemplates.set(id, template);
     }
   }
 }
