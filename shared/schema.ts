@@ -825,3 +825,67 @@ export const scriptTemplates = pgTable("script_templates", {
 export const insertScriptTemplateSchema = createInsertSchema(scriptTemplates).omit({ id: true, createdAt: true, updatedAt: true });
 export type InsertScriptTemplate = z.infer<typeof insertScriptTemplateSchema>;
 export type ScriptTemplate = typeof scriptTemplates.$inferSelect;
+
+// Competitive Analysis Types
+export interface CompetitorVideo {
+  id: string;
+  platform: "instagram" | "tiktok";
+  videoUrl: string;
+  thumbnailUrl: string;
+  caption: string;
+  creatorHandle: string;
+  creatorName: string;
+  creatorAvatar?: string;
+  creatorFollowers?: number;
+  postedAt: string;
+  views: number;
+  likes: number;
+  comments: number;
+  shares?: number;
+  engagementRate: number;
+  outlierScore: number; // How much better than creator's average (e.g., 7x means 7 times average)
+  duration?: number;
+  hashtags?: string[];
+  formatType?: string; // listicle, story, tutorial, etc.
+  hookType?: string; // question, statistic, contrarian, etc.
+}
+
+export interface CompetitorProfile {
+  id: string;
+  platform: "instagram" | "tiktok";
+  handle: string;
+  displayName: string;
+  avatarUrl?: string;
+  followers: number;
+  avgViews: number;
+  avgEngagement: number;
+  totalVideos: number;
+  topVideos: CompetitorVideo[];
+}
+
+export interface CompetitiveSearchResult {
+  query: string;
+  platforms: ("instagram" | "tiktok")[];
+  totalResults: number;
+  profiles: CompetitorProfile[];
+  videos: CompetitorVideo[];
+  analytics: {
+    avgViews: number;
+    avgEngagement: number;
+    dominantFormats: string[];
+    bestPerformingDuration: string;
+    topHookTypes: string[];
+  };
+  searchedAt: string;
+}
+
+export interface CompetitiveSearchFilters {
+  keyword?: string;
+  platforms?: ("instagram" | "tiktok")[];
+  channels?: string[];
+  dateRange?: { start: string; end: string };
+  minOutlierScore?: number;
+  minViews?: number;
+  minEngagement?: number;
+  sortBy?: "views" | "engagement" | "outlier" | "date";
+}

@@ -4,6 +4,20 @@
 
 /* LIGHT MODE - Video Script Writer Theme */
 :root {
+  /* Rainbow button colors */
+  --color-1: 0 100% 63%;
+  --color-2: 270 100% 63%;
+  --color-3: 210 100% 63%;
+  --color-4: 195 100% 63%;
+  --color-5: 90 100% 63%;
+  
+  /* Section gradient colors */
+  --gradient-business: linear-gradient(135deg, hsl(220 80% 55%), hsl(260 70% 50%));
+  --gradient-ai: linear-gradient(135deg, hsl(180 70% 45%), hsl(220 80% 55%));
+  --gradient-viral: linear-gradient(135deg, hsl(340 80% 55%), hsl(20 90% 55%));
+  --gradient-growth: linear-gradient(135deg, hsl(140 70% 45%), hsl(180 70% 50%));
+  --gradient-premium: linear-gradient(135deg, hsl(45 90% 55%), hsl(30 85% 50%));
+  
   --button-outline: rgba(0, 0, 0, .08);
   --badge-outline: rgba(0, 0, 0, .05);
   --opaque-button-border-intensity: -6;
