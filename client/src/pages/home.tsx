@@ -593,7 +593,7 @@ export default function Home() {
   return (
     <div className="p-4 md:p-6 max-w-5xl mx-auto pb-24 md:pb-6">
       <div className="mb-6 text-center">
-        <h1 className="text-xl md:text-2xl font-bold text-white mb-1" data-testid="text-page-title">
+        <h1 className="text-xl md:text-2xl font-bold text-foreground mb-1" data-testid="text-page-title">
           What do you want to create today?
         </h1>
         <p className="text-sm text-muted-foreground">
@@ -612,10 +612,10 @@ export default function Home() {
               <button
                 key={script.id}
                 onClick={() => setGeneratedScript(script)}
-                className="flex-shrink-0 p-3 rounded-md bg-white/5 border border-white/10 text-left hover-elevate active-elevate-2 min-w-[200px] max-w-[250px]"
+                className="flex-shrink-0 p-3 rounded-md bg-muted/50 border border-border text-left hover-elevate active-elevate-2 min-w-[200px] max-w-[250px]"
                 data-testid={`recent-script-${script.id}`}
               >
-                <p className="text-xs text-white font-medium line-clamp-2 mb-1">
+                <p className="text-xs text-foreground font-medium line-clamp-2 mb-1">
                   {script.title || script.parameters?.topic?.slice(0, 40) || "Untitled"}
                 </p>
                 <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
@@ -674,13 +674,13 @@ export default function Home() {
                       className={`p-3 rounded-md text-left transition-all hover-elevate active-elevate-2 relative ${
                         activePreset === preset.id
                           ? "bg-primary/20 border border-primary/50"
-                          : "bg-white/5 border border-white/10"
+                          : "bg-muted/50 border border-border"
                       }`}
                       data-testid={`button-preset-${preset.id}`}
                     >
                       <div className="flex items-center gap-2 mb-1">
                         <Icon className="w-4 h-4 text-primary" />
-                        <span className="font-medium text-xs md:text-sm text-white">{preset.name}</span>
+                        <span className="font-medium text-xs md:text-sm text-foreground">{preset.name}</span>
                       </div>
                       <p className="text-[10px] md:text-xs text-muted-foreground line-clamp-1">
                         {preset.description}
@@ -688,7 +688,7 @@ export default function Home() {
                     </button>
                   </TooltipTrigger>
                   <TooltipContent side="bottom" className="max-w-xs p-3">
-                    <p className="text-xs font-medium text-white mb-1">Sample Hook:</p>
+                    <p className="text-xs font-medium text-foreground mb-1">Sample Hook:</p>
                     <p className="text-xs text-muted-foreground italic">"{presetHook?.example}"</p>
                   </TooltipContent>
                 </Tooltip>
@@ -714,7 +714,7 @@ export default function Home() {
                 }
               }}
               placeholder="e.g., Why most people fail at content creation..."
-              className="bg-white/5 border-white/10 min-h-[80px] text-base pr-12"
+              className="bg-background border-input min-h-[80px] text-base pr-12"
               data-testid="input-topic"
             />
             <VoiceInputButton 
@@ -769,12 +769,12 @@ export default function Home() {
           )}
         </div>
 
-        <div className="mb-4 p-3 rounded-md bg-white/5 border border-white/10">
+        <div className="mb-4 p-3 rounded-md bg-muted/50 border border-border">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Search className="w-4 h-4 text-primary" />
               <div>
-                <p className="text-sm font-medium text-white">Deep Research Mode</p>
+                <p className="text-sm font-medium text-foreground">Deep Research Mode</p>
                 <p className="text-[10px] text-muted-foreground">
                   {deepResearch ? "AI expands your idea into a detailed brief first" : "Turn ON if your idea is raw/basic"}
                 </p>
@@ -797,12 +797,12 @@ export default function Home() {
           </div>
           
           {deepResearch && (
-            <div className="mt-3 pt-3 border-t border-white/10 space-y-3">
+            <div className="mt-3 pt-3 border-t border-border space-y-3">
               <div className="flex items-center justify-between p-2 rounded bg-blue-500/10 border border-blue-500/20">
                 <div className="flex items-center gap-2">
                   <Globe className="w-4 h-4 text-blue-400" />
                   <div>
-                    <p className="text-xs font-medium text-white">Competitor Research</p>
+                    <p className="text-xs font-medium text-foreground">Competitor Research</p>
                     <p className="text-[10px] text-muted-foreground">Analyze top TikTok posts for this topic</p>
                   </div>
                 </div>
@@ -888,9 +888,9 @@ export default function Home() {
 
             {/* Insights Summary */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-4">
-              <div className="p-2 rounded bg-white/5 border border-white/10 text-center">
+              <div className="p-2 rounded bg-muted/50 border border-border text-center">
                 <p className="text-[10px] text-muted-foreground uppercase">Avg Views</p>
-                <p className="text-sm font-bold text-white">
+                <p className="text-sm font-bold text-foreground">
                   {viralExamples.avgViews >= 1000000 
                     ? `${(viralExamples.avgViews / 1000000).toFixed(1)}M`
                     : viralExamples.avgViews >= 1000 
@@ -898,17 +898,17 @@ export default function Home() {
                       : viralExamples.avgViews}
                 </p>
               </div>
-              <div className="p-2 rounded bg-white/5 border border-white/10 text-center">
+              <div className="p-2 rounded bg-muted/50 border border-border text-center">
                 <p className="text-[10px] text-muted-foreground uppercase">Avg Engagement</p>
-                <p className="text-sm font-bold text-white">{viralExamples.avgEngagement}%</p>
+                <p className="text-sm font-bold text-foreground">{viralExamples.avgEngagement}%</p>
               </div>
-              <div className="p-2 rounded bg-white/5 border border-white/10 text-center">
+              <div className="p-2 rounded bg-muted/50 border border-border text-center">
                 <p className="text-[10px] text-muted-foreground uppercase">Best Duration</p>
-                <p className="text-sm font-bold text-white">{viralExamples.bestPerformingDuration}</p>
+                <p className="text-sm font-bold text-foreground">{viralExamples.bestPerformingDuration}</p>
               </div>
-              <div className="p-2 rounded bg-white/5 border border-white/10 text-center">
+              <div className="p-2 rounded bg-muted/50 border border-border text-center">
                 <p className="text-[10px] text-muted-foreground uppercase">Top Format</p>
-                <p className="text-sm font-bold text-white capitalize">{viralExamples.dominantFormats[0] || "Mixed"}</p>
+                <p className="text-sm font-bold text-foreground capitalize">{viralExamples.dominantFormats[0] || "Mixed"}</p>
               </div>
             </div>
 
@@ -920,7 +920,7 @@ export default function Home() {
                   {viralExamples.examples.map((example, i) => (
                     <div
                       key={example.id}
-                      className="p-3 rounded-md bg-white/5 border border-white/10 hover-elevate cursor-pointer"
+                      className="p-3 rounded-md bg-muted/50 border border-border hover-elevate cursor-pointer"
                       onClick={() => {
                         navigator.clipboard.writeText(example.fullCaption);
                         toast({
@@ -954,7 +954,7 @@ export default function Home() {
                           </span>
                         </div>
                       </div>
-                      <p className="text-sm text-white leading-relaxed">{example.fullCaption}</p>
+                      <p className="text-sm text-foreground leading-relaxed">{example.fullCaption}</p>
                       <div className="flex items-center justify-between gap-2 mt-2">
                         <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
                           <span>{example.estimatedWordCount} words</span>
@@ -1019,10 +1019,10 @@ export default function Home() {
 
             <div className="space-y-4">
               <div className="grid md:grid-cols-2 gap-4">
-                <div className="p-3 rounded-md bg-white/5 border border-white/10">
+                <div className="p-3 rounded-md bg-muted/50 border border-border">
                   <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Topic Summary</p>
                   {isSkeletonLocked ? (
-                    <p className="text-sm text-white">{contentSkeleton.topicSummary}</p>
+                    <p className="text-sm text-foreground">{contentSkeleton.topicSummary}</p>
                   ) : (
                     <Textarea
                       value={contentSkeleton.topicSummary}
@@ -1031,10 +1031,10 @@ export default function Home() {
                     />
                   )}
                 </div>
-                <div className="p-3 rounded-md bg-white/5 border border-white/10">
+                <div className="p-3 rounded-md bg-muted/50 border border-border">
                   <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Unique Angle</p>
                   {isSkeletonLocked ? (
-                    <p className="text-sm text-white">{contentSkeleton.uniqueAngle}</p>
+                    <p className="text-sm text-foreground">{contentSkeleton.uniqueAngle}</p>
                   ) : (
                     <Textarea
                       value={contentSkeleton.uniqueAngle}
@@ -1055,7 +1055,7 @@ export default function Home() {
                         className={`p-2 rounded-md border transition-all ${
                           fact.isUsed
                             ? "bg-primary/10 border-primary/30"
-                            : "bg-white/5 border-white/10 opacity-50"
+                            : "bg-muted/50 border-border opacity-50"
                         }`}
                       >
                         <div className="flex items-start gap-2">
@@ -1063,14 +1063,14 @@ export default function Home() {
                             <button
                               onClick={() => toggleFactUsed(fact.id)}
                               className={`mt-0.5 w-4 h-4 rounded border flex items-center justify-center ${
-                                fact.isUsed ? "bg-primary border-primary" : "border-white/30"
+                                fact.isUsed ? "bg-primary border-primary" : "border-border"
                               }`}
                             >
                               {fact.isUsed && <Check className="w-3 h-3 text-white" />}
                             </button>
                           )}
                           <div className="flex-1">
-                            <p className="text-sm text-white">{fact.fact}</p>
+                            <p className="text-sm text-foreground">{fact.fact}</p>
                             <div className="flex items-center gap-2 mt-1">
                               <Badge 
                                 variant="outline" 
@@ -1114,7 +1114,7 @@ export default function Home() {
                   {contentSkeleton.sections.map((section, sectionIndex) => (
                     <div
                       key={section.id}
-                      className="p-3 rounded-md bg-white/5 border border-white/10"
+                      className="p-3 rounded-md bg-muted/50 border border-border"
                     >
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-2">
@@ -1122,7 +1122,7 @@ export default function Home() {
                             {sectionIndex + 1}
                           </span>
                           {isSkeletonLocked ? (
-                            <span className="font-medium text-sm text-white">{section.title}</span>
+                            <span className="font-medium text-sm text-foreground">{section.title}</span>
                           ) : (
                             <Input
                               value={section.title}
@@ -1139,7 +1139,7 @@ export default function Home() {
                               <Input
                                 value={section.suggestedDuration}
                                 onChange={(e) => updateSkeletonSection(section.id, { suggestedDuration: e.target.value })}
-                                className="h-5 w-16 text-[10px] font-mono bg-transparent border border-white/20 px-1 focus-visible:ring-0"
+                                className="h-5 w-16 text-[10px] font-mono bg-transparent border border-input px-1 focus-visible:ring-0"
                                 placeholder="10s"
                               />
                               {contentSkeleton.sections.length > 1 && (
@@ -1162,7 +1162,7 @@ export default function Home() {
                         <Textarea
                           value={section.objective}
                           onChange={(e) => updateSkeletonSection(section.id, { objective: e.target.value })}
-                          className="text-xs text-muted-foreground bg-transparent border border-white/20 p-2 min-h-[40px] resize-none focus-visible:ring-0 mb-2"
+                          className="text-xs text-muted-foreground bg-transparent border border-input p-2 min-h-[40px] resize-none focus-visible:ring-0 mb-2"
                           placeholder="Section objective..."
                         />
                       )}
@@ -1172,13 +1172,13 @@ export default function Home() {
                           <div key={momentIndex} className="flex items-center gap-2">
                             <span className="text-xs text-muted-foreground">-</span>
                             {isSkeletonLocked ? (
-                              <span className="text-xs text-white/80">{moment}</span>
+                              <span className="text-xs text-foreground/80">{moment}</span>
                             ) : (
                               <>
                                 <Input
                                   value={moment}
                                   onChange={(e) => updateKeyMoment(section.id, momentIndex, e.target.value)}
-                                  className="flex-1 h-6 text-xs bg-transparent border-0 p-0 focus-visible:ring-0 text-white/80"
+                                  className="flex-1 h-6 text-xs bg-transparent border-0 p-0 focus-visible:ring-0 text-foreground/80"
                                 />
                                 <button
                                   onClick={() => removeKeyMoment(section.id, momentIndex)}
@@ -1224,15 +1224,15 @@ export default function Home() {
                   </div>
                   <div className="space-y-2">
                     {contentSkeleton.suggestedHooks.map((hook, i) => (
-                      <div key={i} className="p-2 rounded bg-white/5 border border-white/10">
+                      <div key={i} className="p-2 rounded bg-muted/50 border border-border">
                         {isSkeletonLocked ? (
-                          <p className="text-xs text-white/80 italic">"{hook}"</p>
+                          <p className="text-xs text-muted-foreground italic">"{hook}"</p>
                         ) : (
                           <div className="flex items-center gap-2">
                             <Input
                               value={hook}
                               onChange={(e) => updateSuggestedHook(i, e.target.value)}
-                              className="flex-1 h-6 text-xs bg-transparent border-0 p-0 focus-visible:ring-0 text-white/80 italic"
+                              className="flex-1 h-6 text-xs bg-transparent border-0 p-0 focus-visible:ring-0 text-muted-foreground italic"
                             />
                             <button
                               onClick={() => removeSuggestedHook(i)}
@@ -1321,13 +1321,13 @@ export default function Home() {
                   </Badge>
                 </div>
                 <div className="flex gap-4 text-xs text-muted-foreground mb-2">
-                  <span>Avg Views: <span className="text-white font-mono">{competitorInsights.avgViews.toLocaleString()}</span></span>
-                  <span>Avg Likes: <span className="text-white font-mono">{competitorInsights.avgLikes.toLocaleString()}</span></span>
+                  <span>Avg Views: <span className="text-foreground font-mono">{competitorInsights.avgViews.toLocaleString()}</span></span>
+                  <span>Avg Likes: <span className="text-foreground font-mono">{competitorInsights.avgLikes.toLocaleString()}</span></span>
                 </div>
                 <p className="text-xs text-muted-foreground mb-1">Top hooks that worked:</p>
                 <ul className="space-y-1">
                   {competitorInsights.topHooks.slice(0, 3).map((hook, i) => (
-                    <li key={i} className="text-xs text-white/80 italic pl-2 border-l-2 border-blue-500/30">
+                    <li key={i} className="text-xs text-muted-foreground italic pl-2 border-l-2 border-blue-500/30">
                       "{hook.length > 80 ? hook.substring(0, 80) + "..." : hook}"
                     </li>
                   ))}
@@ -1338,19 +1338,19 @@ export default function Home() {
             <div className="space-y-3 text-sm">
               <div>
                 <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Core Message</p>
-                <p className="text-white">{expandedBrief.coreMessage}</p>
+                <p className="text-foreground">{expandedBrief.coreMessage}</p>
               </div>
               <div>
                 <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Target Viewer</p>
-                <p className="text-white/80">{expandedBrief.targetViewer}</p>
+                <p className="text-muted-foreground">{expandedBrief.targetViewer}</p>
               </div>
               <div>
                 <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Unique Angle</p>
-                <p className="text-white/80">{expandedBrief.uniqueAngle}</p>
+                <p className="text-muted-foreground">{expandedBrief.uniqueAngle}</p>
               </div>
               <div>
                 <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Key Proof Points</p>
-                <ul className="list-disc list-inside text-white/80">
+                <ul className="list-disc list-inside text-muted-foreground">
                   {expandedBrief.keyProofPoints.map((point, i) => (
                     <li key={i}>{point}</li>
                   ))}
@@ -1392,7 +1392,7 @@ export default function Home() {
               <Eye className="w-4 h-4 text-primary" />
               <span className="text-xs font-medium text-primary uppercase tracking-wider">Live Hook Preview</span>
             </div>
-            <p className="text-sm text-white italic" data-testid="live-hook-preview">
+            <p className="text-sm text-foreground italic" data-testid="live-hook-preview">
               "{liveHookPreview}"
             </p>
             <p className="text-[10px] text-muted-foreground mt-1">
@@ -1402,7 +1402,7 @@ export default function Home() {
         )}
 
         {formData.topic && (
-          <div className="mb-4 p-3 rounded-md bg-white/5 border border-white/10">
+          <div className="mb-4 p-3 rounded-md bg-muted/50 border border-border">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
                 <Target className="w-4 h-4 text-muted-foreground" />
@@ -1410,7 +1410,7 @@ export default function Home() {
                   {actualWordCount > 0 ? "Script Word Count" : "Target Word Range"}
                 </span>
               </div>
-              <span className="text-xs text-white font-mono">
+              <span className="text-xs text-foreground font-mono">
                 {actualWordCount > 0 ? `${actualWordCount} words` : `${wordTarget.min}-${wordTarget.max} words`}
               </span>
             </div>
@@ -1431,7 +1431,7 @@ export default function Home() {
               value={formData.platform}
               onValueChange={(value) => setFormData((prev) => ({ ...prev, platform: value }))}
             >
-              <SelectTrigger className="bg-white/5 border-white/10" data-testid="select-platform">
+              <SelectTrigger className="bg-muted/50 border-border" data-testid="select-platform">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -1450,7 +1450,7 @@ export default function Home() {
               value={formData.duration}
               onValueChange={(value) => setFormData((prev) => ({ ...prev, duration: value }))}
             >
-              <SelectTrigger className="bg-white/5 border-white/10" data-testid="select-duration">
+              <SelectTrigger className="bg-muted/50 border-border" data-testid="select-duration">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -1469,7 +1469,7 @@ export default function Home() {
               value={formData.category}
               onValueChange={(value) => setFormData((prev) => ({ ...prev, category: value }))}
             >
-              <SelectTrigger className="bg-white/5 border-white/10" data-testid="select-category">
+              <SelectTrigger className="bg-muted/50 border-border" data-testid="select-category">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -1488,7 +1488,7 @@ export default function Home() {
               value={formData.structure}
               onValueChange={(value) => setFormData((prev) => ({ ...prev, structure: value }))}
             >
-              <SelectTrigger className="bg-white/5 border-white/10" data-testid="select-structure">
+              <SelectTrigger className="bg-muted/50 border-border" data-testid="select-structure">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -1515,12 +1515,12 @@ export default function Home() {
                   className={`p-3 rounded-md text-center transition-all hover-elevate ${
                     isSelected
                       ? "bg-primary/20 border border-primary/50"
-                      : "bg-white/5 border border-white/10"
+                      : "bg-muted/50 border border-border"
                   }`}
                   data-testid={`button-video-type-${vt.id}`}
                 >
-                  <Icon className={`w-5 h-5 mx-auto mb-1 ${isSelected ? "text-primary" : "text-white/70"}`} />
-                  <p className={`text-xs font-medium ${isSelected ? "text-white" : "text-white/80"}`}>{vt.name}</p>
+                  <Icon className={`w-5 h-5 mx-auto mb-1 ${isSelected ? "text-primary" : "text-muted-foreground"}`} />
+                  <p className={`text-xs font-medium ${isSelected ? "text-foreground" : "text-muted-foreground"}`}>{vt.name}</p>
                   <p className="text-[10px] text-muted-foreground">{vt.description}</p>
                 </button>
               );
@@ -1533,7 +1533,7 @@ export default function Home() {
           
           <Tabs defaultValue="personal_experience" className="w-full">
             <ScrollArea className="w-full">
-              <TabsList className="w-full h-auto flex flex-wrap gap-1 bg-white/5 p-1.5 rounded-lg mb-3">
+              <TabsList className="w-full h-auto flex flex-wrap gap-1 bg-muted/50 p-1.5 rounded-lg mb-3">
                 {hookCategories.map((category) => (
                   <TabsTrigger 
                     key={category.id} 
@@ -1561,12 +1561,12 @@ export default function Home() {
                           className={`w-full text-left p-3 rounded-lg transition-all hover-elevate ${
                             isSelected
                               ? "bg-primary/20 border-2 border-primary/60"
-                              : "bg-white/5 border border-white/10"
+                              : "bg-muted/50 border border-border"
                           }`}
                           data-testid={`button-hook-${hook.id}`}
                         >
                           <div className="flex items-start justify-between gap-2 mb-1.5">
-                            <span className={`font-medium text-sm ${isSelected ? "text-primary" : "text-white"}`}>
+                            <span className={`font-medium text-sm ${isSelected ? "text-primary" : "text-foreground"}`}>
                               {hook.name}
                             </span>
                             {isSelected && (
@@ -1575,7 +1575,7 @@ export default function Home() {
                               </Badge>
                             )}
                           </div>
-                          <p className="text-xs text-white/80 italic leading-relaxed mb-1.5">
+                          <p className="text-xs text-muted-foreground italic leading-relaxed mb-1.5">
                             "{hook.example}"
                           </p>
                           <p className="text-[11px] text-muted-foreground leading-relaxed">
@@ -1595,7 +1595,7 @@ export default function Home() {
                 <Zap className="w-4 h-4 text-primary" />
                 <span className="text-sm font-medium text-primary">Your Hook</span>
               </div>
-              <p className="text-sm text-white/90 italic">"{currentHook.example}"</p>
+              <p className="text-sm text-muted-foreground italic">"{currentHook.example}"</p>
               <p className="text-xs text-muted-foreground mt-2">Template: {currentHook.template}</p>
             </div>
           )}
@@ -1606,7 +1606,7 @@ export default function Home() {
             <Button 
               variant="outline" 
               size="sm" 
-              className={`w-full mb-4 border-dashed ${showAdvanced ? "border-primary/50 text-primary" : "border-white/30 text-white/80 bg-white/5"}`}
+              className={`w-full mb-4 border-dashed ${showAdvanced ? "border-primary/50 text-primary" : "border-border text-foreground/80 bg-muted/50"}`}
               data-testid="button-toggle-advanced"
             >
               {showAdvanced ? (
@@ -1632,7 +1632,7 @@ export default function Home() {
                   value={formData.targetAudience}
                   onChange={(e) => setFormData((prev) => ({ ...prev, targetAudience: e.target.value }))}
                   placeholder="e.g., Aspiring content creators..."
-                  className="bg-white/5 border-white/10"
+                  className="bg-muted/50 border-border"
                   data-testid="input-audience"
                 />
               </div>
@@ -1654,7 +1654,7 @@ export default function Home() {
                     }
                   }}
                 >
-                  <SelectTrigger className="bg-white/5 border-white/10" data-testid="select-cta">
+                  <SelectTrigger className="bg-muted/50 border-border" data-testid="select-cta">
                     <SelectValue placeholder="Choose a CTA..." />
                   </SelectTrigger>
                   <SelectContent className="max-h-72">
@@ -1686,16 +1686,16 @@ export default function Home() {
                   value={formData.customCta || ""}
                   onChange={(e) => setFormData((prev) => ({ ...prev, customCta: e.target.value }))}
                   placeholder="e.g., Follow for more tips..."
-                  className="bg-white/5 border-white/10"
+                  className="bg-muted/50 border-border"
                   data-testid="input-custom-cta"
                 />
               </div>
             )}
 
             {formData.selectedCtaId && (
-              <div className="p-2 rounded bg-white/5 border border-white/10">
+              <div className="p-2 rounded bg-muted/50 border border-border">
                 <p className="text-[10px] text-muted-foreground mb-1">Selected CTA:</p>
-                <p className="text-xs text-white">"{ctaOptions.find(c => c.id === formData.selectedCtaId)?.text}"</p>
+                <p className="text-xs text-foreground">"{ctaOptions.find(c => c.id === formData.selectedCtaId)?.text}"</p>
               </div>
             )}
 
@@ -1706,7 +1706,7 @@ export default function Home() {
                 value={formData.keyFacts}
                 onChange={(e) => setFormData((prev) => ({ ...prev, keyFacts: e.target.value }))}
                 placeholder="e.g., 10x growth, 50k followers, used by top creators..."
-                className="bg-white/5 border-white/10 min-h-[60px]"
+                className="bg-muted/50 border-border min-h-[60px]"
                 data-testid="input-facts"
               />
             </div>
@@ -1723,7 +1723,7 @@ export default function Home() {
                 value={formData.referenceScript || ""}
                 onChange={(e) => setFormData((prev) => ({ ...prev, referenceScript: e.target.value }))}
                 placeholder="Paste a viral script you want to learn from... The AI will analyze its structure, hook style, pacing, and tone to generate a similar script for your topic."
-                className="bg-white/5 border-white/10 min-h-[100px]"
+                className="bg-muted/50 border-border min-h-[100px]"
                 maxLength={5000}
                 data-testid="input-reference-script"
               />
@@ -1740,7 +1740,7 @@ export default function Home() {
                 value={formData.creatorStyle || "default"}
                 onValueChange={(value) => setFormData((prev) => ({ ...prev, creatorStyle: value }))}
               >
-                <SelectTrigger className="bg-white/5 border-white/10" data-testid="select-creator-style">
+                <SelectTrigger className="bg-muted/50 border-border" data-testid="select-creator-style">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="max-h-96">
@@ -1777,9 +1777,9 @@ export default function Home() {
                 </SelectContent>
               </Select>
               {formData.creatorStyle && formData.creatorStyle !== "default" && (
-                <div className="mt-2 p-2 rounded bg-white/5 border border-white/10">
+                <div className="mt-2 p-2 rounded bg-muted/50 border border-border">
                   <p className="text-[10px] text-muted-foreground mb-1">Style: {extendedCreatorStyles.find(c => c.id === formData.creatorStyle)?.tone}</p>
-                  <p className="text-[10px] text-white/70 italic">
+                  <p className="text-[10px] text-muted-foreground italic">
                     "{extendedCreatorStyles.find(c => c.id === formData.creatorStyle)?.exampleHook}"
                   </p>
                 </div>
@@ -1790,7 +1790,7 @@ export default function Home() {
               <div className="flex items-center gap-3">
                 <BookOpen className="w-4 h-4 text-primary" />
                 <div>
-                  <p className="text-sm font-medium text-white">Use Knowledge Base</p>
+                  <p className="text-sm font-medium text-foreground">Use Knowledge Base</p>
                   <p className="text-[10px] text-muted-foreground">
                     {!user 
                       ? "Sign in to use your personalized Knowledge Base"
@@ -1830,7 +1830,7 @@ export default function Home() {
         >
           {generateMutation.isPending ? (
             <>
-              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
+              <div className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin mr-2" />
               Generating...
             </>
           ) : (
@@ -1855,7 +1855,7 @@ export default function Home() {
         />
       )}
 
-      <div className="fixed bottom-0 left-0 right-0 p-4 bg-background/95 backdrop-blur border-t border-white/10 md:hidden z-50">
+      <div className="fixed bottom-0 left-0 right-0 p-4 bg-background/95 backdrop-blur border-t border-border md:hidden z-50">
         <Button
           onClick={handleGenerate}
           disabled={generateMutation.isPending || !formData.topic.trim()}
@@ -1864,7 +1864,7 @@ export default function Home() {
         >
           {generateMutation.isPending ? (
             <>
-              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
+              <div className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin mr-2" />
               Generating...
             </>
           ) : (
