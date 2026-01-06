@@ -57,6 +57,8 @@ import {
 import { ScriptOutput } from "@/components/script-output";
 import { GenerationProgress } from "@/components/generation-progress";
 import { IdeaClarifier } from "@/components/idea-clarifier";
+import { SkeletonEnhancer } from "@/components/skeleton-enhancer";
+import type { EnhancedSkeleton } from "@shared/schema";
 import { useVoiceCommand } from "@/hooks/use-voice-command";
 import { 
   Wand2, 
@@ -69,6 +71,7 @@ import {
   Search,
   ChevronDown,
   ChevronUp,
+  ChevronRight,
   Clock,
   Eye,
   RotateCcw,
@@ -251,8 +254,12 @@ export default function Home() {
   const [showViralExamples, setShowViralExamples] = useState(false);
   const [viralSearchPlatform, setViralSearchPlatform] = useState<"tiktok" | "instagram" | null>(null);
   
-  // New two-step flow: Video Idea Clarifier
+  // New 3-step flow: Video Idea Clarifier
+  // Step 1: Build skeleton, Step 2: Enhance with research, Step 3: Generate script
+  type FlowStep = "skeleton" | "enhance" | "script";
+  const [currentStep, setCurrentStep] = useState<FlowStep>("skeleton");
   const [videoSkeleton, setVideoSkeleton] = useState<VideoIdeaSkeleton | null>(null);
+  const [enhancedSkeleton, setEnhancedSkeleton] = useState<EnhancedSkeleton | null>(null);
   const [showLegacyFlow, setShowLegacyFlow] = useState(false);
 
   const [formData, setFormData] = useState<ScriptParameters>({
@@ -574,10 +581,24 @@ export default function Home() {
     }
   };
 
-  // New: Handle skeleton completion from IdeaClarifier
+  // New: Handle skeleton completion from IdeaClarifier - Move to Step 2 (Enhancement)
   const handleSkeletonComplete = (skeleton: VideoIdeaSkeleton) => {
     setVideoSkeleton(skeleton);
-    // Convert skeleton to formData for script generation
+    setCurrentStep("enhance"); // Go to enhancement step instead of direct generation
+  };
+
+  // Handle going back from enhancement to skeleton editing
+  const handleBackToSkeleton = () => {
+    setCurrentStep("skeleton");
+  };
+
+  // Handle enhancement completion - now generate the script
+  const handleEnhancementComplete = (enhanced: EnhancedSkeleton) => {
+    setEnhancedSkeleton(enhanced);
+    setCurrentStep("script");
+    
+    // Convert enhanced skeleton to formData and generate
+    const skeleton = enhanced.baseSkeleton;
     setFormData(prev => ({
       ...prev,
       topic: `${skeleton.hook.content}\n\n${skeleton.problem.content}\n\n${skeleton.solution.content}`,
@@ -585,10 +606,55 @@ export default function Home() {
       callToAction: skeleton.cta.content,
       platform: skeleton.platform,
       duration: skeleton.duration,
-      structure: "problem_solver", // This matches the skeleton flow
+      structure: "problem_solver",
     }));
-    // Trigger script generation
-    generateFromSkeleton(skeleton);
+    
+    // Generate with enhanced data
+    generateFromEnhancedSkeleton(enhanced);
+  };
+
+  // Generate script from enhanced skeleton with research data
+  const generateFromEnhancedSkeleton = (enhanced: EnhancedSkeleton) => {
+    const skeleton = enhanced.baseSkeleton;
+    const params: ScriptParameters = {
+      topic: skeleton.rawIdea || skeleton.hook.content,
+      targetAudience: skeleton.targetAudience,
+      callToAction: skeleton.cta.content,
+      platform: skeleton.platform,
+      duration: skeleton.duration,
+      category: "content_creation",
+      structure: "problem_solver",
+      hook: "custom",
+      deepResearch: !!enhanced.research, // Enable if we have research
+      videoType: formData.videoType || "talking_head",
+      creatorStyle: formData.creatorStyle || "default",
+    };
+    
+    // Include the enhanced skeleton data with research and insights
+    const enhancedPayload = {
+      videoIdeaSkeleton: {
+        hook: skeleton.hook.content,
+        problem: skeleton.problem.content,
+        solution: skeleton.solution.content,
+        cta: skeleton.cta.content,
+        targetAudience: skeleton.targetAudience,
+        isLocked: true,
+      },
+      researchInsights: enhanced.research ? {
+        coreMessage: enhanced.research.coreMessage,
+        uniqueAngle: enhanced.research.uniqueAngle,
+        keyProofPoints: enhanced.research.keyProofPoints,
+        actionableTakeaway: enhanced.research.actionableTakeaway,
+      } : undefined,
+      selectedInsights: enhanced.selectedInsights,
+      additionalNotes: enhanced.additionalNotes,
+      competitorData: enhanced.competitorAnalysis ? {
+        topHooks: enhanced.competitorAnalysis.topHooks.slice(0, 3),
+        avgViews: enhanced.competitorAnalysis.engagementStats.avgViews,
+      } : undefined,
+    };
+    
+    generateMutation.mutate({ ...params, ...enhancedPayload });
   };
 
   // Generate script from locked skeleton
@@ -681,23 +747,78 @@ export default function Home() {
         </p>
       </div>
 
-      {/* New: Video Idea Clarifier - The Primary Flow */}
+      {/* New: 3-Step Video Idea Flow */}
       {!showLegacyFlow && !generatedScript && (
         <div className="mb-6">
-          <IdeaClarifier
-            onSkeletonComplete={handleSkeletonComplete}
-            onSkeletonChange={setVideoSkeleton}
-            isGenerating={generateMutation.isPending}
-          />
-          <div className="mt-4 text-center">
-            <button
-              onClick={() => setShowLegacyFlow(true)}
-              className="text-xs text-muted-foreground hover:text-foreground transition-colors underline"
-              data-testid="button-show-legacy"
-            >
-              Switch to advanced mode (all options)
-            </button>
+          {/* Step indicator */}
+          <div className="flex items-center justify-center gap-2 mb-6">
+            <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium ${
+              currentStep === "skeleton" 
+                ? "bg-primary text-primary-foreground" 
+                : "bg-muted text-muted-foreground"
+            }`}>
+              <span className="w-5 h-5 rounded-full bg-background/20 flex items-center justify-center text-[10px]">1</span>
+              Build Skeleton
+            </div>
+            <ChevronRight className="w-4 h-4 text-muted-foreground" />
+            <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium ${
+              currentStep === "enhance" 
+                ? "bg-primary text-primary-foreground" 
+                : "bg-muted text-muted-foreground"
+            }`}>
+              <span className="w-5 h-5 rounded-full bg-background/20 flex items-center justify-center text-[10px]">2</span>
+              Enhance
+            </div>
+            <ChevronRight className="w-4 h-4 text-muted-foreground" />
+            <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium ${
+              currentStep === "script" 
+                ? "bg-primary text-primary-foreground" 
+                : "bg-muted text-muted-foreground"
+            }`}>
+              <span className="w-5 h-5 rounded-full bg-background/20 flex items-center justify-center text-[10px]">3</span>
+              Generate
+            </div>
           </div>
+
+          {/* Step 1: Build Skeleton */}
+          {currentStep === "skeleton" && (
+            <>
+              <IdeaClarifier
+                onSkeletonComplete={handleSkeletonComplete}
+                onSkeletonChange={setVideoSkeleton}
+                isGenerating={generateMutation.isPending}
+              />
+              <div className="mt-4 text-center">
+                <button
+                  onClick={() => setShowLegacyFlow(true)}
+                  className="text-xs text-muted-foreground hover:text-foreground transition-colors underline"
+                  data-testid="button-show-legacy"
+                >
+                  Switch to advanced mode (all options)
+                </button>
+              </div>
+            </>
+          )}
+
+          {/* Step 2: Enhance with Research */}
+          {currentStep === "enhance" && videoSkeleton && (
+            <SkeletonEnhancer
+              skeleton={videoSkeleton}
+              onSkeletonChange={setVideoSkeleton}
+              onEnhancementComplete={handleEnhancementComplete}
+              onBack={handleBackToSkeleton}
+            />
+          )}
+
+          {/* Step 3: Generating - show progress */}
+          {currentStep === "script" && generateMutation.isPending && (
+            <div className="text-center py-8">
+              <div className="inline-flex items-center gap-3 px-6 py-3 bg-primary/10 rounded-lg">
+                <Loader2 className="w-5 h-5 animate-spin text-primary" />
+                <span className="text-sm font-medium">Generating your script...</span>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
