@@ -60,6 +60,16 @@ interface GeneratedHook {
   style: string;
 }
 
+interface GeneratedSolution {
+  id: string;
+  headline: string;
+  description: string;
+  angle: string;
+  selected: boolean;
+  edited: boolean;
+  customText?: string;
+}
+
 interface IdeaClarifierProps {
   onSkeletonComplete: (skeleton: VideoIdeaSkeleton) => void;
   onSkeletonChange?: (skeleton: VideoIdeaSkeleton) => void;
@@ -105,6 +115,10 @@ export function IdeaClarifier({
   const [selectedHookStyle, setSelectedHookStyle] = useState<string>("question");
   const [generatedHooks, setGeneratedHooks] = useState<GeneratedHook[]>([]);
   const [selectedHookId, setSelectedHookId] = useState<string | null>(null);
+  
+  // Solution suggestions
+  const [generatedSolutions, setGeneratedSolutions] = useState<GeneratedSolution[]>([]);
+  const [editingSolutionId, setEditingSolutionId] = useState<string | null>(null);
 
   // Clear generated hooks when problem or solution changes
   const lastProblemRef = useRef(skeleton.problem.content);
@@ -153,6 +167,68 @@ export function IdeaClarifier({
       setSelectedHookId(null);
     },
   });
+
+  // Solution generation mutation
+  const generateSolutionsMutation = useMutation({
+    mutationFn: async (params: {
+      problem: string;
+      targetAudience: string;
+      platform: string;
+    }) => {
+      const response = await apiRequest("POST", "/api/solutions/generate", params);
+      return await response.json() as { solutions: GeneratedSolution[]; problem: string };
+    },
+    onSuccess: (data) => {
+      setGeneratedSolutions(data.solutions);
+    },
+  });
+
+  // Trigger solution generation
+  const handleGenerateSolutions = () => {
+    generateSolutionsMutation.mutate({
+      problem: skeleton.problem.content,
+      targetAudience: skeleton.targetAudience,
+      platform: skeleton.platform,
+    });
+  };
+
+  // Toggle solution selection
+  const handleToggleSolution = (id: string) => {
+    setGeneratedSolutions((prev) =>
+      prev.map((sol) =>
+        sol.id === id ? { ...sol, selected: !sol.selected } : sol
+      )
+    );
+  };
+
+  // Edit solution text
+  const handleEditSolution = (id: string, newText: string) => {
+    setGeneratedSolutions((prev) =>
+      prev.map((sol) =>
+        sol.id === id ? { ...sol, customText: newText, edited: true } : sol
+      )
+    );
+  };
+
+  // Add selected solutions to Solution section
+  const handleAddSolutionsToSkeleton = () => {
+    const selectedSols = generatedSolutions.filter((s) => s.selected);
+    if (selectedSols.length === 0) return;
+    
+    const combinedText = selectedSols
+      .map((s) => s.customText || `${s.headline}: ${s.description}`)
+      .join("\n\n");
+    
+    const currentContent = skeleton.solution.content;
+    const newContent = currentContent
+      ? `${currentContent}\n\n${combinedText}`
+      : combinedText;
+    
+    updateSection("solution", newContent);
+  };
+
+  // Check if problem has enough content to generate solutions
+  const canGenerateSolutions = skeleton.problem.content.length >= 15;
 
   // Reordered: Problem & Solution first, then Hook (AI-generated), then CTA
   const steps: SkeletonSectionType[] = ["problem", "solution", "hook", "cta"];
@@ -251,6 +327,221 @@ export function IdeaClarifier({
   const handleReset = () => {
     setSkeleton(createEmptySkeleton(skeleton.rawIdea, skeleton.platform, skeleton.duration));
     setCurrentStep(0);
+  };
+
+  // Render the problem section with AI solution suggestions
+  const renderProblemSection = () => {
+    const section = skeleton.problem;
+    const bgClass = sectionBgColors.problem;
+    const colorClass = sectionColors.problem;
+    const selectedCount = generatedSolutions.filter((s) => s.selected).length;
+
+    return (
+      <div
+        className={`p-4 rounded-lg border ${bgClass} transition-all`}
+        data-testid="section-problem"
+      >
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <AlertTriangle className={`w-5 h-5 ${colorClass}`} />
+            <span className={`font-semibold ${colorClass}`}>{section.title}</span>
+            {section.isValid && (
+              <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
+                <Check className="w-3 h-3 mr-1" />
+                Ready
+              </Badge>
+            )}
+          </div>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button size="icon" variant="ghost" className="h-6 w-6">
+                <HelpCircle className="w-4 h-4 text-muted-foreground" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="left" className="max-w-xs">
+              <p className="text-sm">{section.guidingQuestion}</p>
+            </TooltipContent>
+          </Tooltip>
+        </div>
+
+        <p className="text-sm text-muted-foreground mb-3 italic">
+          {section.guidingQuestion}
+        </p>
+
+        <Textarea
+          value={section.content}
+          onChange={(e) => updateSection("problem", e.target.value)}
+          placeholder="Describe the problem or pain point your audience faces..."
+          className="min-h-[100px] bg-background/50 border-border mb-2"
+          disabled={skeleton.isLocked}
+          data-testid="input-problem"
+        />
+
+        {section.validationMessage && !section.isValid && section.content && (
+          <p className="text-xs text-amber-400 mb-2 flex items-center gap-1">
+            <AlertTriangle className="w-3 h-3" />
+            {section.validationMessage}
+          </p>
+        )}
+
+        <div className="mt-3">
+          <p className="text-xs text-muted-foreground mb-2 flex items-center gap-1">
+            <Lightbulb className="w-3 h-3" />
+            Examples that work:
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {section.examples.map((example, i) => (
+              <button
+                key={i}
+                onClick={() => !skeleton.isLocked && updateSection("problem", example)}
+                className="text-xs px-2 py-1 rounded bg-muted/50 text-muted-foreground hover-elevate cursor-pointer border border-border"
+                disabled={skeleton.isLocked}
+                data-testid={`example-problem-${i}`}
+              >
+                "{example}"
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* AI Solution Suggestions */}
+        <div className="mt-4 pt-4 border-t border-border/50">
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-xs font-medium text-muted-foreground flex items-center gap-1">
+              <Wand2 className="w-3 h-3" />
+              AI Solution Ideas
+            </p>
+            {generatedSolutions.length > 0 && selectedCount > 0 && (
+              <Badge variant="outline" className="text-xs">
+                {selectedCount} selected
+              </Badge>
+            )}
+          </div>
+
+          {!canGenerateSolutions ? (
+            <p className="text-xs text-muted-foreground italic">
+              Write at least 15 characters above to generate solution ideas
+            </p>
+          ) : (
+            <div className="space-y-3">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleGenerateSolutions}
+                disabled={generateSolutionsMutation.isPending || skeleton.isLocked}
+                className="w-full"
+                data-testid="button-generate-solutions"
+              >
+                {generateSolutionsMutation.isPending ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Generating solution ideas...
+                  </>
+                ) : generatedSolutions.length > 0 ? (
+                  <>
+                    <RefreshCw className="w-4 h-4 mr-2" />
+                    Regenerate Solutions
+                  </>
+                ) : (
+                  <>
+                    <Wand2 className="w-4 h-4 mr-2" />
+                    Generate Solution Ideas
+                  </>
+                )}
+              </Button>
+
+              {/* Solution cards */}
+              {generatedSolutions.length > 0 && (
+                <div className="space-y-2">
+                  {generatedSolutions.map((sol) => (
+                    <div
+                      key={sol.id}
+                      className={`p-3 rounded-lg border transition-all cursor-pointer ${
+                        sol.selected
+                          ? "bg-green-500/20 border-green-500/50"
+                          : "bg-background/50 border-border hover-elevate"
+                      }`}
+                      onClick={() => !skeleton.isLocked && handleToggleSolution(sol.id)}
+                      data-testid={`solution-card-${sol.id}`}
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className={`w-4 h-4 rounded border flex items-center justify-center ${
+                              sol.selected ? "bg-green-500 border-green-500" : "border-muted-foreground"
+                            }`}>
+                              {sol.selected && <Check className="w-3 h-3 text-white" />}
+                            </span>
+                            <span className="font-medium text-sm">{sol.headline}</span>
+                            <Badge variant="outline" className="text-xs">
+                              {sol.angle}
+                            </Badge>
+                          </div>
+                          
+                          {editingSolutionId === sol.id ? (
+                            <Textarea
+                              value={sol.customText || `${sol.headline}: ${sol.description}`}
+                              onChange={(e) => {
+                                e.stopPropagation();
+                                handleEditSolution(sol.id, e.target.value);
+                              }}
+                              onClick={(e) => e.stopPropagation()}
+                              onBlur={() => setEditingSolutionId(null)}
+                              className="text-xs mt-2 min-h-[60px] bg-background/80"
+                              autoFocus
+                              data-testid={`solution-edit-${sol.id}`}
+                            />
+                          ) : (
+                            <p className="text-xs text-muted-foreground ml-6">
+                              {sol.customText || sol.description}
+                              {sol.edited && (
+                                <span className="text-green-400 ml-1">(edited)</span>
+                              )}
+                            </p>
+                          )}
+                        </div>
+                        
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="h-6 w-6 shrink-0"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setEditingSolutionId(editingSolutionId === sol.id ? null : sol.id);
+                          }}
+                          disabled={skeleton.isLocked}
+                          data-testid={`button-edit-solution-${sol.id}`}
+                        >
+                          <PenLine className="w-3 h-3" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+
+                  {/* Add to Solution button */}
+                  {selectedCount > 0 && (
+                    <Button
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleAddSolutionsToSkeleton();
+                        setCurrentStep(1); // Move to Solution step
+                      }}
+                      disabled={skeleton.isLocked}
+                      className="w-full"
+                      data-testid="button-add-solutions"
+                    >
+                      <ChevronRight className="w-4 h-4 mr-2" />
+                      Add {selectedCount} Solution{selectedCount > 1 ? "s" : ""} & Continue
+                    </Button>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    );
   };
 
   // Render the hook section with style selector and AI generation
@@ -454,6 +745,13 @@ export function IdeaClarifier({
       const isActive = currentSectionType === type || showAllSections;
       if (!isActive && !showAllSections) return null;
       return renderHookSection();
+    }
+
+    // Special handling for problem section (with AI solution suggestions)
+    if (type === "problem") {
+      const isActive = currentSectionType === type || showAllSections;
+      if (!isActive && !showAllSections) return null;
+      return renderProblemSection();
     }
 
     const section = skeleton[type];
