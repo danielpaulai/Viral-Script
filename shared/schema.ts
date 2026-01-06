@@ -547,6 +547,182 @@ export interface ContentSkeleton {
   isLocked: boolean;
 }
 
+// Video Idea Clarifier - Mandatory 4-Section Skeleton
+export type SkeletonSectionType = "hook" | "problem" | "solution" | "cta";
+
+export interface SkeletonSection {
+  type: SkeletonSectionType;
+  title: string;
+  content: string;
+  guidingQuestion: string;
+  examples: string[];
+  isValid: boolean;
+  validationMessage?: string;
+}
+
+export interface VideoIdeaSkeleton {
+  rawIdea: string;
+  hook: SkeletonSection;
+  problem: SkeletonSection;
+  solution: SkeletonSection;
+  cta: SkeletonSection;
+  targetAudience: string;
+  platform: string;
+  duration: string;
+  isLocked: boolean;
+  clarityScore: number; // 0-100, must be >= 70 to proceed
+}
+
+// Skeleton validation rules
+export const skeletonValidationRules = {
+  hook: {
+    minLength: 10,
+    maxLength: 200,
+    requiresSpecificity: true,
+    guidingQuestion: "What will make someone stop scrolling and feel 'this is for me'?",
+    examples: [
+      "I lost $50K following this 'expert' advice",
+      "The AI tool nobody is talking about",
+      "Why your morning routine is killing your productivity"
+    ]
+  },
+  problem: {
+    minLength: 20,
+    maxLength: 300,
+    requiresSpecificity: true,
+    guidingQuestion: "What pain, frustration, or tension does the viewer recognize immediately?",
+    examples: [
+      "Most people waste 3 hours daily on tasks that could be automated",
+      "You're told to 'just be confident' but no one explains how",
+      "Every productivity tip ignores the real reason you procrastinate"
+    ]
+  },
+  solution: {
+    minLength: 20,
+    maxLength: 300,
+    requiresSpecificity: true,
+    guidingQuestion: "What insight, shift, or method resolves the problem?",
+    examples: [
+      "The 2-minute rule that changed everything",
+      "One simple reframe that removes all pressure",
+      "The exact automation stack I use daily"
+    ]
+  },
+  cta: {
+    minLength: 10,
+    maxLength: 150,
+    requiresSpecificity: false,
+    guidingQuestion: "What should the viewer do next - think, click, comment, or act?",
+    examples: [
+      "Save this for your next meeting",
+      "Comment 'TEMPLATE' and I'll send you the full guide",
+      "Follow for part 2 tomorrow"
+    ]
+  }
+};
+
+// Create empty skeleton with defaults
+export function createEmptySkeleton(rawIdea: string = "", platform: string = "tiktok", duration: string = "60"): VideoIdeaSkeleton {
+  return {
+    rawIdea,
+    hook: {
+      type: "hook",
+      title: "Hook",
+      content: "",
+      guidingQuestion: skeletonValidationRules.hook.guidingQuestion,
+      examples: skeletonValidationRules.hook.examples,
+      isValid: false,
+    },
+    problem: {
+      type: "problem",
+      title: "Problem",
+      content: "",
+      guidingQuestion: skeletonValidationRules.problem.guidingQuestion,
+      examples: skeletonValidationRules.problem.examples,
+      isValid: false,
+    },
+    solution: {
+      type: "solution",
+      title: "Solution",
+      content: "",
+      guidingQuestion: skeletonValidationRules.solution.guidingQuestion,
+      examples: skeletonValidationRules.solution.examples,
+      isValid: false,
+    },
+    cta: {
+      type: "cta",
+      title: "Call to Action",
+      content: "",
+      guidingQuestion: skeletonValidationRules.cta.guidingQuestion,
+      examples: skeletonValidationRules.cta.examples,
+      isValid: false,
+    },
+    targetAudience: "",
+    platform,
+    duration,
+    isLocked: false,
+    clarityScore: 0,
+  };
+}
+
+// Validate a skeleton section
+export function validateSkeletonSection(section: SkeletonSection): { isValid: boolean; message?: string } {
+  const rules = skeletonValidationRules[section.type];
+  const content = section.content.trim();
+  
+  if (!content) {
+    return { isValid: false, message: "This section cannot be empty" };
+  }
+  
+  if (content.length < rules.minLength) {
+    return { isValid: false, message: `Be more specific - at least ${rules.minLength} characters` };
+  }
+  
+  if (content.length > rules.maxLength) {
+    return { isValid: false, message: `Too long - keep it under ${rules.maxLength} characters` };
+  }
+  
+  // Check for vague language patterns
+  if (rules.requiresSpecificity) {
+    const vaguePatterns = [
+      /^(something|stuff|things|etc|whatever)/i,
+      /\b(maybe|possibly|might|could be|i think|i guess)\b/i,
+      /^(good|bad|nice|great|cool|awesome) /i,
+    ];
+    
+    for (const pattern of vaguePatterns) {
+      if (pattern.test(content)) {
+        return { isValid: false, message: "Be more specific - avoid vague language" };
+      }
+    }
+  }
+  
+  return { isValid: true };
+}
+
+// Calculate overall clarity score
+export function calculateClarityScore(skeleton: VideoIdeaSkeleton): number {
+  const sections = [skeleton.hook, skeleton.problem, skeleton.solution, skeleton.cta];
+  let score = 0;
+  
+  for (const section of sections) {
+    const validation = validateSkeletonSection(section);
+    if (validation.isValid) {
+      score += 25;
+    } else if (section.content.length > 0) {
+      // Partial credit for started but not complete
+      score += 10;
+    }
+  }
+  
+  // Bonus for target audience
+  if (skeleton.targetAudience.trim().length >= 10) {
+    score = Math.min(100, score + 5);
+  }
+  
+  return score;
+}
+
 // Database Tables
 export const scripts = pgTable("scripts", {
   id: varchar("id", { length: 36 }).primaryKey(),
