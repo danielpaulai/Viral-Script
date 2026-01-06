@@ -27,7 +27,10 @@ import {
   calculateClarityScore,
   platformOptions,
   durationOptions,
+  hookCategories,
 } from "@shared/schema";
+import { useMutation } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
 import {
   Sparkles,
   Lightbulb,
@@ -43,7 +46,19 @@ import {
   RefreshCw,
   HelpCircle,
   Users,
+  Wand2,
+  Loader2,
+  PenLine,
 } from "lucide-react";
+
+type HookMode = "write" | "generate";
+
+interface GeneratedHook {
+  id: string;
+  hook: string;
+  reasoning: string;
+  style: string;
+}
 
 interface IdeaClarifierProps {
   onSkeletonComplete: (skeleton: VideoIdeaSkeleton) => void;
@@ -84,6 +99,31 @@ export function IdeaClarifier({
   );
   const [currentStep, setCurrentStep] = useState<number>(0);
   const [showAllSections, setShowAllSections] = useState(false);
+  
+  // Hook generation mode
+  const [hookMode, setHookMode] = useState<HookMode>("generate");
+  const [selectedHookStyle, setSelectedHookStyle] = useState<string>("question");
+  const [generatedHooks, setGeneratedHooks] = useState<GeneratedHook[]>([]);
+  const [selectedHookId, setSelectedHookId] = useState<string | null>(null);
+
+  // Hook generation mutation
+  const generateHooksMutation = useMutation({
+    mutationFn: async (params: {
+      hookStyle: string;
+      problem: string;
+      solution: string;
+      targetAudience: string;
+      platform: string;
+      duration: string;
+    }) => {
+      const response = await apiRequest("POST", "/api/hooks/generate", params);
+      return await response.json() as { hooks: GeneratedHook[]; style: string; styleName: string };
+    },
+    onSuccess: (data) => {
+      setGeneratedHooks(data.hooks);
+      setSelectedHookId(null);
+    },
+  });
 
   const steps: SkeletonSectionType[] = ["hook", "problem", "solution", "cta"];
   const currentSectionType = steps[currentStep];
@@ -118,6 +158,27 @@ export function IdeaClarifier({
     setSkeleton(updated);
     onSkeletonChange?.(updated);
   };
+
+  // Handle hook selection from generated options
+  const handleSelectHook = (hook: GeneratedHook) => {
+    setSelectedHookId(hook.id);
+    updateSection("hook", hook.hook);
+  };
+
+  // Trigger hook generation
+  const handleGenerateHooks = () => {
+    generateHooksMutation.mutate({
+      hookStyle: selectedHookStyle,
+      problem: skeleton.problem.content,
+      solution: skeleton.solution.content,
+      targetAudience: skeleton.targetAudience,
+      platform: skeleton.platform,
+      duration: skeleton.duration,
+    });
+  };
+
+  // Check if we can generate hooks (need problem or solution content)
+  const canGenerateHooks = skeleton.problem.content.length > 10 || skeleton.solution.content.length > 10;
 
   const canProceedToNext = useMemo(() => {
     const section = skeleton[currentSectionType];
@@ -161,7 +222,200 @@ export function IdeaClarifier({
     setCurrentStep(0);
   };
 
+  // Render the hook section with style selector and AI generation
+  const renderHookSection = () => {
+    const section = skeleton.hook;
+    const bgClass = sectionBgColors.hook;
+    const colorClass = sectionColors.hook;
+
+    return (
+      <div
+        className={`p-4 rounded-lg border ${bgClass} transition-all`}
+        data-testid="section-hook"
+      >
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <Sparkles className={`w-5 h-5 ${colorClass}`} />
+            <span className={`font-semibold ${colorClass}`}>{section.title}</span>
+            {section.isValid && (
+              <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
+                <Check className="w-3 h-3 mr-1" />
+                Ready
+              </Badge>
+            )}
+          </div>
+          <div className="flex items-center gap-1">
+            <Button
+              size="sm"
+              variant={hookMode === "generate" ? "default" : "ghost"}
+              onClick={() => setHookMode("generate")}
+              className="text-xs h-7"
+              data-testid="button-hook-mode-generate"
+            >
+              <Wand2 className="w-3 h-3 mr-1" />
+              AI Generate
+            </Button>
+            <Button
+              size="sm"
+              variant={hookMode === "write" ? "default" : "ghost"}
+              onClick={() => setHookMode("write")}
+              className="text-xs h-7"
+              data-testid="button-hook-mode-write"
+            >
+              <PenLine className="w-3 h-3 mr-1" />
+              Write
+            </Button>
+          </div>
+        </div>
+
+        {hookMode === "generate" ? (
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Select a hook style, then fill in your Problem & Solution below. We'll generate options for you.
+            </p>
+
+            {/* Hook Style Selector */}
+            <div>
+              <Label className="text-xs font-medium mb-2 block">Hook Style</Label>
+              <Select
+                value={selectedHookStyle}
+                onValueChange={setSelectedHookStyle}
+                disabled={skeleton.isLocked}
+              >
+                <SelectTrigger className="bg-background/50" data-testid="select-hook-style">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {hookCategories.map((cat) => (
+                    <SelectItem key={cat.id} value={cat.id}>
+                      <div className="flex flex-col items-start">
+                        <span className="font-medium">{cat.name}</span>
+                        <span className="text-xs text-muted-foreground">{cat.description}</span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Generate Button */}
+            <div className="flex items-center gap-2">
+              <Button
+                onClick={handleGenerateHooks}
+                disabled={!canGenerateHooks || generateHooksMutation.isPending || skeleton.isLocked}
+                className="flex-1"
+                data-testid="button-generate-hooks"
+              >
+                {generateHooksMutation.isPending ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Generating hooks...
+                  </>
+                ) : (
+                  <>
+                    <Wand2 className="w-4 h-4 mr-2" />
+                    Generate Hook Options
+                  </>
+                )}
+              </Button>
+            </div>
+
+            {!canGenerateHooks && (
+              <p className="text-xs text-amber-400 flex items-center gap-1">
+                <AlertTriangle className="w-3 h-3" />
+                Fill in Problem or Solution first to generate hooks
+              </p>
+            )}
+
+            {/* Generated Hooks */}
+            {generatedHooks.length > 0 && (
+              <div className="space-y-2">
+                <Label className="text-xs font-medium">Choose a hook:</Label>
+                <div className="space-y-2">
+                  {generatedHooks.map((hook) => (
+                    <button
+                      key={hook.id}
+                      onClick={() => handleSelectHook(hook)}
+                      className={`w-full text-left p-3 rounded-lg border transition-all ${
+                        selectedHookId === hook.id
+                          ? "bg-primary/20 border-primary"
+                          : "bg-background/50 border-border hover-elevate"
+                      }`}
+                      disabled={skeleton.isLocked}
+                      data-testid={`hook-option-${hook.id}`}
+                    >
+                      <p className="text-sm font-medium mb-1">"{hook.hook}"</p>
+                      <p className="text-xs text-muted-foreground">{hook.reasoning}</p>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Selected hook preview */}
+            {section.content && (
+              <div className="p-3 rounded bg-green-500/10 border border-green-500/30">
+                <p className="text-xs text-green-400 mb-1 font-medium">Selected Hook:</p>
+                <p className="text-sm">{section.content}</p>
+              </div>
+            )}
+          </div>
+        ) : (
+          // Write mode - original textarea
+          <>
+            <p className="text-sm text-muted-foreground mb-3 italic">
+              {section.guidingQuestion}
+            </p>
+
+            <Textarea
+              value={section.content}
+              onChange={(e) => updateSection("hook", e.target.value)}
+              placeholder="Write your hook here..."
+              className="min-h-[100px] bg-background/50 border-border mb-2"
+              disabled={skeleton.isLocked}
+              data-testid="input-hook"
+            />
+
+            {section.validationMessage && !section.isValid && section.content && (
+              <p className="text-xs text-amber-400 mb-2 flex items-center gap-1">
+                <AlertTriangle className="w-3 h-3" />
+                {section.validationMessage}
+              </p>
+            )}
+
+            <div className="mt-3">
+              <p className="text-xs text-muted-foreground mb-2 flex items-center gap-1">
+                <Lightbulb className="w-3 h-3" />
+                Examples that work:
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {section.examples.map((example, i) => (
+                  <button
+                    key={i}
+                    onClick={() => !skeleton.isLocked && updateSection("hook", example)}
+                    className="text-xs px-2 py-1 rounded bg-muted/50 text-muted-foreground hover-elevate cursor-pointer border border-border"
+                    disabled={skeleton.isLocked}
+                    data-testid={`example-hook-${i}`}
+                  >
+                    "{example}"
+                  </button>
+                ))}
+              </div>
+            </div>
+          </>
+        )}
+      </div>
+    );
+  };
+
   const renderSectionEditor = (type: SkeletonSectionType) => {
+    // Special handling for hook section
+    if (type === "hook") {
+      const isActive = currentSectionType === type || showAllSections;
+      if (!isActive && !showAllSections) return null;
+      return renderHookSection();
+    }
+
     const section = skeleton[type];
     const Icon = sectionIcons[type];
     const colorClass = sectionColors[type];

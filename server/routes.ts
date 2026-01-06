@@ -27,6 +27,7 @@ const upload = multer({
 import {
   scriptCategories,
   viralHooks,
+  hookCategories,
   structureFormats,
   toneOptions,
   voiceOptions,
@@ -2172,6 +2173,96 @@ DO NOT make up fake statistics. Use the research data provided, or clearly state
 
   app.get("/api/hooks", (req, res) => {
     res.json(viralHooks);
+  });
+
+  // Generate multiple hook options based on style and content
+  app.post("/api/hooks/generate", async (req, res) => {
+    try {
+      const { hookStyle, problem, solution, targetAudience, platform, duration } = req.body;
+      
+      if (!hookStyle || (!problem && !solution)) {
+        return res.status(400).json({ error: "Hook style and at least problem or solution content required" });
+      }
+
+      // Find the hook category info
+      const hookCategory = hookCategories.find(c => c.id === hookStyle);
+      const hookExamples = viralHooks.filter(h => h.category === hookStyle).slice(0, 3);
+      
+      const systemPrompt = `You are an expert viral content hook writer. Generate 4 unique, attention-grabbing hooks for a short-form video.
+
+HOOK STYLE: ${hookCategory?.name || hookStyle}
+STYLE DESCRIPTION: ${hookCategory?.description || "Create engaging hooks"}
+
+EXAMPLE HOOKS IN THIS STYLE:
+${hookExamples.map((h, i) => `${i + 1}. Template: "${h.template}"\n   Example: "${h.example}"\n   Why it works: ${h.why}`).join('\n\n')}
+
+RULES:
+1. Each hook must be 1-2 sentences MAX (under 15 words ideally)
+2. Hooks must create curiosity, urgency, or pattern interruption
+3. Match the selected hook style closely
+4. Make hooks SPECIFIC to the problem/solution provided
+5. Vary the approach - give distinctly different options
+6. Consider the platform (${platform || 'TikTok'}) and duration (${duration || '60s'})
+
+Respond with a JSON array of exactly 4 hooks:
+[
+  {"hook": "The hook text", "reasoning": "Why this hook works for this content"},
+  {"hook": "Another hook", "reasoning": "Explanation"},
+  {"hook": "Third option", "reasoning": "Explanation"},
+  {"hook": "Fourth option", "reasoning": "Explanation"}
+]`;
+
+      const userPrompt = `Generate 4 hooks for this video:
+
+PROBLEM the video addresses: ${problem || 'Not specified'}
+SOLUTION the video offers: ${solution || 'Not specified'}
+TARGET AUDIENCE: ${targetAudience || 'General creators'}
+PLATFORM: ${platform || 'TikTok'}
+DURATION: ${duration || '60s'}
+
+Create 4 distinctly different hooks in the "${hookCategory?.name || hookStyle}" style. Each should grab attention in the first 3 seconds.`;
+
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userPrompt }
+        ],
+        max_tokens: 800,
+        temperature: 0.9, // Higher temp for more variety
+      });
+
+      const content = response.choices[0]?.message?.content || "[]";
+      
+      try {
+        const cleanedJson = content
+          .replace(/```json\s*/gi, "")
+          .replace(/```\s*/g, "")
+          .trim();
+        
+        const hooks = JSON.parse(cleanedJson);
+        
+        // Validate and normalize
+        const normalizedHooks = (Array.isArray(hooks) ? hooks : []).slice(0, 4).map((h: any, i: number) => ({
+          id: `hook_${i + 1}`,
+          hook: h.hook || h.text || `Hook option ${i + 1}`,
+          reasoning: h.reasoning || h.why || "AI-generated hook",
+          style: hookStyle,
+        }));
+        
+        res.json({ 
+          hooks: normalizedHooks,
+          style: hookStyle,
+          styleName: hookCategory?.name || hookStyle,
+        });
+      } catch (parseError) {
+        console.error("Failed to parse hook generation response:", parseError);
+        res.status(500).json({ error: "Failed to parse generated hooks" });
+      }
+    } catch (error) {
+      console.error("Hook generation error:", error);
+      res.status(500).json({ error: "Failed to generate hooks" });
+    }
   });
 
   app.get("/api/categories", (req, res) => {
