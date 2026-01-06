@@ -1,8 +1,17 @@
-# Video Script Writer Pro
+# Video Idea Clarifier (formerly Video Script Writer Pro)
 
 ## Overview
 
-Video Script Writer Pro is a professional short-form video script generation tool designed for content creators. The application helps users create viral-worthy scripts by combining customizable categories, hook formats, structures, tones, and voices. It includes a Hemingway-style readability analyzer to ensure scripts are punchy, clear, and grade 4-6 reading level for maximum engagement.
+Video Idea Clarifier is a professional short-form video content planning tool designed for content creators. The core value proposition is converting raw ideas into crystal-clear video structures through a mandatory Content Skeleton process (Hook → Problem → Solution → CTA). Script generation is a secondary output, positioning the app as a thinking partner that teaches strategic video planning rather than just a script typing tool.
+
+### New: Idea Clarifier Wizard
+The app now features a mandatory 4-step idea clarification process:
+1. **Hook**: Define your attention-grabbing opening (first 3 seconds)
+2. **Problem**: Articulate the pain point your audience relates to
+3. **Solution**: Describe the value you're delivering
+4. **CTA**: Specify what action you want viewers to take
+
+Each section is validated to prevent vague language patterns (e.g., "something," "maybe," "I think"). A clarity score (0-100) must reach 70% before script generation unlocks. Advanced users can toggle to the legacy flow with full customization options.
 
 ## User Preferences
 
