@@ -154,7 +154,8 @@ export function IdeaClarifier({
     },
   });
 
-  const steps: SkeletonSectionType[] = ["hook", "problem", "solution", "cta"];
+  // Reordered: Problem & Solution first, then Hook (AI-generated), then CTA
+  const steps: SkeletonSectionType[] = ["problem", "solution", "hook", "cta"];
   const currentSectionType = steps[currentStep];
 
   useEffect(() => {
@@ -206,8 +207,9 @@ export function IdeaClarifier({
     });
   };
 
-  // Check if we can generate hooks (need problem or solution content)
-  const canGenerateHooks = skeleton.problem.content.length > 10 || skeleton.solution.content.length > 10;
+  // Check if we can generate hooks (need BOTH problem AND solution content)
+  const canGenerateHooks = skeleton.problem.content.length > 10 && skeleton.solution.content.length > 10;
+  const problemSolutionReady = skeleton.problem.isValid && skeleton.solution.isValid;
 
   const canProceedToNext = useMemo(() => {
     const section = skeleton[currentSectionType];
@@ -299,61 +301,70 @@ export function IdeaClarifier({
 
         {hookMode === "generate" ? (
           <div className="space-y-4">
-            <p className="text-sm text-muted-foreground">
-              Select a hook style, then fill in your Problem & Solution below. We'll generate options for you.
-            </p>
-
-            {/* Hook Style Selector */}
-            <div>
-              <Label className="text-xs font-medium mb-2 block">Hook Style</Label>
-              <Select
-                value={selectedHookStyle}
-                onValueChange={setSelectedHookStyle}
-                disabled={skeleton.isLocked}
-              >
-                <SelectTrigger className="bg-background/50" data-testid="select-hook-style">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {hookCategories.map((cat) => (
-                    <SelectItem key={cat.id} value={cat.id}>
-                      <div className="flex flex-col items-start">
-                        <span className="font-medium">{cat.name}</span>
-                        <span className="text-xs text-muted-foreground">{cat.description}</span>
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Generate Button */}
-            <div className="flex items-center gap-2">
-              <Button
-                onClick={handleGenerateHooks}
-                disabled={!canGenerateHooks || generateHooksMutation.isPending || skeleton.isLocked}
-                className="flex-1"
-                data-testid="button-generate-hooks"
-              >
-                {generateHooksMutation.isPending ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Generating hooks...
-                  </>
-                ) : (
-                  <>
-                    <Wand2 className="w-4 h-4 mr-2" />
-                    Generate Hook Options
-                  </>
-                )}
-              </Button>
-            </div>
-
-            {!canGenerateHooks && (
-              <p className="text-xs text-amber-400 flex items-center gap-1">
-                <AlertTriangle className="w-3 h-3" />
-                Fill in Problem or Solution first to generate hooks
+            {!problemSolutionReady ? (
+              <div className="p-4 rounded-lg bg-amber-500/10 border border-amber-500/30 text-center">
+                <AlertTriangle className="w-6 h-6 text-amber-400 mx-auto mb-2" />
+                <p className="text-sm text-amber-400 font-medium mb-1">
+                  Complete Problem & Solution First
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Fill in your Problem and Solution sections above to unlock AI hook generation
+                </p>
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                Your Problem & Solution are ready! Select a hook style and generate options.
               </p>
+            )}
+
+            {/* Hook Style Selector - only enabled when problem/solution are ready */}
+            {problemSolutionReady && (
+              <>
+                <div>
+                  <Label className="text-xs font-medium mb-2 block">Hook Style</Label>
+                  <Select
+                    value={selectedHookStyle}
+                    onValueChange={setSelectedHookStyle}
+                    disabled={skeleton.isLocked}
+                  >
+                    <SelectTrigger className="bg-background/50" data-testid="select-hook-style">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {hookCategories.map((cat) => (
+                        <SelectItem key={cat.id} value={cat.id}>
+                          <div className="flex flex-col items-start">
+                            <span className="font-medium">{cat.name}</span>
+                            <span className="text-xs text-muted-foreground">{cat.description}</span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Generate Button */}
+                <div className="flex items-center gap-2">
+                  <Button
+                    onClick={handleGenerateHooks}
+                    disabled={!canGenerateHooks || generateHooksMutation.isPending || skeleton.isLocked}
+                    className="flex-1"
+                    data-testid="button-generate-hooks"
+                  >
+                    {generateHooksMutation.isPending ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Researching & generating hooks...
+                      </>
+                    ) : (
+                      <>
+                        <Wand2 className="w-4 h-4 mr-2" />
+                        Generate Hook Options
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </>
             )}
 
             {/* Generated Hooks */}
@@ -636,12 +647,22 @@ export function IdeaClarifier({
         </div>
         <Button
           size="sm"
-          variant="ghost"
+          variant="outline"
           onClick={() => setShowAllSections(!showAllSections)}
           className="text-xs"
           data-testid="button-toggle-all"
         >
-          {showAllSections ? "Focus Mode" : "Show All"}
+          {showAllSections ? (
+            <>
+              <Zap className="w-3 h-3 mr-1" />
+              Wizard Mode
+            </>
+          ) : (
+            <>
+              <Sparkles className="w-3 h-3 mr-1" />
+              Advanced Options
+            </>
+          )}
         </Button>
       </div>
 
