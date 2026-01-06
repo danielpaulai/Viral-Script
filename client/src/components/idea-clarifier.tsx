@@ -290,7 +290,7 @@ export function IdeaClarifier({
             </SelectTrigger>
             <SelectContent>
               {platformOptions.map((opt) => (
-                <SelectItem key={opt.id} value={opt.id}>{opt.label}</SelectItem>
+                <SelectItem key={opt.id} value={opt.id}>{opt.name}</SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -307,7 +307,7 @@ export function IdeaClarifier({
             </SelectTrigger>
             <SelectContent>
               {durationOptions.map((opt) => (
-                <SelectItem key={opt.id} value={opt.id}>{opt.label}</SelectItem>
+                <SelectItem key={opt.id} value={opt.id}>{opt.name}</SelectItem>
               ))}
             </SelectContent>
           </Select>

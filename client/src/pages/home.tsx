@@ -52,9 +52,11 @@ import {
   type ContentSkeleton,
   type ContentSection,
   type ResearchFact,
+  type VideoIdeaSkeleton,
 } from "@shared/schema";
 import { ScriptOutput } from "@/components/script-output";
 import { GenerationProgress } from "@/components/generation-progress";
+import { IdeaClarifier } from "@/components/idea-clarifier";
 import { useVoiceCommand } from "@/hooks/use-voice-command";
 import { 
   Wand2, 
@@ -248,6 +250,10 @@ export default function Home() {
   const [viralExamples, setViralExamples] = useState<ViralExamplesResult & { platform?: string } | null>(null);
   const [showViralExamples, setShowViralExamples] = useState(false);
   const [viralSearchPlatform, setViralSearchPlatform] = useState<"tiktok" | "instagram" | null>(null);
+  
+  // New two-step flow: Video Idea Clarifier
+  const [videoSkeleton, setVideoSkeleton] = useState<VideoIdeaSkeleton | null>(null);
+  const [showLegacyFlow, setShowLegacyFlow] = useState(false);
 
   const [formData, setFormData] = useState<ScriptParameters>({
     topic: "",
@@ -568,6 +574,54 @@ export default function Home() {
     }
   };
 
+  // New: Handle skeleton completion from IdeaClarifier
+  const handleSkeletonComplete = (skeleton: VideoIdeaSkeleton) => {
+    setVideoSkeleton(skeleton);
+    // Convert skeleton to formData for script generation
+    setFormData(prev => ({
+      ...prev,
+      topic: `${skeleton.hook.content}\n\n${skeleton.problem.content}\n\n${skeleton.solution.content}`,
+      targetAudience: skeleton.targetAudience,
+      callToAction: skeleton.cta.content,
+      platform: skeleton.platform,
+      duration: skeleton.duration,
+      structure: "problem_solver", // This matches the skeleton flow
+    }));
+    // Trigger script generation
+    generateFromSkeleton(skeleton);
+  };
+
+  // Generate script from locked skeleton
+  const generateFromSkeleton = (skeleton: VideoIdeaSkeleton) => {
+    const params: ScriptParameters = {
+      topic: skeleton.rawIdea || skeleton.hook.content,
+      targetAudience: skeleton.targetAudience,
+      callToAction: skeleton.cta.content,
+      platform: skeleton.platform,
+      duration: skeleton.duration,
+      category: "content_creation",
+      structure: "problem_solver",
+      hook: "custom",
+      deepResearch: false,
+      videoType: formData.videoType || "talking_head",
+      creatorStyle: formData.creatorStyle || "default",
+    };
+    
+    // Include the locked skeleton data
+    const skeletonPayload = {
+      videoIdeaSkeleton: {
+        hook: skeleton.hook.content,
+        problem: skeleton.problem.content,
+        solution: skeleton.solution.content,
+        cta: skeleton.cta.content,
+        targetAudience: skeleton.targetAudience,
+        isLocked: true,
+      }
+    };
+    
+    generateMutation.mutate({ ...params, ...skeletonPayload });
+  };
+
   const handleGenerate = () => {
     if (!formData.topic.trim()) {
       toast({
@@ -620,14 +674,48 @@ export default function Home() {
     <div className="p-4 md:p-6 max-w-5xl mx-auto pb-24 md:pb-6">
       <div className="mb-6 text-center">
         <h1 className="text-xl md:text-2xl font-bold text-foreground mb-1" data-testid="text-page-title">
-          What do you want to create today?
+          Clarify Your Video Idea
         </h1>
         <p className="text-sm text-muted-foreground">
-          Generate scroll-stopping scripts in seconds
+          Better inputs = Better scripts. Structure your idea first.
         </p>
       </div>
 
-      {recentScripts.length > 0 && (
+      {/* New: Video Idea Clarifier - The Primary Flow */}
+      {!showLegacyFlow && !generatedScript && (
+        <div className="mb-6">
+          <IdeaClarifier
+            onSkeletonComplete={handleSkeletonComplete}
+            onSkeletonChange={setVideoSkeleton}
+            isGenerating={generateMutation.isPending}
+          />
+          <div className="mt-4 text-center">
+            <button
+              onClick={() => setShowLegacyFlow(true)}
+              className="text-xs text-muted-foreground hover:text-foreground transition-colors underline"
+              data-testid="button-show-legacy"
+            >
+              Switch to advanced mode (all options)
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Toggle back to new flow */}
+      {showLegacyFlow && !generatedScript && (
+        <div className="mb-4">
+          <button
+            onClick={() => setShowLegacyFlow(false)}
+            className="text-xs text-primary hover:text-primary/80 transition-colors flex items-center gap-1"
+            data-testid="button-show-clarifier"
+          >
+            <ArrowRight className="w-3 h-3 rotate-180" />
+            Use guided idea clarifier
+          </button>
+        </div>
+      )}
+
+      {recentScripts.length > 0 && showLegacyFlow && (
         <div className="mb-6">
           <div className="flex items-center gap-2 mb-3">
             <Clock className="w-4 h-4 text-muted-foreground" />
@@ -677,6 +765,8 @@ export default function Home() {
         </div>
       )}
 
+      {/* Legacy Flow - Advanced Options */}
+      {showLegacyFlow && (
       <Card className="p-4 md:p-6 glass-card rounded-md mb-6" data-testid="card-script-parameters">
         <div className="mb-4">
           <div className="flex items-center gap-2 mb-3">
@@ -1867,6 +1957,7 @@ export default function Home() {
           )}
         </Button>
       </Card>
+      )}
 
       <GenerationProgress 
         isGenerating={generateMutation.isPending} 
@@ -1881,6 +1972,7 @@ export default function Home() {
         />
       )}
 
+      {showLegacyFlow && (
       <div className="fixed bottom-0 left-0 right-0 p-4 bg-background/95 backdrop-blur border-t border-border md:hidden z-50">
         <Button
           onClick={handleGenerate}
@@ -1901,6 +1993,7 @@ export default function Home() {
           )}
         </Button>
       </div>
+      )}
     </div>
   );
 }
