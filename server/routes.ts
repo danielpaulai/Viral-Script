@@ -758,9 +758,37 @@ Use these exact labels.` : ""}
 Do NOT include hashtags unless specified. Separate each line with a blank line for clarity.
 ${referenceInstructions}`;
 
-  // Build skeleton context if provided
+  // Build skeleton context if provided (supports both legacy contentSkeleton and new videoIdeaSkeleton)
   let skeletonContext = "";
-  if (params.contentSkeleton) {
+  
+  // New VideoIdeaSkeleton format from IdeaClarifier
+  if (params.videoIdeaSkeleton) {
+    const skeleton = params.videoIdeaSkeleton;
+    skeletonContext = `
+=== LOCKED VIDEO IDEA SKELETON - FOLLOW THIS STRUCTURE EXACTLY ===
+This skeleton has been carefully refined by the user. Follow it precisely.
+
+**HOOK** (First 3 seconds - must stop the scroll)
+${skeleton.hook}
+
+**PROBLEM** (The pain point your audience relates to)
+${skeleton.problem}
+
+**SOLUTION** (The value you're delivering)
+${skeleton.solution}
+
+**CTA** (Call to action - what you want them to do)
+${skeleton.cta}
+
+TARGET AUDIENCE: ${skeleton.targetAudience || "Content creators and entrepreneurs"}
+
+IMPORTANT: You MUST follow this Hook → Problem → Solution → CTA structure exactly.
+Do NOT deviate from the skeleton content. Expand and polish it, but keep the core message.
+=== END VIDEO IDEA SKELETON ===
+`;
+  }
+  // Legacy contentSkeleton format (still supported for advanced mode)
+  else if (params.contentSkeleton) {
     const skeleton = params.contentSkeleton;
     skeletonContext = `
 === LOCKED CONTENT SKELETON - FOLLOW THIS STRUCTURE EXACTLY ===

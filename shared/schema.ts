@@ -486,6 +486,14 @@ export interface ScriptParameters {
     suggestedHooks: string[];
     isLocked: boolean;
   };
+  videoIdeaSkeleton?: {
+    hook: string;
+    problem: string;
+    solution: string;
+    cta: string;
+    targetAudience?: string;
+    isLocked: boolean;
+  };
 }
 
 // Scene breakdown for production
