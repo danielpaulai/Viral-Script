@@ -708,6 +708,50 @@ export function validateSkeletonSection(section: SkeletonSection): { isValid: bo
   return { isValid: true };
 }
 
+// Deep Research Brief (from API)
+export interface DeepResearchBrief {
+  coreMessage: string;
+  targetViewer: string;
+  uniqueAngle: string;
+  keyProofPoints: string[];
+  actionableTakeaway: string;
+}
+
+// Competitor Insights (from Apify/TikTok analysis)
+export interface CompetitorAnalysis {
+  topHooks: string[];
+  commonPatterns: string[];
+  audienceLanguage: string[];
+  provenAngles: string[];
+  engagementStats: {
+    avgViews: number;
+    avgLikes: number;
+    avgComments: number;
+  };
+  contentSummary: string;
+  postsAnalyzed: number;
+}
+
+// Enhanced Skeleton - Step 2 of the flow
+export interface EnhancedSkeleton {
+  baseSkeleton: VideoIdeaSkeleton;
+  research?: DeepResearchBrief;
+  competitorAnalysis?: CompetitorAnalysis;
+  selectedInsights: string[]; // User-picked insights to use in script
+  refinedHook?: string; // Optional refined hook based on research
+  additionalNotes?: string; // User notes/tweaks
+  isEnhanced: boolean;
+}
+
+// Create enhanced skeleton from base
+export function createEnhancedSkeleton(baseSkeleton: VideoIdeaSkeleton): EnhancedSkeleton {
+  return {
+    baseSkeleton,
+    selectedInsights: [],
+    isEnhanced: false,
+  };
+}
+
 // Calculate overall clarity score
 export function calculateClarityScore(skeleton: VideoIdeaSkeleton): number {
   const sections = [skeleton.hook, skeleton.problem, skeleton.solution, skeleton.cta];
