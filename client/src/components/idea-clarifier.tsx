@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -105,6 +105,35 @@ export function IdeaClarifier({
   const [selectedHookStyle, setSelectedHookStyle] = useState<string>("question");
   const [generatedHooks, setGeneratedHooks] = useState<GeneratedHook[]>([]);
   const [selectedHookId, setSelectedHookId] = useState<string | null>(null);
+
+  // Clear generated hooks when problem or solution changes
+  const lastProblemRef = useRef(skeleton.problem.content);
+  const lastSolutionRef = useRef(skeleton.solution.content);
+  
+  useEffect(() => {
+    if (
+      skeleton.problem.content !== lastProblemRef.current ||
+      skeleton.solution.content !== lastSolutionRef.current
+    ) {
+      lastProblemRef.current = skeleton.problem.content;
+      lastSolutionRef.current = skeleton.solution.content;
+      // Clear stale hooks when inputs change
+      if (generatedHooks.length > 0) {
+        setGeneratedHooks([]);
+        setSelectedHookId(null);
+      }
+    }
+  }, [skeleton.problem.content, skeleton.solution.content, generatedHooks.length]);
+
+  // Handle hook mode change
+  const handleHookModeChange = (mode: HookMode) => {
+    setHookMode(mode);
+    // Clear generated hooks when switching to write mode
+    if (mode === "write") {
+      setGeneratedHooks([]);
+      setSelectedHookId(null);
+    }
+  };
 
   // Hook generation mutation
   const generateHooksMutation = useMutation({
@@ -248,7 +277,7 @@ export function IdeaClarifier({
             <Button
               size="sm"
               variant={hookMode === "generate" ? "default" : "ghost"}
-              onClick={() => setHookMode("generate")}
+              onClick={() => handleHookModeChange("generate")}
               className="text-xs h-7"
               data-testid="button-hook-mode-generate"
             >
@@ -258,7 +287,7 @@ export function IdeaClarifier({
             <Button
               size="sm"
               variant={hookMode === "write" ? "default" : "ghost"}
-              onClick={() => setHookMode("write")}
+              onClick={() => handleHookModeChange("write")}
               className="text-xs h-7"
               data-testid="button-hook-mode-write"
             >
