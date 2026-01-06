@@ -14,7 +14,9 @@ import {
   Settings,
   Layout,
   BarChart3,
+  Crown,
 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import {
   Sidebar,
   SidebarContent,
@@ -31,7 +33,6 @@ import {
 
 const mainNavItems = [
   { href: "/", label: "Home", icon: Home },
-  { href: "/competitive", label: "Video Analysis", icon: BarChart3 },
   { href: "/scripts", label: "Scripts", icon: FileText },
   { href: "/templates", label: "Templates", icon: Layout },
   { href: "/projects", label: "Projects", icon: FolderOpen },
@@ -40,7 +41,8 @@ const mainNavItems = [
 ];
 
 const proNavItems = [
-  { href: "/knowledge-base", label: "Knowledge Base", icon: BookOpen },
+  { href: "/competitive", label: "Competitive Analysis", icon: BarChart3, isPro: true },
+  { href: "/knowledge-base", label: "Knowledge Base", icon: BookOpen, isPro: true },
   { href: "/pricing", label: "Pricing", icon: CreditCard },
   { href: "/settings", label: "Settings", icon: Settings },
 ];
@@ -101,6 +103,7 @@ export function AppSidebar() {
               {proNavItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = location === item.href;
+                const isPro = 'isPro' in item && item.isPro;
                 return (
                   <SidebarMenuItem key={item.href}>
                     <SidebarMenuButton
@@ -110,7 +113,13 @@ export function AppSidebar() {
                     >
                       <Link href={item.href} data-testid={`nav-${item.label.toLowerCase().replace(' ', '-')}`}>
                         <Icon className="w-4 h-4" />
-                        <span>{item.label}</span>
+                        <span className="flex-1">{item.label}</span>
+                        {isPro && (
+                          <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4 bg-amber-500/20 text-amber-500 border-amber-500/30">
+                            <Crown className="w-2.5 h-2.5 mr-0.5" />
+                            PRO
+                          </Badge>
+                        )}
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
