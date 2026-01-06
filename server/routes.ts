@@ -2265,6 +2265,82 @@ Create 4 distinctly different hooks in the "${hookCategory?.name || hookStyle}" 
     }
   });
 
+  // Generate solution suggestions based on problem
+  app.post("/api/solutions/generate", async (req, res) => {
+    try {
+      const { problem, targetAudience, platform } = req.body;
+      
+      if (!problem || problem.trim().length < 10) {
+        return res.status(400).json({ error: "Problem description required (at least 10 characters)" });
+      }
+
+      const systemPrompt = `You are an expert content strategist helping creators develop solutions for their audience's problems.
+
+Generate 4 unique, actionable solution ideas that directly address the given problem. Each solution should be:
+- Specific and actionable (not vague)
+- Something that can be explained in a 15-60 second video
+- Valuable to the target audience
+- Different from each other (variety in approach)
+
+Return ONLY a JSON array with this format:
+[
+  {
+    "id": "sol_1",
+    "headline": "Short 5-8 word summary",
+    "description": "2-3 sentence explanation of the solution and why it works",
+    "angle": "The unique angle or approach (e.g., 'quick hack', 'mindset shift', 'step-by-step', 'counterintuitive')"
+  }
+]`;
+
+      const userPrompt = `PROBLEM: ${problem}
+${targetAudience ? `TARGET AUDIENCE: ${targetAudience}` : ''}
+${platform ? `PLATFORM: ${platform}` : ''}
+
+Generate 4 solution ideas that would make great short-form video content addressing this problem.`;
+
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userPrompt }
+        ],
+        max_tokens: 800,
+        temperature: 0.85,
+      });
+
+      const content = response.choices[0]?.message?.content || "[]";
+      
+      try {
+        const cleanedJson = content
+          .replace(/```json\s*/g, "")
+          .replace(/```\s*/g, "")
+          .trim();
+        
+        const solutions = JSON.parse(cleanedJson);
+        
+        const normalizedSolutions = (Array.isArray(solutions) ? solutions : []).slice(0, 5).map((s: any, i: number) => ({
+          id: `sol_${i + 1}_${Date.now()}`,
+          headline: s.headline || `Solution ${i + 1}`,
+          description: s.description || "AI-generated solution",
+          angle: s.angle || "general",
+          selected: false,
+          edited: false,
+        }));
+        
+        res.json({ 
+          solutions: normalizedSolutions,
+          problem: problem.substring(0, 100),
+        });
+      } catch (parseError) {
+        console.error("Failed to parse solution generation response:", parseError);
+        res.status(500).json({ error: "Failed to parse generated solutions" });
+      }
+    } catch (error) {
+      console.error("Solution generation error:", error);
+      res.status(500).json({ error: "Failed to generate solutions" });
+    }
+  });
+
   app.get("/api/categories", (req, res) => {
     res.json(scriptCategories);
   });
