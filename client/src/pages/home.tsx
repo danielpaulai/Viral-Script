@@ -810,13 +810,42 @@ export default function Home() {
             />
           )}
 
-          {/* Step 3: Generating - show progress */}
-          {currentStep === "script" && generateMutation.isPending && (
+          {/* Step 3: Generating - show progress or error */}
+          {currentStep === "script" && (
             <div className="text-center py-8">
-              <div className="inline-flex items-center gap-3 px-6 py-3 bg-primary/10 rounded-lg">
-                <Loader2 className="w-5 h-5 animate-spin text-primary" />
-                <span className="text-sm font-medium">Generating your script...</span>
-              </div>
+              {generateMutation.isPending && (
+                <div className="inline-flex items-center gap-3 px-6 py-3 bg-primary/10 rounded-lg">
+                  <Loader2 className="w-5 h-5 animate-spin text-primary" />
+                  <span className="text-sm font-medium">Generating your script...</span>
+                </div>
+              )}
+              {generateMutation.isError && !generatedScript && (
+                <div className="space-y-4">
+                  <div className="inline-flex items-center gap-3 px-6 py-3 bg-destructive/10 rounded-lg">
+                    <X className="w-5 h-5 text-destructive" />
+                    <span className="text-sm font-medium text-destructive">
+                      Script generation failed. Please try again.
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-center gap-3">
+                    <Button
+                      variant="outline"
+                      onClick={() => setCurrentStep("enhance")}
+                      data-testid="button-back-to-enhance"
+                    >
+                      <ChevronRight className="w-4 h-4 rotate-180 mr-2" />
+                      Back to Enhance
+                    </Button>
+                    <Button
+                      onClick={() => enhancedSkeleton && generateFromEnhancedSkeleton(enhancedSkeleton)}
+                      data-testid="button-retry-generation"
+                    >
+                      <RotateCcw className="w-4 h-4 mr-2" />
+                      Retry Generation
+                    </Button>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>
