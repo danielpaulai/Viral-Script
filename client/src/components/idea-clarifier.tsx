@@ -286,6 +286,17 @@ export function IdeaClarifier({
   // Check if we can generate hooks (need BOTH problem AND solution content)
   const canGenerateHooks = skeleton.problem.content.length > 10 && skeleton.solution.content.length > 10;
   const problemSolutionReady = skeleton.problem.isValid && skeleton.solution.isValid;
+  
+  // Debug logging for validation issues
+  console.log("[Hook Validation]", {
+    problemIsValid: skeleton.problem.isValid,
+    problemValidationMsg: skeleton.problem.validationMessage,
+    problemContentLength: skeleton.problem.content.length,
+    solutionIsValid: skeleton.solution.isValid,
+    solutionValidationMsg: skeleton.solution.validationMessage,
+    solutionContentLength: skeleton.solution.content.length,
+    problemSolutionReady,
+  });
 
   const canProceedToNext = useMemo(() => {
     const section = skeleton[currentSectionType];
@@ -966,7 +977,7 @@ export function IdeaClarifier({
 
       <div className="space-y-4">
         {showAllSections
-          ? steps.map((step) => renderSectionEditor(step))
+          ? steps.map((step) => <div key={step}>{renderSectionEditor(step)}</div>)
           : renderSectionEditor(currentSectionType)}
       </div>
 
