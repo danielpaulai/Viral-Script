@@ -528,9 +528,9 @@ export default function Landing() {
                 'rgba(0, 0, 0, 0.4) 0px 20px 40px -10px'
               ];
               const floatAnimations = [
-                'animate-[float-left_8s_ease-in-out_infinite]',
-                'animate-[float-center_9s_ease-in-out_infinite]',
-                'animate-[float-right_10s_ease-in-out_infinite]'
+                'animate-[float-left_8s_linear_infinite]',
+                'animate-[float-center_9s_linear_infinite]',
+                'animate-[float-right_10s_linear_infinite]'
               ];
               
               return (
@@ -585,9 +585,9 @@ export default function Landing() {
                 'rgba(0, 0, 0, 0.4) 0px 20px 40px -10px'
               ];
               const floatAnimations = [
-                'animate-[float-right_10s_ease-in-out_infinite]',
-                'animate-[float-center_9s_ease-in-out_infinite]',
-                'animate-[float-left_8s_ease-in-out_infinite]'
+                'animate-[float-right_10s_linear_infinite]',
+                'animate-[float-center_9s_linear_infinite]',
+                'animate-[float-left_8s_linear_infinite]'
               ];
               
               return (
