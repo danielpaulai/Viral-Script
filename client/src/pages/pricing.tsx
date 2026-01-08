@@ -24,7 +24,8 @@ const pricingTiers = [
       "No competitor analysis",
     ],
     popular: false,
-    buttonText: "Get Started",
+    buttonText: "Start Free Trial",
+    trialDays: 7,
   },
   {
     id: "pro",
@@ -46,7 +47,8 @@ const pricingTiers = [
       "No competitor analysis",
     ],
     popular: true,
-    buttonText: "Start Pro Trial",
+    buttonText: "Start Free Trial",
+    trialDays: 7,
   },
   {
     id: "agency",
@@ -66,7 +68,8 @@ const pricingTiers = [
     ],
     limitations: [],
     popular: false,
-    buttonText: "Start Agency Trial",
+    buttonText: "Start Free Trial",
+    trialDays: 7,
   },
 ];
 
@@ -75,11 +78,14 @@ export default function Pricing() {
     <div className="min-h-full p-6 bg-background">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-12">
+          <Badge className="mb-4" variant="secondary" data-testid="badge-free-trial">
+            7-Day Free Trial on All Plans
+          </Badge>
           <h1 className="text-4xl font-bold mb-4" data-testid="text-pricing-title">
-            Simple, Transparent Pricing
+            Start Free, Go Viral
           </h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto" data-testid="text-pricing-subtitle">
-            Choose the plan that matches your content creation needs. Upgrade or downgrade anytime.
+            Try any plan free for 7 days. No charge until your trial ends. Cancel anytime.
           </p>
         </div>
 
@@ -117,6 +123,9 @@ export default function Pricing() {
                       ${tier.price}
                     </span>
                     <span className="text-muted-foreground">/month</span>
+                    <p className="text-sm text-primary font-medium mt-2" data-testid={`text-trial-${tier.id}`}>
+                      7 days free
+                    </p>
                   </div>
                   <ul className="space-y-3">
                     {tier.features.map((feature, idx) => (
