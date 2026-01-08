@@ -527,17 +527,17 @@ export default function Landing() {
                 'rgba(233, 13, 65, 0.2) 0px 30px 60px -15px, rgba(0, 0, 0, 0.5) 0px 25px 50px -12px',
                 'rgba(0, 0, 0, 0.4) 0px 20px 40px -10px'
               ];
-              const floatAnimations = [
-                'animate-[float-left_8s_linear_infinite]',
-                'animate-[float-center_9s_linear_infinite]',
-                'animate-[float-right_10s_linear_infinite]'
+              const slideAnimations = [
+                'animate-[slide-in-left_1s_ease-out_0.2s_forwards]',
+                'animate-[slide-in-center_1s_ease-out_0.4s_forwards]',
+                'animate-[slide-in-right_1s_ease-out_0.6s_forwards]'
               ];
               
               return (
                 <div 
                   key={idx}
                   onClick={() => setSelectedFeature(idx)}
-                  className={`absolute w-80 aspect-[3/4] rounded-2xl bg-neutral-900/40 ring-1 ring-white/10 overflow-hidden shadow-2xl hover:scale-110 hover:rotate-0 transition-all duration-500 cursor-pointer group ${floatAnimations[idx]}`}
+                  className={`absolute w-80 aspect-[3/4] rounded-2xl bg-neutral-900/40 ring-1 ring-white/10 overflow-hidden shadow-2xl hover:scale-110 hover:rotate-0 transition-all duration-500 cursor-pointer group opacity-0 ${slideAnimations[idx]}`}
                   style={{ 
                     transform: transforms[idx], 
                     zIndex: zIndexes[idx],
@@ -584,17 +584,17 @@ export default function Landing() {
                 'rgba(233, 13, 65, 0.2) 0px 30px 60px -15px, rgba(0, 0, 0, 0.5) 0px 25px 50px -12px',
                 'rgba(0, 0, 0, 0.4) 0px 20px 40px -10px'
               ];
-              const floatAnimations = [
-                'animate-[float-right_10s_linear_infinite]',
-                'animate-[float-center_9s_linear_infinite]',
-                'animate-[float-left_8s_linear_infinite]'
+              const slideAnimations = [
+                'animate-[slide-in-left_1s_ease-out_0.8s_forwards]',
+                'animate-[slide-in-center_1s_ease-out_1s_forwards]',
+                'animate-[slide-in-right_1s_ease-out_1.2s_forwards]'
               ];
               
               return (
                 <div 
                   key={idx + 3}
                   onClick={() => setSelectedFeature(idx + 3)}
-                  className={`absolute w-80 aspect-[3/4] rounded-2xl bg-neutral-900/40 ring-1 ring-white/10 overflow-hidden shadow-2xl hover:scale-110 hover:rotate-0 transition-all duration-500 cursor-pointer group ${floatAnimations[idx]}`}
+                  className={`absolute w-80 aspect-[3/4] rounded-2xl bg-neutral-900/40 ring-1 ring-white/10 overflow-hidden shadow-2xl hover:scale-110 hover:rotate-0 transition-all duration-500 cursor-pointer group opacity-0 ${slideAnimations[idx]}`}
                   style={{ 
                     transform: transforms[idx], 
                     zIndex: zIndexes[idx],
