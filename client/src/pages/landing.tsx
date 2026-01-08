@@ -514,25 +514,30 @@ export default function Landing() {
           </div>
 
           {/* Desktop: Fanned Cards Row 1 */}
-          <div className="hidden md:flex h-[500px] relative items-center justify-center mb-8" style={{ perspective: '1200px' }}>
+          <div className="hidden md:flex h-[550px] relative items-center justify-center mb-8" style={{ perspective: '1200px' }}>
             {features.slice(0, 3).map((feature, idx) => {
               const transforms = [
-                'translateX(-220px) translateY(0px) rotateZ(-12deg) scale(0.95)',
-                'translateX(0px) translateY(0px) rotateZ(0deg) scale(1.05)',
-                'translateX(220px) translateY(0px) rotateZ(12deg) scale(0.95)'
+                'translateX(-280px) translateY(0px) rotateZ(-15deg) scale(0.92)',
+                'translateX(0px) translateY(-20px) rotateZ(0deg) scale(1.08)',
+                'translateX(280px) translateY(0px) rotateZ(15deg) scale(0.92)'
               ];
               const zIndexes = [1, 3, 2];
               const shadows = [
-                'rgba(0, 0, 0, 0.3) 0px 15px 30px -10px',
-                'rgba(0, 0, 0, 0.5) 0px 25px 50px -12px',
-                'rgba(0, 0, 0, 0.3) 0px 15px 30px -10px'
+                'rgba(0, 0, 0, 0.4) 0px 20px 40px -10px',
+                'rgba(233, 13, 65, 0.2) 0px 30px 60px -15px, rgba(0, 0, 0, 0.5) 0px 25px 50px -12px',
+                'rgba(0, 0, 0, 0.4) 0px 20px 40px -10px'
+              ];
+              const floatAnimations = [
+                'animate-[float-left_6s_ease-in-out_infinite]',
+                'animate-[float-center_5s_ease-in-out_infinite]',
+                'animate-[float-right_7s_ease-in-out_infinite]'
               ];
               
               return (
                 <div 
                   key={idx}
                   onClick={() => setSelectedFeature(idx)}
-                  className="absolute w-72 aspect-[3/4] rounded-2xl bg-neutral-900/40 ring-1 ring-white/10 overflow-hidden shadow-2xl hover:scale-105 transition-transform duration-300 cursor-pointer group"
+                  className={`absolute w-80 aspect-[3/4] rounded-2xl bg-neutral-900/40 ring-1 ring-white/10 overflow-hidden shadow-2xl hover:scale-110 hover:rotate-0 transition-all duration-500 cursor-pointer group ${floatAnimations[idx]}`}
                   style={{ 
                     transform: transforms[idx], 
                     zIndex: zIndexes[idx],
@@ -542,22 +547,22 @@ export default function Landing() {
                 >
                   <ImageWithSkeleton 
                     alt={feature.title}
-                    className="absolute inset-0 size-full object-cover w-full h-auto group-hover:scale-110 transition-transform duration-500"
+                    className="absolute inset-0 size-full object-cover w-full h-auto group-hover:scale-115 transition-transform duration-700"
                     src={feature.image}
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent" />
                   <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <div className="w-8 h-8 rounded-full bg-primary/80 flex items-center justify-center animate-pulse">
-                      <ArrowRight className="w-4 h-4 text-white" />
+                    <div className="w-10 h-10 rounded-full bg-primary/80 flex items-center justify-center animate-pulse">
+                      <ArrowRight className="w-5 h-5 text-white" />
                     </div>
                   </div>
-                  <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between gap-2">
+                  <div className="absolute bottom-5 left-5 right-5 flex items-end justify-between gap-3">
                     <div>
-                      <p className="text-sm font-medium tracking-tight text-white">{feature.title}</p>
-                      <p className="text-xs text-neutral-300">{feature.description}</p>
+                      <p className="text-base font-semibold tracking-tight text-white mb-1">{feature.title}</p>
+                      <p className="text-sm text-neutral-200 leading-snug">{feature.description}</p>
                     </div>
-                    <div className="inline-flex items-center gap-1 rounded-full bg-primary/20 px-2 py-1 text-[10px] text-primary ring-1 ring-primary/30 flex-shrink-0">
-                      <feature.icon className="h-3.5 w-3.5" />
+                    <div className="inline-flex items-center gap-1 rounded-full bg-primary/20 px-3 py-1.5 text-xs text-primary ring-1 ring-primary/30 flex-shrink-0">
+                      <feature.icon className="h-4 w-4" />
                     </div>
                   </div>
                 </div>
@@ -566,25 +571,30 @@ export default function Landing() {
           </div>
 
           {/* Desktop: Fanned Cards Row 2 */}
-          <div className="hidden md:flex h-[500px] relative items-center justify-center" style={{ perspective: '1200px' }}>
+          <div className="hidden md:flex h-[550px] relative items-center justify-center" style={{ perspective: '1200px' }}>
             {features.slice(3, 6).map((feature, idx) => {
               const transforms = [
-                'translateX(-220px) translateY(0px) rotateZ(-12deg) scale(0.95)',
-                'translateX(0px) translateY(0px) rotateZ(0deg) scale(1.05)',
-                'translateX(220px) translateY(0px) rotateZ(12deg) scale(0.95)'
+                'translateX(-280px) translateY(0px) rotateZ(-15deg) scale(0.92)',
+                'translateX(0px) translateY(-20px) rotateZ(0deg) scale(1.08)',
+                'translateX(280px) translateY(0px) rotateZ(15deg) scale(0.92)'
               ];
               const zIndexes = [1, 3, 2];
               const shadows = [
-                'rgba(0, 0, 0, 0.3) 0px 15px 30px -10px',
-                'rgba(0, 0, 0, 0.5) 0px 25px 50px -12px',
-                'rgba(0, 0, 0, 0.3) 0px 15px 30px -10px'
+                'rgba(0, 0, 0, 0.4) 0px 20px 40px -10px',
+                'rgba(233, 13, 65, 0.2) 0px 30px 60px -15px, rgba(0, 0, 0, 0.5) 0px 25px 50px -12px',
+                'rgba(0, 0, 0, 0.4) 0px 20px 40px -10px'
+              ];
+              const floatAnimations = [
+                'animate-[float-right_7s_ease-in-out_infinite]',
+                'animate-[float-center_6s_ease-in-out_infinite]',
+                'animate-[float-left_5s_ease-in-out_infinite]'
               ];
               
               return (
                 <div 
                   key={idx + 3}
                   onClick={() => setSelectedFeature(idx + 3)}
-                  className="absolute w-72 aspect-[3/4] rounded-2xl bg-neutral-900/40 ring-1 ring-white/10 overflow-hidden shadow-2xl hover:scale-105 transition-transform duration-300 cursor-pointer group"
+                  className={`absolute w-80 aspect-[3/4] rounded-2xl bg-neutral-900/40 ring-1 ring-white/10 overflow-hidden shadow-2xl hover:scale-110 hover:rotate-0 transition-all duration-500 cursor-pointer group ${floatAnimations[idx]}`}
                   style={{ 
                     transform: transforms[idx], 
                     zIndex: zIndexes[idx],
@@ -594,22 +604,22 @@ export default function Landing() {
                 >
                   <ImageWithSkeleton 
                     alt={feature.title}
-                    className="absolute inset-0 size-full object-cover w-full h-auto group-hover:scale-110 transition-transform duration-500"
+                    className="absolute inset-0 size-full object-cover w-full h-auto group-hover:scale-115 transition-transform duration-700"
                     src={feature.image}
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent" />
                   <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <div className="w-8 h-8 rounded-full bg-primary/80 flex items-center justify-center animate-pulse">
-                      <ArrowRight className="w-4 h-4 text-white" />
+                    <div className="w-10 h-10 rounded-full bg-primary/80 flex items-center justify-center animate-pulse">
+                      <ArrowRight className="w-5 h-5 text-white" />
                     </div>
                   </div>
-                  <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between gap-2">
+                  <div className="absolute bottom-5 left-5 right-5 flex items-end justify-between gap-3">
                     <div>
-                      <p className="text-sm font-medium tracking-tight text-white">{feature.title}</p>
-                      <p className="text-xs text-neutral-300">{feature.description}</p>
+                      <p className="text-base font-semibold tracking-tight text-white mb-1">{feature.title}</p>
+                      <p className="text-sm text-neutral-200 leading-snug">{feature.description}</p>
                     </div>
-                    <div className="inline-flex items-center gap-1 rounded-full bg-primary/20 px-2 py-1 text-[10px] text-primary ring-1 ring-primary/30 flex-shrink-0">
-                      <feature.icon className="h-3.5 w-3.5" />
+                    <div className="inline-flex items-center gap-1 rounded-full bg-primary/20 px-3 py-1.5 text-xs text-primary ring-1 ring-primary/30 flex-shrink-0">
+                      <feature.icon className="h-4 w-4" />
                     </div>
                   </div>
                 </div>
