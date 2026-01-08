@@ -104,96 +104,101 @@ function TypingText({ words, className }: { words: string[]; className?: string 
 
 const features = [
   {
-    icon: Zap,
-    title: "50+ Viral Hooks",
-    description: "Battle-tested hooks that stop the scroll and demand attention",
-    longDescription: "Access our library of 50+ proven hook templates across 7 categories: Personal Experience, Case Study, Secret Reveal, Contrarian, Question, List, and Education. Each hook is battle-tested on millions of views and optimized to capture attention in the first 3 seconds.",
-    highlights: ["7 hook categories", "Tested on millions of views", "3-second attention capture"],
+    icon: Target,
+    title: "Purpose-Driven Planning",
+    description: "Choose Authority, Education, or Storytelling to guide your entire video",
+    longDescription: "Every great video starts with a clear purpose. Choose between Authority (bold opinions), Education (teachable methods), or Storytelling (personal experiences). Your choice shapes every question and suggestion throughout the process.",
+    highlights: ["3 video purposes", "Guided questions", "Strategic focus"],
     image: viralHooksImg
   },
   {
     icon: FileText,
-    title: "Smart Script Generation",
-    description: "AI writes punchy, grade 4-6 level scripts that convert viewers",
-    longDescription: "Our AI generates scripts at a 4th-6th grade reading level - the sweet spot for maximum engagement. No corporate jargon, no AI-sounding phrases. Just punchy, conversational scripts that feel authentic and convert viewers into followers.",
-    highlights: ["Grade 4-6 reading level", "No AI-sounding phrases", "Optimized for conversion"],
+    title: "Content Skeleton Method",
+    description: "Structure your ideas before you script: Problem, Core Teaching, Hook, CTA",
+    longDescription: "The Content Skeleton forces you to think clearly before writing. Define the problem, craft your core teaching (the golden nugget), create a conversational hook, and choose your call to action. Clear thinking leads to clear videos.",
+    highlights: ["4-step structure", "Prevents rambling", "Clear video flow"],
     image: smartScriptImg
   },
   {
-    icon: Target,
-    title: "Knowledge Base",
-    description: "Upload your ICP, brand voice, and messaging for personalized scripts",
-    longDescription: "Upload your brand guidelines, ideal customer profile, and messaging documents. Our AI learns your unique voice and creates scripts that sound like you wrote them. Supports PDF, DOCX, and images with OCR - up to 10 files for Pro users.",
-    highlights: ["PDF, DOCX & image support", "OCR for screenshots", "Up to 10 files"],
+    icon: Zap,
+    title: "AI-Generated Hooks",
+    description: "Conversational hooks that sound spoken, not like headlines",
+    longDescription: "Our AI creates hooks that sound like you're talking to a friend, not writing a news headline. Natural, conversational openers that capture attention without feeling clickbaity or forced.",
+    highlights: ["Conversational tone", "Multiple options", "Sounds natural"],
     image: knowledgeBaseImg
   },
   {
-    icon: Mic,
-    title: "Voice DNA Matching",
-    description: "Scripts that sound like you, not a robot",
-    longDescription: "Feed the AI examples of your best content and it learns your unique speaking patterns, vocabulary, and personality. Every script generated matches your authentic voice - your audience won't know the difference.",
-    highlights: ["Learns your patterns", "Matches your vocabulary", "Authentic personality"],
+    icon: BookOpen,
+    title: "Core Teaching Focus",
+    description: "The golden nugget - the real value your viewers will remember",
+    longDescription: "Most videos fail because they lack a clear teaching. We help you define the single insight that makes your video worth watching. This becomes the heart of your script, taking up 60-70% of your video.",
+    highlights: ["Single key insight", "Real value delivery", "Memorable content"],
     image: voiceDnaImg
   },
   {
-    icon: BookOpen,
-    title: "Deep Research Mode",
-    description: "AI researches stats, quotes, and contrarian takes for your topic",
-    longDescription: "Toggle Deep Research to have AI dig up relevant statistics, expert quotes, and contrarian angles for your topic. Add credibility and authority to your scripts with real data points that make viewers stop and save.",
-    highlights: ["Real statistics", "Expert quotes", "Contrarian angles"],
+    icon: TrendingUp,
+    title: "Clarity Score",
+    description: "Reach 70% clarity before generating your script",
+    longDescription: "Our clarity score validates your content skeleton. It catches vague language and ensures each section is specific enough. You can't generate a script until your ideas are truly clear.",
+    highlights: ["Prevents vague content", "70% threshold", "Quality control"],
     image: deepResearchImg
   },
   {
-    icon: TrendingUp,
-    title: "Hemingway Analysis",
-    description: "Every script analyzed for readability and punch",
-    longDescription: "Every script is analyzed using Hemingway-style metrics. See your grade level, sentence complexity, and get specific suggestions to make your writing punchier. Aim for that sweet spot that keeps viewers hooked.",
-    highlights: ["Grade level scoring", "Sentence analysis", "Actionable suggestions"],
+    icon: Mic,
+    title: "CTA Templates",
+    description: "Save and reuse your best calls to action",
+    longDescription: "Generate AI-powered CTAs based on your content, or save your best performing ones as templates. Build a library of proven calls to action you can reuse across all your videos.",
+    highlights: ["AI suggestions", "Save favorites", "Reuse templates"],
     image: hemingwayImg
   }
 ];
 
 const stats = [
   { value: "1K+", label: "Creators" },
-  { value: "50K+", label: "Scripts" },
-  { value: "50+", label: "Hooks" },
-  { value: "99%", label: "Uptime" }
+  { value: "10K+", label: "Videos Planned" },
+  { value: "70%", label: "Clarity Threshold" },
+  { value: "4", label: "Step Process" }
 ];
 
 const howItWorks = [
   {
     step: "01",
-    title: "Set Your Parameters",
-    description: "Choose your category, hook style, structure, and tone. Upload your brand documents to the Knowledge Base."
+    title: "Choose Your Purpose",
+    description: "Pick Authority, Education, or Storytelling. This shapes your entire video strategy."
   },
   {
     step: "02",
-    title: "Generate Your Script",
-    description: "Our AI creates a punchy, scroll-stopping script optimized for your platform and duration."
+    title: "Build Your Skeleton",
+    description: "Define the problem, craft your core teaching, create a hook, and choose your CTA."
   },
   {
     step: "03",
-    title: "Review & Refine",
-    description: "Get word count, grade level analysis, B-roll ideas, and production notes. Copy and post."
+    title: "Reach 70% Clarity",
+    description: "Our validation ensures your ideas are specific and clear before generating your script."
+  },
+  {
+    step: "04",
+    title: "Generate & Record",
+    description: "Get a polished script that focuses on your core teaching. Copy and start filming."
   }
 ];
 
 const faqs = [
   {
-    question: "What makes these scripts different from ChatGPT?",
-    answer: "Our scripts are specifically optimized for short-form video. They're written at a grade 4-6 reading level, use proven viral hooks, and include production notes. No corporate jargon or AI-sounding phrases."
+    question: "What makes this different from ChatGPT?",
+    answer: "ChatGPT gives you a script. We help you think clearly first. Our Content Skeleton process ensures you know exactly what you're saying before you write it. The result is focused, valuable content instead of rambling AI-generated fluff."
   },
   {
-    question: "What's the Knowledge Base?",
-    answer: "The Knowledge Base stores your brand documents - ICP profiles, messaging, positioning, voice DNA. The AI references these when writing scripts, so every script sounds like you."
+    question: "What's the Content Skeleton?",
+    answer: "It's a 4-part framework: Problem (what pain point you're addressing), Core Teaching (your golden nugget insight), Hook (conversational opener), and CTA (what you want viewers to do). Clear structure leads to clear videos."
   },
   {
-    question: "What file types can I upload?",
-    answer: "PDF, DOCX, images (with OCR text extraction), and plain text files. Upload up to 10 files at once."
+    question: "What are the three video purposes?",
+    answer: "Authority (bold opinions that position you as a thought leader), Education (teachable methods viewers can implement), and Storytelling (personal experiences with lessons). Each purpose guides the questions and suggestions you see."
   },
   {
-    question: "How long are the scripts?",
-    answer: "You choose! 15 seconds to 3 minutes. The AI targets the right word count for each duration and optimizes for your platform."
+    question: "What's the clarity score?",
+    answer: "It's our validation system that checks if your content skeleton is specific enough. Vague ideas make vague videos. You need 70% clarity before generating a script."
   },
   {
     question: "Can I cancel anytime?",
@@ -206,40 +211,40 @@ const useCases = [
   {
     icon: Users,
     title: "Content Creators",
-    description: "Generate scroll-stopping scripts that match your voice. Post more consistently without burning out.",
-    benefit: "10x faster content creation"
+    description: "Stop rambling in your videos. Clarify your core teaching before you hit record.",
+    benefit: "Clear, focused content"
   },
   {
     icon: Briefcase,
     title: "Business Owners",
-    description: "Create thought leadership content that builds authority. Turn expertise into engaging short-form videos.",
-    benefit: "Build audience on autopilot"
+    description: "Turn your expertise into structured videos. Choose Authority mode to share bold opinions that stand out.",
+    benefit: "Thought leadership made easy"
   },
   {
     icon: Target,
     title: "Marketing Teams",
-    description: "Scale video content production while maintaining brand voice. Knowledge Base ensures consistency across creators.",
-    benefit: "Consistent brand messaging"
+    description: "Give your team a framework for consistent video planning. Every video has a clear purpose and teaching.",
+    benefit: "Consistent video strategy"
   },
   {
     icon: Mic,
     title: "Coaches & Consultants",
-    description: "Share your expertise in bite-sized, engaging formats. Deep Research adds credibility with real stats.",
-    benefit: "Position as thought leader"
+    description: "Use Education mode to create teachable content. Structure your frameworks so viewers can actually apply them.",
+    benefit: "Actionable teaching"
   }
 ];
 
 const comparisonFeatures = [
-  { feature: "Short-form video optimized", scriptPro: true, chatgpt: false, other: false },
-  { feature: "50+ proven viral hooks", scriptPro: true, chatgpt: false, other: false },
-  { feature: "Grade 4-6 readability", scriptPro: true, chatgpt: false, other: false },
-  { feature: "Voice DNA matching", scriptPro: true, chatgpt: false, other: false },
-  { feature: "Knowledge Base (brand docs)", scriptPro: true, chatgpt: false, other: true },
-  { feature: "Production notes & B-roll", scriptPro: true, chatgpt: false, other: false },
-  { feature: "Hemingway analysis", scriptPro: true, chatgpt: false, other: false },
+  { feature: "Purpose-driven planning", scriptPro: true, chatgpt: false, other: false },
+  { feature: "Content Skeleton structure", scriptPro: true, chatgpt: false, other: false },
+  { feature: "Clarity validation", scriptPro: true, chatgpt: false, other: false },
+  { feature: "AI-generated conversational hooks", scriptPro: true, chatgpt: false, other: false },
+  { feature: "Core teaching focus", scriptPro: true, chatgpt: false, other: false },
+  { feature: "CTA generation & templates", scriptPro: true, chatgpt: false, other: false },
+  { feature: "Short-form video optimized", scriptPro: true, chatgpt: false, other: true },
   { feature: "Platform-specific targeting", scriptPro: true, chatgpt: false, other: true },
-  { feature: "Deep research mode", scriptPro: true, chatgpt: true, other: false },
-  { feature: "CTA library (30+)", scriptPro: true, chatgpt: false, other: false },
+  { feature: "Prevents vague content", scriptPro: true, chatgpt: false, other: false },
+  { feature: "Teaches video strategy", scriptPro: true, chatgpt: false, other: false },
 ];
 
 // Scroll animation hook
@@ -307,7 +312,7 @@ export default function Landing() {
                 <div className="w-7 h-7 rounded-md bg-primary flex items-center justify-center shadow-[0_0_15px_-3px_rgba(233,13,65,0.4)]">
                   <Feather className="w-4 h-4 text-primary-foreground" />
                 </div>
-                <span className="text-sm font-semibold tracking-tight text-white">Viral Script Pro</span>
+                <span className="text-sm font-semibold tracking-tight text-white">Video Idea Clarifier</span>
               </div>
             </Link>
             
@@ -372,26 +377,26 @@ export default function Landing() {
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
               <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-primary" />
             </span>
-            <span className="text-[11px] font-medium text-[#b8bec1]">AI-Powered Script Generation</span>
+            <span className="text-[11px] font-medium text-[#b8bec1]">Think Clearly, Script Easily</span>
           </div>
           
           <h1 className="text-5xl md:text-7xl lg:text-8xl font-semibold tracking-tight text-white mb-6 leading-[1.05]">
             <TypingText 
-              words={["Create", "Write", "Generate", "Craft"]} 
+              words={["Clarify", "Structure", "Plan", "Focus"]} 
               className="text-primary"
             />
-            {" "}Viral Scripts<br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-b from-white to-[#b8bec1]">In Seconds</span>
+            {" "}Your Ideas<br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-b from-white to-[#b8bec1]">Before You Script</span>
           </h1>
           
           <p className="mt-6 text-base md:text-lg text-[#b8bec1] max-w-xl mx-auto font-normal mb-10 leading-relaxed">
-            Stop staring at blank pages. Generate scroll-stopping scripts with proven hooks, optimized for readability, and personalized to your brand voice.
+            Most videos fail because the ideas aren't clear. Our Content Skeleton process helps you think before you write, so every script delivers real value.
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <Link href="/login">
               <Button size="lg" className="w-full sm:w-auto gap-2 shadow-[0_0_25px_-5px_rgba(233,13,65,0.4)]" data-testid="button-hero-start">
-                Start Writing Scripts
+                Clarify Your Next Video
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
               </Button>
             </Link>
@@ -468,11 +473,11 @@ export default function Landing() {
             <span className="h-px w-8 bg-primary" />
           </div>
           <h3 className="text-3xl md:text-4xl font-semibold text-white mb-6 tracking-tight text-center leading-tight">
-            Everything you need to create<br />
-            <span className="text-[#b8bec1]">winning short-form videos</span>
+            Think clearly before<br />
+            <span className="text-[#b8bec1]">you start scripting</span>
           </h3>
           <p className="text-[#b8bec1] text-sm leading-relaxed mb-16 text-center max-w-xl mx-auto">
-            From hook to CTA, we handle the script. You handle the camera.
+            The Content Skeleton process ensures every video delivers real value.
           </p>
 
           {/* Mobile: Grid Layout */}
@@ -724,10 +729,10 @@ export default function Landing() {
                 <h2 className="text-xs font-semibold text-primary tracking-widest uppercase">The Method</h2>
               </div>
               <h3 className="text-3xl md:text-4xl font-semibold text-white mb-6 tracking-tight leading-tight">
-                Scripts in under <br /> <span className="text-[#b8bec1]">60 seconds.</span>
+                Clear ideas in <br /> <span className="text-[#b8bec1]">4 simple steps.</span>
               </h3>
               <p className="text-[#b8bec1] text-sm leading-relaxed mb-8">
-                We've engineered a system that turns your ideas into viral-ready scripts. No more writer's block. No more wasted hours.
+                We help you think before you write. The Content Skeleton process ensures every video has a clear purpose and delivers real value.
               </p>
               
               <div className="space-y-6">
@@ -755,25 +760,25 @@ export default function Landing() {
                   </div>
                   <div className="p-6 space-y-4">
                     <div className="flex items-center gap-3 flex-wrap">
-                      <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-primary/20 text-primary">Content Creation</span>
-                      <span className="px-2 py-0.5 rounded text-[10px] font-medium border border-white/10 text-[#b8bec1]">Personal Hook</span>
-                      <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-white/5 text-[#b8bec1]">60 seconds</span>
+                      <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-primary/20 text-primary">Education</span>
+                      <span className="px-2 py-0.5 rounded text-[10px] font-medium border border-white/10 text-[#b8bec1]">Core Teaching</span>
+                      <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-white/5 text-[#b8bec1]">78% Clarity</span>
                     </div>
                     <div className="bg-white/5 rounded-md p-4 font-mono text-sm leading-relaxed">
-                      <p className="text-primary font-medium mb-3">I made $47,000 in 30 days.</p>
-                      <p className="text-[#b8bec1] mb-2">And it started with a single video.</p>
-                      <p className="text-[#b8bec1] mb-2">Here's what nobody tells you about going viral.</p>
-                      <p className="text-[#b8bec1]">The algorithm doesn't care about perfection...</p>
+                      <p className="text-primary font-medium mb-3">Problem: Creators ramble without a clear point</p>
+                      <p className="text-[#b8bec1] mb-2">Core Teaching: Every video needs ONE golden nugget</p>
+                      <p className="text-[#b8bec1] mb-2">Hook: You know why most videos don't work?</p>
+                      <p className="text-[#b8bec1]">CTA: Save this for your next video...</p>
                     </div>
                     <div className="flex items-center gap-4 text-xs text-[#b8bec1]">
                       <span className="flex items-center gap-1">
-                        <FileText className="w-3 h-3" /> 142 words
+                        <Target className="w-3 h-3" /> 4 sections
                       </span>
                       <span className="flex items-center gap-1">
-                        <TrendingUp className="w-3 h-3" /> Grade 5
+                        <TrendingUp className="w-3 h-3" /> 78% clarity
                       </span>
                       <span className="flex items-center gap-1 text-green-500">
-                        <CheckCircle2 className="w-3 h-3" /> Ready
+                        <CheckCircle2 className="w-3 h-3" /> Ready to script
                       </span>
                     </div>
                   </div>
@@ -797,7 +802,7 @@ export default function Landing() {
             <span className="h-px w-8 bg-primary" />
           </div>
           <h3 className="text-3xl md:text-4xl font-semibold text-white mb-6 tracking-tight text-center">
-            How creators use Viral Script Pro
+            How creators use Video Idea Clarifier
           </h3>
           <p className="text-[#b8bec1] text-sm leading-relaxed mb-12 text-center max-w-xl mx-auto">
             Whether you're building a personal brand or scaling content for clients.
@@ -950,17 +955,17 @@ export default function Landing() {
             <span className="h-px w-8 bg-primary" />
           </div>
           <h3 className="text-3xl md:text-4xl font-semibold text-white mb-6 tracking-tight text-center">
-            Why Viral Script Pro vs ChatGPT?
+            Why Video Idea Clarifier vs ChatGPT?
           </h3>
           <p className="text-[#b8bec1] text-sm leading-relaxed mb-12 text-center max-w-xl mx-auto">
-            Generic AI isn't built for short-form video. We are.
+            ChatGPT writes scripts. We help you think first.
           </p>
 
           <div className="rounded-2xl border border-white/[0.06] overflow-hidden bg-[rgba(20,20,22,0.4)] backdrop-blur-lg">
             {/* Table Header */}
             <div className="grid grid-cols-4 gap-4 p-4 border-b border-white/[0.06] bg-white/5">
               <div className="text-xs font-medium text-[#b8bec1]">Feature</div>
-              <div className="text-xs font-medium text-primary text-center">Viral Script Pro</div>
+              <div className="text-xs font-medium text-primary text-center">Video Idea Clarifier</div>
               <div className="text-xs font-medium text-[#b8bec1] text-center">ChatGPT</div>
               <div className="text-xs font-medium text-[#b8bec1] text-center">Other Tools</div>
             </div>
@@ -1001,7 +1006,7 @@ export default function Landing() {
           <div className="mt-8 text-center">
             <Link href="/login">
               <Button className="gap-2 shadow-[0_0_20px_-5px_rgba(233,13,65,0.3)]" data-testid="button-compare-cta">
-                Try Viral Script Pro Free
+                Try Video Idea Clarifier Free
                 <ArrowRight className="w-4 h-4" />
               </Button>
             </Link>
@@ -1051,14 +1056,14 @@ export default function Landing() {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(233,13,65,0.08),transparent_70%)] pointer-events-none" />
         <div className="max-w-4xl mx-auto px-6 text-center relative z-10">
           <h2 className="text-3xl md:text-5xl font-semibold text-white mb-6 tracking-tight">
-            Ready to create viral scripts?
+            Ready to clarify your next video?
           </h2>
           <p className="text-[#b8bec1] text-base mb-10 max-w-xl mx-auto">
-            Join thousands of creators who save hours every week.
+            Stop rambling. Start delivering value.
           </p>
           <Link href="/login">
             <Button size="lg" className="gap-2 shadow-[0_0_25px_-5px_rgba(233,13,65,0.4)]" data-testid="button-final-cta">
-              Start Writing Scripts
+              Clarify Your Next Video
               <ArrowRight className="w-4 h-4" />
             </Button>
           </Link>
@@ -1072,10 +1077,10 @@ export default function Landing() {
             <div className="w-6 h-6 rounded-md bg-primary flex items-center justify-center">
               <Feather className="w-3 h-3 text-primary-foreground" />
             </div>
-            <span className="text-sm font-medium text-white">Viral Script Pro</span>
+            <span className="text-sm font-medium text-white">Video Idea Clarifier</span>
           </div>
           <p className="text-xs text-[#b8bec1]">
-            Built for content creators who want to grow.
+            Think clearly. Script easily.
           </p>
         </div>
       </footer>
