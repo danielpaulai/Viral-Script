@@ -1,10 +1,10 @@
-# Video Idea Clarifier (formerly Video Script Writer Pro)
+# Viral Script Writer
 
 ## Overview
 
-Video Idea Clarifier is a professional short-form video content planning tool designed for content creators. The core value proposition is converting raw ideas into crystal-clear video structures through a mandatory Content Skeleton process (Hook → Problem → Solution → CTA). Script generation is a secondary output, positioning the app as a thinking partner that teaches strategic video planning rather than just a script typing tool.
+Viral Script Writer is a professional short-form video content tool designed for content creators. The core value proposition is converting raw ideas into viral-ready video scripts through a clarity-first Content Skeleton process (Problem → Core Teaching → Hook → CTA). Clear ideas create viral content.
 
-### New: Idea Clarifier Wizard
+### Viral Script Wizard
 The app now features a purpose-driven video planning process:
 
 **Step 0: Video Purpose Selection**

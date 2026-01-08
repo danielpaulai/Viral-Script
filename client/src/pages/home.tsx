@@ -254,7 +254,7 @@ export default function Home() {
   const [showViralExamples, setShowViralExamples] = useState(false);
   const [viralSearchPlatform, setViralSearchPlatform] = useState<"tiktok" | "instagram" | null>(null);
   
-  // New 3-step flow: Video Idea Clarifier
+  // New 3-step flow: Viral Script Writer
   // Step 1: Build skeleton, Step 2: Enhance with research, Step 3: Generate script
   type FlowStep = "skeleton" | "enhance" | "script";
   const [currentStep, setCurrentStep] = useState<FlowStep>("skeleton");

@@ -312,7 +312,7 @@ export default function Landing() {
                 <div className="w-7 h-7 rounded-md bg-primary flex items-center justify-center shadow-[0_0_15px_-3px_rgba(233,13,65,0.4)]">
                   <Feather className="w-4 h-4 text-primary-foreground" />
                 </div>
-                <span className="text-sm font-semibold tracking-tight text-white">Video Idea Clarifier</span>
+                <span className="text-sm font-semibold tracking-tight text-white">Viral Script Writer</span>
               </div>
             </Link>
             
@@ -802,7 +802,7 @@ export default function Landing() {
             <span className="h-px w-8 bg-primary" />
           </div>
           <h3 className="text-3xl md:text-4xl font-semibold text-white mb-6 tracking-tight text-center">
-            How creators use Video Idea Clarifier
+            How creators use Viral Script Writer
           </h3>
           <p className="text-[#b8bec1] text-sm leading-relaxed mb-12 text-center max-w-xl mx-auto">
             Whether you're building a personal brand or scaling content for clients.
@@ -955,7 +955,7 @@ export default function Landing() {
             <span className="h-px w-8 bg-primary" />
           </div>
           <h3 className="text-3xl md:text-4xl font-semibold text-white mb-6 tracking-tight text-center">
-            Why Video Idea Clarifier vs ChatGPT?
+            Why Viral Script Writer vs ChatGPT?
           </h3>
           <p className="text-[#b8bec1] text-sm leading-relaxed mb-12 text-center max-w-xl mx-auto">
             ChatGPT writes scripts. We help you think first.
@@ -965,7 +965,7 @@ export default function Landing() {
             {/* Table Header */}
             <div className="grid grid-cols-4 gap-4 p-4 border-b border-white/[0.06] bg-white/5">
               <div className="text-xs font-medium text-[#b8bec1]">Feature</div>
-              <div className="text-xs font-medium text-primary text-center">Video Idea Clarifier</div>
+              <div className="text-xs font-medium text-primary text-center">Viral Script Writer</div>
               <div className="text-xs font-medium text-[#b8bec1] text-center">ChatGPT</div>
               <div className="text-xs font-medium text-[#b8bec1] text-center">Other Tools</div>
             </div>
@@ -1006,7 +1006,7 @@ export default function Landing() {
           <div className="mt-8 text-center">
             <Link href="/login">
               <Button className="gap-2 shadow-[0_0_20px_-5px_rgba(233,13,65,0.3)]" data-testid="button-compare-cta">
-                Try Video Idea Clarifier Free
+                Try Viral Script Writer Free
                 <ArrowRight className="w-4 h-4" />
               </Button>
             </Link>
@@ -1077,7 +1077,7 @@ export default function Landing() {
             <div className="w-6 h-6 rounded-md bg-primary flex items-center justify-center">
               <Feather className="w-3 h-3 text-primary-foreground" />
             </div>
-            <span className="text-sm font-medium text-white">Video Idea Clarifier</span>
+            <span className="text-sm font-medium text-white">Viral Script Writer</span>
           </div>
           <p className="text-xs text-[#b8bec1]">
             Clarity creates virality.
