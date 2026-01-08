@@ -23,6 +23,8 @@ import {
   type InsertPasswordResetToken,
   type ScriptTemplate,
   type InsertScriptTemplate,
+  type CtaTemplate,
+  type InsertCtaTemplate,
   users,
   passwordResetTokens,
 } from "@shared/schema";
@@ -101,6 +103,13 @@ export interface IStorage {
   updateScriptTemplate(id: string, template: Partial<InsertScriptTemplate>): Promise<ScriptTemplate | undefined>;
   deleteScriptTemplate(id: string): Promise<boolean>;
   incrementTemplateUsage(id: string): Promise<void>;
+  
+  // CTA Templates
+  getCtaTemplates(userId: string): Promise<CtaTemplate[]>;
+  getCtaTemplate(id: string): Promise<CtaTemplate | undefined>;
+  createCtaTemplate(template: InsertCtaTemplate): Promise<CtaTemplate>;
+  deleteCtaTemplate(id: string): Promise<boolean>;
+  incrementCtaTemplateUsage(id: string): Promise<void>;
 }
 
 export class MemStorage implements IStorage {
@@ -116,6 +125,7 @@ export class MemStorage implements IStorage {
   private usersMemory: Map<string, User>;
   private scriptVersions: Map<string, ScriptVersion>;
   private scriptTemplates: Map<string, ScriptTemplate>;
+  private ctaTemplates: Map<string, CtaTemplate>;
   sessionStore: session.Store;
 
   constructor() {
@@ -131,6 +141,7 @@ export class MemStorage implements IStorage {
     this.usersMemory = new Map();
     this.scriptVersions = new Map();
     this.scriptTemplates = new Map();
+    this.ctaTemplates = new Map();
     // Use memory session store for reliability across environments
     this.sessionStore = new MemoryStore({
       checkPeriod: 86400000, // prune expired entries every 24h
@@ -699,6 +710,51 @@ export class MemStorage implements IStorage {
     if (template) {
       template.usageCount = String(parseInt(template.usageCount || "0") + 1);
       this.scriptTemplates.set(id, template);
+    }
+  }
+
+  // CTA Template methods
+  async getCtaTemplates(userId: string): Promise<CtaTemplate[]> {
+    const templates = Array.from(this.ctaTemplates.values())
+      .filter(t => t.userId === userId)
+      .sort((a, b) => {
+        const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        return dateB - dateA;
+      });
+    return templates;
+  }
+
+  async getCtaTemplate(id: string): Promise<CtaTemplate | undefined> {
+    return this.ctaTemplates.get(id);
+  }
+
+  async createCtaTemplate(template: InsertCtaTemplate): Promise<CtaTemplate> {
+    const id = randomUUID();
+    const now = new Date();
+    const newTemplate: CtaTemplate = {
+      id,
+      userId: template.userId,
+      title: template.title,
+      content: template.content,
+      category: template.category || "general",
+      sourceContext: template.sourceContext || null,
+      usageCount: "0",
+      createdAt: now,
+    };
+    this.ctaTemplates.set(id, newTemplate);
+    return newTemplate;
+  }
+
+  async deleteCtaTemplate(id: string): Promise<boolean> {
+    return this.ctaTemplates.delete(id);
+  }
+
+  async incrementCtaTemplateUsage(id: string): Promise<void> {
+    const template = this.ctaTemplates.get(id);
+    if (template) {
+      template.usageCount = String(parseInt(template.usageCount || "0") + 1);
+      this.ctaTemplates.set(id, template);
     }
   }
 }

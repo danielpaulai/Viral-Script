@@ -45,6 +45,7 @@ import {
   ctaLibrary,
   funnelStages,
   insertScriptTemplateSchema,
+  insertCtaTemplateSchema,
   type ScriptParameters,
   type GeneratedScript,
   type KnowledgeBaseDoc,
@@ -1271,6 +1272,127 @@ export async function registerRoutes(
       categories: ctaCategories,
       options: ctaOptions,
     });
+  });
+
+  // CTA Template routes
+  app.get("/api/cta/templates", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      const templates = await storage.getCtaTemplates(userId);
+      res.json(templates);
+    } catch (error) {
+      console.error("Error fetching CTA templates:", error);
+      res.status(500).json({ message: "Failed to fetch CTA templates" });
+    }
+  });
+
+  app.post("/api/cta/templates", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
+      const validatedData = insertCtaTemplateSchema.parse({
+        ...req.body,
+        userId,
+      });
+      
+      const template = await storage.createCtaTemplate(validatedData);
+      res.json(template);
+    } catch (error) {
+      console.error("Error creating CTA template:", error);
+      res.status(500).json({ message: "Failed to save CTA template" });
+    }
+  });
+
+  app.delete("/api/cta/templates/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
+      const template = await storage.getCtaTemplate(req.params.id);
+      if (!template || template.userId !== userId) {
+        return res.status(404).json({ message: "Template not found" });
+      }
+      
+      await storage.deleteCtaTemplate(req.params.id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting CTA template:", error);
+      res.status(500).json({ message: "Failed to delete CTA template" });
+    }
+  });
+
+  // Generate CTAs based on hook, problem, and solution
+  app.post("/api/cta/generate", async (req: any, res) => {
+    try {
+      const { hook, problem, solution, videoPurpose, targetAudience } = req.body;
+      
+      if (!hook || !problem || !solution) {
+        return res.status(400).json({ message: "Hook, problem, and solution are required" });
+      }
+
+      const purposeGuidance = {
+        authority: "Position the creator as an expert - CTAs should invite deeper engagement like following for more insights or commenting with questions",
+        education: "Reinforce the learning value - CTAs should encourage saving the video, sharing with others who need this, or taking immediate action",
+        storytelling: "Build emotional connection - CTAs should invite personal stories, shares, or follow-ups for part 2"
+      };
+
+      const prompt = `You are a viral short-form video CTA expert. Generate 3 unique, conversational call-to-actions based on this video's content.
+
+VIDEO CONTEXT:
+- Hook: "${hook}"
+- Problem addressed: "${problem}"
+- Core Teaching/Solution: "${solution}"
+- Video Purpose: ${videoPurpose || "general"}
+- Target Audience: ${targetAudience || "content creators"}
+
+PURPOSE GUIDANCE: ${purposeGuidance[videoPurpose as keyof typeof purposeGuidance] || "Create engagement-focused CTAs"}
+
+REQUIREMENTS:
+1. Each CTA must feel like natural spoken words, not written copy
+2. Connect directly to the solution/core teaching just provided
+3. Create urgency or emotional resonance
+4. Be 1-2 sentences max (under 15 words ideal)
+5. Sound like something a real creator would say on camera
+6. NO generic phrases like "follow for more" unless tied to specific value
+
+OUTPUT FORMAT (JSON array):
+[
+  {
+    "cta": "The actual call to action text",
+    "category": "one of: follow, engage, save, link, action, community",
+    "rationale": "Brief explanation of why this works"
+  }
+]
+
+Generate 3 CTAs now:`;
+
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [
+          { role: "system", content: "You are an expert at creating viral video CTAs. Always return valid JSON." },
+          { role: "user", content: prompt }
+        ],
+        temperature: 0.8,
+        max_tokens: 500,
+      });
+
+      const content = response.choices[0]?.message?.content || "[]";
+      const jsonMatch = content.match(/\[[\s\S]*\]/);
+      const suggestions = jsonMatch ? JSON.parse(jsonMatch[0]) : [];
+
+      res.json({ suggestions });
+    } catch (error) {
+      console.error("Error generating CTAs:", error);
+      res.status(500).json({ message: "Failed to generate CTAs" });
+    }
   });
 
   app.post("/api/scripts/generate", async (req: any, res) => {

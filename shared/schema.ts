@@ -1102,6 +1102,22 @@ export const insertScriptTemplateSchema = createInsertSchema(scriptTemplates).om
 export type InsertScriptTemplate = z.infer<typeof insertScriptTemplateSchema>;
 export type ScriptTemplate = typeof scriptTemplates.$inferSelect;
 
+// CTA Templates Table - Saved user CTA templates
+export const ctaTemplates = pgTable("cta_templates", {
+  id: varchar("id", { length: 36 }).primaryKey(),
+  userId: varchar("user_id", { length: 255 }).notNull(),
+  title: text("title").notNull(),
+  content: text("content").notNull(),
+  category: text("category").default("general"),
+  sourceContext: jsonb("source_context"),
+  usageCount: text("usage_count").default("0"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertCtaTemplateSchema = createInsertSchema(ctaTemplates).omit({ id: true, createdAt: true });
+export type InsertCtaTemplate = z.infer<typeof insertCtaTemplateSchema>;
+export type CtaTemplate = typeof ctaTemplates.$inferSelect;
+
 // Competitive Analysis Types
 export interface CompetitorVideo {
   id: string;

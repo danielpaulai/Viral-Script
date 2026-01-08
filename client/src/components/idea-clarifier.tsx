@@ -31,8 +31,8 @@ import {
   hookCategories,
   videoPurposes,
 } from "@shared/schema";
-import { useMutation } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import {
   Sparkles,
   Lightbulb,
@@ -79,6 +79,20 @@ interface GeneratedSolution {
   selected: boolean;
   edited: boolean;
   customText?: string;
+}
+
+interface GeneratedCta {
+  cta: string;
+  category: string;
+  rationale: string;
+}
+
+interface CtaTemplate {
+  id: string;
+  title: string;
+  content: string;
+  category: string | null;
+  usageCount: string | null;
 }
 
 interface IdeaClarifierProps {
@@ -130,6 +144,10 @@ export function IdeaClarifier({
   // Solution suggestions
   const [generatedSolutions, setGeneratedSolutions] = useState<GeneratedSolution[]>([]);
   const [editingSolutionId, setEditingSolutionId] = useState<string | null>(null);
+  
+  // CTA suggestions and templates
+  const [generatedCtas, setGeneratedCtas] = useState<GeneratedCta[]>([]);
+  const [savingCtaIndex, setSavingCtaIndex] = useState<number | null>(null);
 
   // Clear generated hooks when problem or solution changes
   const lastProblemRef = useRef(skeleton.problem.content);
@@ -232,6 +250,72 @@ export function IdeaClarifier({
       videoPurpose: skeleton.videoPurpose,
     });
   };
+
+  // CTA templates query
+  const ctaTemplatesQuery = useQuery<CtaTemplate[]>({
+    queryKey: ["/api/cta/templates"],
+  });
+
+  // CTA generation mutation
+  const generateCtasMutation = useMutation({
+    mutationFn: async (params: {
+      hook: string;
+      problem: string;
+      solution: string;
+      videoPurpose: string;
+      targetAudience: string;
+    }) => {
+      const response = await apiRequest("POST", "/api/cta/generate", params);
+      return await response.json() as { suggestions: GeneratedCta[] };
+    },
+    onSuccess: (data) => {
+      setGeneratedCtas(data.suggestions);
+    },
+  });
+
+  // Save CTA template mutation
+  const saveCtaTemplateMutation = useMutation({
+    mutationFn: async (params: { title: string; content: string; category?: string }) => {
+      const response = await apiRequest("POST", "/api/cta/templates", params);
+      return await response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/cta/templates"] });
+      setSavingCtaIndex(null);
+    },
+  });
+
+  // Handle CTA generation
+  const handleGenerateCtas = () => {
+    generateCtasMutation.mutate({
+      hook: skeleton.hook.content,
+      problem: skeleton.problem.content,
+      solution: skeleton.solution.content,
+      videoPurpose: skeleton.videoPurpose,
+      targetAudience: skeleton.targetAudience,
+    });
+  };
+
+  // Handle saving a CTA as template
+  const handleSaveCtaTemplate = (cta: GeneratedCta, index: number) => {
+    setSavingCtaIndex(index);
+    const title = cta.cta.length > 30 ? cta.cta.slice(0, 30) + "..." : cta.cta;
+    saveCtaTemplateMutation.mutate({
+      title,
+      content: cta.cta,
+      category: cta.category,
+    });
+  };
+
+  // Handle selecting a generated CTA
+  const handleSelectCta = (ctaText: string) => {
+    updateSection("cta", ctaText);
+  };
+
+  // Check if we can generate CTAs
+  const canGenerateCtas = skeleton.hook.content.length >= 10 && 
+    skeleton.problem.content.length >= 15 && 
+    skeleton.solution.content.length >= 20;
 
   // Toggle solution selection
   const handleToggleSolution = (id: string) => {
@@ -781,6 +865,193 @@ export function IdeaClarifier({
     );
   };
 
+  // CTA section with AI generation and templates
+  const renderCtaSection = () => {
+    const section = skeleton.cta;
+    const Icon = sectionIcons.cta;
+    const colorClass = sectionColors.cta;
+    const bgClass = sectionBgColors.cta;
+
+    return (
+      <div
+        className={`p-4 rounded-lg border ${bgClass} transition-all`}
+        data-testid="section-cta"
+      >
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <Icon className={`w-5 h-5 ${colorClass}`} />
+            <span className={`font-semibold ${colorClass}`}>{section.title}</span>
+            {section.isValid && (
+              <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
+                <Check className="w-3 h-3 mr-1" />
+                Ready
+              </Badge>
+            )}
+          </div>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button size="icon" variant="ghost" className="h-6 w-6">
+                <HelpCircle className="w-4 h-4 text-muted-foreground" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="left" className="max-w-xs">
+              <p className="text-sm">{section.guidingQuestion}</p>
+            </TooltipContent>
+          </Tooltip>
+        </div>
+
+        <p className="text-sm text-muted-foreground mb-3 italic">
+          {section.guidingQuestion}
+        </p>
+
+        {/* CTA Textarea */}
+        <Textarea
+          value={section.content}
+          onChange={(e) => updateSection("cta", e.target.value)}
+          placeholder="Write your call to action here..."
+          className="min-h-[80px] bg-background/50 border-border mb-3"
+          disabled={skeleton.isLocked}
+          data-testid="input-cta"
+        />
+
+        {section.validationMessage && !section.isValid && section.content && (
+          <p className="text-xs text-amber-400 mb-3 flex items-center gap-1">
+            <AlertTriangle className="w-3 h-3" />
+            {section.validationMessage}
+          </p>
+        )}
+
+        {/* AI Generate CTAs Button */}
+        <div className="mb-4">
+          <Button
+            onClick={handleGenerateCtas}
+            disabled={!canGenerateCtas || generateCtasMutation.isPending || skeleton.isLocked}
+            variant="outline"
+            size="sm"
+            className="w-full"
+            data-testid="button-generate-ctas"
+          >
+            {generateCtasMutation.isPending ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Generating CTAs...
+              </>
+            ) : (
+              <>
+                <Wand2 className="w-4 h-4 mr-2" />
+                Generate CTAs Based on Your Content
+              </>
+            )}
+          </Button>
+          {!canGenerateCtas && (
+            <p className="text-xs text-muted-foreground mt-1">
+              Complete hook, problem, and solution first
+            </p>
+          )}
+        </div>
+
+        {/* Generated CTAs */}
+        {generatedCtas.length > 0 && (
+          <div className="space-y-2 mb-4">
+            <Label className="text-xs font-medium">AI Suggestions:</Label>
+            <div className="space-y-2">
+              {generatedCtas.map((cta, index) => (
+                <div
+                  key={index}
+                  className={`p-3 rounded-lg border transition-all ${
+                    section.content === cta.cta
+                      ? "bg-primary/20 border-primary"
+                      : "bg-background/50 border-border"
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <button
+                      onClick={() => handleSelectCta(cta.cta)}
+                      className="flex-1 text-left hover-elevate rounded p-1 -m-1"
+                      disabled={skeleton.isLocked}
+                      data-testid={`cta-suggestion-${index}`}
+                    >
+                      <p className="text-sm font-medium mb-1">"{cta.cta}"</p>
+                      <p className="text-xs text-muted-foreground">{cta.rationale}</p>
+                    </button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => handleSaveCtaTemplate(cta, index)}
+                      disabled={saveCtaTemplateMutation.isPending && savingCtaIndex === index}
+                      className="text-xs shrink-0"
+                      data-testid={`button-save-cta-${index}`}
+                    >
+                      {saveCtaTemplateMutation.isPending && savingCtaIndex === index ? (
+                        <Loader2 className="w-3 h-3 animate-spin" />
+                      ) : (
+                        <>
+                          <Check className="w-3 h-3 mr-1" />
+                          Save
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                  <Badge variant="secondary" className="mt-2 text-xs">
+                    {cta.category}
+                  </Badge>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Saved CTA Templates */}
+        {ctaTemplatesQuery.data && ctaTemplatesQuery.data.length > 0 && (
+          <div className="space-y-2 mb-4">
+            <Label className="text-xs font-medium flex items-center gap-1">
+              <Sparkles className="w-3 h-3" />
+              Your Saved CTAs:
+            </Label>
+            <div className="flex flex-wrap gap-2">
+              {ctaTemplatesQuery.data.map((template) => (
+                <button
+                  key={template.id}
+                  onClick={() => handleSelectCta(template.content)}
+                  className={`text-xs px-3 py-2 rounded border transition-all ${
+                    section.content === template.content
+                      ? "bg-primary/20 border-primary text-foreground"
+                      : "bg-muted/50 text-muted-foreground border-border hover-elevate"
+                  }`}
+                  disabled={skeleton.isLocked}
+                  data-testid={`cta-template-${template.id}`}
+                >
+                  "{template.content.length > 40 ? template.content.slice(0, 40) + "..." : template.content}"
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Examples */}
+        <div className="mt-3">
+          <p className="text-xs text-muted-foreground mb-2 flex items-center gap-1">
+            <Lightbulb className="w-3 h-3" />
+            Examples that work:
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {section.examples.map((example, i) => (
+              <button
+                key={i}
+                onClick={() => !skeleton.isLocked && updateSection("cta", example)}
+                className="text-xs px-2 py-1 rounded bg-muted/50 text-muted-foreground hover-elevate cursor-pointer border border-border"
+                disabled={skeleton.isLocked}
+                data-testid={`example-cta-${i}`}
+              >
+                "{example}"
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const renderSectionEditor = (type: SkeletonSectionType) => {
     // Special handling for hook section
     if (type === "hook") {
@@ -794,6 +1065,13 @@ export function IdeaClarifier({
       const isActive = currentSectionType === type || showAllSections;
       if (!isActive && !showAllSections) return null;
       return renderProblemSection();
+    }
+
+    // Special handling for CTA section (with AI suggestions and templates)
+    if (type === "cta") {
+      const isActive = currentSectionType === type || showAllSections;
+      if (!isActive && !showAllSections) return null;
+      return renderCtaSection();
     }
 
     const section = skeleton[type];
