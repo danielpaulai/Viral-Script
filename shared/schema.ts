@@ -492,6 +492,7 @@ export interface ScriptParameters {
     solution: string;
     cta: string;
     targetAudience?: string;
+    videoPurpose?: string;
     isLocked: boolean;
   };
 }
@@ -555,6 +556,49 @@ export interface ContentSkeleton {
   isLocked: boolean;
 }
 
+// Video Purpose Types - determines the structure and approach
+export type VideoPurposeType = "authority" | "education" | "storytelling";
+
+export interface VideoPurpose {
+  id: VideoPurposeType;
+  name: string;
+  description: string;
+  icon: string;
+  problemGuidance: string;
+  solutionGuidance: string;
+  hookGuidance: string;
+}
+
+export const videoPurposes: VideoPurpose[] = [
+  {
+    id: "authority",
+    name: "Authority",
+    description: "Position yourself as an expert. Share unique insights, opinions, or predictions.",
+    icon: "Crown",
+    problemGuidance: "What common belief or practice in your industry is wrong or outdated?",
+    solutionGuidance: "What's your contrarian take or unique insight that proves your expertise?",
+    hookGuidance: "Challenge the status quo or make a bold claim that grabs attention",
+  },
+  {
+    id: "education", 
+    name: "Education",
+    description: "Teach something valuable. Help viewers learn a skill or understand a concept.",
+    icon: "GraduationCap",
+    problemGuidance: "What struggle or knowledge gap does your audience face?",
+    solutionGuidance: "What's the step-by-step method, framework, or technique that solves this?",
+    hookGuidance: "Promise a specific outcome or reveal a surprising truth about the topic",
+  },
+  {
+    id: "storytelling",
+    name: "Storytelling", 
+    description: "Share a personal experience. Connect emotionally through narrative.",
+    icon: "BookOpen",
+    problemGuidance: "What challenge, failure, or turning point did you experience?",
+    solutionGuidance: "What lesson, realization, or transformation came from this experience?",
+    hookGuidance: "Open with a moment of tension, curiosity, or vulnerability",
+  },
+];
+
 // Video Idea Clarifier - Mandatory 4-Section Skeleton
 export type SkeletonSectionType = "hook" | "problem" | "solution" | "cta";
 
@@ -570,6 +614,7 @@ export interface SkeletonSection {
 
 export interface VideoIdeaSkeleton {
   rawIdea: string;
+  videoPurpose: VideoPurposeType;
   hook: SkeletonSection;
   problem: SkeletonSection;
   solution: SkeletonSection;
@@ -607,13 +652,13 @@ export const skeletonValidationRules = {
   },
   solution: {
     minLength: 20,
-    maxLength: 300,
+    maxLength: 500,
     requiresSpecificity: true,
-    guidingQuestion: "What insight, shift, or method resolves the problem?",
+    guidingQuestion: "What is THE core teaching - the golden nugget your entire video is built around?",
     examples: [
-      "The 2-minute rule that changed everything",
-      "One simple reframe that removes all pressure",
-      "The exact automation stack I use daily"
+      "The 2-minute rule: If something takes less than 2 minutes, do it now instead of adding it to your to-do list",
+      "One simple reframe: Instead of asking 'what if I fail?' ask 'what if I never try?' - this removes the pressure of perfection",
+      "The 80/20 automation principle: Focus only on automating the 20% of tasks that take up 80% of your time"
     ]
   },
   cta: {
@@ -630,14 +675,17 @@ export const skeletonValidationRules = {
 };
 
 // Create empty skeleton with defaults
-export function createEmptySkeleton(rawIdea: string = "", platform: string = "tiktok", duration: string = "60"): VideoIdeaSkeleton {
+export function createEmptySkeleton(rawIdea: string = "", platform: string = "tiktok", duration: string = "60", videoPurpose: VideoPurposeType = "education"): VideoIdeaSkeleton {
+  const purpose = videoPurposes.find(p => p.id === videoPurpose) || videoPurposes[1];
+  
   return {
     rawIdea,
+    videoPurpose,
     hook: {
       type: "hook",
       title: "Hook",
       content: "",
-      guidingQuestion: skeletonValidationRules.hook.guidingQuestion,
+      guidingQuestion: purpose.hookGuidance,
       examples: skeletonValidationRules.hook.examples,
       isValid: false,
     },
@@ -645,15 +693,15 @@ export function createEmptySkeleton(rawIdea: string = "", platform: string = "ti
       type: "problem",
       title: "Problem",
       content: "",
-      guidingQuestion: skeletonValidationRules.problem.guidingQuestion,
+      guidingQuestion: purpose.problemGuidance,
       examples: skeletonValidationRules.problem.examples,
       isValid: false,
     },
     solution: {
       type: "solution",
-      title: "Solution",
+      title: "Core Teaching",
       content: "",
-      guidingQuestion: skeletonValidationRules.solution.guidingQuestion,
+      guidingQuestion: purpose.solutionGuidance,
       examples: skeletonValidationRules.solution.examples,
       isValid: false,
     },

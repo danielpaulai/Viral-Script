@@ -22,12 +22,14 @@ import {
   type VideoIdeaSkeleton,
   type SkeletonSection,
   type SkeletonSectionType,
+  type VideoPurposeType,
   createEmptySkeleton,
   validateSkeletonSection,
   calculateClarityScore,
   platformOptions,
   durationOptions,
   hookCategories,
+  videoPurposes,
 } from "@shared/schema";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
@@ -49,7 +51,16 @@ import {
   Wand2,
   Loader2,
   PenLine,
+  Crown,
+  GraduationCap,
+  BookOpen,
 } from "lucide-react";
+
+const purposeIcons: Record<VideoPurposeType, typeof Crown> = {
+  authority: Crown,
+  education: GraduationCap,
+  storytelling: BookOpen,
+};
 
 type HookMode = "write" | "generate";
 
@@ -149,6 +160,33 @@ export function IdeaClarifier({
     }
   };
 
+  // Handle video purpose change - updates guiding questions based on purpose
+  const handleVideoPurposeChange = (purposeId: VideoPurposeType) => {
+    const purpose = videoPurposes.find(p => p.id === purposeId);
+    if (!purpose) return;
+    
+    setSkeleton(prev => ({
+      ...prev,
+      videoPurpose: purposeId,
+      problem: {
+        ...prev.problem,
+        guidingQuestion: purpose.problemGuidance,
+      },
+      solution: {
+        ...prev.solution,
+        guidingQuestion: purpose.solutionGuidance,
+      },
+      hook: {
+        ...prev.hook,
+        guidingQuestion: purpose.hookGuidance,
+      },
+    }));
+    // Clear generated content when purpose changes
+    setGeneratedSolutions([]);
+    setGeneratedHooks([]);
+    setSelectedHookId(null);
+  };
+
   // Hook generation mutation
   const generateHooksMutation = useMutation({
     mutationFn: async (params: {
@@ -158,6 +196,7 @@ export function IdeaClarifier({
       targetAudience: string;
       platform: string;
       duration: string;
+      videoPurpose: string;
     }) => {
       const response = await apiRequest("POST", "/api/hooks/generate", params);
       return await response.json() as { hooks: GeneratedHook[]; style: string; styleName: string };
@@ -174,6 +213,7 @@ export function IdeaClarifier({
       problem: string;
       targetAudience: string;
       platform: string;
+      videoPurpose: string;
     }) => {
       const response = await apiRequest("POST", "/api/solutions/generate", params);
       return await response.json() as { solutions: GeneratedSolution[]; problem: string };
@@ -189,6 +229,7 @@ export function IdeaClarifier({
       problem: skeleton.problem.content,
       targetAudience: skeleton.targetAudience,
       platform: skeleton.platform,
+      videoPurpose: skeleton.videoPurpose,
     });
   };
 
@@ -280,23 +321,13 @@ export function IdeaClarifier({
       targetAudience: skeleton.targetAudience,
       platform: skeleton.platform,
       duration: skeleton.duration,
+      videoPurpose: skeleton.videoPurpose,
     });
   };
 
   // Check if we can generate hooks (need BOTH problem AND solution content)
   const canGenerateHooks = skeleton.problem.content.length > 10 && skeleton.solution.content.length > 10;
   const problemSolutionReady = skeleton.problem.isValid && skeleton.solution.isValid;
-  
-  // Debug logging for validation issues
-  console.log("[Hook Validation]", {
-    problemIsValid: skeleton.problem.isValid,
-    problemValidationMsg: skeleton.problem.validationMessage,
-    problemContentLength: skeleton.problem.content.length,
-    solutionIsValid: skeleton.solution.isValid,
-    solutionValidationMsg: skeleton.solution.validationMessage,
-    solutionContentLength: skeleton.solution.content.length,
-    problemSolutionReady,
-  });
 
   const canProceedToNext = useMemo(() => {
     const section = skeleton[currentSectionType];
@@ -878,6 +909,40 @@ export function IdeaClarifier({
         <p className="text-xs text-muted-foreground mt-1">
           {skeleton.clarityScore < 70 ? "Complete all sections to unlock script generation" : "Your idea is clear enough to generate a script!"}
         </p>
+      </div>
+
+      {/* Video Purpose Selector */}
+      <div className="mb-4">
+        <Label className="text-xs font-medium mb-2 block">What type of video is this?</Label>
+        <div className="grid grid-cols-3 gap-2">
+          {videoPurposes.map((purpose) => {
+            const Icon = purposeIcons[purpose.id];
+            const isSelected = skeleton.videoPurpose === purpose.id;
+            return (
+              <button
+                key={purpose.id}
+                onClick={() => !skeleton.isLocked && handleVideoPurposeChange(purpose.id)}
+                className={`p-3 rounded-lg border text-left transition-all ${
+                  isSelected
+                    ? "bg-primary/20 border-primary"
+                    : "bg-muted/30 border-border hover-elevate"
+                }`}
+                disabled={skeleton.isLocked}
+                data-testid={`purpose-${purpose.id}`}
+              >
+                <div className="flex items-center gap-2 mb-1">
+                  <Icon className={`w-4 h-4 ${isSelected ? "text-primary" : "text-muted-foreground"}`} />
+                  <span className={`text-sm font-medium ${isSelected ? "text-primary" : ""}`}>
+                    {purpose.name}
+                  </span>
+                </div>
+                <p className="text-xs text-muted-foreground leading-tight">
+                  {purpose.description}
+                </p>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       <div className="grid grid-cols-2 gap-3 mb-4">

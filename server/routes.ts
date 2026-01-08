@@ -762,29 +762,45 @@ ${referenceInstructions}`;
   // Build skeleton context if provided (supports both legacy contentSkeleton and new videoIdeaSkeleton)
   let skeletonContext = "";
   
+  // Video purpose context for script generation
+  const videoPurposeGuidance: Record<string, string> = {
+    authority: "This is an AUTHORITY video. The creator is positioning themselves as an expert. The tone should be confident and opinionated. Lead with the bold insight.",
+    education: "This is an EDUCATION video. The creator is teaching something valuable. The core teaching is the main event - explain it thoroughly with steps, examples, or proof points.",
+    storytelling: "This is a STORYTELLING video. The creator is sharing a personal experience. The core teaching is the lesson learned - weave it naturally through the narrative.",
+  };
+  
   // New VideoIdeaSkeleton format from IdeaClarifier
   if (params.videoIdeaSkeleton) {
     const skeleton = params.videoIdeaSkeleton;
+    const purposeGuide = skeleton.videoPurpose ? videoPurposeGuidance[skeleton.videoPurpose] || "" : "";
+    
     skeletonContext = `
 === LOCKED VIDEO IDEA SKELETON - FOLLOW THIS STRUCTURE EXACTLY ===
 This skeleton has been carefully refined by the user. Follow it precisely.
+${purposeGuide ? `\nVIDEO PURPOSE: ${skeleton.videoPurpose?.toUpperCase()}\n${purposeGuide}` : ""}
 
-**HOOK** (First 3 seconds - must stop the scroll)
+**HOOK** (First 3 seconds - must stop the scroll. SPEAK it, don't read it.)
 ${skeleton.hook}
 
-**PROBLEM** (The pain point your audience relates to)
+**PROBLEM** (The pain point - mention it briefly to set up the teaching)
 ${skeleton.problem}
 
-**SOLUTION** (The value you're delivering)
+**CORE TEACHING / SOLUTION** (THIS IS THE HEART OF THE SCRIPT)
 ${skeleton.solution}
+
+CRITICAL - HOW TO USE THE CORE TEACHING:
+1. The Core Teaching above is THE main content of the video - NOT just a one-liner to mention and move on
+2. EXPAND on it: Explain WHY it works, HOW to do it, or PROVE it with examples/stats
+3. Spend 60-70% of the script body elaborating on this teaching
+4. Do NOT just copy-paste the teaching and then add unrelated "fluff" like trends or case studies
+5. Every sentence in the body should connect back to this core teaching
 
 **CTA** (Call to action - what you want them to do)
 ${skeleton.cta}
 
 TARGET AUDIENCE: ${skeleton.targetAudience || "Content creators and entrepreneurs"}
 
-IMPORTANT: You MUST follow this Hook → Problem → Solution → CTA structure exactly.
-Do NOT deviate from the skeleton content. Expand and polish it, but keep the core message.
+STRUCTURE: Hook → Brief Problem → CORE TEACHING (most of the video) → CTA
 === END VIDEO IDEA SKELETON ===
 `;
   }
@@ -2178,7 +2194,7 @@ DO NOT make up fake statistics. Use the research data provided, or clearly state
   // Generate multiple hook options based on style and content
   app.post("/api/hooks/generate", async (req, res) => {
     try {
-      const { hookStyle, problem, solution, targetAudience, platform, duration } = req.body;
+      const { hookStyle, problem, solution, targetAudience, platform, duration, videoPurpose } = req.body;
       
       if (!hookStyle || (!problem && !solution)) {
         return res.status(400).json({ error: "Hook style and at least problem or solution content required" });
@@ -2188,39 +2204,71 @@ DO NOT make up fake statistics. Use the research data provided, or clearly state
       const hookCategory = hookCategories.find(c => c.id === hookStyle);
       const hookExamples = viralHooks.filter(h => h.category === hookStyle).slice(0, 3);
       
-      const systemPrompt = `You are an expert viral content hook writer. Generate 4 unique, attention-grabbing hooks for a short-form video.
+      // Video purpose context
+      const purposeContext: Record<string, string> = {
+        authority: "This is an AUTHORITY video - the creator is establishing expertise with a bold opinion or unique insight",
+        education: "This is an EDUCATION video - the creator is teaching something valuable to help viewers learn",
+        storytelling: "This is a STORYTELLING video - the creator is sharing a personal experience to connect emotionally",
+      };
+      
+      const systemPrompt = `You are an expert at writing CONVERSATIONAL video hooks that sound like someone is actually TALKING to the viewer, not reading a title or headline.
+
+CRITICAL: Your hooks must sound SPOKEN, not written. They should feel like:
+- A friend grabbing your attention in a conversation
+- Someone starting a voice memo to you
+- The first thing someone says when they sit down next to you
+
+AVOID hooks that sound like:
+- Article headlines or blog post titles
+- Marketing copy or ad slogans
+- Cheat sheet titles or course names
+- Formal or written language
+
+${videoPurpose ? purposeContext[videoPurpose] || '' : ''}
 
 HOOK STYLE: ${hookCategory?.name || hookStyle}
 STYLE DESCRIPTION: ${hookCategory?.description || "Create engaging hooks"}
 
-EXAMPLE HOOKS IN THIS STYLE:
-${hookExamples.map((h, i) => `${i + 1}. Template: "${h.template}"\n   Example: "${h.example}"\n   Why it works: ${h.why}`).join('\n\n')}
+CONVERSATIONAL HOOK EXAMPLES (notice how they sound SPOKEN):
+- "If you're still using ChatGPT or Gemini, you are lost as a founder. Try these tools instead."
+- "I lost $50K following this 'expert' advice - here's what I wish I knew."
+- "Okay so I tested this AI tool for 30 days and honestly? I'm a little freaked out."
+- "Stop. If you're about to post a reel, you need to hear this first."
+- "I'm going to tell you something your marketing coach won't."
+
+${hookExamples.length > 0 ? `STYLE-SPECIFIC EXAMPLES:
+${hookExamples.map((h, i) => `${i + 1}. Template: "${h.template}"\n   Example: "${h.example}"`).join('\n\n')}` : ''}
 
 RULES:
-1. Each hook must be 1-2 sentences MAX (under 15 words ideally)
-2. Hooks must create curiosity, urgency, or pattern interruption
-3. Match the selected hook style closely
-4. Make hooks SPECIFIC to the problem/solution provided
-5. Vary the approach - give distinctly different options
-6. Consider the platform (${platform || 'TikTok'}) and duration (${duration || '60s'})
+1. Hooks must sound CONVERSATIONAL - like someone is TALKING directly to the viewer
+2. Use contractions (you're, I'm, don't, can't, won't, here's)
+3. Use casual speech patterns ("Okay so...", "Look,", "Here's the thing...", "I'm going to...")
+4. Maximum 1-2 sentences (under 20 words ideally)
+5. Create curiosity, tension, or a reason to keep watching
+6. Make it SPECIFIC to the problem/solution - not generic
+7. Vary the approach - give 4 distinctly different conversational hooks
+8. Consider the platform (${platform || 'TikTok'}) - shorter for TikTok, can be slightly longer for YouTube
 
 Respond with a JSON array of exactly 4 hooks:
 [
-  {"hook": "The hook text", "reasoning": "Why this hook works for this content"},
-  {"hook": "Another hook", "reasoning": "Explanation"},
+  {"hook": "The conversational hook text", "reasoning": "Why this grabs attention and sounds spoken"},
+  {"hook": "Another option", "reasoning": "Explanation"},
   {"hook": "Third option", "reasoning": "Explanation"},
   {"hook": "Fourth option", "reasoning": "Explanation"}
 ]`;
 
-      const userPrompt = `Generate 4 hooks for this video:
+      const userPrompt = `Generate 4 CONVERSATIONAL hooks for this video:
 
+VIDEO TYPE: ${videoPurpose || 'education'}
 PROBLEM the video addresses: ${problem || 'Not specified'}
-SOLUTION the video offers: ${solution || 'Not specified'}
+SOLUTION/TEACHING the video offers: ${solution || 'Not specified'}
 TARGET AUDIENCE: ${targetAudience || 'General creators'}
 PLATFORM: ${platform || 'TikTok'}
 DURATION: ${duration || '60s'}
 
-Create 4 distinctly different hooks in the "${hookCategory?.name || hookStyle}" style. Each should grab attention in the first 3 seconds.`;
+Create 4 distinctly different hooks in the "${hookCategory?.name || hookStyle}" style. 
+Remember: Each hook should sound like someone TALKING to the viewer, not a written title or headline.
+Start with words like: "If you're...", "Okay so...", "Look,", "I'm going to...", "Stop.", "Here's the thing...", etc.`;
 
       const response = await openai.chat.completions.create({
         model: "gpt-4o-mini",
@@ -2268,35 +2316,47 @@ Create 4 distinctly different hooks in the "${hookCategory?.name || hookStyle}" 
   // Generate solution suggestions based on problem
   app.post("/api/solutions/generate", async (req, res) => {
     try {
-      const { problem, targetAudience, platform } = req.body;
+      const { problem, targetAudience, platform, videoPurpose } = req.body;
       
       if (!problem || problem.trim().length < 10) {
         return res.status(400).json({ error: "Problem description required (at least 10 characters)" });
       }
 
-      const systemPrompt = `You are an expert content strategist helping creators develop solutions for their audience's problems.
+      // Video purpose context for solution generation
+      const purposeGuidance: Record<string, string> = {
+        authority: "For an AUTHORITY video, the solution should be a bold opinion, unique insight, or prediction that positions the creator as an expert. Focus on contrarian takes or insider knowledge.",
+        education: "For an EDUCATION video, the solution should be a clear, teachable method, framework, or technique that viewers can apply immediately. Focus on practical, step-by-step value.",
+        storytelling: "For a STORYTELLING video, the solution should be a lesson, realization, or transformation that came from personal experience. Focus on emotional takeaways and relatable wisdom.",
+      };
 
-Generate 4 unique, actionable solution ideas that directly address the given problem. Each solution should be:
-- Specific and actionable (not vague)
-- Something that can be explained in a 15-60 second video
-- Valuable to the target audience
-- Different from each other (variety in approach)
+      const systemPrompt = `You are an expert content strategist helping creators develop their "CORE TEACHING" or "GOLDEN NUGGET" - the single most valuable insight that will be the heart of their video.
+
+This is NOT just a vague solution - it's THE key teaching that the entire script will revolve around. The script will spend most of its time expanding on, explaining, and proving this core teaching.
+
+Generate 4 unique CORE TEACHING ideas that directly address the given problem. Each should be:
+- The ONE key insight or method that solves the problem (not multiple tips)
+- Specific and concrete enough to build an entire video around
+- Something that can be explained with examples, steps, or proof points
+- The "aha moment" that viewers will remember and share
+
+${videoPurpose ? purposeGuidance[videoPurpose] || '' : ''}
 
 Return ONLY a JSON array with this format:
 [
   {
     "id": "sol_1",
-    "headline": "Short 5-8 word summary",
-    "description": "2-3 sentence explanation of the solution and why it works",
-    "angle": "The unique angle or approach (e.g., 'quick hack', 'mindset shift', 'step-by-step', 'counterintuitive')"
+    "headline": "Short 5-8 word summary of the core teaching",
+    "description": "2-3 sentence explanation of what the viewer will learn and why it's valuable",
+    "angle": "The unique angle (e.g., 'quick hack', 'mindset shift', 'step-by-step', 'counterintuitive', 'insider secret')"
   }
 ]`;
 
       const userPrompt = `PROBLEM: ${problem}
+${videoPurpose ? `VIDEO TYPE: ${videoPurpose}` : ''}
 ${targetAudience ? `TARGET AUDIENCE: ${targetAudience}` : ''}
 ${platform ? `PLATFORM: ${platform}` : ''}
 
-Generate 4 solution ideas that would make great short-form video content addressing this problem.`;
+Generate 4 CORE TEACHING ideas - each should be THE central insight that an entire video script would be built around. Not a list of tips, but ONE key teaching that delivers real value.`;
 
       const response = await openai.chat.completions.create({
         model: "gpt-4o-mini",
