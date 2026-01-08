@@ -180,19 +180,9 @@ export function SkeletonEnhancer({
             Review and refine with AI research and competitor insights
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={onBack} data-testid="button-back-to-skeleton">
-            Back to Edit
-          </Button>
-          <Button
-            onClick={handleContinue}
-            disabled={isLoading}
-            data-testid="button-generate-script"
-          >
-            Generate Script
-            <ArrowRight className="w-4 h-4 ml-2" />
-          </Button>
-        </div>
+        <Button variant="outline" onClick={onBack} data-testid="button-back-to-skeleton">
+          Back to Edit
+        </Button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -524,6 +514,20 @@ export function SkeletonEnhancer({
             </Card>
           )}
         </div>
+      </div>
+
+      {/* Generate Script button at the bottom */}
+      <div className="flex justify-end pt-4 border-t border-border">
+        <Button
+          onClick={handleContinue}
+          disabled={isLoading}
+          size="lg"
+          data-testid="button-generate-script"
+        >
+          <Sparkles className="w-4 h-4 mr-2" />
+          Generate Script
+          <ArrowRight className="w-4 h-4 ml-2" />
+        </Button>
       </div>
     </div>
   );
