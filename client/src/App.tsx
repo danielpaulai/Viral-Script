@@ -9,6 +9,7 @@ import { AppSidebar } from "@/components/app-sidebar";
 import { AuthProvider, useAuth } from "@/hooks/use-auth";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { CreditsDisplay } from "@/components/credits-display";
 import Home from "@/pages/home";
 import Scripts from "@/pages/scripts";
 import Projects from "@/pages/projects";
@@ -67,10 +68,11 @@ function AuthenticatedApp() {
             <SidebarTrigger data-testid="button-sidebar-toggle" />
             <ThemeToggle />
           </header>
-          <main className="flex-1">
+          <main className="flex-1 pb-12">
             <AuthenticatedRouter />
           </main>
         </SidebarInset>
+        <CreditsDisplay />
       </div>
     </SidebarProvider>
   );
