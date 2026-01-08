@@ -5,13 +5,23 @@
 Video Idea Clarifier is a professional short-form video content planning tool designed for content creators. The core value proposition is converting raw ideas into crystal-clear video structures through a mandatory Content Skeleton process (Hook → Problem → Solution → CTA). Script generation is a secondary output, positioning the app as a thinking partner that teaches strategic video planning rather than just a script typing tool.
 
 ### New: Idea Clarifier Wizard
-The app now features a mandatory 4-step idea clarification process:
-1. **Hook**: Define your attention-grabbing opening (first 3 seconds)
-2. **Problem**: Articulate the pain point your audience relates to
-3. **Solution**: Describe the value you're delivering
-4. **CTA**: Specify what action you want viewers to take
+The app now features a purpose-driven video planning process:
 
-Each section is validated to prevent vague language patterns (e.g., "something," "maybe," "I think"). A clarity score (0-100) must reach 70% before script generation unlocks. Advanced users can toggle to the legacy flow with full customization options.
+**Step 0: Video Purpose Selection**
+Users first choose their video's primary purpose:
+- **Authority**: Bold opinions and unique perspectives that position you as a thought leader
+- **Education**: Teachable frameworks and actionable methods viewers can implement
+- **Storytelling**: Personal experiences with lessons that create emotional connection
+
+Each purpose dynamically adjusts guiding questions throughout the wizard.
+
+**Steps 1-4: Content Skeleton (Problem → Core Teaching → Hook → CTA)**
+1. **Problem**: Define the specific pain point your audience relates to
+2. **Core Teaching**: The single "golden nugget" insight - the real value of your video (not a one-liner, but the complete teaching)
+3. **Hook**: AI-generated conversational hooks that sound spoken, not like headlines
+4. **CTA**: What action you want viewers to take
+
+Each section is validated to prevent vague language patterns. A clarity score must reach 70% before script generation unlocks. The final script spends 60-70% of its body elaborating on the Core Teaching.
 
 ## User Preferences
 
