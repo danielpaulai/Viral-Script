@@ -311,7 +311,7 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
     <Card className="p-6 glass-card rounded-md" data-testid="card-script-output">
       <div className="flex items-center justify-between mb-6 gap-4 flex-wrap">
         <div>
-          <h2 className="text-lg font-semibold mb-1 text-white" data-testid="text-output-title">Generated Script</h2>
+          <h2 className="text-lg font-semibold mb-1 text-foreground" data-testid="text-output-title">Generated Script</h2>
           <div className="flex items-center gap-3 text-sm text-muted-foreground flex-wrap">
             <span data-testid="text-word-count">{displayWordCount} words</span>
             <span className="hidden sm:inline">|</span>
@@ -348,7 +348,7 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
               variant="outline"
               size="sm"
               onClick={() => setShowResearch(!showResearch)}
-              className="bg-white/5 border-white/10"
+              className="bg-muted/50 border-border"
               data-testid="button-show-research"
             >
               <BookOpen className="w-4 h-4 mr-1 text-blue-400" />
@@ -359,7 +359,7 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
             variant="outline"
             size="sm"
             onClick={() => setShowEnhanceOptions(!showEnhanceOptions)}
-            className="bg-white/5 border-white/10"
+            className="bg-muted/50 border-border"
             data-testid="button-enhance-script"
             disabled={enhanceScriptMutation.isPending}
           >
@@ -371,7 +371,7 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
             variant="outline"
             size="sm"
             onClick={() => setShowHookSelector(!showHookSelector)}
-            className="bg-white/5 border-white/10"
+            className="bg-muted/50 border-border"
             data-testid="button-change-hook"
           >
             <Zap className="w-4 h-4 mr-1 text-primary" />
@@ -382,7 +382,7 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
             variant="outline"
             size="sm"
             onClick={() => setShowAnalysis(!showAnalysis)}
-            className="bg-white/5 border-white/10"
+            className="bg-muted/50 border-border"
             data-testid="button-show-analysis"
           >
             <BarChart3 className="w-4 h-4 mr-1" />
@@ -439,7 +439,7 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
           
           {boostImprovements && (
             <div className="grid grid-cols-2 gap-3 mb-3">
-              <div className="p-2 rounded bg-white/5 border border-white/10">
+              <div className="p-2 rounded bg-muted/50 border border-border">
                 <p className="text-[10px] text-muted-foreground uppercase mb-1">Grade Level</p>
                 <div className="flex items-center gap-2">
                   <span className="text-sm text-red-400">{boostImprovements.gradeLevelBefore}</span>
@@ -447,7 +447,7 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
                   <span className="text-sm text-green-400 font-bold">{boostImprovements.gradeLevelAfter}</span>
                 </div>
               </div>
-              <div className="p-2 rounded bg-white/5 border border-white/10">
+              <div className="p-2 rounded bg-muted/50 border border-border">
                 <p className="text-[10px] text-muted-foreground uppercase mb-1">Hook Strength</p>
                 <div className="flex items-center gap-2">
                   <span className="text-sm text-red-400">{boostImprovements.hookStrengthBefore}/10</span>
@@ -463,7 +463,7 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
               <div key={i} className="flex items-start gap-2 text-xs">
                 <Check className="w-3 h-3 text-green-400 mt-0.5 flex-shrink-0" />
                 <div>
-                  <span className="font-medium text-white">{suggestion.area}:</span>{" "}
+                  <span className="font-medium text-foreground">{suggestion.area}:</span>{" "}
                   <span className="text-muted-foreground">{suggestion.fix}</span>
                 </div>
               </div>
@@ -477,7 +477,7 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
         <div className="mb-6 p-4 rounded-md bg-blue-500/10 border border-blue-500/20">
           <div className="flex items-center gap-2 mb-3">
             <BookOpen className="w-4 h-4 text-blue-400" />
-            <h3 className="text-sm font-medium text-white">Research Findings</h3>
+            <h3 className="text-sm font-medium text-foreground">Research Findings</h3>
           </div>
           <div className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">
             {script.research}
@@ -490,7 +490,7 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
         <div className="mb-6 p-4 rounded-md bg-purple-500/10 border border-purple-500/20">
           <div className="flex items-center gap-2 mb-3">
             <Wand2 className="w-4 h-4 text-purple-400" />
-            <h3 className="text-sm font-medium text-white">Enhance Your Script</h3>
+            <h3 className="text-sm font-medium text-foreground">Enhance Your Script</h3>
           </div>
           <p className="text-xs text-muted-foreground mb-4">
             Choose how you want AI to improve your script
@@ -499,51 +499,51 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
             <button
               onClick={() => enhanceScriptMutation.mutate('punchier')}
               disabled={enhanceScriptMutation.isPending}
-              className="p-3 rounded-md bg-white/5 border border-white/10 text-left hover-elevate active-elevate-2"
+              className="p-3 rounded-md bg-muted/50 border border-border text-left hover-elevate active-elevate-2"
               data-testid="button-enhance-punchier"
             >
               <Zap className="w-4 h-4 text-yellow-400 mb-1" />
-              <p className="text-xs font-medium text-white">Punchier</p>
+              <p className="text-xs font-medium text-foreground">Punchier</p>
               <p className="text-[10px] text-muted-foreground">More energy</p>
             </button>
             <button
               onClick={() => enhanceScriptMutation.mutate('clearer')}
               disabled={enhanceScriptMutation.isPending}
-              className="p-3 rounded-md bg-white/5 border border-white/10 text-left hover-elevate active-elevate-2"
+              className="p-3 rounded-md bg-muted/50 border border-border text-left hover-elevate active-elevate-2"
               data-testid="button-enhance-clearer"
             >
               <Target className="w-4 h-4 text-green-400 mb-1" />
-              <p className="text-xs font-medium text-white">Clearer</p>
+              <p className="text-xs font-medium text-foreground">Clearer</p>
               <p className="text-[10px] text-muted-foreground">Simpler words</p>
             </button>
             <button
               onClick={() => enhanceScriptMutation.mutate('storytelling')}
               disabled={enhanceScriptMutation.isPending}
-              className="p-3 rounded-md bg-white/5 border border-white/10 text-left hover-elevate active-elevate-2"
+              className="p-3 rounded-md bg-muted/50 border border-border text-left hover-elevate active-elevate-2"
               data-testid="button-enhance-storytelling"
             >
               <MessageSquare className="w-4 h-4 text-blue-400 mb-1" />
-              <p className="text-xs font-medium text-white">Story Mode</p>
+              <p className="text-xs font-medium text-foreground">Story Mode</p>
               <p className="text-[10px] text-muted-foreground">More narrative</p>
             </button>
             <button
               onClick={() => enhanceScriptMutation.mutate('engagement')}
               disabled={enhanceScriptMutation.isPending}
-              className="p-3 rounded-md bg-white/5 border border-white/10 text-left hover-elevate active-elevate-2"
+              className="p-3 rounded-md bg-muted/50 border border-border text-left hover-elevate active-elevate-2"
               data-testid="button-enhance-engagement"
             >
               <TrendingUp className="w-4 h-4 text-red-400 mb-1" />
-              <p className="text-xs font-medium text-white">Engagement</p>
+              <p className="text-xs font-medium text-foreground">Engagement</p>
               <p className="text-[10px] text-muted-foreground">More hooks</p>
             </button>
             <button
               onClick={() => enhanceScriptMutation.mutate('general')}
               disabled={enhanceScriptMutation.isPending}
-              className="p-3 rounded-md bg-white/5 border border-white/10 text-left hover-elevate active-elevate-2"
+              className="p-3 rounded-md bg-muted/50 border border-border text-left hover-elevate active-elevate-2"
               data-testid="button-enhance-general"
             >
               <Wand2 className="w-4 h-4 text-purple-400 mb-1" />
-              <p className="text-xs font-medium text-white">Auto Improve</p>
+              <p className="text-xs font-medium text-foreground">Auto Improve</p>
               <p className="text-[10px] text-muted-foreground">Best of all</p>
             </button>
           </div>
@@ -551,17 +551,17 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
       )}
 
       {showHookSelector && (
-        <div className="mb-6 p-4 rounded-md bg-white/5 border border-white/10">
+        <div className="mb-6 p-4 rounded-md bg-muted/50 border border-border">
           <div className="flex items-center gap-2 mb-3">
             <Lightbulb className="w-4 h-4 text-primary" />
-            <h3 className="text-sm font-medium text-white">Select a Viral Hook Style</h3>
+            <h3 className="text-sm font-medium text-foreground">Select a Viral Hook Style</h3>
           </div>
           <p className="text-xs text-muted-foreground mb-4">
             Choose from 50 proven viral hooks to change how your script opens
           </p>
           
           <Select value={selectedHook || ""} onValueChange={handleHookChange}>
-            <SelectTrigger className="bg-white/5 border-white/10 mb-4" data-testid="select-hook-style">
+            <SelectTrigger className="bg-muted/50 border-border mb-4" data-testid="select-hook-style">
               <SelectValue placeholder="Browse 50 viral hooks..." />
             </SelectTrigger>
             <SelectContent className="max-h-80">
@@ -587,15 +587,15 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
                 <Badge variant="outline" className="text-primary border-primary/30">
                   {hookCategories.find(c => c.id === currentHook.category)?.name}
                 </Badge>
-                <span className="text-sm font-medium text-white">{currentHook.name}</span>
+                <span className="text-sm font-medium text-foreground">{currentHook.name}</span>
               </div>
               <div>
                 <p className="text-xs text-muted-foreground mb-1">TEMPLATE</p>
-                <p className="text-sm text-white/80 italic">"{currentHook.template}"</p>
+                <p className="text-sm text-muted-foreground italic">"{currentHook.template}"</p>
               </div>
               <div>
                 <p className="text-xs text-muted-foreground mb-1">EXAMPLE</p>
-                <p className="text-sm text-white font-medium">"{currentHook.example}"</p>
+                <p className="text-sm text-foreground font-medium">"{currentHook.example}"</p>
               </div>
               <div>
                 <p className="text-xs text-muted-foreground mb-1">WHY IT WORKS</p>
@@ -613,10 +613,10 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
                     const firstHook = viralHooks.find(h => h.category === cat.id);
                     if (firstHook) handleHookChange(firstHook.id);
                   }}
-                  className="p-3 rounded-md bg-white/5 border border-white/10 text-left hover-elevate active-elevate-2"
+                  className="p-3 rounded-md bg-muted/50 border border-border text-left hover-elevate active-elevate-2"
                   data-testid={`button-hook-category-${cat.id}`}
                 >
-                  <p className="text-xs font-medium text-white">{cat.name}</p>
+                  <p className="text-xs font-medium text-foreground">{cat.name}</p>
                   <p className="text-[10px] text-muted-foreground mt-0.5">
                     {viralHooks.filter(h => h.category === cat.id).length} hooks
                   </p>
@@ -628,8 +628,8 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
       )}
 
       {showAnalysis && (
-        <div className="mb-6 p-4 rounded-md bg-white/5 border border-white/10">
-          <h3 className="text-sm font-medium mb-3 text-white">Readability Analysis</h3>
+        <div className="mb-6 p-4 rounded-md bg-muted/50 border border-border">
+          <h3 className="text-sm font-medium mb-3 text-foreground">Readability Analysis</h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div>
               <p className="text-xs text-muted-foreground mb-1">Grade Level</p>
@@ -639,11 +639,11 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
             </div>
             <div>
               <p className="text-xs text-muted-foreground mb-1">Word Count</p>
-              <p className="text-2xl font-bold text-white" data-testid="stat-words">{script.wordCount}</p>
+              <p className="text-2xl font-bold text-foreground" data-testid="stat-words">{script.wordCount}</p>
             </div>
             <div>
               <p className="text-xs text-muted-foreground mb-1">Est. Duration</p>
-              <p className="text-2xl font-bold text-white" data-testid="stat-duration">
+              <p className="text-2xl font-bold text-foreground" data-testid="stat-duration">
                 {Math.round(script.wordCount / 2.5)}s
               </p>
             </div>
@@ -658,7 +658,7 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
       )}
 
       <Tabs defaultValue="script" className="mb-6">
-        <TabsList className="bg-white/5 border border-white/10">
+        <TabsList className="bg-muted/50 border border-border">
           <TabsTrigger value="script" className="gap-2" data-testid="tab-script">
             <FileText className="w-4 h-4" />
             Script
@@ -676,7 +676,7 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Zap className="w-4 h-4 text-primary" />
-                  <span className="text-sm font-semibold text-white">
+                  <span className="text-sm font-semibold text-foreground">
                     HOOK #{viralHooks.findIndex(h => h.id === (selectedHook || script.parameters.hook)) + 1}: {(currentHook || viralHooks.find(h => h.id === script.parameters.hook))?.name}
                   </span>
                 </div>
@@ -692,10 +692,10 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
                 </Button>
               </div>
               <div className="text-xs text-muted-foreground">
-                <span className="font-medium text-white/80">Template:</span> "{(currentHook || viralHooks.find(h => h.id === script.parameters.hook))?.template}"
+                <span className="font-medium text-muted-foreground">Template:</span> "{(currentHook || viralHooks.find(h => h.id === script.parameters.hook))?.template}"
               </div>
               <div className="text-xs text-muted-foreground">
-                <span className="font-medium text-white/80">Applied:</span> "{customHookLine || script.script.split('\n')[0]}"
+                <span className="font-medium text-muted-foreground">Applied:</span> "{customHookLine || script.script.split('\n')[0]}"
               </div>
             </div>
           )}
@@ -712,7 +712,7 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
               return (
                 <>
                   {/* Hook Section */}
-                  <div className="p-4 rounded-md bg-white/5 border border-white/10">
+                  <div className="p-4 rounded-md bg-muted/50 border border-border">
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-xs font-semibold text-primary uppercase tracking-wider">Hook</span>
                       <Button
@@ -725,11 +725,11 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
                         <Copy className="w-3 h-3" />
                       </Button>
                     </div>
-                    <p className="font-mono text-sm text-white/90 leading-relaxed">{hookLine}</p>
+                    <p className="font-mono text-sm text-foreground leading-relaxed">{hookLine}</p>
                   </div>
 
                   {/* Body Section */}
-                  <div className="p-4 rounded-md bg-white/5 border border-white/10">
+                  <div className="p-4 rounded-md bg-muted/50 border border-border">
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Body</span>
                       <Button
@@ -742,11 +742,11 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
                         <Copy className="w-3 h-3" />
                       </Button>
                     </div>
-                    <p className="font-mono text-sm text-white/90 whitespace-pre-wrap leading-relaxed">{bodyLines}</p>
+                    <p className="font-mono text-sm text-foreground whitespace-pre-wrap leading-relaxed">{bodyLines}</p>
                   </div>
 
                   {/* CTA Section */}
-                  <div className="p-4 rounded-md bg-white/5 border border-white/10">
+                  <div className="p-4 rounded-md bg-muted/50 border border-border">
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-xs font-semibold text-green-500 uppercase tracking-wider">Call to Action</span>
                       <Button
@@ -759,7 +759,7 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
                         <Copy className="w-3 h-3" />
                       </Button>
                     </div>
-                    <p className="font-mono text-sm text-white/90 leading-relaxed">{ctaLine}</p>
+                    <p className="font-mono text-sm text-foreground leading-relaxed">{ctaLine}</p>
                   </div>
                 </>
               );
@@ -771,22 +771,22 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
           <div className="space-y-4">
             {/* Scene Breakdown */}
             {script.scenes && script.scenes.length > 0 && (
-              <div className="p-4 rounded-md bg-white/5 border border-white/10">
+              <div className="p-4 rounded-md bg-muted/50 border border-border">
                 <div className="flex items-center gap-2 mb-4">
                   <Clapperboard className="w-4 h-4 text-primary" />
-                  <h4 className="text-sm font-semibold text-white uppercase tracking-wider">Scene Breakdown</h4>
+                  <h4 className="text-sm font-semibold text-foreground uppercase tracking-wider">Scene Breakdown</h4>
                 </div>
                 <div className="space-y-3">
                   {script.scenes.map((scene, index) => (
-                    <div key={index} className="p-3 rounded-md bg-white/5 border-l-2 border-primary" data-testid={`scene-${index}`}>
+                    <div key={index} className="p-3 rounded-md bg-muted/50 border-l-2 border-primary" data-testid={`scene-${index}`}>
                       <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
                         <div className="flex items-center gap-2">
                           <Badge className="bg-primary/20 text-primary border-0">{scene.section}</Badge>
                           <span className="text-xs text-muted-foreground font-mono">{scene.duration}</span>
                         </div>
-                        <Badge variant="outline" className="text-xs border-white/20">{scene.energy}</Badge>
+                        <Badge variant="outline" className="text-xs border-border">{scene.energy}</Badge>
                       </div>
-                      <p className="text-sm text-white/80 mb-2 line-clamp-2 leading-relaxed">{scene.lines}</p>
+                      <p className="text-sm text-muted-foreground mb-2 line-clamp-2 leading-relaxed">{scene.lines}</p>
                       <div className="flex items-center gap-1 text-xs text-muted-foreground">
                         <Camera className="w-3 h-3" />
                         <span>{scene.camera}</span>
@@ -800,10 +800,10 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
             {/* Quick Reference Cards */}
             <div className="grid md:grid-cols-2 gap-4">
               {/* Music & Audio */}
-              <div className="p-4 rounded-md bg-white/5 border border-white/10">
+              <div className="p-4 rounded-md bg-muted/50 border border-border">
                 <div className="flex items-center gap-2 mb-3">
                   <Music className="w-4 h-4 text-primary" />
-                  <h4 className="text-sm font-semibold text-white">Music & Audio</h4>
+                  <h4 className="text-sm font-semibold text-foreground">Music & Audio</h4>
                 </div>
                 <p className="text-sm text-muted-foreground" data-testid="text-music-mood">
                   {script.musicMood || "Modern lo-fi or chill beat - 80-100 BPM. Not distracting."}
@@ -811,10 +811,10 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
               </div>
 
               {/* Pacing */}
-              <div className="p-4 rounded-md bg-white/5 border border-white/10">
+              <div className="p-4 rounded-md bg-muted/50 border border-border">
                 <div className="flex items-center gap-2 mb-3">
                   <Gauge className="w-4 h-4 text-primary" />
-                  <h4 className="text-sm font-semibold text-white">Pacing</h4>
+                  <h4 className="text-sm font-semibold text-foreground">Pacing</h4>
                 </div>
                 <p className="text-sm text-muted-foreground" data-testid="text-pacing">
                   {script.pacing || "Medium pace - let key points breathe for 1s"}
@@ -822,10 +822,10 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
               </div>
 
               {/* Caption Style */}
-              <div className="p-4 rounded-md bg-white/5 border border-white/10">
+              <div className="p-4 rounded-md bg-muted/50 border border-border">
                 <div className="flex items-center gap-2 mb-3">
                   <Type className="w-4 h-4 text-primary" />
-                  <h4 className="text-sm font-semibold text-white">Caption Style</h4>
+                  <h4 className="text-sm font-semibold text-foreground">Caption Style</h4>
                 </div>
                 <p className="text-sm text-muted-foreground" data-testid="text-caption-style">
                   {script.captionStyle || "Bold, centered captions with 3-4 words max per line."}
@@ -833,10 +833,10 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
               </div>
 
               {/* Lighting */}
-              <div className="p-4 rounded-md bg-white/5 border border-white/10">
+              <div className="p-4 rounded-md bg-muted/50 border border-border">
                 <div className="flex items-center gap-2 mb-3">
                   <LightbulbIcon className="w-4 h-4 text-primary" />
-                  <h4 className="text-sm font-semibold text-white">Lighting</h4>
+                  <h4 className="text-sm font-semibold text-foreground">Lighting</h4>
                 </div>
                 <p className="text-sm text-muted-foreground" data-testid="text-lighting">
                   {script.lighting || "Ring light or soft box at 45-degree angle. Avoid harsh shadows."}
@@ -846,14 +846,14 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
 
             {/* Camera Angles */}
             {script.cameraAngles && script.cameraAngles.length > 0 && (
-              <div className="p-4 rounded-md bg-white/5 border border-white/10">
+              <div className="p-4 rounded-md bg-muted/50 border border-border">
                 <div className="flex items-center gap-2 mb-3">
                   <Camera className="w-4 h-4 text-primary" />
-                  <h4 className="text-sm font-semibold text-white">Camera Angles</h4>
+                  <h4 className="text-sm font-semibold text-foreground">Camera Angles</h4>
                 </div>
                 <div className="grid md:grid-cols-2 gap-2">
                   {script.cameraAngles.map((angle, index) => (
-                    <div key={index} className="flex items-center gap-2 p-2 rounded bg-white/5" data-testid={`camera-angle-${index}`}>
+                    <div key={index} className="flex items-center gap-2 p-2 rounded bg-muted/50" data-testid={`camera-angle-${index}`}>
                       <span className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center text-xs text-primary font-medium">
                         {index + 1}
                       </span>
@@ -866,17 +866,17 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
 
             {/* Transitions */}
             {script.transitions && script.transitions.length > 0 && (
-              <div className="p-4 rounded-md bg-white/5 border border-white/10">
+              <div className="p-4 rounded-md bg-muted/50 border border-border">
                 <div className="flex items-center gap-2 mb-3">
                   <Wand2 className="w-4 h-4 text-primary" />
-                  <h4 className="text-sm font-semibold text-white">Transitions & Effects</h4>
+                  <h4 className="text-sm font-semibold text-foreground">Transitions & Effects</h4>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {script.transitions.map((transition, index) => (
                     <Badge 
                       key={index} 
                       variant="outline" 
-                      className="border-primary/30 bg-primary/10 text-white/80"
+                      className="border-primary/30 bg-primary/10 text-muted-foreground"
                       data-testid={`transition-${index}`}
                     >
                       {transition}
@@ -888,14 +888,14 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
 
             {/* B-Roll Ideas */}
             {script.bRollIdeas && script.bRollIdeas.length > 0 && (
-              <div className="p-4 rounded-md bg-white/5 border border-white/10">
+              <div className="p-4 rounded-md bg-muted/50 border border-border">
                 <div className="flex items-center gap-2 mb-3">
                   <Film className="w-4 h-4 text-primary" />
-                  <h4 className="text-sm font-semibold text-white">B-Roll Ideas</h4>
+                  <h4 className="text-sm font-semibold text-foreground">B-Roll Ideas</h4>
                 </div>
                 <div className="grid gap-2">
                   {script.bRollIdeas.map((idea, index) => (
-                    <div key={index} className="flex items-start gap-3 p-2 rounded bg-white/5" data-testid={`text-broll-${index}`}>
+                    <div key={index} className="flex items-start gap-3 p-2 rounded bg-muted/50" data-testid={`text-broll-${index}`}>
                       <div className="w-5 h-5 rounded bg-primary/20 flex items-center justify-center flex-shrink-0 mt-0.5">
                         <Video className="w-3 h-3 text-primary" />
                       </div>
@@ -908,10 +908,10 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
 
             {/* On-Screen Text Overlay Options */}
             {script.onScreenText && Array.isArray(script.onScreenText) && script.onScreenText.length > 0 && (
-              <div className="p-4 rounded-md bg-white/5 border border-white/10">
+              <div className="p-4 rounded-md bg-muted/50 border border-border">
                 <div className="flex items-center gap-2 mb-3">
                   <Type className="w-4 h-4 text-primary" />
-                  <h4 className="text-sm font-semibold text-white">On-Screen Text Overlay Options</h4>
+                  <h4 className="text-sm font-semibold text-foreground">On-Screen Text Overlay Options</h4>
                 </div>
                 <p className="text-xs text-muted-foreground mb-4">
                   Choose from these attention-grabbing text overlays for each section of your video
@@ -932,7 +932,7 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
                               className={`text-xs ${
                                 sectionData.section === 'Hook' ? 'border-primary text-primary' :
                                 sectionData.section === 'CTA' ? 'border-green-500 text-green-500' :
-                                'border-white/30 text-white/70'
+                                'border-border text-muted-foreground'
                               }`}
                             >
                               {sectionData.section || 'Section'}
@@ -949,10 +949,10 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
                                     description: `"${text}" copied to clipboard`,
                                   });
                                 }}
-                                className="p-3 rounded-md bg-black border border-white/20 text-center hover-elevate active-elevate-2 cursor-pointer group"
+                                className="p-3 rounded-md bg-black border border-border text-center hover-elevate active-elevate-2 cursor-pointer group"
                                 data-testid={`overlay-${(sectionData.section || 'section').toLowerCase()}-${optIndex}`}
                               >
-                                <span className="text-white font-bold text-sm tracking-wide">{text}</span>
+                                <span className="text-foreground font-bold text-sm tracking-wide">{text}</span>
                                 <div className="text-xs text-muted-foreground mt-1 invisible group-hover:visible">Click to copy</div>
                               </button>
                             ))}
@@ -965,10 +965,10 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
                       {(script.onScreenText as string[]).filter((x: any) => typeof x === 'string').map((text, index) => (
                         <div 
                           key={index} 
-                          className="p-3 rounded-md bg-black border border-white/20 text-center"
+                          className="p-3 rounded-md bg-black border border-border text-center"
                           data-testid={`badge-onscreen-${index}`}
                         >
-                          <span className="text-white font-bold text-sm tracking-wide">{text}</span>
+                          <span className="text-foreground font-bold text-sm tracking-wide">{text}</span>
                         </div>
                       ))}
                     </div>
@@ -978,10 +978,10 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
             )}
 
             {/* Shot Gallery */}
-            <div className="p-4 rounded-md bg-white/5 border border-white/10">
+            <div className="p-4 rounded-md bg-muted/50 border border-border">
               <div className="flex items-center gap-2 mb-3">
                 <Image className="w-4 h-4 text-primary" />
-                <h4 className="text-sm font-semibold text-white">Shot Gallery</h4>
+                <h4 className="text-sm font-semibold text-foreground">Shot Gallery</h4>
               </div>
               <p className="text-xs text-muted-foreground mb-4">
                 Click on any shot to see camera angle and setup instructions
@@ -1001,18 +1001,18 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
                         onClick={() => setExpandedShot(expandedShot === `hook-${shot.id}` ? null : `hook-${shot.id}`)}
                         data-testid={`shot-hook-${shot.id}`}
                       >
-                        <div className={`relative rounded-md overflow-hidden mb-2 ring-2 transition-all ${expandedShot === `hook-${shot.id}` ? 'ring-primary' : 'ring-transparent hover:ring-white/30'}`}>
+                        <div className={`relative rounded-md overflow-hidden mb-2 ring-2 transition-all ${expandedShot === `hook-${shot.id}` ? 'ring-primary' : 'ring-transparent hover:ring-primary/30'}`}>
                           <img 
                             src={shot.image} 
                             alt={shot.name}
                             className="w-40 h-28 object-cover"
                           />
                           <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex flex-col items-start justify-end p-2">
-                            <span className="text-xs font-medium text-white">{shot.name}</span>
+                            <span className="text-xs font-medium text-foreground">{shot.name}</span>
                             <span className="text-[10px] text-primary">{shot.angle}</span>
                           </div>
                           <div className="absolute top-2 right-2">
-                            <ChevronDown className={`w-4 h-4 text-white transition-transform ${expandedShot === `hook-${shot.id}` ? 'rotate-180' : ''}`} />
+                            <ChevronDown className={`w-4 h-4 text-foreground transition-transform ${expandedShot === `hook-${shot.id}` ? 'rotate-180' : ''}`} />
                           </div>
                         </div>
                         <p className="text-[10px] text-muted-foreground line-clamp-2">{shot.whenToUse}</p>
@@ -1029,24 +1029,24 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
                         return (
                           <div className="space-y-4">
                             <div className="flex items-center justify-between">
-                              <h5 className="font-semibold text-white">{shot.name} Setup Guide</h5>
+                              <h5 className="font-semibold text-foreground">{shot.name} Setup Guide</h5>
                               <Badge className="bg-primary/20 text-primary border-0">{shot.angle}</Badge>
                             </div>
                             <div className="grid md:grid-cols-2 gap-4">
                               <div>
                                 <p className="text-xs text-muted-foreground mb-1">Camera Height</p>
-                                <p className="text-sm text-white">{shot.setup.cameraHeight}</p>
+                                <p className="text-sm text-foreground">{shot.setup.cameraHeight}</p>
                               </div>
                               <div>
                                 <p className="text-xs text-muted-foreground mb-1">Distance from Subject</p>
-                                <p className="text-sm text-white">{shot.setup.distance}</p>
+                                <p className="text-sm text-foreground">{shot.setup.distance}</p>
                               </div>
                             </div>
                             <div>
                               <p className="text-xs text-muted-foreground mb-2">Equipment Needed</p>
                               <div className="flex flex-wrap gap-2">
                                 {shot.setup.equipment.map((item, i) => (
-                                  <Badge key={i} variant="outline" className="border-white/20 text-white/80 text-xs">{item}</Badge>
+                                  <Badge key={i} variant="outline" className="border-border text-muted-foreground text-xs">{item}</Badge>
                                 ))}
                               </div>
                             </div>
@@ -1054,7 +1054,7 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
                               <p className="text-xs text-muted-foreground mb-2">Pro Tips</p>
                               <ul className="space-y-1">
                                 {shot.setup.tips.map((tip, i) => (
-                                  <li key={i} className="text-sm text-white/80 flex items-start gap-2">
+                                  <li key={i} className="text-sm text-muted-foreground flex items-start gap-2">
                                     <Lightbulb className="w-3 h-3 text-primary mt-1 flex-shrink-0" />
                                     {tip}
                                   </li>
@@ -1072,7 +1072,7 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
               {/* Body Shots */}
               <div className="mb-4">
                 <div className="flex items-center gap-2 mb-2">
-                  <Badge variant="outline" className="border-white/30 text-white/70 text-xs">Body Shots</Badge>
+                  <Badge variant="outline" className="border-border text-muted-foreground text-xs">Body Shots</Badge>
                 </div>
                 <div className="space-y-3">
                   <div className="flex gap-3 overflow-x-auto pb-2">
@@ -1083,18 +1083,18 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
                         onClick={() => setExpandedShot(expandedShot === `body-${shot.id}` ? null : `body-${shot.id}`)}
                         data-testid={`shot-body-${shot.id}`}
                       >
-                        <div className={`relative rounded-md overflow-hidden mb-2 ring-2 transition-all ${expandedShot === `body-${shot.id}` ? 'ring-white/50' : 'ring-transparent hover:ring-white/30'}`}>
+                        <div className={`relative rounded-md overflow-hidden mb-2 ring-2 transition-all ${expandedShot === `body-${shot.id}` ? 'ring-primary/50' : 'ring-transparent hover:ring-primary/30'}`}>
                           <img 
                             src={shot.image} 
                             alt={shot.name}
                             className="w-40 h-28 object-cover"
                           />
                           <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex flex-col items-start justify-end p-2">
-                            <span className="text-xs font-medium text-white">{shot.name}</span>
-                            <span className="text-[10px] text-white/60">{shot.angle}</span>
+                            <span className="text-xs font-medium text-foreground">{shot.name}</span>
+                            <span className="text-[10px] text-muted-foreground">{shot.angle}</span>
                           </div>
                           <div className="absolute top-2 right-2">
-                            <ChevronDown className={`w-4 h-4 text-white transition-transform ${expandedShot === `body-${shot.id}` ? 'rotate-180' : ''}`} />
+                            <ChevronDown className={`w-4 h-4 text-foreground transition-transform ${expandedShot === `body-${shot.id}` ? 'rotate-180' : ''}`} />
                           </div>
                         </div>
                         <p className="text-[10px] text-muted-foreground line-clamp-2">{shot.whenToUse}</p>
@@ -1103,7 +1103,7 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
                   </div>
                   {/* Expanded Shot Details for Body */}
                   {expandedShot?.startsWith('body-') && (
-                    <div className="p-4 rounded-md bg-black border border-white/20 animate-in slide-in-from-top-2 duration-200">
+                    <div className="p-4 rounded-md bg-black border border-border animate-in slide-in-from-top-2 duration-200">
                       {(() => {
                         const shotId = expandedShot.replace('body-', '');
                         const shot = getShotRecommendations("body").find(s => s.id === shotId);
@@ -1111,24 +1111,24 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
                         return (
                           <div className="space-y-4">
                             <div className="flex items-center justify-between">
-                              <h5 className="font-semibold text-white">{shot.name} Setup Guide</h5>
-                              <Badge className="bg-white/10 text-white/80 border-0">{shot.angle}</Badge>
+                              <h5 className="font-semibold text-foreground">{shot.name} Setup Guide</h5>
+                              <Badge className="bg-muted text-muted-foreground border-0">{shot.angle}</Badge>
                             </div>
                             <div className="grid md:grid-cols-2 gap-4">
                               <div>
                                 <p className="text-xs text-muted-foreground mb-1">Camera Height</p>
-                                <p className="text-sm text-white">{shot.setup.cameraHeight}</p>
+                                <p className="text-sm text-foreground">{shot.setup.cameraHeight}</p>
                               </div>
                               <div>
                                 <p className="text-xs text-muted-foreground mb-1">Distance from Subject</p>
-                                <p className="text-sm text-white">{shot.setup.distance}</p>
+                                <p className="text-sm text-foreground">{shot.setup.distance}</p>
                               </div>
                             </div>
                             <div>
                               <p className="text-xs text-muted-foreground mb-2">Equipment Needed</p>
                               <div className="flex flex-wrap gap-2">
                                 {shot.setup.equipment.map((item, i) => (
-                                  <Badge key={i} variant="outline" className="border-white/20 text-white/80 text-xs">{item}</Badge>
+                                  <Badge key={i} variant="outline" className="border-border text-muted-foreground text-xs">{item}</Badge>
                                 ))}
                               </div>
                             </div>
@@ -1136,7 +1136,7 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
                               <p className="text-xs text-muted-foreground mb-2">Pro Tips</p>
                               <ul className="space-y-1">
                                 {shot.setup.tips.map((tip, i) => (
-                                  <li key={i} className="text-sm text-white/80 flex items-start gap-2">
+                                  <li key={i} className="text-sm text-muted-foreground flex items-start gap-2">
                                     <Lightbulb className="w-3 h-3 text-primary mt-1 flex-shrink-0" />
                                     {tip}
                                   </li>
@@ -1165,18 +1165,18 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
                         onClick={() => setExpandedShot(expandedShot === `cta-${shot.id}` ? null : `cta-${shot.id}`)}
                         data-testid={`shot-cta-${shot.id}`}
                       >
-                        <div className={`relative rounded-md overflow-hidden mb-2 ring-2 transition-all ${expandedShot === `cta-${shot.id}` ? 'ring-green-500' : 'ring-transparent hover:ring-white/30'}`}>
+                        <div className={`relative rounded-md overflow-hidden mb-2 ring-2 transition-all ${expandedShot === `cta-${shot.id}` ? 'ring-green-500' : 'ring-transparent hover:ring-primary/30'}`}>
                           <img 
                             src={shot.image} 
                             alt={shot.name}
                             className="w-40 h-28 object-cover"
                           />
                           <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex flex-col items-start justify-end p-2">
-                            <span className="text-xs font-medium text-white">{shot.name}</span>
+                            <span className="text-xs font-medium text-foreground">{shot.name}</span>
                             <span className="text-[10px] text-green-400">{shot.angle}</span>
                           </div>
                           <div className="absolute top-2 right-2">
-                            <ChevronDown className={`w-4 h-4 text-white transition-transform ${expandedShot === `cta-${shot.id}` ? 'rotate-180' : ''}`} />
+                            <ChevronDown className={`w-4 h-4 text-foreground transition-transform ${expandedShot === `cta-${shot.id}` ? 'rotate-180' : ''}`} />
                           </div>
                         </div>
                         <p className="text-[10px] text-muted-foreground line-clamp-2">{shot.whenToUse}</p>
@@ -1193,24 +1193,24 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
                         return (
                           <div className="space-y-4">
                             <div className="flex items-center justify-between">
-                              <h5 className="font-semibold text-white">{shot.name} Setup Guide</h5>
+                              <h5 className="font-semibold text-foreground">{shot.name} Setup Guide</h5>
                               <Badge className="bg-green-500/20 text-green-400 border-0">{shot.angle}</Badge>
                             </div>
                             <div className="grid md:grid-cols-2 gap-4">
                               <div>
                                 <p className="text-xs text-muted-foreground mb-1">Camera Height</p>
-                                <p className="text-sm text-white">{shot.setup.cameraHeight}</p>
+                                <p className="text-sm text-foreground">{shot.setup.cameraHeight}</p>
                               </div>
                               <div>
                                 <p className="text-xs text-muted-foreground mb-1">Distance from Subject</p>
-                                <p className="text-sm text-white">{shot.setup.distance}</p>
+                                <p className="text-sm text-foreground">{shot.setup.distance}</p>
                               </div>
                             </div>
                             <div>
                               <p className="text-xs text-muted-foreground mb-2">Equipment Needed</p>
                               <div className="flex flex-wrap gap-2">
                                 {shot.setup.equipment.map((item, i) => (
-                                  <Badge key={i} variant="outline" className="border-white/20 text-white/80 text-xs">{item}</Badge>
+                                  <Badge key={i} variant="outline" className="border-border text-muted-foreground text-xs">{item}</Badge>
                                 ))}
                               </div>
                             </div>
@@ -1218,7 +1218,7 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
                               <p className="text-xs text-muted-foreground mb-2">Pro Tips</p>
                               <ul className="space-y-1">
                                 {shot.setup.tips.map((tip, i) => (
-                                  <li key={i} className="text-sm text-white/80 flex items-start gap-2">
+                                  <li key={i} className="text-sm text-muted-foreground flex items-start gap-2">
                                     <Lightbulb className="w-3 h-3 text-green-400 mt-1 flex-shrink-0" />
                                     {tip}
                                   </li>
@@ -1235,10 +1235,10 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
             </div>
 
             {/* Music Resources */}
-            <div className="p-4 rounded-md bg-white/5 border border-white/10">
+            <div className="p-4 rounded-md bg-muted/50 border border-border">
               <div className="flex items-center gap-2 mb-3">
                 <Music className="w-4 h-4 text-primary" />
-                <h4 className="text-sm font-semibold text-white">Music Resources</h4>
+                <h4 className="text-sm font-semibold text-foreground">Music Resources</h4>
               </div>
               <p className="text-xs text-muted-foreground mb-4">
                 Find royalty-free music for your video
@@ -1250,11 +1250,11 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
                     href={resource.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-2 p-2 rounded-md bg-white/5 border border-white/10 hover-elevate active-elevate-2"
+                    className="flex items-center gap-2 p-2 rounded-md bg-muted/50 border border-border hover-elevate active-elevate-2"
                     data-testid={`music-resource-${index}`}
                   >
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-white truncate">{resource.name}</p>
+                      <p className="text-sm font-medium text-foreground truncate">{resource.name}</p>
                       <p className="text-xs text-muted-foreground">{resource.type}</p>
                     </div>
                     <ExternalLink className="w-3 h-3 text-muted-foreground flex-shrink-0" />
@@ -1271,7 +1271,7 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
               </div>
               {typeof script.productionNotes === 'object' && script.productionNotes !== null ? (
                 <div className="space-y-3">
-                  <p className="text-sm text-white/80" data-testid="text-production-notes">
+                  <p className="text-sm text-muted-foreground" data-testid="text-production-notes">
                     {(script.productionNotes as any).filming || "Film close-up, direct to camera. High energy on the hook."}
                   </p>
                   {Array.isArray((script.productionNotes as any).tips) && (script.productionNotes as any).tips.length > 0 && (
@@ -1279,7 +1279,7 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
                       {(script.productionNotes as any).tips
                         .filter((tip: any) => typeof tip === 'string')
                         .map((tip: string, index: number) => (
-                          <li key={index} className="text-xs text-white/70 flex items-start gap-2">
+                          <li key={index} className="text-xs text-muted-foreground flex items-start gap-2">
                             <span className="text-primary mt-0.5">-</span>
                             {tip}
                           </li>
@@ -1288,7 +1288,7 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
                   )}
                 </div>
               ) : (
-                <p className="text-sm text-white/80" data-testid="text-production-notes">
+                <p className="text-sm text-muted-foreground" data-testid="text-production-notes">
                   {typeof script.productionNotes === 'string' ? script.productionNotes : "Film close-up, direct to camera. High energy on the hook."}
                 </p>
               )}
@@ -1298,7 +1298,7 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
       </Tabs>
 
       <div className="flex flex-wrap items-center gap-2">
-        <Button onClick={handleCopy} variant="outline" size="sm" className="bg-white/5 border-white/10" data-testid="button-copy">
+        <Button onClick={handleCopy} variant="outline" size="sm" className="bg-muted/50 border-border" data-testid="button-copy">
           {copied ? <Check className="w-4 h-4 mr-1" /> : <Copy className="w-4 h-4 mr-1" />}
           {copied ? "Copied" : "Copy Script"}
         </Button>
@@ -1308,7 +1308,7 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
           variant="outline"
           size="sm"
           disabled={isRegenerating}
-          className="bg-white/5 border-white/10"
+          className="bg-muted/50 border-border"
           data-testid="button-regenerate"
         >
           <RefreshCw className={`w-4 h-4 mr-1 ${isRegenerating ? "animate-spin" : ""}`} />
@@ -1320,7 +1320,7 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
           variant="outline"
           size="sm"
           disabled={saveToVaultMutation.isPending}
-          className="bg-white/5 border-white/10"
+          className="bg-muted/50 border-border"
           data-testid="button-save-vault"
         >
           <Save className="w-4 h-4 mr-1" />
@@ -1332,7 +1332,7 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
           variant="outline"
           size="sm"
           disabled={addToProjectMutation.isPending}
-          className="bg-white/5 border-white/10"
+          className="bg-muted/50 border-border"
           data-testid="button-add-project"
         >
           <FolderPlus className="w-4 h-4 mr-1" />
@@ -1342,7 +1342,7 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
         <Button 
           variant="outline" 
           size="sm" 
-          className="bg-white/5 border-white/10"
+          className="bg-muted/50 border-border"
           onClick={() => {
             const randomHook = viralHooks[Math.floor(Math.random() * viralHooks.length)];
             handleHookChange(randomHook.id);
@@ -1358,7 +1358,7 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
           <Button
             variant="outline"
             size="sm"
-            className="bg-white/5 border-white/10"
+            className="bg-muted/50 border-border"
             onClick={() => setShowVersionHistory(true)}
             data-testid="button-version-history"
           >
@@ -1371,7 +1371,7 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
           <Button
             variant="outline"
             size="sm"
-            className="bg-white/5 border-white/10"
+            className="bg-muted/50 border-border"
             onClick={() => setShowCollabEditor(true)}
             data-testid="button-collaborate"
           >
@@ -1401,7 +1401,7 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
       )}
       
       {showCollabEditor && script.id && (
-        <div className="mt-4 p-4 rounded-lg bg-white/5 border border-white/10">
+        <div className="mt-4 p-4 rounded-lg bg-muted/50 border border-border">
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-sm font-medium flex items-center gap-2">
               <Users className="w-4 h-4" />
