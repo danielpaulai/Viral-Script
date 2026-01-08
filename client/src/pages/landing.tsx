@@ -377,7 +377,7 @@ export default function Landing() {
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
               <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-primary" />
             </span>
-            <span className="text-[11px] font-medium text-[#b8bec1]">Think Clearly, Script Easily</span>
+            <span className="text-[11px] font-medium text-[#b8bec1]">Clarity Creates Virality</span>
           </div>
           
           <h1 className="text-5xl md:text-7xl lg:text-8xl font-semibold tracking-tight text-white mb-6 leading-[1.05]">
@@ -386,17 +386,17 @@ export default function Landing() {
               className="text-primary"
             />
             {" "}Your Ideas<br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-b from-white to-[#b8bec1]">Before You Script</span>
+            <span className="text-transparent bg-clip-text bg-gradient-to-b from-white to-[#b8bec1]">Create Viral Scripts</span>
           </h1>
           
           <p className="mt-6 text-base md:text-lg text-[#b8bec1] max-w-xl mx-auto font-normal mb-10 leading-relaxed">
-            Most videos fail because the ideas aren't clear. Our Content Skeleton process helps you think before you write, so every script delivers real value.
+            Viral videos start with clear ideas. Our Content Skeleton process helps you think before you script, so every video delivers real value.
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <Link href="/login">
               <Button size="lg" className="w-full sm:w-auto gap-2 shadow-[0_0_25px_-5px_rgba(233,13,65,0.4)]" data-testid="button-hero-start">
-                Clarify Your Next Video
+                Create Your Viral Script
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
               </Button>
             </Link>
@@ -1056,14 +1056,14 @@ export default function Landing() {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(233,13,65,0.08),transparent_70%)] pointer-events-none" />
         <div className="max-w-4xl mx-auto px-6 text-center relative z-10">
           <h2 className="text-3xl md:text-5xl font-semibold text-white mb-6 tracking-tight">
-            Ready to clarify your next video?
+            Ready to create your next viral video?
           </h2>
           <p className="text-[#b8bec1] text-base mb-10 max-w-xl mx-auto">
-            Stop rambling. Start delivering value.
+            Clear ideas create viral content. Start with the skeleton.
           </p>
           <Link href="/login">
             <Button size="lg" className="gap-2 shadow-[0_0_25px_-5px_rgba(233,13,65,0.4)]" data-testid="button-final-cta">
-              Clarify Your Next Video
+              Create Your Viral Script
               <ArrowRight className="w-4 h-4" />
             </Button>
           </Link>
@@ -1080,7 +1080,7 @@ export default function Landing() {
             <span className="text-sm font-medium text-white">Video Idea Clarifier</span>
           </div>
           <p className="text-xs text-[#b8bec1]">
-            Think clearly. Script easily.
+            Clarity creates virality.
           </p>
         </div>
       </footer>
