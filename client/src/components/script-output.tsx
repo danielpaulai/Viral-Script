@@ -671,34 +671,44 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
         
         <TabsContent value="script" className="mt-4">
           {/* Hook Metadata Header */}
-          {(currentHook || script.parameters.hook) && (
-            <div className="mb-4 p-4 rounded-md bg-primary/10 border border-primary/20 space-y-2">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Zap className="w-4 h-4 text-primary" />
-                  <span className="text-sm font-semibold text-foreground">
-                    HOOK #{viralHooks.findIndex(h => h.id === (selectedHook || script.parameters.hook)) + 1}: {(currentHook || viralHooks.find(h => h.id === script.parameters.hook))?.name}
-                  </span>
+          {(() => {
+            const hookId = selectedHook || script.parameters.hook;
+            const foundHook = currentHook || viralHooks.find(h => h.id === hookId);
+            const isCustomHook = !foundHook || hookId === "custom";
+            const hookIndex = viralHooks.findIndex(h => h.id === hookId);
+            const actualHookLine = customHookLine || script.script.split('\n')[0];
+            
+            return (
+              <div className="mb-4 p-4 rounded-md bg-primary/10 border border-primary/20 space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Zap className="w-4 h-4 text-primary" />
+                    <span className="text-sm font-semibold text-foreground">
+                      {isCustomHook ? "YOUR HOOK" : `HOOK #${hookIndex + 1}: ${foundHook?.name}`}
+                    </span>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleCopySection("hook")}
+                    className="text-xs h-7"
+                    data-testid="button-copy-hook"
+                  >
+                    <Copy className="w-3 h-3 mr-1" />
+                    Copy Hook
+                  </Button>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleCopySection("hook")}
-                  className="text-xs h-7"
-                  data-testid="button-copy-hook"
-                >
-                  <Copy className="w-3 h-3 mr-1" />
-                  Copy Hook
-                </Button>
+                {!isCustomHook && foundHook?.template && (
+                  <div className="text-xs text-muted-foreground">
+                    <span className="font-medium text-muted-foreground">Template:</span> "{foundHook.template}"
+                  </div>
+                )}
+                <div className="text-xs text-muted-foreground">
+                  <span className="font-medium text-muted-foreground">Your hook:</span> "{actualHookLine}"
+                </div>
               </div>
-              <div className="text-xs text-muted-foreground">
-                <span className="font-medium text-muted-foreground">Template:</span> "{(currentHook || viralHooks.find(h => h.id === script.parameters.hook))?.template}"
-              </div>
-              <div className="text-xs text-muted-foreground">
-                <span className="font-medium text-muted-foreground">Applied:</span> "{customHookLine || script.script.split('\n')[0]}"
-              </div>
-            </div>
-          )}
+            );
+          })()}
 
           {/* Script Sections with Individual Copy */}
           <div className="space-y-4">
