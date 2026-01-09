@@ -959,7 +959,7 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
                                     description: `"${text}" copied to clipboard`,
                                   });
                                 }}
-                                className="p-3 rounded-md bg-black border border-border text-center hover-elevate active-elevate-2 cursor-pointer group"
+                                className="p-3 rounded-md bg-card dark:bg-neutral-900 border border-border text-center hover-elevate active-elevate-2 cursor-pointer group"
                                 data-testid={`overlay-${(sectionData.section || 'section').toLowerCase()}-${optIndex}`}
                               >
                                 <span className="text-foreground font-bold text-sm tracking-wide">{text}</span>
@@ -975,7 +975,7 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
                       {(script.onScreenText as string[]).filter((x: any) => typeof x === 'string').map((text, index) => (
                         <div 
                           key={index} 
-                          className="p-3 rounded-md bg-black border border-border text-center"
+                          className="p-3 rounded-md bg-card dark:bg-neutral-900 border border-border text-center"
                           data-testid={`badge-onscreen-${index}`}
                         >
                           <span className="text-foreground font-bold text-sm tracking-wide">{text}</span>
@@ -1031,7 +1031,7 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
                   </div>
                   {/* Expanded Shot Details for Hook */}
                   {expandedShot?.startsWith('hook-') && (
-                    <div className="p-4 rounded-md bg-black border border-primary/30 animate-in slide-in-from-top-2 duration-200">
+                    <div className="p-4 rounded-md bg-card dark:bg-neutral-900 border border-primary/30 animate-in slide-in-from-top-2 duration-200">
                       {(() => {
                         const shotId = expandedShot.replace('hook-', '');
                         const shot = getShotRecommendations("hook").find(s => s.id === shotId);
@@ -1113,7 +1113,7 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
                   </div>
                   {/* Expanded Shot Details for Body */}
                   {expandedShot?.startsWith('body-') && (
-                    <div className="p-4 rounded-md bg-black border border-border animate-in slide-in-from-top-2 duration-200">
+                    <div className="p-4 rounded-md bg-card dark:bg-neutral-900 border border-border animate-in slide-in-from-top-2 duration-200">
                       {(() => {
                         const shotId = expandedShot.replace('body-', '');
                         const shot = getShotRecommendations("body").find(s => s.id === shotId);
@@ -1195,7 +1195,7 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
                   </div>
                   {/* Expanded Shot Details for CTA */}
                   {expandedShot?.startsWith('cta-') && (
-                    <div className="p-4 rounded-md bg-black border border-green-500/30 animate-in slide-in-from-top-2 duration-200">
+                    <div className="p-4 rounded-md bg-card dark:bg-neutral-900 border border-green-500/30 animate-in slide-in-from-top-2 duration-200">
                       {(() => {
                         const shotId = expandedShot.replace('cta-', '');
                         const shot = getShotRecommendations("cta").find(s => s.id === shotId);
