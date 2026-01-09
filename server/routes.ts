@@ -784,17 +784,42 @@ ${purposeGuide ? `\nVIDEO PURPOSE: ${skeleton.videoPurpose?.toUpperCase()}\n${pu
 ${skeleton.hook}
 
 **PROBLEM** (The pain point - mention it briefly to set up the teaching)
+USER'S PROBLEM CONTEXT:
 ${skeleton.problem}
 
 **CORE TEACHING / SOLUTION** (THIS IS THE HEART OF THE SCRIPT)
+USER'S SOLUTION CONTEXT:
 ${skeleton.solution}
 
-CRITICAL - HOW TO USE THE CORE TEACHING:
-1. The Core Teaching above is THE main content of the video - NOT just a one-liner to mention and move on
-2. EXPAND on it: Explain WHY it works, HOW to do it, or PROVE it with examples/stats
-3. Spend 60-70% of the script body elaborating on this teaching
-4. Do NOT just copy-paste the teaching and then add unrelated "fluff" like trends or case studies
-5. Every sentence in the body should connect back to this core teaching
+=== CRITICAL INSTRUCTIONS FOR SCRIPT GENERATION ===
+
+1. RESEARCH & VALIDATE: Before writing, mentally verify if the problem and solution points are accurate and valid. If you know relevant stats, studies, or expert opinions that support or enhance these points, incorporate them.
+
+2. DO NOT COPY EXACT WORDS: The problem and solution context above is RAW INPUT from the user. You must NOT copy their exact wording. Instead:
+   - REPHRASE everything in a natural, conversational spoken voice
+   - Use different vocabulary while keeping the same meaning
+   - Make it sound like YOU (the creator) are naturally explaining this
+   - Transform written notes into spoken dialogue
+   
+3. CONVERSATIONAL STYLE: Write as if speaking to a friend:
+   - "Look, here's what nobody tells you about..."
+   - "The thing is..."
+   - "And here's the crazy part..."
+   - NOT formal or written-sounding language
+   
+4. ENHANCE WITH RESEARCH: Add value by including:
+   - Specific statistics or numbers if you know them
+   - Real-world examples or case studies
+   - Expert quotes or research findings
+   - Contrarian angles or surprising facts
+
+5. CORE TEACHING IS THE STAR: Spend 60-70% of the script body on this section:
+   - EXPAND on it: Explain WHY it works, HOW to do it
+   - PROVE it with examples, stats, or logic
+   - Do NOT just mention it briefly and move on
+   - Every sentence in the body should connect back to this core teaching
+
+6. AVOID COPY-PASTE TRAP: The user has given you context to work from, NOT a script to recite. Transform their raw ideas into polished, viral-ready content.
 
 **CTA** (Call to action - what you want them to do)
 ${skeleton.cta}

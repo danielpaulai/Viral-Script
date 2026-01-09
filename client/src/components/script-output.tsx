@@ -226,10 +226,31 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
   };
 
   const getDisplayScript = () => {
-    const baseScript = enhancedScript || script.script;
+    let baseScript = enhancedScript || script.script;
+    
+    // Strip out markdown section labels like **HOOK**, **BODY**, **CTA**
+    baseScript = baseScript
+      .replace(/^\*\*HOOK\*\*\s*/gim, '')
+      .replace(/^\*\*BODY\*\*\s*/gim, '')
+      .replace(/^\*\*CTA\*\*\s*/gim, '')
+      .replace(/^\*\*CORE TEACHING\*\*\s*/gim, '')
+      .replace(/^\*\*CALL TO ACTION\*\*\s*/gim, '')
+      .replace(/^\*Hook\*\s*/gim, '')
+      .replace(/^\*Body\*\s*/gim, '')
+      .replace(/^\*CTA\*\s*/gim, '')
+      .replace(/^HOOK:\s*/gim, '')
+      .replace(/^BODY:\s*/gim, '')
+      .replace(/^CTA:\s*/gim, '')
+      .replace(/\n{3,}/g, '\n\n') // Clean up extra newlines
+      .trim();
+    
     if (customHookLine) {
       const lines = baseScript.split('\n');
-      lines[0] = customHookLine;
+      // Find first non-empty line and replace it
+      const firstNonEmptyIndex = lines.findIndex(l => l.trim());
+      if (firstNonEmptyIndex !== -1) {
+        lines[firstNonEmptyIndex] = customHookLine;
+      }
       return lines.join('\n');
     }
     return baseScript;
@@ -676,7 +697,8 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
             const foundHook = currentHook || viralHooks.find(h => h.id === hookId);
             const isCustomHook = !foundHook || hookId === "custom";
             const hookIndex = viralHooks.findIndex(h => h.id === hookId);
-            const actualHookLine = customHookLine || script.script.split('\n')[0];
+            const sanitizedFirstLine = getDisplayScript().split('\n').filter(l => l.trim())[0] || "";
+            const actualHookLine = customHookLine || sanitizedFirstLine;
             
             return (
               <div className="mb-4 p-4 rounded-md bg-primary/10 border border-primary/20 space-y-2">
