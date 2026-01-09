@@ -18,11 +18,14 @@ function getTrialEndDate(): Date {
 
 class AuthStorage implements IAuthStorage {
   async getUser(id: string): Promise<User | undefined> {
+    if (!db) throw new Error("Database not available");
     const [user] = await db.select().from(users).where(eq(users.id, id));
     return user;
   }
 
   async upsertUser(userData: UpsertUser): Promise<User> {
+    if (!db) throw new Error("Database not available");
+    
     // Check if user already exists
     const existingUser = await this.getUser(userData.id as string);
     

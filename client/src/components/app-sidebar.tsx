@@ -41,8 +41,8 @@ const mainNavItems = [
 ];
 
 const proNavItems = [
-  { href: "/competitive", label: "Competitive Analysis", icon: BarChart3, isPro: true },
-  { href: "/knowledge-base", label: "Knowledge Base", icon: BookOpen, isPro: true },
+  { href: "/competitive", label: "Competitive Analysis", icon: BarChart3, isPro: true, comingSoon: true },
+  { href: "/knowledge-base", label: "Knowledge Base", icon: BookOpen, isPro: true, comingSoon: true },
   { href: "/pricing", label: "Pricing", icon: CreditCard },
   { href: "/settings", label: "Settings", icon: Settings },
 ];
@@ -104,17 +104,22 @@ export function AppSidebar() {
                 const Icon = item.icon;
                 const isActive = location === item.href;
                 const isPro = 'isPro' in item && item.isPro;
+                const isComingSoon = 'comingSoon' in item && item.comingSoon;
                 return (
                   <SidebarMenuItem key={item.href}>
                     <SidebarMenuButton
                       asChild
                       isActive={isActive}
-                      tooltip={item.label}
+                      tooltip={isComingSoon ? `${item.label} - Coming Soon` : item.label}
                     >
                       <Link href={item.href} data-testid={`nav-${item.label.toLowerCase().replace(' ', '-')}`}>
                         <Icon className="w-4 h-4" />
                         <span className="flex-1">{item.label}</span>
-                        {isPro && (
+                        {isComingSoon ? (
+                          <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 border-muted-foreground/30 text-muted-foreground">
+                            Soon
+                          </Badge>
+                        ) : isPro && (
                           <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4 bg-amber-500/20 text-amber-500 border-amber-500/30">
                             <Crown className="w-2.5 h-2.5 mr-0.5" />
                             PRO

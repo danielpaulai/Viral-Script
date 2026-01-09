@@ -215,6 +215,9 @@ export class MemStorage implements IStorage {
     }
     
     // Fall back to memory storage
+    const trialEndsAt = new Date();
+    trialEndsAt.setDate(trialEndsAt.getDate() + 7);
+    
     const user: User = {
       id,
       username: insertUser.username || null,
@@ -225,6 +228,8 @@ export class MemStorage implements IStorage {
       profileImageUrl: null,
       plan: "starter",
       planExpiresAt: null,
+      trialEndsAt: trialEndsAt,
+      trialScriptsUsed: 0,
       createdAt: now,
       updatedAt: now,
     };
