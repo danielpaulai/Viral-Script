@@ -30,7 +30,10 @@ import {
   durationOptions,
   hookCategories,
   videoPurposes,
+  viralHooks,
 } from "@shared/schema";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import {
@@ -62,7 +65,7 @@ const purposeIcons: Record<VideoPurposeType, typeof Crown> = {
   storytelling: BookOpen,
 };
 
-type HookMode = "write" | "generate";
+type HookMode = "write" | "generate" | "browse";
 
 interface GeneratedHook {
   id: string;
@@ -140,6 +143,8 @@ export function IdeaClarifier({
   const [selectedHookStyle, setSelectedHookStyle] = useState<string>("question");
   const [generatedHooks, setGeneratedHooks] = useState<GeneratedHook[]>([]);
   const [selectedHookId, setSelectedHookId] = useState<string | null>(null);
+  const [isEditingHook, setIsEditingHook] = useState(false);
+  const [browseCategoryFilter, setBrowseCategoryFilter] = useState<string>("personal_experience");
   
   // Solution suggestions
   const [generatedSolutions, setGeneratedSolutions] = useState<GeneratedSolution[]>([]);
@@ -171,6 +176,7 @@ export function IdeaClarifier({
   // Handle hook mode change
   const handleHookModeChange = (mode: HookMode) => {
     setHookMode(mode);
+    setIsEditingHook(false); // Reset edit state when switching modes
     // Clear generated hooks when switching to write mode
     if (mode === "write") {
       setGeneratedHooks([]);
@@ -393,6 +399,7 @@ export function IdeaClarifier({
   // Handle hook selection from generated options
   const handleSelectHook = (hook: GeneratedHook) => {
     setSelectedHookId(hook.id);
+    setIsEditingHook(false); // Reset edit state when selecting a new hook
     updateSection("hook", hook.hook);
   };
 
@@ -692,7 +699,7 @@ export function IdeaClarifier({
               </Badge>
             )}
           </div>
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1 flex-wrap">
             <Button
               size="sm"
               variant={hookMode === "generate" ? "default" : "ghost"}
@@ -702,6 +709,16 @@ export function IdeaClarifier({
             >
               <Wand2 className="w-3 h-3 mr-1" />
               AI Generate
+            </Button>
+            <Button
+              size="sm"
+              variant={hookMode === "browse" ? "default" : "ghost"}
+              onClick={() => handleHookModeChange("browse")}
+              className="text-xs h-7"
+              data-testid="button-hook-mode-browse"
+            >
+              <Sparkles className="w-3 h-3 mr-1" />
+              50 Hooks
             </Button>
             <Button
               size="sm"
@@ -809,11 +826,134 @@ export function IdeaClarifier({
               </div>
             )}
 
-            {/* Selected hook preview */}
+            {/* Selected hook preview - now editable */}
             {section.content && (
               <div className="p-3 rounded bg-green-500/10 border border-green-500/30">
-                <p className="text-xs text-green-400 mb-1 font-medium">Selected Hook:</p>
-                <p className="text-sm">{section.content}</p>
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-xs text-green-400 font-medium">Selected Hook:</p>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => setIsEditingHook(!isEditingHook)}
+                    className="text-xs h-6 text-green-400 hover:text-green-300"
+                    data-testid="button-edit-hook"
+                  >
+                    <PenLine className="w-3 h-3 mr-1" />
+                    {isEditingHook ? "Done" : "Edit"}
+                  </Button>
+                </div>
+                {isEditingHook ? (
+                  <Textarea
+                    value={section.content}
+                    onChange={(e) => updateSection("hook", e.target.value)}
+                    placeholder="Edit your hook..."
+                    className="min-h-[80px] bg-background/50 border-green-500/30"
+                    disabled={skeleton.isLocked}
+                    data-testid="input-hook-edit"
+                  />
+                ) : (
+                  <p className="text-sm">{section.content}</p>
+                )}
+              </div>
+            )}
+          </div>
+        ) : hookMode === "browse" ? (
+          // Browse mode - 50 viral hooks database
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Browse all 50 viral-tested hook templates organized by category.
+            </p>
+            
+            <Tabs value={browseCategoryFilter} onValueChange={setBrowseCategoryFilter} className="w-full">
+              <ScrollArea className="w-full">
+                <TabsList className="w-full h-auto flex flex-wrap gap-1 bg-muted/50 p-1.5 rounded-lg mb-3">
+                  {hookCategories.map((category) => (
+                    <TabsTrigger 
+                      key={category.id} 
+                      value={category.id}
+                      className="text-xs px-2 py-1.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                    >
+                      {category.name}
+                    </TabsTrigger>
+                  ))}
+                </TabsList>
+              </ScrollArea>
+              
+              {hookCategories.map((category) => (
+                <TabsContent key={category.id} value={category.id} className="mt-0">
+                  <p className="text-xs text-muted-foreground mb-3">{category.description}</p>
+                  <div className="grid gap-2 max-h-[280px] overflow-y-auto pr-1">
+                    {viralHooks
+                      .filter((h) => h.category === category.id)
+                      .map((hook) => {
+                        const isSelected = section.content === hook.example;
+                        return (
+                          <button
+                            key={hook.id}
+                            onClick={() => {
+                              updateSection("hook", hook.example);
+                              setIsEditingHook(false);
+                            }}
+                            className={`w-full text-left p-3 rounded-lg transition-all hover-elevate ${
+                              isSelected
+                                ? "bg-primary/20 border-2 border-primary/60"
+                                : "bg-background/50 border border-border"
+                            }`}
+                            disabled={skeleton.isLocked}
+                            data-testid={`button-viral-hook-${hook.id}`}
+                          >
+                            <div className="flex items-start justify-between gap-2 mb-1.5">
+                              <span className={`font-medium text-sm ${isSelected ? "text-primary" : "text-foreground"}`}>
+                                {hook.name}
+                              </span>
+                              {isSelected && (
+                                <Badge variant="outline" className="text-[10px] border-primary/50 text-primary shrink-0">
+                                  Selected
+                                </Badge>
+                              )}
+                            </div>
+                            <p className="text-xs text-muted-foreground italic leading-relaxed mb-1.5">
+                              "{hook.example}"
+                            </p>
+                            <p className="text-[11px] text-muted-foreground leading-relaxed">
+                              {hook.why}
+                            </p>
+                          </button>
+                        );
+                      })}
+                  </div>
+                </TabsContent>
+              ))}
+            </Tabs>
+
+            {/* Selected hook preview - editable */}
+            {section.content && (
+              <div className="p-3 rounded bg-green-500/10 border border-green-500/30">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-xs text-green-400 font-medium">Your Hook:</p>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => setIsEditingHook(!isEditingHook)}
+                    className="text-xs h-6 text-green-400 hover:text-green-300"
+                    data-testid="button-edit-hook-browse"
+                  >
+                    <PenLine className="w-3 h-3 mr-1" />
+                    {isEditingHook ? "Done" : "Edit"}
+                  </Button>
+                </div>
+                {isEditingHook ? (
+                  <Textarea
+                    value={section.content}
+                    onChange={(e) => updateSection("hook", e.target.value)}
+                    placeholder="Customize your hook..."
+                    className="min-h-[80px] bg-background/50 border-green-500/30"
+                    disabled={skeleton.isLocked}
+                    data-testid="input-hook-edit-browse"
+                  />
+                ) : (
+                  <p className="text-sm">{section.content}</p>
+                )}
               </div>
             )}
           </div>
