@@ -1,7 +1,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Check, Zap, Crown, Building2 } from "lucide-react";
+import { Check, Zap, Crown, Building2, Clock } from "lucide-react";
 
 const pricingTiers = [
   {
@@ -26,11 +26,12 @@ const pricingTiers = [
     popular: false,
     buttonText: "Start Free Trial",
     trialDays: 7,
+    comingSoon: false,
   },
   {
     id: "pro",
     name: "Pro",
-    price: 29.99,
+    price: null,
     description: "For creators who want brand-consistent scripts",
     icon: Crown,
     features: [
@@ -47,13 +48,14 @@ const pricingTiers = [
       "No competitor analysis",
     ],
     popular: true,
-    buttonText: "Start Free Trial",
-    trialDays: 7,
+    buttonText: "Coming Soon",
+    trialDays: null,
+    comingSoon: true,
   },
   {
     id: "agency",
     name: "Agency",
-    price: 39.99,
+    price: null,
     description: "Full content strategy for teams and agencies",
     icon: Building2,
     features: [
@@ -63,13 +65,14 @@ const pricingTiers = [
       "Funnel categories (TOFU/MOFU/BOFU)",
       "Personal stories framework",
       "Hot takes generator",
-      "Team collaboration (coming soon)",
+      "Team collaboration",
       "Priority support",
     ],
     limitations: [],
     popular: false,
-    buttonText: "Start Free Trial",
-    trialDays: 7,
+    buttonText: "Coming Soon",
+    trialDays: null,
+    comingSoon: true,
   },
 ];
 
@@ -79,13 +82,13 @@ export default function Pricing() {
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-12">
           <Badge className="mb-4" variant="secondary" data-testid="badge-free-trial">
-            7-Day Free Trial on All Plans
+            7-Day Free Trial on Starter Plan
           </Badge>
           <h1 className="text-4xl font-bold mb-4" data-testid="text-pricing-title">
             Start Free, Go Viral
           </h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto" data-testid="text-pricing-subtitle">
-            Try any plan free for 7 days. No charge until your trial ends. Cancel anytime.
+            Try Starter free for 7 days. No charge until your trial ends. Cancel anytime.
           </p>
         </div>
 
@@ -95,7 +98,7 @@ export default function Pricing() {
             return (
               <Card 
                 key={tier.id} 
-                className={`relative flex flex-col ${tier.popular ? 'ring-2 ring-primary' : ''}`}
+                className={`relative flex flex-col ${tier.popular ? 'ring-2 ring-primary' : ''} ${tier.comingSoon ? 'opacity-80' : ''}`}
                 data-testid={`card-pricing-${tier.id}`}
               >
                 {tier.popular && (
@@ -104,6 +107,15 @@ export default function Pricing() {
                     data-testid="badge-popular"
                   >
                     Most Popular
+                  </Badge>
+                )}
+                {tier.comingSoon && (
+                  <Badge 
+                    className="absolute -top-3 right-4 bg-amber-500/20 text-amber-600 dark:text-amber-400 border-amber-500/30"
+                    data-testid={`badge-coming-soon-${tier.id}`}
+                  >
+                    <Clock className="w-3 h-3 mr-1" />
+                    Coming Soon
                   </Badge>
                 )}
                 <CardHeader className="text-center pb-4">
@@ -119,13 +131,26 @@ export default function Pricing() {
                 </CardHeader>
                 <CardContent className="flex-1">
                   <div className="text-center mb-6">
-                    <span className="text-4xl font-bold" data-testid={`text-tier-price-${tier.id}`}>
-                      ${tier.price}
-                    </span>
-                    <span className="text-muted-foreground">/month</span>
-                    <p className="text-sm text-primary font-medium mt-2" data-testid={`text-trial-${tier.id}`}>
-                      7 days free
-                    </p>
+                    {tier.price !== null ? (
+                      <>
+                        <span className="text-4xl font-bold" data-testid={`text-tier-price-${tier.id}`}>
+                          ${tier.price}
+                        </span>
+                        <span className="text-muted-foreground">/month</span>
+                        <p className="text-sm text-primary font-medium mt-2" data-testid={`text-trial-${tier.id}`}>
+                          7 days free
+                        </p>
+                      </>
+                    ) : (
+                      <>
+                        <span className="text-2xl font-bold text-muted-foreground" data-testid={`text-tier-price-${tier.id}`}>
+                          Pricing TBD
+                        </span>
+                        <p className="text-sm text-muted-foreground mt-2">
+                          Join waitlist for updates
+                        </p>
+                      </>
+                    )}
                   </div>
                   <ul className="space-y-3">
                     {tier.features.map((feature, idx) => (
@@ -145,7 +170,8 @@ export default function Pricing() {
                 <CardFooter>
                   <Button 
                     className="w-full" 
-                    variant={tier.popular ? "default" : "outline"}
+                    variant={tier.comingSoon ? "secondary" : tier.popular ? "default" : "outline"}
+                    disabled={tier.comingSoon}
                     data-testid={`button-select-${tier.id}`}
                   >
                     {tier.buttonText}
@@ -159,7 +185,7 @@ export default function Pricing() {
         <div className="bg-muted rounded-lg p-8 text-center">
           <h2 className="text-2xl font-bold mb-4">Knowledge Base: Your Secret Weapon</h2>
           <p className="text-muted-foreground max-w-3xl mx-auto mb-6">
-            Pro and Agency plans include unlimited Knowledge Base storage. Upload your ICP, 
+            Pro and Agency plans will include unlimited Knowledge Base storage. Upload your ICP, 
             brand positioning, voice DNA, and messaging documents. The AI references these 
             during script generation to create content that sounds authentically like YOU.
           </p>
