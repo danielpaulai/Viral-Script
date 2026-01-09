@@ -126,6 +126,20 @@ const sectionBgColors: Record<SkeletonSectionType, string> = {
   cta: "bg-blue-500/10 border-blue-500/30",
 };
 
+const stepLabels: Record<SkeletonSectionType, string> = {
+  problem: "Problem",
+  solution: "Teaching",
+  hook: "Hook",
+  cta: "CTA",
+};
+
+const stepDescriptions: Record<SkeletonSectionType, string> = {
+  problem: "What pain point does your audience face?",
+  solution: "What's your golden nugget - the core insight?",
+  hook: "How will you grab attention in the first 3 seconds?",
+  cta: "What action should viewers take?",
+};
+
 export function IdeaClarifier({
   onSkeletonComplete,
   onSkeletonChange,
@@ -1349,18 +1363,13 @@ export function IdeaClarifier({
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <Zap className="w-5 h-5 text-primary" />
-          <h2 className="text-lg font-bold text-foreground">Clarify Your Video Idea</h2>
+          <h2 className="text-lg font-bold text-foreground">Create Your Script</h2>
         </div>
         <div className="flex items-center gap-2">
-          {skeleton.isLocked ? (
+          {skeleton.isLocked && (
             <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
               <Lock className="w-3 h-3 mr-1" />
-              Locked
-            </Badge>
-          ) : (
-            <Badge variant="outline" className="text-muted-foreground">
-              <MessageSquare className="w-3 h-3 mr-1" />
-              Step {currentStep + 1} of {steps.length}
+              Ready to Generate
             </Badge>
           )}
         </div>
@@ -1465,28 +1474,93 @@ export function IdeaClarifier({
         />
       </div>
 
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex gap-1">
-          {steps.map((step, i) => {
-            const section = skeleton[step];
-            const Icon = sectionIcons[step];
-            const isActive = i === currentStep;
-            const isComplete = section.isValid;
-            return (
-              <button
-                key={step}
-                onClick={() => !skeleton.isLocked && setCurrentStep(i)}
-                className={`p-2 rounded-md transition-all ${
-                  isActive ? "bg-primary/20 text-primary" : isComplete ? "bg-green-500/20 text-green-400" : "bg-muted/50 text-muted-foreground"
-                } hover-elevate`}
-                disabled={skeleton.isLocked}
-                data-testid={`step-${step}`}
-              >
-                <Icon className="w-4 h-4" />
-              </button>
-            );
-          })}
+      {/* Visual Step Progress */}
+      {!showAllSections && (
+        <div className="mb-6">
+          <div className="flex items-center justify-between">
+            {steps.map((step, i) => {
+              const section = skeleton[step];
+              const Icon = sectionIcons[step];
+              const isActive = i === currentStep;
+              const isComplete = section.isValid;
+              const isPast = i < currentStep;
+              
+              return (
+                <div key={step} className="flex items-center flex-1">
+                  <button
+                    onClick={() => !skeleton.isLocked && setCurrentStep(i)}
+                    disabled={skeleton.isLocked}
+                    className="flex flex-col items-center group relative"
+                    data-testid={`step-${step}`}
+                  >
+                    <div
+                      className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${
+                        isComplete
+                          ? "bg-green-500/20 border-2 border-green-500 text-green-400"
+                          : isActive
+                          ? "bg-primary/20 border-2 border-primary text-primary scale-110"
+                          : "bg-muted/50 border-2 border-muted-foreground/30 text-muted-foreground"
+                      } ${!skeleton.isLocked ? "group-hover:scale-105" : ""}`}
+                    >
+                      {isComplete ? (
+                        <Check className="w-5 h-5" />
+                      ) : (
+                        <Icon className="w-5 h-5" />
+                      )}
+                    </div>
+                    <span
+                      className={`mt-2 text-xs font-medium transition-colors ${
+                        isActive ? "text-primary" : isComplete ? "text-green-400" : "text-muted-foreground"
+                      }`}
+                    >
+                      {stepLabels[step]}
+                    </span>
+                    {isActive && (
+                      <div className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 whitespace-nowrap">
+                        <span className="text-[10px] text-muted-foreground">
+                          Step {i + 1} of {steps.length}
+                        </span>
+                      </div>
+                    )}
+                  </button>
+                  
+                  {i < steps.length - 1 && (
+                    <div className="flex-1 h-0.5 mx-2 relative">
+                      <div className="absolute inset-0 bg-muted-foreground/20 rounded" />
+                      <div
+                        className={`absolute inset-y-0 left-0 rounded transition-all duration-500 ${
+                          isComplete || isPast ? "bg-green-500 w-full" : isActive ? "bg-primary/50 w-1/2" : "w-0"
+                        }`}
+                      />
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
         </div>
+      )}
+
+      {/* Current Step Guidance */}
+      {!showAllSections && !skeleton.isLocked && (
+        <div className="mb-4 p-3 rounded-lg bg-primary/5 border border-primary/10">
+          <div className="flex items-start gap-3">
+            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+              <HelpCircle className="w-4 h-4 text-primary" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-foreground">
+                {stepLabels[currentSectionType]}
+              </p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                {stepDescriptions[currentSectionType]}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="flex items-center justify-end mb-4">
         <Button
           size="sm"
           variant="outline"
@@ -1502,7 +1576,7 @@ export function IdeaClarifier({
           ) : (
             <>
               <Sparkles className="w-3 h-3 mr-1" />
-              Advanced Options
+              Show All Sections
             </>
           )}
         </Button>
@@ -1511,66 +1585,92 @@ export function IdeaClarifier({
       <div className="space-y-4">
         {showAllSections
           ? steps.map((step) => <div key={step}>{renderSectionEditor(step)}</div>)
-          : renderSectionEditor(currentSectionType)}
+          : (
+            <div 
+              key={currentSectionType}
+              className="animate-in fade-in slide-in-from-right-4 duration-300"
+            >
+              {renderSectionEditor(currentSectionType)}
+            </div>
+          )}
       </div>
 
       <div className="flex items-center justify-between mt-6 pt-4 border-t border-border">
         {!skeleton.isLocked ? (
           <>
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handlePrev}
-                disabled={currentStep === 0}
-                data-testid="button-prev"
-              >
-                <ChevronLeft className="w-4 h-4 mr-1" />
-                Back
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleReset}
-                data-testid="button-reset"
-              >
-                <RefreshCw className="w-4 h-4 mr-1" />
-                Reset
-              </Button>
+            <div className="flex items-center gap-2">
+              {currentStep > 0 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handlePrev}
+                  data-testid="button-prev"
+                >
+                  <ChevronLeft className="w-4 h-4 mr-1" />
+                  Back
+                </Button>
+              )}
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={handleReset}
+                    data-testid="button-reset"
+                  >
+                    <RefreshCw className="w-4 h-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Start over</TooltipContent>
+              </Tooltip>
             </div>
-            <div className="flex gap-2">
+            
+            <div className="flex items-center gap-3">
+              {/* Progress indicator */}
+              {!showAllSections && (
+                <span className="text-xs text-muted-foreground">
+                  {skeleton[currentSectionType].isValid ? (
+                    <span className="text-green-400 flex items-center gap-1">
+                      <Check className="w-3 h-3" /> Complete
+                    </span>
+                  ) : (
+                    "Fill in this section to continue"
+                  )}
+                </span>
+              )}
+              
               {currentStep < steps.length - 1 ? (
                 <Button
                   onClick={handleNext}
                   disabled={!canProceedToNext}
+                  className="min-w-[100px]"
                   data-testid="button-next"
                 >
-                  Next
+                  Continue
                   <ChevronRight className="w-4 h-4 ml-1" />
                 </Button>
               ) : (
                 <Button
                   onClick={handleLock}
                   disabled={!canLockSkeleton}
-                  className="bg-green-600 hover:bg-green-700"
+                  className="bg-green-600 hover:bg-green-700 min-w-[160px]"
                   data-testid="button-lock"
                 >
                   <Lock className="w-4 h-4 mr-2" />
-                  Lock & Generate Script
+                  Finalize & Generate
                 </Button>
               )}
             </div>
           </>
         ) : (
-          <div className="flex gap-2 w-full">
+          <div className="flex gap-3 w-full">
             <Button
               variant="outline"
               onClick={handleUnlock}
-              className="flex-1"
               data-testid="button-unlock"
             >
               <Unlock className="w-4 h-4 mr-2" />
-              Unlock & Edit
+              Edit
             </Button>
             <Button
               onClick={() => onSkeletonComplete(skeleton)}
@@ -1581,7 +1681,7 @@ export function IdeaClarifier({
               {isGenerating ? (
                 <>
                   <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-                  Generating...
+                  Creating your script...
                 </>
               ) : (
                 <>
