@@ -641,7 +641,7 @@ export const skeletonValidationRules = {
   },
   problem: {
     minLength: 20,
-    maxLength: 300,
+    maxLength: 12000,
     requiresSpecificity: true,
     guidingQuestion: "What pain, frustration, or tension does the viewer recognize immediately?",
     examples: [
@@ -652,7 +652,7 @@ export const skeletonValidationRules = {
   },
   solution: {
     minLength: 20,
-    maxLength: 500,
+    maxLength: 12000,
     requiresSpecificity: true,
     guidingQuestion: "What is THE core teaching - the golden nugget your entire video is built around?",
     examples: [
