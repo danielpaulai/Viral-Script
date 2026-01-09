@@ -142,10 +142,22 @@ export class MemStorage implements IStorage {
     this.scriptVersions = new Map();
     this.scriptTemplates = new Map();
     this.ctaTemplates = new Map();
-    // Use memory session store for reliability across environments
-    this.sessionStore = new MemoryStore({
-      checkPeriod: 86400000, // prune expired entries every 24h
-    });
+    
+    // Use PostgreSQL session store in production for persistent sessions
+    if (process.env.DATABASE_URL && pool) {
+      console.log("Using PostgreSQL session store for persistent sessions");
+      this.sessionStore = new PgSession({
+        pool: pool,
+        tableName: "sessions",
+        createTableIfMissing: true,
+        ttl: 7 * 24 * 60 * 60, // 7 days in seconds
+      });
+    } else {
+      console.log("Using in-memory session store (sessions will be lost on restart)");
+      this.sessionStore = new MemoryStore({
+        checkPeriod: 86400000, // prune expired entries every 24h
+      });
+    }
   }
 
   // User methods with database fallback to memory
