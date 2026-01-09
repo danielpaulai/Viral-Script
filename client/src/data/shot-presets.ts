@@ -258,6 +258,111 @@ export const shotPresets: ShotPreset[] = [
   }
 ];
 
+export interface BackgroundTrack {
+  id: string;
+  title: string;
+  artist: string;
+  vibes: string[];
+}
+
+export const backgroundMusicLibrary: BackgroundTrack[] = [
+  { id: "1", title: "THANK YOU (Instrumental)", artist: "Tyler, The Creator", vibes: ["Inspirational", "Thought-provoking"] },
+  { id: "2", title: "Plage Coquillage (First Kiss Song)", artist: "Tao Mon Amour", vibes: ["Thought-provoking", "Inspirational"] },
+  { id: "3", title: "Bloody Mary (Remix)", artist: "Lady Gaga", vibes: ["Sigma"] },
+  { id: "4", title: "Private Jet", artist: "D Savage", vibes: ["Chill", "Engaging"] },
+  { id: "5", title: "Suicide Year", artist: "WEEDMANE", vibes: ["Phonk"] },
+  { id: "6", title: "Sahara", artist: "Hensonn", vibes: ["Sigma"] },
+  { id: "7", title: "i was only temporary", artist: "my head is empty", vibes: ["Thought-provoking", "Suspense"] },
+  { id: "8", title: "Suspense, Horror, Piano and Music Box", artist: "Mr. Blindbandit", vibes: ["Thought-provoking", "Suspense"] },
+  { id: "9", title: "Echo Sax End", artist: "Caleb Arredondo", vibes: ["Thought-provoking", "Inspirational"] },
+  { id: "10", title: "Tings", artist: "Baby Smoove", vibes: ["Chill", "Engaging"] },
+  { id: "11", title: "The Lost Soul Down (slowed + reverb)", artist: "NBSPLV", vibes: ["Thought-provoking", "Sigma"] },
+  { id: "12", title: "Blade Runner 2049", artist: "Synthwave Goose", vibes: ["Thought-provoking"] },
+  { id: "13", title: "Another Late Night", artist: "Drake ft. Lil Yachty", vibes: ["Chill", "Engaging"] },
+  { id: "14", title: "Yale", artist: "Ken Carson", vibes: ["Hard", "Engaging"] },
+  { id: "15", title: "Paper Planes", artist: "M.I.A.", vibes: ["Chill", "Engaging"] },
+  { id: "16", title: "After Dark", artist: "Mr. Kitty", vibes: ["Sigma"] },
+  { id: "17", title: "Hell N Back", artist: "Bakar", vibes: ["Chill", "Engaging"] },
+  { id: "18", title: "Vampire Heart", artist: "Isak Roen & Key Kelly", vibes: ["Hard", "Engaging"] },
+  { id: "19", title: "The Young Folks", artist: "Peter Bjorn and John", vibes: ["Chill", "Engaging"] },
+  { id: "20", title: "Righteous", artist: "Mo Beats", vibes: ["Inspirational"] },
+  { id: "21", title: "Million Dollar Baby", artist: "Tommy Richman", vibes: ["Hard", "Engaging"] },
+  { id: "22", title: "HOME - Resonance (slowed + reverb)", artist: "HOME", vibes: ["Emotional", "Inspirational"] },
+  { id: "23", title: "Luminary", artist: "Joel Sunny", vibes: ["Thought-provoking"] },
+  { id: "24", title: "Low Key Gliding (K08beatz remix)", artist: "Hal Walker", vibes: ["Chill", "Engaging"] },
+  { id: "25", title: "Not Like Us", artist: "Kendrick Lamar", vibes: ["Hard", "Engaging"] },
+  { id: "26", title: "Call me (slowed)", artist: "Plenka", vibes: ["Sigma"] },
+  { id: "27", title: "Space Cadet", artist: "Metro Boomin & Gunna", vibes: ["Chill", "Engaging"] },
+  { id: "28", title: "After Hours (slowed + reverb)", artist: "The Weeknd", vibes: ["Inspirational"] },
+  { id: "29", title: "Walk Em Down", artist: "Metro Boomin & 21 Savage", vibes: ["Hard", "Engaging"] },
+  { id: "30", title: "In Ha Mood", artist: "Ice Spice", vibes: ["Hard", "Engaging"] },
+  { id: "31", title: "Runaway", artist: "Kanye West", vibes: ["Inspirational", "Engaging"] },
+  { id: "32", title: "Walking on a Dream", artist: "Empire of the Sun", vibes: ["Chill", "Engaging"] },
+  { id: "33", title: "Like That", artist: "Metro Boomin & Future", vibes: ["Hard", "Engaging"] },
+  { id: "34", title: "Test & Recognize (Flume Re-work)", artist: "Seekae", vibes: ["Thought-provoking", "Inspirational"] },
+  { id: "35", title: "Dark Red", artist: "Steve Lacy", vibes: ["Chill", "Engaging"] },
+  { id: "36", title: "1901", artist: "Phoenix", vibes: ["Inspirational"] },
+  { id: "37", title: "Thelema", artist: "Øfdream", vibes: ["Thought-provoking"] },
+  { id: "38", title: "First Person Shooter", artist: "Drake ft. J. Cole", vibes: ["Hard", "Engaging"] },
+  { id: "39", title: "Money So Big", artist: "Yeat", vibes: ["Hard", "Engaging"] },
+  { id: "40", title: "GigaChad Theme", artist: "g3ox_em", vibes: ["Phonk"] },
+  { id: "41", title: "ESSENCE", artist: "Casper", vibes: ["Phonk"] },
+  { id: "42", title: "Swag Overload", artist: "Ken Carson", vibes: ["Chill", "Engaging"] },
+  { id: "43", title: "METAMORPHOSIS", artist: "INTERWORLD", vibes: ["Phonk"] },
+  { id: "44", title: "Surround Sound", artist: "J.I.D ft. 21 Savage", vibes: ["Hard", "Engaging"] },
+  { id: "45", title: "Memory Reboot", artist: "Narvent & VØJ", vibes: ["Inspirational"] },
+  { id: "46", title: "Frank Saint (slowed)", artist: "core²", vibes: ["Thought-provoking", "Emotional"] },
+  { id: "47", title: "Dragonfly", artist: "Dana and Alden", vibes: ["Thought-provoking", "Inspirational"] },
+  { id: "48", title: "Another Love (slowed)", artist: "Tom Odell", vibes: ["Emotional"] },
+  { id: "49", title: "Tell Em (slowed + reverb)", artist: "Cochise", vibes: ["Chill", "Engaging"] },
+  { id: "50", title: "Eyes Without A Face", artist: "Billy Idol", vibes: ["Chill", "Engaging"] },
+  { id: "51", title: "Close Eyes (slowed + reverb)", artist: "DVRST", vibes: ["Phonk"] },
+  { id: "52", title: "Rapp Snitch Knishes", artist: "MF Doom", vibes: ["Chill", "Engaging"] },
+  { id: "53", title: "Dream Space", artist: "DVRST", vibes: ["Phonk"] },
+  { id: "54", title: "bigger thën everything", artist: "Yeat", vibes: ["Chill", "Engaging"] },
+  { id: "55", title: "Hand Covers Bruise", artist: "Atticus Ross & Trent Reznor", vibes: ["Thought-provoking", "Suspense"] },
+  { id: "56", title: "20 Min", artist: "Lil Uzi Vert", vibes: ["Chill", "Engaging"] },
+  { id: "57", title: "Particles (slowed)", artist: "Villiam Lane", vibes: ["Sigma"] },
+  { id: "58", title: "Heart On My Sleeve", artist: "AI Drake", vibes: ["Chill", "Engaging"] },
+  { id: "59", title: "Paris", artist: "Else", vibes: ["Thought-provoking"] },
+  { id: "60", title: "Lost", artist: "Frank Ocean", vibes: ["Chill", "Engaging"] },
+  { id: "61", title: "MONEY IS FOR THE RENT NOT FOR THE SOUL", artist: "Mr. Carmack", vibes: ["Phonk"] }
+];
+
+export const musicVibes = [
+  "Chill",
+  "Engaging", 
+  "Hard",
+  "Inspirational",
+  "Thought-provoking",
+  "Emotional",
+  "Sigma",
+  "Phonk",
+  "Suspense"
+] as const;
+
+export function getMusicByVibe(vibe: string): BackgroundTrack[] {
+  return backgroundMusicLibrary.filter(track => 
+    track.vibes.some(v => v.toLowerCase() === vibe.toLowerCase())
+  );
+}
+
+export function getMusicForScriptMood(mood: string): BackgroundTrack[] {
+  const moodToVibeMap: Record<string, string[]> = {
+    "authority": ["Hard", "Sigma", "Inspirational"],
+    "education": ["Thought-provoking", "Chill", "Inspirational"],
+    "storytelling": ["Emotional", "Thought-provoking", "Inspirational"],
+    "motivational": ["Hard", "Inspirational", "Engaging"],
+    "casual": ["Chill", "Engaging"],
+    "intense": ["Phonk", "Hard", "Suspense"]
+  };
+  
+  const vibes = moodToVibeMap[mood.toLowerCase()] || ["Chill", "Engaging"];
+  return backgroundMusicLibrary.filter(track =>
+    track.vibes.some(v => vibes.includes(v))
+  );
+}
+
 export const musicResources = [
   {
     name: "Epidemic Sound",
