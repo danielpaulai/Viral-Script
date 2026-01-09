@@ -9,6 +9,13 @@ export interface IAuthStorage {
   upsertUser(user: UpsertUser): Promise<User>;
 }
 
+// Helper to calculate trial end date (7 days from now)
+function getTrialEndDate(): Date {
+  const date = new Date();
+  date.setDate(date.getDate() + 7);
+  return date;
+}
+
 class AuthStorage implements IAuthStorage {
   async getUser(id: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));
@@ -16,9 +23,19 @@ class AuthStorage implements IAuthStorage {
   }
 
   async upsertUser(userData: UpsertUser): Promise<User> {
+    // Check if user already exists
+    const existingUser = await this.getUser(userData.id as string);
+    
+    // For new users, set up 7-day free trial
+    const insertData = existingUser ? userData : {
+      ...userData,
+      trialEndsAt: getTrialEndDate(),
+      trialScriptsUsed: 0,
+    };
+    
     const [user] = await db
       .insert(users)
-      .values(userData)
+      .values(insertData)
       .onConflictDoUpdate({
         target: users.id,
         set: {

@@ -1542,6 +1542,25 @@ Generate 3 CTAs now:`;
       const params: ScriptParameters = req.body;
       const userId = req.user?.id;
       
+      // Check trial status for authenticated users
+      if (userId) {
+        const trialStatus = await storage.checkTrialStatus(userId);
+        if (trialStatus.trialEnded) {
+          return res.status(403).json({ 
+            error: "Trial ended", 
+            message: "Your free trial has ended. Please upgrade to continue generating scripts.",
+            trialStatus
+          });
+        }
+        if (trialStatus.scriptsRemaining <= 0) {
+          return res.status(403).json({ 
+            error: "Script limit reached", 
+            message: "You've used all 20 scripts in your free trial. Please upgrade to continue.",
+            trialStatus
+          });
+        }
+      }
+      
       let knowledgeBaseDocs: KnowledgeBaseDoc[] = [];
       if (params.useKnowledgeBase && userId) {
         // Get user-specific knowledge base if authenticated
@@ -1567,6 +1586,13 @@ Generate 3 CTAs now:`;
         const now = new Date();
         const month = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
         await storage.incrementUsage(userId, month, 'scriptsGenerated');
+        
+        // Increment trial scripts used for users on free trial
+        const user = await storage.getUser(userId);
+        if (user && (!user.plan || user.plan === 'starter')) {
+          await storage.incrementTrialScriptsUsed(userId);
+        }
+        
         if (params.deepResearch) {
           await storage.incrementUsage(userId, month, 'deepResearchUsed');
         }
@@ -3030,6 +3056,26 @@ Generate 4 CORE TEACHING ideas - each should be THE central insight that an enti
       res.json(subscription);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch subscription" });
+    }
+  });
+
+  // Trial Status endpoint
+  app.get("/api/user/trial-status", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({ error: "User not found" });
+      }
+      const trialStatus = await storage.checkTrialStatus(userId);
+      const user = await storage.getUser(userId);
+      res.json({
+        ...trialStatus,
+        trialEndsAt: user?.trialEndsAt,
+        scriptsUsed: user?.trialScriptsUsed || 0,
+        maxScripts: 20,
+      });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch trial status" });
     }
   });
 

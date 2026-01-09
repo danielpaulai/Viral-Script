@@ -45,6 +45,8 @@ export interface IStorage {
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: UpsertUser): Promise<User>;
   updateUserPlan(userId: string, plan: string): Promise<User | undefined>;
+  incrementTrialScriptsUsed(userId: string): Promise<void>;
+  checkTrialStatus(userId: string): Promise<{ isOnTrial: boolean; trialEnded: boolean; scriptsRemaining: number; daysRemaining: number }>;
   
   getScripts(): Promise<Script[]>;
   getScript(id: string): Promise<Script | undefined>;
@@ -362,6 +364,61 @@ export class MemStorage implements IStorage {
       return updated;
     }
     return undefined;
+  }
+
+  async incrementTrialScriptsUsed(userId: string): Promise<void> {
+    if (db) {
+      try {
+        await db.update(users)
+          .set({ 
+            trialScriptsUsed: (await this.getUser(userId))?.trialScriptsUsed ? 
+              ((await this.getUser(userId))?.trialScriptsUsed || 0) + 1 : 1
+          })
+          .where(eq(users.id, userId));
+        return;
+      } catch (e) {
+        console.log("Database update failed:", (e as Error).message);
+      }
+    }
+    // Memory fallback
+    const user = this.usersMemory.get(userId);
+    if (user) {
+      user.trialScriptsUsed = (user.trialScriptsUsed || 0) + 1;
+      this.usersMemory.set(userId, user);
+    }
+  }
+
+  async checkTrialStatus(userId: string): Promise<{ isOnTrial: boolean; trialEnded: boolean; scriptsRemaining: number; daysRemaining: number }> {
+    const user = await this.getUser(userId);
+    if (!user) {
+      return { isOnTrial: false, trialEnded: true, scriptsRemaining: 0, daysRemaining: 0 };
+    }
+
+    // If user has a paid plan, they're not on trial
+    if (user.plan && user.plan !== 'starter') {
+      return { isOnTrial: false, trialEnded: false, scriptsRemaining: 999, daysRemaining: 999 };
+    }
+
+    const now = new Date();
+    const trialEndsAt = user.trialEndsAt ? new Date(user.trialEndsAt) : null;
+    const trialScriptsUsed = user.trialScriptsUsed || 0;
+    const maxTrialScripts = 20;
+
+    // If no trial end date, user hasn't started trial yet (legacy user)
+    if (!trialEndsAt) {
+      return { isOnTrial: true, trialEnded: false, scriptsRemaining: maxTrialScripts - trialScriptsUsed, daysRemaining: 7 };
+    }
+
+    const trialEnded = now > trialEndsAt;
+    const scriptsRemaining = Math.max(0, maxTrialScripts - trialScriptsUsed);
+    const daysRemaining = trialEnded ? 0 : Math.ceil((trialEndsAt.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+
+    return {
+      isOnTrial: !trialEnded && scriptsRemaining > 0,
+      trialEnded: trialEnded || scriptsRemaining === 0,
+      scriptsRemaining,
+      daysRemaining,
+    };
   }
 
   async getKnowledgeBaseDocs(userId?: string): Promise<KnowledgeBaseDoc[]> {
