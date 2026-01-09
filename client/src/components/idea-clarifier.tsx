@@ -1642,8 +1642,8 @@ export function IdeaClarifier({
           </div>
           
           {/* Pro tip */}
-          <div className="ml-11 mt-3 p-2 rounded bg-amber-500/10 border border-amber-500/20">
-            <p className="text-xs text-amber-400 flex items-start gap-1">
+          <div className="ml-11 mt-3 p-2 rounded bg-amber-100 dark:bg-amber-500/10 border border-amber-300 dark:border-amber-500/20">
+            <p className="text-xs text-amber-700 dark:text-amber-400 flex items-start gap-1">
               <Lightbulb className="w-3 h-3 mt-0.5 flex-shrink-0" />
               <span><strong>Tip:</strong> {stepGuidance[currentSectionType].tip}</span>
             </p>
