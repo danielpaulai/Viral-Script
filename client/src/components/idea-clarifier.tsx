@@ -140,6 +140,15 @@ const stepDescriptions: Record<SkeletonSectionType, string> = {
   cta: "What action should viewers take?",
 };
 
+// Wizard stage configuration
+type WizardStage = 1 | 2 | 3;
+
+const wizardStages = [
+  { id: 1 as WizardStage, title: "Set Your Brief", description: "Choose your video settings" },
+  { id: 2 as WizardStage, title: "Build Your Script", description: "Create your content skeleton" },
+  { id: 3 as WizardStage, title: "Review & Generate", description: "Confirm and create your script" },
+];
+
 export function IdeaClarifier({
   onSkeletonComplete,
   onSkeletonChange,
@@ -149,6 +158,7 @@ export function IdeaClarifier({
   const [skeleton, setSkeleton] = useState<VideoIdeaSkeleton>(() =>
     createEmptySkeleton(initialIdea)
   );
+  const [wizardStage, setWizardStage] = useState<WizardStage>(1);
   const [currentStep, setCurrentStep] = useState<number>(0);
   const [showAllSections, setShowAllSections] = useState(false);
   
@@ -494,6 +504,21 @@ export function IdeaClarifier({
     );
   }, [skeleton]);
 
+  // Stage 1 validation - check if brief settings are complete
+  const isStage1Complete = useMemo(() => {
+    return skeleton.videoPurpose && skeleton.platform && skeleton.duration;
+  }, [skeleton.videoPurpose, skeleton.platform, skeleton.duration]);
+
+  // Stage 2 validation - check if content skeleton is complete
+  const isStage2Complete = useMemo(() => {
+    return (
+      skeleton.problem.isValid &&
+      skeleton.solution.isValid &&
+      skeleton.hook.isValid &&
+      skeleton.cta.isValid
+    );
+  }, [skeleton]);
+
   const handleNext = () => {
     if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1);
@@ -503,6 +528,24 @@ export function IdeaClarifier({
   const handlePrev = () => {
     if (currentStep > 0) {
       setCurrentStep(currentStep - 1);
+    }
+  };
+
+  // Navigate between wizard stages
+  const handleNextStage = () => {
+    if (wizardStage === 1 && isStage1Complete) {
+      setWizardStage(2);
+      setCurrentStep(0);
+    } else if (wizardStage === 2 && isStage2Complete) {
+      setWizardStage(3);
+    }
+  };
+
+  const handlePrevStage = () => {
+    if (wizardStage === 2) {
+      setWizardStage(1);
+    } else if (wizardStage === 3) {
+      setWizardStage(2);
     }
   };
 
@@ -519,6 +562,7 @@ export function IdeaClarifier({
   const handleReset = () => {
     setSkeleton(createEmptySkeleton(skeleton.rawIdea, skeleton.platform, skeleton.duration));
     setCurrentStep(0);
+    setWizardStage(1);
   };
 
   // Render the problem section with AI solution suggestions
@@ -1358,39 +1402,15 @@ export function IdeaClarifier({
     );
   };
 
-  return (
-    <Card className="p-4 md:p-6" data-testid="card-idea-clarifier">
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
-          <Zap className="w-5 h-5 text-primary" />
-          <h2 className="text-lg font-bold text-foreground">Create Your Script</h2>
-        </div>
-        <div className="flex items-center gap-2">
-          {skeleton.isLocked && (
-            <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
-              <Lock className="w-3 h-3 mr-1" />
-              Ready to Generate
-            </Badge>
-          )}
-        </div>
-      </div>
-
-      <div className="mb-4">
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-xs text-muted-foreground">Clarity Score</span>
-          <span className={`text-sm font-mono font-bold ${skeleton.clarityScore >= 70 ? "text-green-400" : skeleton.clarityScore >= 40 ? "text-amber-400" : "text-muted-foreground"}`}>
-            {skeleton.clarityScore}%
-          </span>
-        </div>
-        <Progress value={skeleton.clarityScore} className="h-2" />
-        <p className="text-xs text-muted-foreground mt-1">
-          {skeleton.clarityScore < 70 ? "Complete all sections to unlock script generation" : "Your idea is clear enough to generate a script!"}
-        </p>
-      </div>
-
+  // Render Stage 1: Set Your Brief
+  const renderStage1 = () => (
+    <div className="space-y-6">
       {/* Video Purpose Selector */}
-      <div className="mb-4">
-        <Label className="text-xs font-medium mb-2 block">What type of video is this?</Label>
+      <div>
+        <div className="flex items-center gap-2 mb-3">
+          <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center text-xs font-bold text-primary">1</div>
+          <Label className="text-sm font-medium">What type of video is this?</Label>
+        </div>
         <div className="grid grid-cols-3 gap-2">
           {videoPurposes.map((purpose) => {
             const Icon = purposeIcons[purpose.id];
@@ -1398,13 +1418,12 @@ export function IdeaClarifier({
             return (
               <button
                 key={purpose.id}
-                onClick={() => !skeleton.isLocked && handleVideoPurposeChange(purpose.id)}
+                onClick={() => handleVideoPurposeChange(purpose.id)}
                 className={`p-3 rounded-lg border text-left transition-all ${
                   isSelected
                     ? "bg-primary/20 border-primary"
                     : "bg-muted/30 border-border hover-elevate"
                 }`}
-                disabled={skeleton.isLocked}
                 data-testid={`purpose-${purpose.id}`}
               >
                 <div className="flex items-center gap-2 mb-1">
@@ -1422,16 +1441,19 @@ export function IdeaClarifier({
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 mb-4">
+      {/* Platform & Duration */}
+      <div className="grid grid-cols-2 gap-4">
         <div>
-          <Label className="text-xs font-medium mb-1 block">Platform</Label>
+          <div className="flex items-center gap-2 mb-2">
+            <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center text-xs font-bold text-primary">2</div>
+            <Label className="text-sm font-medium">Platform</Label>
+          </div>
           <Select
             value={skeleton.platform}
             onValueChange={(value) => setSkeleton({ ...skeleton, platform: value })}
-            disabled={skeleton.isLocked}
           >
             <SelectTrigger className="bg-muted/50" data-testid="select-platform">
-              <SelectValue />
+              <SelectValue placeholder="Select platform" />
             </SelectTrigger>
             <SelectContent>
               {platformOptions.map((opt) => (
@@ -1441,14 +1463,16 @@ export function IdeaClarifier({
           </Select>
         </div>
         <div>
-          <Label className="text-xs font-medium mb-1 block">Duration</Label>
+          <div className="flex items-center gap-2 mb-2">
+            <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center text-xs font-bold text-primary">3</div>
+            <Label className="text-sm font-medium">Duration</Label>
+          </div>
           <Select
             value={skeleton.duration}
             onValueChange={(value) => setSkeleton({ ...skeleton, duration: value })}
-            disabled={skeleton.isLocked}
           >
             <SelectTrigger className="bg-muted/50" data-testid="select-duration">
-              <SelectValue />
+              <SelectValue placeholder="Select duration" />
             </SelectTrigger>
             <SelectContent>
               {durationOptions.map((opt) => (
@@ -1459,22 +1483,29 @@ export function IdeaClarifier({
         </div>
       </div>
 
-      <div className="mb-4">
-        <Label className="text-xs font-medium mb-1 block flex items-center gap-1">
-          <Users className="w-3 h-3" />
-          Target Audience (optional but recommended)
-        </Label>
+      {/* Target Audience */}
+      <div>
+        <div className="flex items-center gap-2 mb-2">
+          <div className="w-6 h-6 rounded-full bg-muted/50 flex items-center justify-center text-xs font-medium text-muted-foreground">
+            <Users className="w-3 h-3" />
+          </div>
+          <Label className="text-sm font-medium">Target Audience <span className="text-muted-foreground font-normal">(optional)</span></Label>
+        </div>
         <Input
           value={skeleton.targetAudience}
           onChange={(e) => setSkeleton({ ...skeleton, targetAudience: e.target.value })}
           placeholder="e.g., entrepreneurs who struggle with productivity"
           className="bg-muted/50"
-          disabled={skeleton.isLocked}
           data-testid="input-audience"
         />
       </div>
+    </div>
+  );
 
-      {/* Visual Step Progress */}
+  // Render Stage 2: Build Your Script (Content Skeleton)
+  const renderStage2 = () => (
+    <div>
+      {/* Visual Step Progress for Content Skeleton */}
       {!showAllSections && (
         <div className="mb-6">
           <div className="flex items-center justify-between">
@@ -1651,47 +1682,262 @@ export function IdeaClarifier({
                 </Button>
               ) : (
                 <Button
-                  onClick={handleLock}
-                  disabled={!canLockSkeleton}
+                  onClick={handleNextStage}
+                  disabled={!isStage2Complete}
                   className="bg-green-600 hover:bg-green-700 min-w-[160px]"
-                  data-testid="button-lock"
+                  data-testid="button-review"
                 >
-                  <Lock className="w-4 h-4 mr-2" />
-                  Finalize & Generate
+                  Review & Generate
+                  <ChevronRight className="w-4 h-4 ml-1" />
                 </Button>
               )}
             </div>
           </>
-        ) : (
-          <div className="flex gap-3 w-full">
-            <Button
-              variant="outline"
-              onClick={handleUnlock}
-              data-testid="button-unlock"
-            >
-              <Unlock className="w-4 h-4 mr-2" />
-              Edit
-            </Button>
-            <Button
-              onClick={() => onSkeletonComplete(skeleton)}
-              disabled={isGenerating}
-              className="flex-1"
-              data-testid="button-generate"
-            >
-              {isGenerating ? (
-                <>
-                  <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-                  Creating your script...
-                </>
-              ) : (
-                <>
-                  <Sparkles className="w-4 h-4 mr-2" />
-                  Generate Script
-                </>
-              )}
-            </Button>
+        ) : null}
+      </div>
+    </div>
+  );
+
+  // Render Stage 3: Review & Generate
+  const renderStage3 = () => {
+    const purposeLabel = videoPurposes.find(p => p.id === skeleton.videoPurpose)?.name || "Not selected";
+    const platformLabel = platformOptions.find(p => p.id === skeleton.platform)?.name || skeleton.platform;
+    const durationLabel = durationOptions.find(d => d.id === skeleton.duration)?.name || skeleton.duration;
+
+    return (
+      <div className="space-y-6">
+        {/* Summary Card */}
+        <div className="p-4 rounded-lg bg-muted/30 border border-border">
+          <h3 className="text-sm font-semibold mb-4 flex items-center gap-2">
+            <Check className="w-4 h-4 text-green-400" />
+            Your Script Summary
+          </h3>
+          
+          <div className="grid grid-cols-2 gap-4 mb-4">
+            <div>
+              <p className="text-xs text-muted-foreground mb-1">Video Type</p>
+              <p className="text-sm font-medium">{purposeLabel}</p>
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground mb-1">Platform</p>
+              <p className="text-sm font-medium">{platformLabel}</p>
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground mb-1">Duration</p>
+              <p className="text-sm font-medium">{durationLabel}</p>
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground mb-1">Target Audience</p>
+              <p className="text-sm font-medium">{skeleton.targetAudience || "General audience"}</p>
+            </div>
           </div>
-        )}
+
+          <div className="space-y-3 pt-4 border-t border-border">
+            <div>
+              <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
+                <AlertTriangle className="w-3 h-3 text-red-400" /> Problem
+              </p>
+              <p className="text-sm">{skeleton.problem.content || "Not set"}</p>
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
+                <Lightbulb className="w-3 h-3 text-green-400" /> Core Teaching
+              </p>
+              <p className="text-sm">{skeleton.solution.content || "Not set"}</p>
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
+                <Sparkles className="w-3 h-3 text-amber-400" /> Hook
+              </p>
+              <p className="text-sm">{skeleton.hook.content || "Not set"}</p>
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
+                <Target className="w-3 h-3 text-blue-400" /> Call to Action
+              </p>
+              <p className="text-sm">{skeleton.cta.content || "Not set"}</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Clarity Score */}
+        <div className="p-4 rounded-lg bg-green-500/10 border border-green-500/30">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-medium text-green-400">Clarity Score</span>
+            <span className="text-lg font-bold text-green-400">{skeleton.clarityScore}%</span>
+          </div>
+          <Progress value={skeleton.clarityScore} className="h-2" />
+          <p className="text-xs text-green-400/80 mt-2">
+            Your script is ready to generate!
+          </p>
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <Card className="p-4 md:p-6" data-testid="card-idea-clarifier">
+      {/* Wizard Stage Header */}
+      <div className="mb-6">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <Zap className="w-5 h-5 text-primary" />
+            <h2 className="text-lg font-bold text-foreground">Create Your Script</h2>
+          </div>
+          {skeleton.isLocked && (
+            <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
+              <Lock className="w-3 h-3 mr-1" />
+              Ready to Generate
+            </Badge>
+          )}
+        </div>
+
+        {/* Stage Progress Indicator */}
+        <div className="flex items-center justify-between">
+          {wizardStages.map((stage, index) => {
+            const isActive = wizardStage === stage.id;
+            const isComplete = 
+              (stage.id === 1 && isStage1Complete && wizardStage > 1) ||
+              (stage.id === 2 && isStage2Complete && wizardStage > 2);
+            const isPast = wizardStage > stage.id;
+            
+            // Can only navigate to completed stages or current stage (not future ones)
+            const canNavigate = 
+              stage.id <= wizardStage || // Can go back
+              (stage.id === 2 && isStage1Complete) || // Can go to stage 2 if stage 1 is complete
+              (stage.id === 3 && isStage1Complete && isStage2Complete); // Can go to stage 3 if both are complete
+            
+            return (
+              <div key={stage.id} className="flex items-center flex-1">
+                <button
+                  onClick={() => !skeleton.isLocked && canNavigate && setWizardStage(stage.id)}
+                  disabled={skeleton.isLocked || !canNavigate}
+                  className={`flex flex-col items-center group ${!canNavigate ? "opacity-50 cursor-not-allowed" : ""}`}
+                  data-testid={`stage-${stage.id}`}
+                >
+                  <div
+                    className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300 ${
+                      isComplete
+                        ? "bg-green-500 text-white"
+                        : isActive
+                        ? "bg-primary text-primary-foreground scale-110"
+                        : "bg-muted text-muted-foreground"
+                    }`}
+                  >
+                    {isComplete ? <Check className="w-5 h-5" /> : stage.id}
+                  </div>
+                  <span
+                    className={`mt-2 text-xs font-medium text-center ${
+                      isActive ? "text-primary" : isComplete ? "text-green-400" : "text-muted-foreground"
+                    }`}
+                  >
+                    {stage.title}
+                  </span>
+                </button>
+                
+                {index < wizardStages.length - 1 && (
+                  <div className="flex-1 h-1 mx-3 rounded-full bg-muted overflow-hidden">
+                    <div
+                      className={`h-full transition-all duration-500 ${
+                        isPast || isComplete ? "bg-green-500 w-full" : isActive ? "bg-primary/50 w-1/2" : "w-0"
+                      }`}
+                    />
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Stage Content */}
+      <div className="animate-in fade-in duration-300">
+        {wizardStage === 1 && renderStage1()}
+        {wizardStage === 2 && renderStage2()}
+        {wizardStage === 3 && renderStage3()}
+      </div>
+
+      {/* Stage Navigation */}
+      <div className="flex items-center justify-between mt-6 pt-4 border-t border-border">
+        <div className="flex items-center gap-2">
+          {wizardStage > 1 && !skeleton.isLocked && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handlePrevStage}
+              data-testid="button-prev-stage"
+            >
+              <ChevronLeft className="w-4 h-4 mr-1" />
+              Back
+            </Button>
+          )}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleReset}
+                data-testid="button-reset"
+              >
+                <RefreshCw className="w-4 h-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Start over</TooltipContent>
+          </Tooltip>
+        </div>
+        
+        <div className="flex items-center gap-3">
+          {wizardStage === 1 && (
+            <Button
+              onClick={handleNextStage}
+              disabled={!isStage1Complete}
+              data-testid="button-next-stage"
+            >
+              Continue to Script
+              <ChevronRight className="w-4 h-4 ml-1" />
+            </Button>
+          )}
+          {wizardStage === 3 && !skeleton.isLocked && (
+            <Button
+              onClick={handleLock}
+              disabled={!canLockSkeleton}
+              className="bg-green-600 hover:bg-green-700"
+              data-testid="button-lock"
+            >
+              <Lock className="w-4 h-4 mr-2" />
+              Lock & Generate Script
+            </Button>
+          )}
+          {skeleton.isLocked && (
+            <div className="flex gap-3">
+              <Button
+                variant="outline"
+                onClick={handleUnlock}
+                data-testid="button-unlock"
+              >
+                <Unlock className="w-4 h-4 mr-2" />
+                Edit
+              </Button>
+              <Button
+                onClick={() => onSkeletonComplete(skeleton)}
+                disabled={isGenerating}
+                data-testid="button-generate"
+              >
+                {isGenerating ? (
+                  <>
+                    <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                    Creating your script...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="w-4 h-4 mr-2" />
+                    Generate Script
+                  </>
+                )}
+              </Button>
+            </div>
+          )}
+        </div>
       </div>
     </Card>
   );
