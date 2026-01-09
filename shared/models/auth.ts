@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { index, jsonb, pgTable, timestamp, varchar } from "drizzle-orm/pg-core";
+import { index, integer, jsonb, pgTable, timestamp, varchar } from "drizzle-orm/pg-core";
 
 // Session storage table.
 // (IMPORTANT) This table is mandatory for Replit Auth, don't drop it.
@@ -29,6 +29,9 @@ export const users = pgTable("users", {
   // Common fields
   plan: varchar("plan").default("starter"),
   planExpiresAt: timestamp("plan_expires_at"),
+  // Trial tracking - 7 days free, 20 scripts max
+  trialEndsAt: timestamp("trial_ends_at"),
+  trialScriptsUsed: integer("trial_scripts_used").default(0),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
