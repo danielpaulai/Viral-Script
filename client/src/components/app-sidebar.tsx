@@ -1,4 +1,5 @@
 import { Link, useLocation } from "wouter";
+import { useQuery } from "@tanstack/react-query";
 import {
   Home,
   Video,
@@ -15,8 +16,11 @@ import {
   Layout,
   BarChart3,
   Crown,
+  Clock,
+  Sparkles,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
 import {
   Sidebar,
   SidebarContent,
@@ -51,6 +55,66 @@ const footerNavItems = [
   { href: "#feedback", label: "Share feedback", icon: MessageSquare },
   { href: "#support", label: "Get support", icon: HelpCircle },
 ];
+
+interface TrialStatus {
+  isActive: boolean;
+  daysRemaining: number;
+  scriptsUsed: number;
+  scriptsLimit: number;
+  trialEndsAt: string | null;
+}
+
+function TrialStatusCard() {
+  const { data: trialStatus, isLoading } = useQuery<TrialStatus>({
+    queryKey: ['/api/user/trial-status'],
+  });
+
+  if (isLoading || !trialStatus) return null;
+
+  const scriptsRemaining = trialStatus.scriptsLimit - trialStatus.scriptsUsed;
+  const progressPercent = (trialStatus.scriptsUsed / trialStatus.scriptsLimit) * 100;
+
+  if (!trialStatus.isActive) {
+    return (
+      <div className="mx-2 mb-2 p-3 rounded-lg bg-muted/50 border border-muted-foreground/10">
+        <div className="flex items-center gap-2 text-muted-foreground">
+          <Clock className="w-4 h-4" />
+          <span className="text-xs font-medium">Trial ended</span>
+        </div>
+        <Link href="/pricing">
+          <div className="mt-2 text-xs text-primary hover:underline cursor-pointer flex items-center gap-1">
+            <Sparkles className="w-3 h-3" />
+            Upgrade to continue
+          </div>
+        </Link>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mx-2 mb-2 p-3 rounded-lg bg-primary/5 border border-primary/10">
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center gap-1.5">
+          <Sparkles className="w-3.5 h-3.5 text-primary" />
+          <span className="text-xs font-medium">Free Trial</span>
+        </div>
+        <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 border-primary/30 text-primary">
+          {trialStatus.daysRemaining} days left
+        </Badge>
+      </div>
+      <div className="space-y-1.5">
+        <div className="flex items-center justify-between text-[10px] text-muted-foreground">
+          <span>Scripts used</span>
+          <span>{trialStatus.scriptsUsed} / {trialStatus.scriptsLimit}</span>
+        </div>
+        <Progress value={progressPercent} className="h-1.5" />
+        <p className="text-[10px] text-muted-foreground">
+          {scriptsRemaining} scripts remaining
+        </p>
+      </div>
+    </div>
+  );
+}
 
 export function AppSidebar() {
   const [location] = useLocation();
@@ -136,6 +200,7 @@ export function AppSidebar() {
       </SidebarContent>
 
       <SidebarFooter>
+        <TrialStatusCard />
         <SidebarSeparator />
         <SidebarMenu>
           {footerNavItems.map((item) => {
