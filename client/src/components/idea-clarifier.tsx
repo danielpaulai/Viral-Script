@@ -140,6 +140,46 @@ const stepDescriptions: Record<SkeletonSectionType, string> = {
   cta: "What action should viewers take?",
 };
 
+// Detailed step-by-step guidance for each section
+const stepGuidance: Record<SkeletonSectionType, { title: string; steps: string[]; tip: string }> = {
+  problem: {
+    title: "Define the Problem",
+    steps: [
+      "Think about what frustrates your audience right now",
+      "Write it as a specific pain point (not vague)",
+      "Make sure it's relatable - they should think 'that's me!'"
+    ],
+    tip: "Be specific! 'Struggling to grow on social media' is vague. 'Posting daily but getting zero engagement' is specific."
+  },
+  solution: {
+    title: "Share Your Core Teaching",
+    steps: [
+      "What's the ONE insight that solves this problem?",
+      "This is your 'golden nugget' - the real value of your video",
+      "Write the complete teaching, not just a one-liner"
+    ],
+    tip: "60-70% of your video will be spent on this. Make it actionable and unique to you."
+  },
+  hook: {
+    title: "Craft Your Hook",
+    steps: [
+      "Choose how you want to grab attention (AI Generate, Browse, or Write)",
+      "Pick a hook style that matches your video purpose",
+      "Select or write a hook that makes people stop scrolling"
+    ],
+    tip: "Great hooks sound spoken, not written. Read it out loud - does it sound natural?"
+  },
+  cta: {
+    title: "Add Your Call to Action",
+    steps: [
+      "Decide what you want viewers to do after watching",
+      "Generate AI suggestions or pick from examples",
+      "Keep it simple - one clear action only"
+    ],
+    tip: "Match your CTA to your video purpose. Authority videos → Follow. Educational → Save. Story → Comment."
+  }
+};
+
 // Wizard stage configuration
 type WizardStage = 1 | 2 | 3;
 
@@ -1572,21 +1612,41 @@ export function IdeaClarifier({
         </div>
       )}
 
-      {/* Current Step Guidance */}
+      {/* Current Step Guidance - Enhanced with numbered steps */}
       {!showAllSections && !skeleton.isLocked && (
-        <div className="mb-4 p-3 rounded-lg bg-primary/5 border border-primary/10">
-          <div className="flex items-start gap-3">
-            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-              <HelpCircle className="w-4 h-4 text-primary" />
+        <div className="mb-4 p-4 rounded-lg bg-primary/5 border border-primary/10">
+          <div className="flex items-start gap-3 mb-3">
+            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0 text-primary-foreground font-bold text-sm">
+              {currentStep + 1}
             </div>
             <div>
-              <p className="text-sm font-medium text-foreground">
-                {stepLabels[currentSectionType]}
+              <p className="text-sm font-semibold text-foreground">
+                {stepGuidance[currentSectionType].title}
               </p>
               <p className="text-xs text-muted-foreground mt-0.5">
                 {stepDescriptions[currentSectionType]}
               </p>
             </div>
+          </div>
+          
+          {/* Numbered action steps */}
+          <div className="ml-11 space-y-2">
+            {stepGuidance[currentSectionType].steps.map((step, i) => (
+              <div key={i} className="flex items-start gap-2">
+                <div className="w-5 h-5 rounded-full bg-muted/50 flex items-center justify-center flex-shrink-0 text-xs font-medium text-muted-foreground mt-0.5">
+                  {i + 1}
+                </div>
+                <p className="text-sm text-foreground">{step}</p>
+              </div>
+            ))}
+          </div>
+          
+          {/* Pro tip */}
+          <div className="ml-11 mt-3 p-2 rounded bg-amber-500/10 border border-amber-500/20">
+            <p className="text-xs text-amber-400 flex items-start gap-1">
+              <Lightbulb className="w-3 h-3 mt-0.5 flex-shrink-0" />
+              <span><strong>Tip:</strong> {stepGuidance[currentSectionType].tip}</span>
+            </p>
           </div>
         </div>
       )}
