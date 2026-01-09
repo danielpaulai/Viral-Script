@@ -231,6 +231,51 @@ export function IdeaClarifier({
     },
   });
 
+  // Hook adaptation mutation - adapts viral hook templates to specific problem/solution
+  const [adaptingHookId, setAdaptingHookId] = useState<string | null>(null);
+  const adaptHookMutation = useMutation({
+    mutationFn: async (params: {
+      hookTemplate: string;
+      hookName: string;
+      problem: string;
+      solution: string;
+      targetAudience: string;
+      videoPurpose: string;
+    }) => {
+      const response = await apiRequest("POST", "/api/hooks/adapt", params);
+      return await response.json() as { adaptedHook: string; originalTemplate: string; hookName: string };
+    },
+    onSuccess: (data) => {
+      updateSection("hook", data.adaptedHook);
+      setIsEditingHook(false);
+      setAdaptingHookId(null);
+    },
+    onError: () => {
+      setAdaptingHookId(null);
+    },
+  });
+
+  // Handle selecting a viral hook from browse mode - adapts it to context
+  const handleAdaptViralHook = (hook: { id: string; template: string; name: string; example: string }) => {
+    // Only adapt if we have problem/solution context
+    if (skeleton.problem.content.length < 10 || skeleton.solution.content.length < 10) {
+      // No context to adapt - just use the template directly
+      updateSection("hook", hook.example);
+      setIsEditingHook(false);
+      return;
+    }
+    
+    setAdaptingHookId(hook.id);
+    adaptHookMutation.mutate({
+      hookTemplate: hook.template,
+      hookName: hook.name,
+      problem: skeleton.problem.content,
+      solution: skeleton.solution.content,
+      targetAudience: skeleton.targetAudience,
+      videoPurpose: skeleton.videoPurpose,
+    });
+  };
+
   // Solution generation mutation
   const generateSolutionsMutation = useMutation({
     mutationFn: async (params: {
@@ -861,8 +906,14 @@ export function IdeaClarifier({
           // Browse mode - 50 viral hooks database
           <div className="space-y-4">
             <p className="text-sm text-muted-foreground">
-              Browse all 50 viral-tested hook templates organized by category.
+              Browse 50 viral hook templates. Click any template and AI will adapt it to your problem and solution.
             </p>
+            {(skeleton.problem.content.length < 10 || skeleton.solution.content.length < 10) && (
+              <p className="text-xs text-amber-400 flex items-center gap-1">
+                <AlertTriangle className="w-3 h-3" />
+                Add Problem and Solution first for AI to adapt hooks to your content
+              </p>
+            )}
             
             <Tabs value={browseCategoryFilter} onValueChange={setBrowseCategoryFilter} className="w-full">
               <ScrollArea className="w-full">
@@ -886,34 +937,33 @@ export function IdeaClarifier({
                     {viralHooks
                       .filter((h) => h.category === category.id)
                       .map((hook) => {
-                        const isSelected = section.content === hook.example;
+                        const isAdapting = adaptingHookId === hook.id;
+                        const isSelected = !isAdapting && section.content.length > 0 && section.content !== hook.example;
                         return (
                           <button
                             key={hook.id}
-                            onClick={() => {
-                              updateSection("hook", hook.example);
-                              setIsEditingHook(false);
-                            }}
+                            onClick={() => handleAdaptViralHook(hook)}
                             className={`w-full text-left p-3 rounded-lg transition-all hover-elevate ${
-                              isSelected
-                                ? "bg-primary/20 border-2 border-primary/60"
+                              isAdapting
+                                ? "bg-primary/30 border-2 border-primary animate-pulse"
                                 : "bg-background/50 border border-border"
                             }`}
-                            disabled={skeleton.isLocked}
+                            disabled={skeleton.isLocked || isAdapting}
                             data-testid={`button-viral-hook-${hook.id}`}
                           >
                             <div className="flex items-start justify-between gap-2 mb-1.5">
-                              <span className={`font-medium text-sm ${isSelected ? "text-primary" : "text-foreground"}`}>
+                              <span className={`font-medium text-sm ${isAdapting ? "text-primary" : "text-foreground"}`}>
                                 {hook.name}
                               </span>
-                              {isSelected && (
-                                <Badge variant="outline" className="text-[10px] border-primary/50 text-primary shrink-0">
-                                  Selected
+                              {isAdapting && (
+                                <Badge variant="outline" className="text-[10px] border-primary/50 text-primary shrink-0 flex items-center gap-1">
+                                  <Loader2 className="w-3 h-3 animate-spin" />
+                                  Adapting...
                                 </Badge>
                               )}
                             </div>
-                            <p className="text-xs text-muted-foreground italic leading-relaxed mb-1.5">
-                              "{hook.example}"
+                            <p className="text-xs text-muted-foreground leading-relaxed mb-1.5">
+                              <span className="font-medium">Template:</span> "{hook.template}"
                             </p>
                             <p className="text-[11px] text-muted-foreground leading-relaxed">
                               {hook.why}

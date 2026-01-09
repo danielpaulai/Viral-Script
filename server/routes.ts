@@ -2577,6 +2577,84 @@ Start with words like: "If you're...", "Okay so...", "Look,", "I'm going to...",
     }
   });
 
+  // Adapt a viral hook template to the user's specific problem/solution context
+  app.post("/api/hooks/adapt", async (req, res) => {
+    try {
+      const { hookTemplate, hookName, problem, solution, targetAudience, videoPurpose } = req.body;
+      
+      if (!hookTemplate || (!problem && !solution)) {
+        return res.status(400).json({ error: "Hook template and problem or solution content required" });
+      }
+
+      // Video purpose context
+      const purposeContext: Record<string, string> = {
+        authority: "This is an AUTHORITY video - adapt the hook to sound bold and opinionated",
+        education: "This is an EDUCATION video - adapt the hook to promise valuable teaching",
+        storytelling: "This is a STORYTELLING video - adapt the hook to hint at a personal experience",
+      };
+
+      const systemPrompt = `You are an expert at adapting viral hook templates to specific content.
+
+Your job: Take a generic hook template and transform it to perfectly match the user's specific problem and solution.
+
+CRITICAL RULES:
+1. KEEP the SAME HOOK STYLE and STRUCTURE - just fill in the specifics
+2. Make it sound CONVERSATIONAL and SPOKEN, not like a headline
+3. The adapted hook must directly relate to the problem/solution provided
+4. Maximum 1-2 sentences (under 25 words ideally)
+5. Use contractions (you're, I'm, don't, here's, etc.)
+6. The hook should create curiosity about the SPECIFIC solution
+${videoPurpose ? `\n${purposeContext[videoPurpose] || ''}` : ''}
+
+EXAMPLE:
+Template: "I used to [painful thing everyone relates to]"
+Problem: "Founders struggle with imposter syndrome"
+Solution: "Using a daily confidence journal"
+Adapted: "I used to feel like a complete fraud every time I pitched to investors."
+
+Another EXAMPLE:
+Template: "Here's 5 things wrong with [something]"
+Problem: "People waste money on marketing that doesn't convert"
+Solution: "The 3-step validation framework before spending on ads"
+Adapted: "Here's 5 things wrong with how you're spending your marketing budget."
+
+Return ONLY the adapted hook text. No explanations, no quotes, just the hook.`;
+
+      const userPrompt = `HOOK TEMPLATE: "${hookTemplate}"
+HOOK NAME: ${hookName || 'Unknown'}
+PROBLEM: ${problem || 'Not specified'}
+SOLUTION/CORE TEACHING: ${solution || 'Not specified'}
+TARGET AUDIENCE: ${targetAudience || 'General creators'}
+VIDEO PURPOSE: ${videoPurpose || 'education'}
+
+Adapt this hook template to match the specific problem and solution above. Return ONLY the adapted hook text.`;
+
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userPrompt }
+        ],
+        max_tokens: 150,
+        temperature: 0.7,
+      });
+
+      const adaptedHook = response.choices[0]?.message?.content?.trim() || hookTemplate;
+      
+      // Clean up any quotes that might wrap the response
+      const cleanedHook = adaptedHook.replace(/^["']|["']$/g, '').trim();
+      
+      res.json({ 
+        adaptedHook: cleanedHook,
+        originalTemplate: hookTemplate,
+        hookName: hookName,
+      });
+    } catch (error) {
+      console.error("Hook adaptation error:", error);
+      res.status(500).json({ error: "Failed to adapt hook" });
+    }
+  });
+
   // Generate solution suggestions based on problem
   app.post("/api/solutions/generate", async (req, res) => {
     try {
