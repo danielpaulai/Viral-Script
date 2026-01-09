@@ -31,7 +31,7 @@ const pricingTiers = [
   {
     id: "pro",
     name: "Pro",
-    price: null,
+    price: 29.99,
     description: "For creators who want brand-consistent scripts",
     icon: Crown,
     features: [
@@ -55,7 +55,7 @@ const pricingTiers = [
   {
     id: "agency",
     name: "Agency",
-    price: null,
+    price: 39.99,
     description: "Full content strategy for teams and agencies",
     icon: Building2,
     features: [
@@ -131,25 +131,14 @@ export default function Pricing() {
                 </CardHeader>
                 <CardContent className="flex-1">
                   <div className="text-center mb-6">
-                    {tier.price !== null ? (
-                      <>
-                        <span className="text-4xl font-bold" data-testid={`text-tier-price-${tier.id}`}>
-                          ${tier.price}
-                        </span>
-                        <span className="text-muted-foreground">/month</span>
-                        <p className="text-sm text-primary font-medium mt-2" data-testid={`text-trial-${tier.id}`}>
-                          7 days free
-                        </p>
-                      </>
-                    ) : (
-                      <>
-                        <span className="text-2xl font-bold text-muted-foreground" data-testid={`text-tier-price-${tier.id}`}>
-                          Pricing TBD
-                        </span>
-                        <p className="text-sm text-muted-foreground mt-2">
-                          Join waitlist for updates
-                        </p>
-                      </>
+                    <span className="text-4xl font-bold" data-testid={`text-tier-price-${tier.id}`}>
+                      ${tier.price}
+                    </span>
+                    <span className="text-muted-foreground">/month</span>
+                    {!tier.comingSoon && (
+                      <p className="text-sm text-primary font-medium mt-2" data-testid={`text-trial-${tier.id}`}>
+                        7 days free
+                      </p>
                     )}
                   </div>
                   <ul className="space-y-3">
