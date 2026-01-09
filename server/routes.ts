@@ -1064,6 +1064,123 @@ ${videoType.id !== "talking_head" ? `Remember to use the ${videoType.name} forma
       console.warn(`Script specificity failed: ${specificityCheck.numberCount} numbers found (need 2+), generic words: ${specificityCheck.genericWords.join(', ')}`);
     }
     
+    // COHERENCE VALIDATION - Check if script is logically connected, not random facts stitched together
+    let coherenceCheck = { coherent: false, issues: [] as string[], suggestions: [] as string[] };
+    let coherenceAttempts = 0;
+    const maxCoherenceAttempts = 2;
+    
+    while (coherenceAttempts < maxCoherenceAttempts && !coherenceCheck.coherent) {
+      coherenceAttempts++;
+      
+      try {
+        const coherenceResponse = await openai.chat.completions.create({
+          model: "gpt-4o-mini",
+          messages: [
+            {
+              role: "system",
+              content: `You are a script coherence validator. Your job is to check if a video script tells a COHERENT STORY with logical flow, not just random facts stitched together.
+
+A COHERENT script:
+1. Has a clear narrative thread connecting hook → problem → solution → CTA
+2. Each sentence builds on the previous one
+3. The solution directly addresses the problem stated
+4. Facts/stats support the core teaching, not distract from it
+5. The CTA naturally follows from the teaching
+
+An INCOHERENT script:
+1. Jumps between unrelated ideas
+2. Has facts that don't connect to the main teaching
+3. The solution doesn't match the problem
+4. Feels like random tips pasted together
+5. Has logical non-sequiturs
+
+Respond in JSON ONLY:
+{
+  "coherent": true/false,
+  "score": 1-10 (10 = perfectly coherent narrative),
+  "issues": ["issue 1", "issue 2"] (empty if coherent),
+  "suggestions": ["suggestion 1"] (empty if coherent)
+}`
+            },
+            {
+              role: "user",
+              content: `Validate this script for coherence and logical flow:
+
+TOPIC: ${params.topic}
+${params.videoIdeaSkeleton ? `
+INTENDED PROBLEM: ${params.videoIdeaSkeleton.problem?.slice(0, 300)}
+INTENDED SOLUTION: ${params.videoIdeaSkeleton.solution?.slice(0, 300)}
+` : ''}
+
+SCRIPT:
+${scriptContent}
+
+Does this script tell a coherent story where each part connects logically? Or does it feel like random facts stitched together?`
+            }
+          ],
+          max_tokens: 400,
+          temperature: 0.3,
+        });
+        
+        const coherenceJson = coherenceResponse.choices[0]?.message?.content || "";
+        const jsonMatch = coherenceJson.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          const parsed = JSON.parse(jsonMatch[0]);
+          coherenceCheck = {
+            coherent: parsed.coherent === true || parsed.score >= 7,
+            issues: parsed.issues || [],
+            suggestions: parsed.suggestions || []
+          };
+        }
+        
+        console.log(`Coherence check attempt ${coherenceAttempts}: coherent=${coherenceCheck.coherent}, issues=${coherenceCheck.issues.length}`);
+        
+        // If not coherent, regenerate the script with coherence feedback
+        if (!coherenceCheck.coherent && coherenceAttempts < maxCoherenceAttempts) {
+          const coherenceFeedback = `
+CRITICAL COHERENCE ISSUES - YOUR PREVIOUS SCRIPT FELT LIKE RANDOM FACTS STITCHED TOGETHER:
+${coherenceCheck.issues.map(i => `- ${i}`).join('\n')}
+
+FIX SUGGESTIONS:
+${coherenceCheck.suggestions.map(s => `- ${s}`).join('\n')}
+
+REWRITE with a SINGLE NARRATIVE THREAD:
+1. Hook must set up what's coming
+2. Problem section introduces ONE specific pain point
+3. Solution must DIRECTLY address that problem (not go off on tangents)
+4. Every fact/stat must support the core teaching
+5. CTA must naturally follow from the teaching
+
+DO NOT just list random tips. Tell a STORY with a beginning, middle, and end.`;
+
+          const retryResponse = await openai.chat.completions.create({
+            model: "gpt-4o-mini",
+            messages: [
+              { role: "system", content: systemPrompt },
+              { role: "user", content: userPrompt + coherenceFeedback }
+            ],
+            max_tokens: 1500,
+            temperature: 0.6,
+          });
+          
+          scriptContent = retryResponse.choices[0]?.message?.content || scriptContent;
+          
+          // Re-validate basic checks after coherence rewrite
+          gradeLevel = calculateGradeLevel(scriptContent);
+          ctaValid = ctaIsPresent(scriptContent, finalCta);
+          const scriptWords = scriptContent.split(/\s+/).filter(Boolean);
+          currentWordCount = scriptWords.length;
+        }
+      } catch (error) {
+        console.error("Coherence validation failed:", error);
+        coherenceCheck = { coherent: true, issues: [], suggestions: [] }; // Skip on error
+      }
+    }
+    
+    if (!coherenceCheck.coherent) {
+      console.warn(`Script coherence issues after ${maxCoherenceAttempts} attempts: ${coherenceCheck.issues.join(', ')}`);
+    }
+    
     const wordCount = currentWordCount;
 
     // Enhanced production notes with music resources
