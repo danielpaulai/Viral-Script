@@ -44,6 +44,3 @@ integrations = ["javascript_openai_ai_integrations:2.0.0", "javascript_log_in_wi
 [userenv]
 
 [userenv.shared]
-REPL_ID = "98369a56-f7aa-4ef3-857d-ce10e3a31fcb"
-REPLIT_DOMAINS = "script-craft--danny271.replit.app"
-ISSUER_URL = "https://replit.com/oidc"
