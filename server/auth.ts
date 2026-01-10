@@ -40,16 +40,16 @@ export async function comparePasswords(supplied: string, stored: string) {
 }
 
 export function setupAuth(app: Express) {
-  const isProduction = process.env.NODE_ENV === "production";
+  // FIXED: Simplified cookie settings for Replit deployments
   const sessionSettings: session.SessionOptions = {
     secret: process.env.SESSION_SECRET!,
     resave: false,
     saveUninitialized: false,
     store: storage.sessionStore,
     cookie: {
-      secure: isProduction,
+      secure: false, // Replit handles SSL termination
       httpOnly: true,
-      sameSite: isProduction ? "none" as const : "lax" as const,
+      sameSite: "lax" as const, // Simplified for same-origin cookies
       maxAge: 7 * 24 * 60 * 60 * 1000,
     },
   };
@@ -63,7 +63,11 @@ export function setupAuth(app: Express) {
     new LocalStrategy(async (username, password, done) => {
       try {
         const user = await storage.getUserByUsername(username);
-        if (!user || !user.password || !(await comparePasswords(password, user.password))) {
+        if (
+          !user ||
+          !user.password ||
+          !(await comparePasswords(password, user.password))
+        ) {
           return done(null, false, { message: "Invalid username or password" });
         }
         return done(null, user);
@@ -86,11 +90,11 @@ export function setupAuth(app: Express) {
   app.post("/api/register", async (req, res, next) => {
     try {
       console.log("Registration attempt:", { username: req.body?.username });
-      
+
       const parsed = authCredentialsSchema.safeParse(req.body);
-      
+
       if (!parsed.success) {
-        const errors = parsed.error.errors.map(e => e.message).join(", ");
+        const errors = parsed.error.errors.map((e) => e.message).join(", ");
         console.log("Registration validation failed:", errors);
         return res.status(400).json({ message: errors });
       }
@@ -123,35 +127,49 @@ export function setupAuth(app: Express) {
       console.error("Registration error:", error);
       const errorMessage = error?.message || "Unknown error";
       const errorCode = error?.code || "";
-      console.error("Registration error details:", { message: errorMessage, code: errorCode, stack: error?.stack });
-      res.status(500).json({ 
+      console.error("Registration error details:", {
+        message: errorMessage,
+        code: errorCode,
+        stack: error?.stack,
+      });
+      res.status(500).json({
         message: "Registration failed. Please try again.",
-        detail: process.env.NODE_ENV === "development" ? errorMessage : undefined
+        detail:
+          process.env.NODE_ENV === "development" ? errorMessage : undefined,
       });
     }
   });
 
   app.post("/api/login", (req, res, next) => {
     console.log("Login attempt:", { username: req.body?.username });
-    passport.authenticate("local", (err: any, user: SelectUser | false, info: { message: string }) => {
-      if (err) {
-        console.error("Login passport error:", err);
-        return res.status(500).json({ message: "Login failed. Please try again." });
-      }
-      if (!user) {
-        console.log("Login failed: invalid credentials");
-        return res.status(401).json({ message: info?.message || "Invalid credentials" });
-      }
-      req.login(user, (loginErr) => {
-        if (loginErr) {
-          console.error("Login session error:", loginErr);
-          return res.status(500).json({ message: "Session creation failed. Please try again." });
+    passport.authenticate(
+      "local",
+      (err: any, user: SelectUser | false, info: { message: string }) => {
+        if (err) {
+          console.error("Login passport error:", err);
+          return res
+            .status(500)
+            .json({ message: "Login failed. Please try again." });
         }
-        const { password: _, ...safeUser } = user;
-        console.log("Login successful:", safeUser.id);
-        res.status(200).json(safeUser);
-      });
-    })(req, res, next);
+        if (!user) {
+          console.log("Login failed: invalid credentials");
+          return res
+            .status(401)
+            .json({ message: info?.message || "Invalid credentials" });
+        }
+        req.login(user, (loginErr) => {
+          if (loginErr) {
+            console.error("Login session error:", loginErr);
+            return res
+              .status(500)
+              .json({ message: "Session creation failed. Please try again." });
+          }
+          const { password: _, ...safeUser } = user;
+          console.log("Login successful:", safeUser.id);
+          res.status(200).json(safeUser);
+        });
+      },
+    )(req, res, next);
   });
 
   app.post("/api/logout", (req, res, next) => {
@@ -187,24 +205,29 @@ function hashToken(token: string): string {
 
 // Setup password reset routes
 export function setupPasswordReset(app: Express) {
-  const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
+  const resend = process.env.RESEND_API_KEY
+    ? new Resend(process.env.RESEND_API_KEY)
+    : null;
 
   // Forgot password - send reset email
   app.post("/api/forgot-password", async (req, res) => {
     try {
       const { email } = req.body;
-      
+
       if (!email || typeof email !== "string") {
         return res.status(400).json({ message: "Email is required" });
       }
 
       // Find user by email (username is used as email in this app)
       const user = await storage.getUserByUsername(email);
-      
+
       // Always return success to prevent email enumeration
       if (!user) {
         console.log("Forgot password: User not found for email:", email);
-        return res.json({ message: "If an account exists with this email, a reset link has been sent." });
+        return res.json({
+          message:
+            "If an account exists with this email, a reset link has been sent.",
+        });
       }
 
       // Generate reset token
@@ -222,7 +245,7 @@ export function setupPasswordReset(app: Express) {
       // Send email
       if (resend) {
         const resetUrl = `${req.protocol}://${req.get("host")}/reset-password?token=${token}`;
-        
+
         try {
           await resend.emails.send({
             from: "Video Script Writer <noreply@resend.dev>",
@@ -242,13 +265,18 @@ export function setupPasswordReset(app: Express) {
           console.log("Password reset email sent to:", email);
         } catch (emailError) {
           console.error("Failed to send password reset email:", emailError);
-          return res.status(500).json({ message: "Failed to send reset email. Please try again." });
+          return res
+            .status(500)
+            .json({ message: "Failed to send reset email. Please try again." });
         }
       } else {
         console.log("Resend not configured. Reset token:", token);
       }
 
-      res.json({ message: "If an account exists with this email, a reset link has been sent." });
+      res.json({
+        message:
+          "If an account exists with this email, a reset link has been sent.",
+      });
     } catch (error) {
       console.error("Forgot password error:", error);
       res.status(500).json({ message: "An error occurred. Please try again." });
@@ -265,7 +293,9 @@ export function setupPasswordReset(app: Express) {
       }
 
       if (!password || typeof password !== "string" || password.length < 6) {
-        return res.status(400).json({ message: "Password must be at least 6 characters" });
+        return res
+          .status(400)
+          .json({ message: "Password must be at least 6 characters" });
       }
 
       // Hash the provided token and find it in database
@@ -273,11 +303,15 @@ export function setupPasswordReset(app: Express) {
       const resetToken = await storage.getPasswordResetToken(tokenHash);
 
       if (!resetToken) {
-        return res.status(400).json({ message: "Invalid or expired reset link" });
+        return res
+          .status(400)
+          .json({ message: "Invalid or expired reset link" });
       }
 
       if (resetToken.usedAt) {
-        return res.status(400).json({ message: "This reset link has already been used" });
+        return res
+          .status(400)
+          .json({ message: "This reset link has already been used" });
       }
 
       if (new Date() > resetToken.expiresAt) {
@@ -292,7 +326,9 @@ export function setupPasswordReset(app: Express) {
       await storage.markPasswordResetTokenUsed(tokenHash);
 
       console.log("Password reset successful for user:", resetToken.userId);
-      res.json({ message: "Password has been reset successfully. You can now log in." });
+      res.json({
+        message: "Password has been reset successfully. You can now log in.",
+      });
     } catch (error) {
       console.error("Reset password error:", error);
       res.status(500).json({ message: "An error occurred. Please try again." });
@@ -305,15 +341,24 @@ export function setupPasswordReset(app: Express) {
       const token = req.query.token as string;
 
       if (!token) {
-        return res.status(400).json({ valid: false, message: "Token is required" });
+        return res
+          .status(400)
+          .json({ valid: false, message: "Token is required" });
       }
 
       // Hash the provided token and find it in database
       const tokenHash = hashToken(token);
       const resetToken = await storage.getPasswordResetToken(tokenHash);
 
-      if (!resetToken || resetToken.usedAt || new Date() > resetToken.expiresAt) {
-        return res.json({ valid: false, message: "Invalid or expired reset link" });
+      if (
+        !resetToken ||
+        resetToken.usedAt ||
+        new Date() > resetToken.expiresAt
+      ) {
+        return res.json({
+          valid: false,
+          message: "Invalid or expired reset link",
+        });
       }
 
       res.json({ valid: true });
