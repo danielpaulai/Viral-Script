@@ -82,49 +82,63 @@ export async function setupAuth(app: Express) {
   // Keep track of registered strategies
   const registeredStrategies = new Set<string>();
 
+  // Get the external domain from REPLIT_DOMAINS environment variable
+  const getExternalDomain = (fallbackHostname: string) => {
+    const replitDomains = process.env.REPLIT_DOMAINS;
+    if (replitDomains) {
+      // REPLIT_DOMAINS can contain multiple domains separated by commas
+      // Use the first one (primary domain)
+      return replitDomains.split(',')[0].trim();
+    }
+    return fallbackHostname;
+  };
+
   // Helper function to ensure strategy exists for a domain
   const ensureStrategy = (domain: string) => {
-    const strategyName = `replitauth:${domain}`;
+    const externalDomain = getExternalDomain(domain);
+    const strategyName = `replitauth:${externalDomain}`;
     if (!registeredStrategies.has(strategyName)) {
       const strategy = new Strategy(
         {
           name: strategyName,
           config,
           scope: "openid email profile offline_access",
-          callbackURL: `https://${domain}/api/callback`,
+          callbackURL: `https://${externalDomain}/api/callback`,
         },
         verify
       );
       passport.use(strategy);
       registeredStrategies.add(strategyName);
     }
+    return externalDomain;
   };
 
   passport.serializeUser((user: Express.User, cb) => cb(null, user));
   passport.deserializeUser((user: Express.User, cb) => cb(null, user));
 
   app.get("/api/login", (req, res, next) => {
-    ensureStrategy(req.hostname);
-    passport.authenticate(`replitauth:${req.hostname}`, {
+    const externalDomain = ensureStrategy(req.hostname);
+    passport.authenticate(`replitauth:${externalDomain}`, {
       prompt: "login consent",
       scope: ["openid", "email", "profile", "offline_access"],
     })(req, res, next);
   });
 
   app.get("/api/callback", (req, res, next) => {
-    ensureStrategy(req.hostname);
-    passport.authenticate(`replitauth:${req.hostname}`, {
+    const externalDomain = ensureStrategy(req.hostname);
+    passport.authenticate(`replitauth:${externalDomain}`, {
       successReturnToOrRedirect: "/",
       failureRedirect: "/api/login",
     })(req, res, next);
   });
 
   app.get("/api/logout", (req, res) => {
+    const externalDomain = getExternalDomain(req.hostname);
     req.logout(() => {
       res.redirect(
         client.buildEndSessionUrl(config, {
           client_id: process.env.REPL_ID!,
-          post_logout_redirect_uri: `${req.protocol}://${req.hostname}`,
+          post_logout_redirect_uri: `https://${externalDomain}`,
         }).href
       );
     });
