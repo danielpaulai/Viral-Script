@@ -1,0 +1,68 @@
+
+> rest-express@1.0.0 dev
+[DB] Environment: DEVELOPMENTrver/index.ts
+[DB] Valid DATABASE_URL available: true
+Using PostgreSQL session store for persistent sessions
+Initializing Stripe schema...
+Database connection failed, using memory storage: getaddrinfo ENOTFOUND db.jjtlcjbsclezgclzsnog.supabase.co
+Failed to initialize Stripe: Error: getaddrinfo ENOTFOUND db.jjtlcjbsclezgclzsnog.supabase.co
+    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:120:26) {
+  errno: -3007,
+  code: 'ENOTFOUND',
+  syscall: 'getaddrinfo',
+  hostname: 'db.jjtlcjbsclezgclzsnog.supabase.co'
+}
+8:47:06 PM [express] serving on port 5000
+Error: getaddrinfo ENOTFOUND db.jjtlcjbsclezgclzsnog.supabase.co
+    at /home/runner/workspace/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async PGStore._asyncQuery (/home/runner/workspace/node_modules/connect-pg-simple/index.js:322:21)
+    at async PGStore._rawEnsureSessionStoreTable (/home/runner/workspace/node_modules/connect-pg-simple/index.js:177:19)
+    at async PGStore._asyncQuery (/home/runner/workspace/node_modules/connect-pg-simple/index.js:315:7)
+Error: getaddrinfo ENOTFOUND db.jjtlcjbsclezgclzsnog.supabase.co
+    at /home/runner/workspace/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async PGStore._asyncQuery (/home/runner/workspace/node_modules/connect-pg-simple/index.js:322:21)
+    at async PGStore._rawEnsureSessionStoreTable (/home/runner/workspace/node_modules/connect-pg-simple/index.js:177:19)
+    at async PGStore._asyncQuery (/home/runner/workspace/node_modules/connect-pg-simple/index.js:315:7)
+Error: getaddrinfo ENOTFOUND db.jjtlcjbsclezgclzsnog.supabase.co
+    at /home/runner/workspace/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async PGStore._asyncQuery (/home/runner/workspace/node_modules/connect-pg-simple/index.js:322:21)
+    at async PGStore._rawEnsureSessionStoreTable (/home/runner/workspace/node_modules/connect-pg-simple/index.js:177:19)
+    at async PGStore._asyncQuery (/home/runner/workspace/node_modules/connect-pg-simple/index.js:315:7)
+
+> rest-express@1.0.0 dev
+> NODE_ENV=development tsx server/index.ts
+
+[DB] Environment: DEVELOPMENT
+[DB] Valid DATABASE_URL available: true
+Using PostgreSQL session store for persistent sessions
+Initializing Stripe schema...
+Database connection failed, using memory storage: getaddrinfo ENOTFOUND db.jjtlcjbsclezgclzsnog.supabase.co
+Failed to initialize Stripe: Error: getaddrinfo ENOTFOUND db.jjtlcjbsclezgclzsnog.supabase.co
+    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:120:26) {
+  errno: -3007,
+  code: 'ENOTFOUND',
+  syscall: 'getaddrinfo',
+  hostname: 'db.jjtlcjbsclezgclzsnog.supabase.co'
+}
+8:47:06 PM [express] serving on port 5000
+Error: getaddrinfo ENOTFOUND db.jjtlcjbsclezgclzsnog.supabase.co
+    at /home/runner/workspace/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async PGStore._asyncQuery (/home/runner/workspace/node_modules/connect-pg-simple/index.js:322:21)
+    at async PGStore._rawEnsureSessionStoreTable (/home/runner/workspace/node_modules/connect-pg-simple/index.js:177:19)
+    at async PGStore._asyncQuery (/home/runner/workspace/node_modules/connect-pg-simple/index.js:315:7)
+Error: getaddrinfo ENOTFOUND db.jjtlcjbsclezgclzsnog.supabase.co
+    at /home/runner/workspace/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async PGStore._asyncQuery (/home/runner/workspace/node_modules/connect-pg-simple/index.js:322:21)
+    at async PGStore._rawEnsureSessionStoreTable (/home/runner/workspace/node_modules/connect-pg-simple/index.js:177:19)
+    at async PGStore._asyncQuery (/home/runner/workspace/node_modules/connect-pg-simple/index.js:315:7)
+Error: getaddrinfo ENOTFOUND db.jjtlcjbsclezgclzsnog.supabase.co
+    at /home/runner/workspace/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async PGStore._asyncQuery (/home/runner/workspace/node_modules/connect-pg-simple/index.js:322:21)
+    at async PGStore._rawEnsureSessionStoreTable (/home/runner/workspace/node_modules/connect-pg-simple/index.js:177:19)
+    at asy
