@@ -680,12 +680,12 @@ export function IdeaClarifier({
           </div>
         </div>
 
-        {/* AI Solution Suggestions */}
+        {/* AI Teaching Ideas */}
         <div className="mt-4 pt-4 border-t border-border/50">
           <div className="flex items-center justify-between mb-3">
             <p className="text-xs font-medium text-muted-foreground flex items-center gap-1">
               <Wand2 className="w-3 h-3" />
-              AI Solution Ideas
+              AI Teaching Ideas
             </p>
             {generatedSolutions.length > 0 && selectedCount > 0 && (
               <Badge variant="outline" className="text-xs">
@@ -696,7 +696,7 @@ export function IdeaClarifier({
 
           {!canGenerateSolutions ? (
             <p className="text-xs text-muted-foreground italic">
-              Write at least 15 characters above to generate solution ideas
+              Write at least 15 characters above to generate teaching ideas
             </p>
           ) : (
             <div className="space-y-3">
@@ -711,17 +711,17 @@ export function IdeaClarifier({
                 {generateSolutionsMutation.isPending ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Generating solution ideas...
+                    Generating teaching ideas...
                   </>
                 ) : generatedSolutions.length > 0 ? (
                   <>
                     <RefreshCw className="w-4 h-4 mr-2" />
-                    Regenerate Solutions
+                    Regenerate Teaching Ideas
                   </>
                 ) : (
                   <>
                     <Wand2 className="w-4 h-4 mr-2" />
-                    Generate Solution Ideas
+                    Generate Teaching Ideas
                   </>
                 )}
               </Button>
