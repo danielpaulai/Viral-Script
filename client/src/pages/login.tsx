@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Feather, Zap, FileText, CheckCircle2, Loader2 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
@@ -26,6 +27,7 @@ export default function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(true);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [forgotEmail, setForgotEmail] = useState("");
   const [forgotLoading, setForgotLoading] = useState(false);
@@ -47,7 +49,7 @@ export default function Login() {
       }
       registerMutation.mutate({ username, password });
     } else {
-      loginMutation.mutate({ username, password });
+      loginMutation.mutate({ username, password, rememberMe });
     }
   };
 
@@ -197,6 +199,23 @@ export default function Login() {
                     {password !== confirmPassword && confirmPassword && (
                       <p className="text-xs text-destructive">Passwords do not match</p>
                     )}
+                  </div>
+                )}
+                {!isRegister && (
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="rememberMe"
+                      checked={rememberMe}
+                      onCheckedChange={(checked) => setRememberMe(checked === true)}
+                      disabled={isPending}
+                      data-testid="checkbox-remember-me"
+                    />
+                    <Label 
+                      htmlFor="rememberMe" 
+                      className="text-sm font-normal cursor-pointer"
+                    >
+                      Remember me for 30 days
+                    </Label>
                   </div>
                 )}
                 <Button 
