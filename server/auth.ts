@@ -94,6 +94,19 @@ export function setupAuth(app: Express) {
 
       req.session.userId = newUser.id;
       req.session.userEmail = username;
+      
+      // Explicitly save session before responding to ensure cookie is set
+      await new Promise<void>((resolve, reject) => {
+        req.session.save((err) => {
+          if (err) {
+            console.error("Session save error:", err);
+            reject(err);
+          } else {
+            console.log("Session saved successfully for user:", newUser.id);
+            resolve();
+          }
+        });
+      });
 
       res.status(201).json({
         id: newUser.id,
@@ -157,7 +170,20 @@ export function setupAuth(app: Express) {
       }
 
       req.session.userId = user.id;
-      req.session.userEmail = user.username;
+      req.session.userEmail = user.username || undefined;
+      
+      // Explicitly save session before responding to ensure cookie is set
+      await new Promise<void>((resolve, reject) => {
+        req.session.save((err) => {
+          if (err) {
+            console.error("Session save error:", err);
+            reject(err);
+          } else {
+            console.log("Session saved successfully for user:", user.id);
+            resolve();
+          }
+        });
+      });
 
       res.status(200).json({
         id: user.id,
