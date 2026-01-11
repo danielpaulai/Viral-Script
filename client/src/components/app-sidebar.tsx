@@ -1,5 +1,6 @@
 import { Link, useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
+import { useAuth } from "@/hooks/use-auth";
 import {
   Home,
   Video,
@@ -117,7 +118,16 @@ function TrialStatusCard() {
 }
 
 export function AppSidebar() {
-  const [location] = useLocation();
+  const [location, setLocation] = useLocation();
+  const { logoutMutation, isAuthenticated } = useAuth();
+  
+  const handleLogout = () => {
+    logoutMutation.mutate(undefined, {
+      onSuccess: () => {
+        setLocation("/login");
+      },
+    });
+  };
 
   return (
     <Sidebar>
@@ -216,12 +226,20 @@ export function AppSidebar() {
               </SidebarMenuItem>
             );
           })}
-          <SidebarMenuItem>
-            <SidebarMenuButton className="text-primary" tooltip="Sign out">
-              <LogOut className="w-4 h-4" />
-              <span>Sign out</span>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
+          {isAuthenticated && (
+            <SidebarMenuItem>
+              <SidebarMenuButton 
+                className="text-destructive hover:text-destructive" 
+                tooltip="Sign out"
+                onClick={handleLogout}
+                disabled={logoutMutation.isPending}
+                data-testid="button-logout"
+              >
+                <LogOut className="w-4 h-4" />
+                <span>{logoutMutation.isPending ? "Signing out..." : "Sign out"}</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          )}
         </SidebarMenu>
       </SidebarFooter>
     </Sidebar>

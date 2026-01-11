@@ -30,13 +30,14 @@ async function comparePasswords(supplied: string, stored: string): Promise<boole
 }
 
 export function setupAuth(app: Express) {
+  const isProduction = process.env.NODE_ENV === "production";
   const sessionSettings: session.SessionOptions = {
     secret: process.env.SESSION_SECRET!,
     resave: false,
     saveUninitialized: false,
     store: storage.sessionStore,
     cookie: {
-      secure: false,
+      secure: isProduction,
       httpOnly: true,
       sameSite: "lax" as const,
       maxAge: 7 * 24 * 60 * 60 * 1000,
