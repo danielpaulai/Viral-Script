@@ -1,0 +1,54 @@
+I need to implement a HYBRID authentication system:
+
+GOAL: Use Supabase for authentication + Replit database for data storage
+
+CURRENT STATUS:
+✅ Replit PostgreSQL database is connected and working
+✅ Supabase environment variables are set (SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY)
+✅ @supabase/supabase-js is installed
+
+WHAT NEEDS TO HAPPEN:
+
+1. UPDATE server/auth.ts to implement DUAL AUTH SYSTEM:
+   
+   REGISTRATION FLOW:
+   - Validate credentials with authCredentialsSchema
+   - Check if user exists in Replit database (storage.getUserByUsername)
+   - If exists, return "Username already exists" error
+   - Create user in Supabase Auth using: supabase.auth.admin.createUser({ email, password, email_confirm: true })
+   - ALSO create user in Replit database using: storage.createUser({ username, password: hashed })
+   - Store user.id in req.session.userId
+   - Return user data (without password)
+   
+   LOGIN FLOW:
+   - Try Supabase auth first: supabase.auth.signInWithPassword({ email, password })
+   - If Supabase succeeds, get user from Replit database: storage.getUserByUsername
+   - If Supabase fails, fallback to local auth: check Replit database with password comparison
+   - Store user.id in req.session.userId
+   - Return user data (without password)
+   
+   GET USER:
+   - Use req.session.userId to get user from Replit database: storage.getUser(userId)
+   - Return user data (without password)
+
+2. KEEP the existing password hashing functions (hashPassword, comparePasswords) from the old auth.ts code - we need these for the Replit database fallback
+
+3. KEEP the session configuration exactly as it is now (it's working)
+
+4. For password reset: Use supabase.auth.resetPasswordForEmail(email)
+
+CRITICAL REQUIREMENTS:
+- Import supabase from "./supabase"
+- Import storage from "./storage" 
+- Keep all existing imports (session, authCredentialsSchema, crypto functions)
+- Maintain session-based authentication (req.session.userId)
+- Log all steps: "User created in Supabase:", "User created in Replit DB:", "Login successful via Supabase:", etc.
+- Handle errors gracefully for both Supabase and database operations
+
+EXPECTED RESULT:
+- Users authenticate via Supabase (secure, professional)
+- User data and sessions stored in Replit database (fast, reliable)
+- Existing users with local passwords can still login
+- New users get both Supabase auth + Replit database entry
+
+Please implement this hybrid authentication system in server/auth.ts and verify it compiles without errors.

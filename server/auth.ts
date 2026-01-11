@@ -3,9 +3,33 @@ import session from "express-session";
 import { storage } from "./storage";
 import { supabase } from "./supabase";
 import { authCredentialsSchema } from "@shared/schema";
+import crypto from "crypto";
+
+async function hashPassword(password: string): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const salt = crypto.randomBytes(16).toString("hex");
+    crypto.scrypt(password, salt, 64, (err, derivedKey) => {
+      if (err) reject(err);
+      resolve(`${salt}:${derivedKey.toString("hex")}`);
+    });
+  });
+}
+
+async function comparePasswords(supplied: string, stored: string): Promise<boolean> {
+  return new Promise((resolve, reject) => {
+    const [salt, hash] = stored.split(":");
+    if (!salt || !hash) {
+      resolve(false);
+      return;
+    }
+    crypto.scrypt(supplied, salt, 64, (err, derivedKey) => {
+      if (err) reject(err);
+      resolve(derivedKey.toString("hex") === hash);
+    });
+  });
+}
 
 export function setupAuth(app: Express) {
-  // Session configuration - simplified for Supabase
   const sessionSettings: session.SessionOptions = {
     secret: process.env.SESSION_SECRET!,
     resave: false,
@@ -22,7 +46,6 @@ export function setupAuth(app: Express) {
   app.set("trust proxy", 1);
   app.use(session(sessionSettings));
 
-  // Register endpoint
   app.post("/api/register", async (req, res) => {
     try {
       console.log("Registration attempt:", { username: req.body?.username });
@@ -37,34 +60,44 @@ export function setupAuth(app: Express) {
 
       const { username, password } = parsed.data;
 
-      // Create user in Supabase Auth
-      const { data: authData, error: authError } =
-        await supabase.auth.admin.createUser({
-          email: username,
-          password: password,
-          email_confirm: true, // Auto-confirm email for now
-        });
-
-      if (authError) {
-        console.error("Supabase auth error:", authError);
-        return res.status(400).json({
-          message: authError.message || "Registration failed",
-        });
+      const existingUser = await storage.getUserByUsername(username);
+      if (existingUser) {
+        console.log("Registration failed: Username already exists");
+        return res.status(400).json({ message: "Username already exists" });
       }
 
-      if (!authData.user) {
-        return res.status(400).json({ message: "Failed to create user" });
+      let supabaseUserId: string | null = null;
+      try {
+        const { data: authData, error: authError } =
+          await supabase.auth.admin.createUser({
+            email: username,
+            password: password,
+            email_confirm: true,
+          });
+
+        if (authError) {
+          console.error("Supabase auth error:", authError);
+        } else if (authData.user) {
+          supabaseUserId = authData.user.id;
+          console.log("User created in Supabase:", supabaseUserId);
+        }
+      } catch (supabaseError) {
+        console.error("Supabase error (continuing with local):", supabaseError);
       }
 
-      console.log("User created in Supabase:", authData.user.id);
+      const hashedPassword = await hashPassword(password);
+      const newUser = await storage.createUser({
+        username,
+        password: hashedPassword,
+      });
+      console.log("User created in Replit DB:", newUser.id);
 
-      // Store user in session
-      req.session.userId = authData.user.id;
-      req.session.userEmail = authData.user.email;
+      req.session.userId = newUser.id;
+      req.session.userEmail = username;
 
       res.status(201).json({
-        id: authData.user.id,
-        username: authData.user.email,
+        id: newUser.id,
+        username: newUser.username,
       });
     } catch (error: any) {
       console.error("Registration error:", error);
@@ -74,7 +107,6 @@ export function setupAuth(app: Express) {
     }
   });
 
-  // Login endpoint
   app.post("/api/login", async (req, res) => {
     try {
       console.log("Login attempt:", { username: req.body?.username });
@@ -87,27 +119,49 @@ export function setupAuth(app: Express) {
 
       const { username, password } = parsed.data;
 
-      // Sign in with Supabase
-      const { data: authData, error: authError } =
-        await supabase.auth.signInWithPassword({
-          email: username,
-          password: password,
-        });
+      let supabaseSuccess = false;
+      try {
+        const { data: authData, error: authError } =
+          await supabase.auth.signInWithPassword({
+            email: username,
+            password: password,
+          });
 
-      if (authError || !authData.user) {
-        console.log("Login failed: invalid credentials");
+        if (!authError && authData.user) {
+          supabaseSuccess = true;
+          console.log("Login successful via Supabase:", authData.user.id);
+        }
+      } catch (supabaseError) {
+        console.log("Supabase auth failed, trying local:", supabaseError);
+      }
+
+      const user = await storage.getUserByUsername(username);
+      
+      if (!user) {
+        console.log("Login failed: User not found in Replit DB");
         return res.status(401).json({ message: "Invalid email or password" });
       }
 
-      console.log("Login successful:", authData.user.id);
+      if (!supabaseSuccess) {
+        if (!user.password) {
+          console.log("Login failed: No password set for local auth");
+          return res.status(401).json({ message: "Invalid email or password" });
+        }
 
-      // Store user in session
-      req.session.userId = authData.user.id;
-      req.session.userEmail = authData.user.email;
+        const passwordValid = await comparePasswords(password, user.password);
+        if (!passwordValid) {
+          console.log("Login failed: Invalid password (local auth)");
+          return res.status(401).json({ message: "Invalid email or password" });
+        }
+        console.log("Login successful via local auth:", user.id);
+      }
+
+      req.session.userId = user.id;
+      req.session.userEmail = user.username;
 
       res.status(200).json({
-        id: authData.user.id,
-        username: authData.user.email,
+        id: user.id,
+        username: user.username,
       });
     } catch (error: any) {
       console.error("Login error:", error);
@@ -115,7 +169,6 @@ export function setupAuth(app: Express) {
     }
   });
 
-  // Logout endpoint
   app.post("/api/logout", (req, res) => {
     req.session.destroy((err) => {
       if (err) {
@@ -126,26 +179,23 @@ export function setupAuth(app: Express) {
     });
   });
 
-  // Get current user endpoint
   app.get("/api/user", async (req, res) => {
     try {
       if (!req.session.userId) {
         return res.sendStatus(401);
       }
 
-      // Get user from Supabase
-      const {
-        data: { user },
-        error,
-      } = await supabase.auth.admin.getUserById(req.session.userId);
+      const user = await storage.getUser(req.session.userId);
 
-      if (error || !user) {
+      if (!user) {
         return res.sendStatus(401);
       }
 
+      console.log("User retrieved from Replit DB:", user.id);
+
       res.json({
         id: user.id,
-        username: user.email,
+        username: user.username,
       });
     } catch (error) {
       console.error("Get user error:", error);
@@ -161,10 +211,29 @@ export function isAuthenticated(req: any, res: any, next: any) {
   res.status(401).json({ message: "Unauthorized" });
 }
 
-// Keep the password reset functions - we can implement Supabase version later
 export function setupPasswordReset(app: Express) {
-  // TODO: Implement Supabase password reset
   app.post("/api/forgot-password", async (req, res) => {
-    res.status(501).json({ message: "Password reset not yet implemented" });
+    try {
+      const { email } = req.body;
+      
+      if (!email) {
+        return res.status(400).json({ message: "Email is required" });
+      }
+
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${process.env.REPLIT_DEV_DOMAIN || 'http://localhost:5000'}/reset-password`,
+      });
+
+      if (error) {
+        console.error("Password reset error:", error);
+        return res.status(400).json({ message: "Failed to send reset email" });
+      }
+
+      console.log("Password reset email sent to:", email);
+      res.json({ message: "Password reset email sent" });
+    } catch (error) {
+      console.error("Password reset error:", error);
+      res.status(500).json({ message: "Failed to send reset email" });
+    }
   });
 }
