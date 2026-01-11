@@ -826,6 +826,7 @@ export function calculateClarityScore(skeleton: VideoIdeaSkeleton): number {
 // Database Tables
 export const scripts = pgTable("scripts", {
   id: varchar("id", { length: 36 }).primaryKey(),
+  userId: varchar("user_id", { length: 255 }),
   title: text("title").notNull(),
   script: text("script").notNull(),
   wordCount: text("word_count"),
@@ -840,6 +841,7 @@ export const scripts = pgTable("scripts", {
 
 export const projects = pgTable("projects", {
   id: varchar("id", { length: 36 }).primaryKey(),
+  userId: varchar("user_id", { length: 255 }),
   name: text("name").notNull(),
   description: text("description"),
   createdAt: timestamp("created_at").defaultNow(),
@@ -847,6 +849,7 @@ export const projects = pgTable("projects", {
 
 export const vault = pgTable("vault", {
   id: varchar("id", { length: 36 }).primaryKey(),
+  userId: varchar("user_id", { length: 255 }),
   scriptId: varchar("script_id", { length: 36 }).notNull(),
   name: text("name").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
