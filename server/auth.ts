@@ -232,6 +232,11 @@ export function setupAuth(app: Express) {
 
 export function isAuthenticated(req: any, res: any, next: any) {
   if (req.session.userId) {
+    // Set req.user so routes can access user info
+    req.user = {
+      id: req.session.userId,
+      email: req.session.userEmail,
+    };
     return next();
   }
   res.status(401).json({ message: "Unauthorized" });
