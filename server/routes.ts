@@ -3379,9 +3379,13 @@ Create a style guide for writing scripts that sound exactly like this creator.`
   // ============ VERSION HISTORY ROUTES ============
   
   // Get all versions for a script
-  app.get("/api/scripts/:id/versions", isAuthenticated, async (req, res) => {
+  app.get("/api/scripts/:id/versions", isAuthenticated, async (req: any, res) => {
     try {
-      const versions = await storage.getScriptVersions(req.params.id);
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+      const versions = await storage.getScriptVersions(req.params.id, userId);
       res.json({ versions });
     } catch (error) {
       console.error("Error fetching versions:", error);
@@ -3390,10 +3394,20 @@ Create a style guide for writing scripts that sound exactly like this creator.`
   });
 
   // Create a new version (save current state)
-  app.post("/api/scripts/:id/versions", isAuthenticated, async (req, res) => {
+  app.post("/api/scripts/:id/versions", isAuthenticated, async (req: any, res) => {
     try {
       const { label, script, wordCount, gradeLevel, parameters } = req.body;
-      const userId = (req.user as any)?.id;
+      const userId = req.user?.id;
+      
+      if (!userId) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+      
+      // Verify script ownership before creating version
+      const existingScript = await storage.getScript(req.params.id, userId);
+      if (!existingScript) {
+        return res.status(404).json({ error: "Script not found" });
+      }
       
       const version = await storage.createScriptVersion({
         scriptId: req.params.id,
@@ -3420,7 +3434,7 @@ Create a style guide for writing scripts that sound exactly like this creator.`
         return res.status(401).json({ error: "Authentication required" });
       }
       
-      const version = await storage.getScriptVersion(req.params.versionId);
+      const version = await storage.getScriptVersion(req.params.versionId, userId);
       if (!version) {
         return res.status(404).json({ error: "Version not found" });
       }

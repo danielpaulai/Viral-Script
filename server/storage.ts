@@ -87,10 +87,10 @@ export interface IStorage {
   getUserSubscription(userId: string): Promise<UserSubscription | undefined>;
   createOrUpdateSubscription(userId: string, data: Partial<InsertUserSubscription>): Promise<UserSubscription>;
   
-  // Version History
-  getScriptVersions(scriptId: string): Promise<ScriptVersion[]>;
+  // Version History (with user isolation)
+  getScriptVersions(scriptId: string, userId: string): Promise<ScriptVersion[]>;
   createScriptVersion(version: InsertScriptVersion): Promise<ScriptVersion>;
-  getScriptVersion(id: string): Promise<ScriptVersion | undefined>;
+  getScriptVersion(id: string, userId: string): Promise<ScriptVersion | undefined>;
   
   // Password Reset
   createPasswordResetToken(data: { userId: string; token: string; expiresAt: Date }): Promise<PasswordResetToken>;
@@ -638,8 +638,14 @@ export class MemStorage implements IStorage {
     return subscription;
   }
 
-  // Version History methods
-  async getScriptVersions(scriptId: string): Promise<ScriptVersion[]> {
+  // Version History methods (with user isolation)
+  async getScriptVersions(scriptId: string, userId: string): Promise<ScriptVersion[]> {
+    // First verify the script belongs to this user
+    const script = await this.getScript(scriptId, userId);
+    if (!script) {
+      return []; // Script doesn't exist or doesn't belong to user
+    }
+    
     const versions: ScriptVersion[] = [];
     this.scriptVersions.forEach((v) => {
       if (v.scriptId === scriptId) versions.push(v);
@@ -650,12 +656,17 @@ export class MemStorage implements IStorage {
   }
 
   async createScriptVersion(version: InsertScriptVersion): Promise<ScriptVersion> {
-    const existingVersions = await this.getScriptVersions(version.scriptId);
+    // Count existing versions for this script (without user check since creation already validates)
+    const allVersions: ScriptVersion[] = [];
+    this.scriptVersions.forEach((v) => {
+      if (v.scriptId === version.scriptId) allVersions.push(v);
+    });
+    
     const newVersion: ScriptVersion = {
       id: randomUUID(),
       scriptId: version.scriptId,
       userId: version.userId || null,
-      version: String(existingVersions.length + 1),
+      version: String(allVersions.length + 1),
       label: version.label || null,
       script: version.script,
       wordCount: version.wordCount || null,
@@ -667,8 +678,15 @@ export class MemStorage implements IStorage {
     return newVersion;
   }
 
-  async getScriptVersion(id: string): Promise<ScriptVersion | undefined> {
-    return this.scriptVersions.get(id);
+  async getScriptVersion(id: string, userId: string): Promise<ScriptVersion | undefined> {
+    const version = this.scriptVersions.get(id);
+    if (!version) return undefined;
+    
+    // Verify the parent script belongs to this user
+    const script = await this.getScript(version.scriptId, userId);
+    if (!script) return undefined; // Script doesn't belong to user
+    
+    return version;
   }
 
   // Password Reset Token methods
