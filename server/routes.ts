@@ -1570,6 +1570,7 @@ Generate 3 CTAs now:`;
       const generatedScript = await generateScriptWithAI(params, knowledgeBaseDocs);
       
       const savedScript = await storage.createScript({
+        userId: userId || null,
         title: params.topic?.slice(0, 100) || "Untitled Script",
         script: generatedScript.script,
         wordCount: String(generatedScript.wordCount),
@@ -2357,18 +2358,26 @@ DO NOT make up fake statistics. Use the research data provided, or clearly state
     }
   });
 
-  app.get("/api/scripts", async (req, res) => {
+  app.get("/api/scripts", isAuthenticated, async (req: any, res) => {
     try {
-      const scripts = await storage.getScripts();
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+      const scripts = await storage.getScripts(userId);
       res.json(scripts);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch scripts" });
     }
   });
 
-  app.get("/api/scripts/:id", async (req, res) => {
+  app.get("/api/scripts/:id", isAuthenticated, async (req: any, res) => {
     try {
-      const script = await storage.getScript(req.params.id);
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+      const script = await storage.getScript(req.params.id, userId);
       if (!script) {
         return res.status(404).json({ error: "Script not found" });
       }
@@ -2378,9 +2387,13 @@ DO NOT make up fake statistics. Use the research data provided, or clearly state
     }
   });
 
-  app.delete("/api/scripts/:id", async (req, res) => {
+  app.delete("/api/scripts/:id", isAuthenticated, async (req: any, res) => {
     try {
-      const deleted = await storage.deleteScript(req.params.id);
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+      const deleted = await storage.deleteScript(req.params.id, userId);
       if (!deleted) {
         return res.status(404).json({ error: "Script not found" });
       }
@@ -2390,31 +2403,43 @@ DO NOT make up fake statistics. Use the research data provided, or clearly state
     }
   });
 
-  app.get("/api/projects", async (req, res) => {
+  app.get("/api/projects", isAuthenticated, async (req: any, res) => {
     try {
-      const projects = await storage.getProjects();
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+      const projects = await storage.getProjects(userId);
       res.json(projects);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch projects" });
     }
   });
 
-  app.post("/api/projects", async (req, res) => {
+  app.post("/api/projects", isAuthenticated, async (req: any, res) => {
     try {
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
       const { name, description } = req.body;
       if (!name) {
         return res.status(400).json({ error: "Name is required" });
       }
-      const project = await storage.createProject({ name, description });
+      const project = await storage.createProject({ userId, name, description });
       res.json(project);
     } catch (error) {
       res.status(500).json({ error: "Failed to create project" });
     }
   });
 
-  app.delete("/api/projects/:id", async (req, res) => {
+  app.delete("/api/projects/:id", isAuthenticated, async (req: any, res) => {
     try {
-      const deleted = await storage.deleteProject(req.params.id);
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+      const deleted = await storage.deleteProject(req.params.id, userId);
       if (!deleted) {
         return res.status(404).json({ error: "Project not found" });
       }
@@ -2424,50 +2449,66 @@ DO NOT make up fake statistics. Use the research data provided, or clearly state
     }
   });
 
-  app.post("/api/projects/scripts", async (req, res) => {
+  app.post("/api/projects/scripts", isAuthenticated, async (req: any, res) => {
     try {
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
       const { projectId, scriptId } = req.body;
       if (!scriptId) {
         return res.status(400).json({ error: "Script ID is required" });
       }
       
-      const script = await storage.getScript(scriptId);
+      const script = await storage.getScript(scriptId, userId);
       if (!script) {
         return res.status(404).json({ error: "Script not found" });
       }
       
-      await storage.addScriptToProject(projectId, scriptId);
+      await storage.addScriptToProject(projectId, scriptId, userId);
       res.json({ success: true, message: "Script added to project" });
     } catch (error) {
       res.status(500).json({ error: "Failed to add script to project" });
     }
   });
 
-  app.get("/api/vault", async (req, res) => {
+  app.get("/api/vault", isAuthenticated, async (req: any, res) => {
     try {
-      const items = await storage.getVaultItems();
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+      const items = await storage.getVaultItems(userId);
       res.json(items);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch vault items" });
     }
   });
 
-  app.post("/api/vault", async (req, res) => {
+  app.post("/api/vault", isAuthenticated, async (req: any, res) => {
     try {
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
       const { scriptId, name } = req.body;
       if (!scriptId || !name) {
         return res.status(400).json({ error: "Script ID and name are required" });
       }
-      const item = await storage.createVaultItem({ scriptId, name });
+      const item = await storage.createVaultItem({ userId, scriptId, name });
       res.json(item);
     } catch (error) {
       res.status(500).json({ error: "Failed to save to vault" });
     }
   });
 
-  app.delete("/api/vault/:id", async (req, res) => {
+  app.delete("/api/vault/:id", isAuthenticated, async (req: any, res) => {
     try {
-      const deleted = await storage.deleteVaultItem(req.params.id);
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+      const deleted = await storage.deleteVaultItem(req.params.id, userId);
       if (!deleted) {
         return res.status(404).json({ error: "Vault item not found" });
       }
@@ -3372,8 +3413,13 @@ Create a style guide for writing scripts that sound exactly like this creator.`
   });
 
   // Revert to a specific version
-  app.post("/api/scripts/:id/versions/:versionId/revert", isAuthenticated, async (req, res) => {
+  app.post("/api/scripts/:id/versions/:versionId/revert", isAuthenticated, async (req: any, res) => {
     try {
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+      
       const version = await storage.getScriptVersion(req.params.versionId);
       if (!version) {
         return res.status(404).json({ error: "Version not found" });
@@ -3382,12 +3428,12 @@ Create a style guide for writing scripts that sound exactly like this creator.`
       // Update the main script with this version's content
       const updatedScript = await storage.updateScript(req.params.id, {
         script: version.script,
-      });
+      }, userId);
       
       // Create a new version marking this as a revert
       await storage.createScriptVersion({
         scriptId: req.params.id,
-        userId: (req.user as any)?.id,
+        userId,
         label: `Reverted to v${version.version}`,
         script: version.script,
         wordCount: version.wordCount,
