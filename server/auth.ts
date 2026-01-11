@@ -30,16 +30,22 @@ async function comparePasswords(supplied: string, stored: string): Promise<boole
 }
 
 export function setupAuth(app: Express) {
+  // On Replit, even in development, the app is served over HTTPS via proxy
+  const isReplit = !!process.env.REPL_ID;
   const isProduction = process.env.NODE_ENV === "production";
+  const useSecureCookies = isReplit || isProduction;
+  
+  console.log(`Session config: Replit=${isReplit}, Production=${isProduction}, SecureCookies=${useSecureCookies}`);
+  
   const sessionSettings: session.SessionOptions = {
     secret: process.env.SESSION_SECRET!,
     resave: false,
     saveUninitialized: false,
     store: storage.sessionStore,
     cookie: {
-      secure: isProduction,
+      secure: useSecureCookies,
       httpOnly: true,
-      sameSite: "lax" as const,
+      sameSite: useSecureCookies ? "none" as const : "lax" as const,
       maxAge: 7 * 24 * 60 * 60 * 1000,
     },
   };
