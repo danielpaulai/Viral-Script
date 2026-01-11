@@ -15,11 +15,21 @@ declare module "http" {
   }
 }
 
+// Validate if URL is a valid PostgreSQL connection string
+function isValidPostgresUrl(url: string): boolean {
+  try {
+    const parsed = new URL(url);
+    return parsed.protocol === 'postgres:' || parsed.protocol === 'postgresql:';
+  } catch {
+    return false;
+  }
+}
+
 // Initialize Stripe schema and sync data on startup
 async function initStripe() {
-  const databaseUrl = process.env.DATABASE_URL;
-  if (!databaseUrl) {
-    console.log('DATABASE_URL not set, skipping Stripe initialization');
+  const databaseUrl = process.env.DATABASE_URL?.trim();
+  if (!databaseUrl || !isValidPostgresUrl(databaseUrl)) {
+    console.log('Valid DATABASE_URL not set, skipping Stripe initialization');
     return;
   }
 
