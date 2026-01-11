@@ -358,8 +358,10 @@ export class MemStorage implements IStorage {
   async createVaultItem(insertItem: InsertVault): Promise<VaultItem> {
     const id = randomUUID();
     const item: VaultItem = {
-      ...insertItem,
       id,
+      userId: insertItem.userId ?? null,
+      name: insertItem.name,
+      scriptId: insertItem.scriptId,
       createdAt: new Date(),
     };
     this.vault.set(id, item);

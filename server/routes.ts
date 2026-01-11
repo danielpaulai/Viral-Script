@@ -3109,11 +3109,14 @@ Generate 4 CORE TEACHING ideas - each should be THE central insight that an enti
       }
       const trialStatus = await storage.checkTrialStatus(userId);
       const user = await storage.getUser(userId);
+      
+      // Map backend response to frontend expected format
       res.json({
-        ...trialStatus,
-        trialEndsAt: user?.trialEndsAt,
+        isActive: trialStatus.isOnTrial && !trialStatus.trialEnded,
+        daysRemaining: trialStatus.daysRemaining,
         scriptsUsed: user?.trialScriptsUsed || 0,
-        maxScripts: 20,
+        scriptsLimit: 20,
+        trialEndsAt: user?.trialEndsAt || null,
       });
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch trial status" });
