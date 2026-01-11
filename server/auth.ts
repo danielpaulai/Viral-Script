@@ -131,7 +131,7 @@ export function setupAuth(app: Express) {
         return res.status(400).json({ message: "Invalid credentials format" });
       }
 
-      const { username, password } = parsed.data;
+      const { username, password, rememberMe } = parsed.data;
 
       let supabaseSuccess = false;
       try {
@@ -172,6 +172,13 @@ export function setupAuth(app: Express) {
 
       req.session.userId = user.id;
       req.session.userEmail = user.username || undefined;
+      
+      // Set session duration based on rememberMe
+      if (rememberMe) {
+        req.session.cookie.maxAge = 30 * 24 * 60 * 60 * 1000; // 30 days
+      } else {
+        req.session.cookie.maxAge = 24 * 60 * 60 * 1000; // 1 day
+      }
       
       // Explicitly save session before responding to ensure cookie is set
       await new Promise<void>((resolve, reject) => {
