@@ -48,23 +48,23 @@ export interface IStorage {
   incrementTrialScriptsUsed(userId: string): Promise<void>;
   checkTrialStatus(userId: string): Promise<{ isOnTrial: boolean; trialEnded: boolean; scriptsRemaining: number; daysRemaining: number }>;
   
-  getScripts(): Promise<Script[]>;
-  getScript(id: string): Promise<Script | undefined>;
+  getScripts(userId: string): Promise<Script[]>;
+  getScript(id: string, userId: string): Promise<Script | undefined>;
   createScript(script: InsertScript): Promise<Script>;
-  updateScript(id: string, script: Partial<InsertScript>): Promise<Script | undefined>;
-  deleteScript(id: string): Promise<boolean>;
+  updateScript(id: string, script: Partial<InsertScript>, userId: string): Promise<Script | undefined>;
+  deleteScript(id: string, userId: string): Promise<boolean>;
   
-  getProjects(): Promise<Project[]>;
-  getProject(id: string): Promise<Project | undefined>;
+  getProjects(userId: string): Promise<Project[]>;
+  getProject(id: string, userId: string): Promise<Project | undefined>;
   createProject(project: InsertProject): Promise<Project>;
-  deleteProject(id: string): Promise<boolean>;
-  addScriptToProject(projectId: string, scriptId: string): Promise<void>;
-  getProjectScripts(projectId: string): Promise<string[]>;
+  deleteProject(id: string, userId: string): Promise<boolean>;
+  addScriptToProject(projectId: string, scriptId: string, userId: string): Promise<void>;
+  getProjectScripts(projectId: string, userId: string): Promise<string[]>;
   
-  getVaultItems(): Promise<VaultItem[]>;
-  getVaultItem(id: string): Promise<VaultItem | undefined>;
+  getVaultItems(userId: string): Promise<VaultItem[]>;
+  getVaultItem(id: string, userId: string): Promise<VaultItem | undefined>;
   createVaultItem(item: InsertVault): Promise<VaultItem>;
-  deleteVaultItem(id: string): Promise<boolean>;
+  deleteVaultItem(id: string, userId: string): Promise<boolean>;
   
   getKnowledgeBaseDocs(userId?: string): Promise<KnowledgeBaseDoc[]>;
   getKnowledgeBaseDoc(id: string): Promise<KnowledgeBaseDoc | undefined>;
@@ -237,22 +237,27 @@ export class MemStorage implements IStorage {
     return user;
   }
 
-  async getScripts(): Promise<Script[]> {
-    return Array.from(this.scripts.values()).sort((a, b) => {
-      const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-      const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-      return dateB - dateA;
-    });
+  async getScripts(userId: string): Promise<Script[]> {
+    return Array.from(this.scripts.values())
+      .filter(s => s.userId === userId)
+      .sort((a, b) => {
+        const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        return dateB - dateA;
+      });
   }
 
-  async getScript(id: string): Promise<Script | undefined> {
-    return this.scripts.get(id);
+  async getScript(id: string, userId: string): Promise<Script | undefined> {
+    const script = this.scripts.get(id);
+    if (script && script.userId === userId) return script;
+    return undefined;
   }
 
   async createScript(insertScript: InsertScript): Promise<Script> {
     const id = randomUUID();
     const script: Script = {
       id,
+      userId: insertScript.userId ?? null,
       title: insertScript.title,
       script: insertScript.script,
       wordCount: insertScript.wordCount ?? null,
@@ -268,34 +273,41 @@ export class MemStorage implements IStorage {
     return script;
   }
 
-  async updateScript(id: string, updates: Partial<InsertScript>): Promise<Script | undefined> {
+  async updateScript(id: string, updates: Partial<InsertScript>, userId: string): Promise<Script | undefined> {
     const script = this.scripts.get(id);
-    if (!script) return undefined;
+    if (!script || script.userId !== userId) return undefined;
     const updated = { ...script, ...updates };
     this.scripts.set(id, updated);
     return updated;
   }
 
-  async deleteScript(id: string): Promise<boolean> {
+  async deleteScript(id: string, userId: string): Promise<boolean> {
+    const script = this.scripts.get(id);
+    if (!script || script.userId !== userId) return false;
     return this.scripts.delete(id);
   }
 
-  async getProjects(): Promise<Project[]> {
-    return Array.from(this.projects.values()).sort((a, b) => {
-      const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-      const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-      return dateB - dateA;
-    });
+  async getProjects(userId: string): Promise<Project[]> {
+    return Array.from(this.projects.values())
+      .filter(p => p.userId === userId)
+      .sort((a, b) => {
+        const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        return dateB - dateA;
+      });
   }
 
-  async getProject(id: string): Promise<Project | undefined> {
-    return this.projects.get(id);
+  async getProject(id: string, userId: string): Promise<Project | undefined> {
+    const project = this.projects.get(id);
+    if (project && project.userId === userId) return project;
+    return undefined;
   }
 
   async createProject(insertProject: InsertProject): Promise<Project> {
     const id = randomUUID();
     const project: Project = {
       id,
+      userId: insertProject.userId ?? null,
       name: insertProject.name,
       description: insertProject.description ?? null,
       createdAt: new Date(),
@@ -304,12 +316,16 @@ export class MemStorage implements IStorage {
     return project;
   }
 
-  async deleteProject(id: string): Promise<boolean> {
+  async deleteProject(id: string, userId: string): Promise<boolean> {
+    const project = this.projects.get(id);
+    if (!project || project.userId !== userId) return false;
     this.projectScripts.delete(id);
     return this.projects.delete(id);
   }
 
-  async addScriptToProject(projectId: string, scriptId: string): Promise<void> {
+  async addScriptToProject(projectId: string, scriptId: string, userId: string): Promise<void> {
+    const project = this.projects.get(projectId);
+    if (!project || project.userId !== userId) return;
     const scripts = this.projectScripts.get(projectId) || [];
     if (!scripts.includes(scriptId)) {
       scripts.push(scriptId);
@@ -317,20 +333,26 @@ export class MemStorage implements IStorage {
     }
   }
 
-  async getProjectScripts(projectId: string): Promise<string[]> {
+  async getProjectScripts(projectId: string, userId: string): Promise<string[]> {
+    const project = this.projects.get(projectId);
+    if (!project || project.userId !== userId) return [];
     return this.projectScripts.get(projectId) || [];
   }
 
-  async getVaultItems(): Promise<VaultItem[]> {
-    return Array.from(this.vault.values()).sort((a, b) => {
-      const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-      const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-      return dateB - dateA;
-    });
+  async getVaultItems(userId: string): Promise<VaultItem[]> {
+    return Array.from(this.vault.values())
+      .filter(v => v.userId === userId)
+      .sort((a, b) => {
+        const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        return dateB - dateA;
+      });
   }
 
-  async getVaultItem(id: string): Promise<VaultItem | undefined> {
-    return this.vault.get(id);
+  async getVaultItem(id: string, userId: string): Promise<VaultItem | undefined> {
+    const item = this.vault.get(id);
+    if (item && item.userId === userId) return item;
+    return undefined;
   }
 
   async createVaultItem(insertItem: InsertVault): Promise<VaultItem> {
@@ -344,7 +366,9 @@ export class MemStorage implements IStorage {
     return item;
   }
 
-  async deleteVaultItem(id: string): Promise<boolean> {
+  async deleteVaultItem(id: string, userId: string): Promise<boolean> {
+    const item = this.vault.get(id);
+    if (!item || item.userId !== userId) return false;
     return this.vault.delete(id);
   }
 
