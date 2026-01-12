@@ -4,7 +4,7 @@ import { chatStorage } from "./storage";
 
 // Configure OpenAI client using centralized AI config
 // This guarantees production ALWAYS uses the correct URL
-import { aiConfig } from "../aiConfig";
+import { aiConfig } from "../../aiConfig";
 
 const openai = new OpenAI({
   apiKey: aiConfig.apiKey,

@@ -4,7 +4,7 @@ import { Buffer } from "node:buffer";
 
 // Configure OpenAI client using centralized AI config
 // This guarantees production ALWAYS uses the correct URL
-import { aiConfig } from "../aiConfig";
+import { aiConfig } from "../../aiConfig";
 
 export const openai = new OpenAI({
   apiKey: aiConfig.apiKey,

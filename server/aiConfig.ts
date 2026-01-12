@@ -58,7 +58,27 @@ function resolveAIConfig(): AIConfig {
   }
   
   if (!apiKey) {
-    console.error("[AI Config] ERROR: No AI_INTEGRATIONS_OPENAI_API_KEY found!");
+    console.error("[AI Config] CRITICAL ERROR: No AI_INTEGRATIONS_OPENAI_API_KEY found!");
+    console.error("[AI Config] Environment check:", {
+      NODE_ENV: process.env.NODE_ENV,
+      REPLIT_DEPLOYMENT: process.env.REPLIT_DEPLOYMENT,
+      REPLIT_DEV_DOMAIN: !!process.env.REPLIT_DEV_DOMAIN,
+      hasOpenAIKey: !!process.env.OPENAI_API_KEY,
+      hasAIIntegrationsKey: !!process.env.AI_INTEGRATIONS_OPENAI_API_KEY,
+      hasBaseURL: !!process.env.AI_INTEGRATIONS_OPENAI_BASE_URL,
+    });
+    
+    // Try fallback to OPENAI_API_KEY if available
+    const fallbackKey = process.env.OPENAI_API_KEY;
+    if (fallbackKey) {
+      console.log("[AI Config] Using fallback OPENAI_API_KEY");
+      return {
+        baseURL,
+        apiKey: fallbackKey,
+        isProduction: !isDevelopment,
+        isDevelopment,
+      };
+    }
   }
   
   return {
