@@ -379,6 +379,14 @@ export function IdeaClarifier({
 
   // Trigger problem generation
   const handleGenerateProblems = () => {
+    console.log("handleGenerateProblems clicked! Skeleton state:", {
+      targetAudience: skeleton.targetAudience,
+      platform: skeleton.platform,
+      videoPurpose: skeleton.videoPurpose,
+      niche: skeleton.rawIdea || "content creation",
+      isLocked: skeleton.isLocked,
+      isPending: generateProblemsMutation.isPending,
+    });
     generateProblemsMutation.mutate({
       targetAudience: skeleton.targetAudience,
       platform: skeleton.platform,
