@@ -34,7 +34,7 @@ import session from "express-session";
 import createMemoryStore from "memorystore";
 import connectPgSimple from "connect-pg-simple";
 import { db, pool, isDatabaseAvailable } from "./db";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, and } from "drizzle-orm";
 
 const MemoryStore = createMemoryStore(session);
 const PgSession = connectPgSimple(session);
@@ -290,6 +290,20 @@ export class MemStorage implements IStorage {
   }
 
   async getScript(id: string, userId: string): Promise<Script | undefined> {
+    // Try database first
+    if (isDatabaseAvailable && db) {
+      try {
+        const [dbScript] = await db.select()
+          .from(scriptsTable)
+          .where(and(eq(scriptsTable.id, id), eq(scriptsTable.userId, userId)))
+          .limit(1);
+        if (dbScript) return dbScript;
+      } catch (error) {
+        console.error("[Storage] Database getScript query failed:", error);
+      }
+    }
+    
+    // Fall back to memory
     const script = this.scripts.get(id);
     if (script && script.userId === userId) return script;
     return undefined;
@@ -328,6 +342,8 @@ export class MemStorage implements IStorage {
           parameters: script.parameters,
           status: script.status,
         });
+        // Also hydrate memory cache for consistency
+        this.scripts.set(id, script);
         console.log(`[Storage] Script ${id} saved to database`);
       } catch (error) {
         console.error("[Storage] Failed to save script to database, using memory:", error);
@@ -341,6 +357,30 @@ export class MemStorage implements IStorage {
   }
 
   async updateScript(id: string, updates: Partial<InsertScript>, userId: string): Promise<Script | undefined> {
+    // Try database first
+    if (isDatabaseAvailable && db) {
+      try {
+        const [existing] = await db.select()
+          .from(scriptsTable)
+          .where(and(eq(scriptsTable.id, id), eq(scriptsTable.userId, userId)))
+          .limit(1);
+        
+        if (!existing) return undefined;
+        
+        await db.update(scriptsTable)
+          .set(updates)
+          .where(and(eq(scriptsTable.id, id), eq(scriptsTable.userId, userId)));
+        
+        const updated = { ...existing, ...updates } as Script;
+        // Also update memory cache for consistency
+        this.scripts.set(id, updated);
+        return updated;
+      } catch (error) {
+        console.error("[Storage] Database updateScript failed:", error);
+      }
+    }
+    
+    // Fall back to memory
     const script = this.scripts.get(id);
     if (!script || script.userId !== userId) return undefined;
     const updated = { ...script, ...updates };
@@ -349,6 +389,28 @@ export class MemStorage implements IStorage {
   }
 
   async deleteScript(id: string, userId: string): Promise<boolean> {
+    // Try database first
+    if (isDatabaseAvailable && db) {
+      try {
+        const [existing] = await db.select()
+          .from(scriptsTable)
+          .where(and(eq(scriptsTable.id, id), eq(scriptsTable.userId, userId)))
+          .limit(1);
+        
+        if (!existing) return false;
+        
+        await db.delete(scriptsTable)
+          .where(and(eq(scriptsTable.id, id), eq(scriptsTable.userId, userId)));
+        
+        // Also remove from memory cache for consistency
+        this.scripts.delete(id);
+        return true;
+      } catch (error) {
+        console.error("[Storage] Database deleteScript failed:", error);
+      }
+    }
+    
+    // Fall back to memory
     const script = this.scripts.get(id);
     if (!script || script.userId !== userId) return false;
     return this.scripts.delete(id);
