@@ -54,16 +54,25 @@ import { getCreatorById, creatorStyles as comprehensiveCreatorStyles } from "@sh
 import { scrapeTikTokProfile, scrapeInstagramProfile, analyzeCreatorStyle, searchTikTokByKeyword } from "./apify";
 
 // Configure OpenAI client using Replit AI Integrations
-// The AI integrations are automatically configured by Replit and work in both dev and production
+// In development, the modelfarm proxy runs on localhost:1106
+// In production (deployment), we use the standard OpenAI API with the provided API key
+const isProduction = !!process.env.REPLIT_DEPLOYMENT;
+const baseURL = process.env.AI_INTEGRATIONS_OPENAI_BASE_URL;
+
+// Only use the custom baseURL if it's NOT a localhost URL (for production compatibility)
+// The localhost URL only works in the development environment
+const useBaseURL = baseURL && !baseURL.includes('localhost') ? baseURL : undefined;
+
 const openai = new OpenAI({
   apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY,
-  baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL,
+  baseURL: useBaseURL,
 });
 
 console.log("[OpenAI] Configured with AI integrations:", {
   hasApiKey: !!process.env.AI_INTEGRATIONS_OPENAI_API_KEY,
-  baseUrl: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL,
-  isProduction: !!process.env.REPLIT_DEPLOYMENT,
+  baseUrl: useBaseURL || "default (api.openai.com)",
+  originalBaseUrl: baseURL,
+  isProduction,
 });
 
 // Words that sound like AI - NEVER use these
