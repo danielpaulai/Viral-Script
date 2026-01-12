@@ -389,11 +389,16 @@ export function IdeaClarifier({
       platform: string;
       videoPurpose: string;
     }) => {
+      console.log("Calling /api/solutions/generate with params:", params);
       const response = await apiRequest("POST", "/api/solutions/generate", params);
       return await response.json() as { solutions: GeneratedSolution[]; problem: string };
     },
     onSuccess: (data) => {
+      console.log("Solutions generated successfully:", data);
       setGeneratedSolutions(data.solutions);
+    },
+    onError: (error) => {
+      console.error("Solution generation failed:", error);
     },
   });
 
@@ -2139,6 +2144,6 @@ export function IdeaClarifier({
           )}
         </div>
       </div>
-    </Card>
+    </GlowCard>
   );
 }
