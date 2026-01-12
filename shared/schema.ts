@@ -675,7 +675,7 @@ export const skeletonValidationRules = {
 };
 
 // Create empty skeleton with defaults
-export function createEmptySkeleton(rawIdea: string = "", platform: string = "tiktok", duration: string = "60", videoPurpose: VideoPurposeType = "education"): VideoIdeaSkeleton {
+export function createEmptySkeleton(rawIdea: string = "", platform: string = "tiktok", duration: string = "90", videoPurpose: VideoPurposeType = "education"): VideoIdeaSkeleton {
   const purpose = videoPurposes.find(p => p.id === videoPurpose) || videoPurposes[1];
   
   return {

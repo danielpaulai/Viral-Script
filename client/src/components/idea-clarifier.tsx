@@ -1553,6 +1553,37 @@ export function IdeaClarifier({
   // Render Stage 1: Set Your Brief
   const renderStage1 = () => (
     <div className="space-y-6">
+      {/* How It Works - Step by Step Guide */}
+      <div className="p-4 rounded-lg bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20">
+        <h3 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-2">
+          <Lightbulb className="w-4 h-4 text-primary" />
+          How to Create Your Viral Script
+        </h3>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+          <div className="flex items-start gap-2">
+            <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center text-xs font-bold text-primary flex-shrink-0">1</div>
+            <div>
+              <p className="font-medium text-foreground">Set Your Brief</p>
+              <p className="text-muted-foreground">Choose video type, platform & duration</p>
+            </div>
+          </div>
+          <div className="flex items-start gap-2">
+            <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center text-xs font-bold text-primary flex-shrink-0">2</div>
+            <div>
+              <p className="font-medium text-foreground">Build Content</p>
+              <p className="text-muted-foreground">Problem, Solution, Hook & CTA</p>
+            </div>
+          </div>
+          <div className="flex items-start gap-2">
+            <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center text-xs font-bold text-primary flex-shrink-0">3</div>
+            <div>
+              <p className="font-medium text-foreground">Generate Script</p>
+              <p className="text-muted-foreground">AI creates your viral-ready script</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Video Purpose Selector */}
       <div>
         <div className="flex items-center gap-2 mb-3">
