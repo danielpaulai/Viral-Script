@@ -2,18 +2,13 @@ import type { Express, Request, Response } from "express";
 import OpenAI from "openai";
 import { chatStorage } from "./storage";
 
-// PERMANENT FIX: Detection uses REPLIT_DEV_DOMAIN which is ONLY set in development workspaces
-// Production deployments will ALWAYS use the hosted integrations URL
-const isDevelopmentWorkspace = !!process.env.REPLIT_DEV_DOMAIN;
-const envBaseURL = process.env.AI_INTEGRATIONS_OPENAI_BASE_URL || "";
-
-const openaiBaseURL = isDevelopmentWorkspace && envBaseURL.includes("localhost")
-  ? envBaseURL
-  : "https://integrations.replit.com/api/openai/v1";
+// Configure OpenAI client using centralized AI config
+// This guarantees production ALWAYS uses the correct URL
+import { aiConfig } from "../aiConfig";
 
 const openai = new OpenAI({
-  apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY,
-  baseURL: openaiBaseURL,
+  apiKey: aiConfig.apiKey,
+  baseURL: aiConfig.baseURL,
 });
 
 export function registerChatRoutes(app: Express): void {
