@@ -53,24 +53,44 @@ import {
 import { getCreatorById, creatorStyles as comprehensiveCreatorStyles } from "@shared/creator-styles";
 import { scrapeTikTokProfile, scrapeInstagramProfile, analyzeCreatorStyle, searchTikTokByKeyword } from "./apify";
 
-// Configure OpenAI client using Replit AI Integrations environment variables
-// CRITICAL: In production deployments, ALWAYS use the production URL
+// Configure OpenAI client
+// Priority: 1) User's own OPENAI_API_KEY (for production)
+//           2) Replit AI Integrations (for development)
 const isProduction = !!process.env.REPLIT_DEPLOYMENT || process.env.NODE_ENV === 'production';
-const PRODUCTION_OPENAI_URL = 'https://integrations.replit.com/api/openai/v1';
+const hasOwnOpenAIKey = !!process.env.OPENAI_API_KEY;
+const hasReplitAIKey = !!process.env.AI_INTEGRATIONS_OPENAI_API_KEY;
 
-// Use production URL if deployed, otherwise use env variable (for local dev)
-const openaiBaseURL = isProduction 
-  ? PRODUCTION_OPENAI_URL 
-  : (process.env.AI_INTEGRATIONS_OPENAI_BASE_URL || PRODUCTION_OPENAI_URL);
+// Determine which API key and URL to use
+let openaiApiKey: string | undefined;
+let openaiBaseURL: string | undefined;
+
+if (hasOwnOpenAIKey) {
+  // Use user's own OpenAI API key with standard OpenAI endpoint
+  openaiApiKey = process.env.OPENAI_API_KEY;
+  openaiBaseURL = 'https://api.openai.com/v1';
+  console.log("[OpenAI Config] Using user's own OPENAI_API_KEY");
+} else if (hasReplitAIKey) {
+  // Use Replit AI Integrations
+  openaiApiKey = process.env.AI_INTEGRATIONS_OPENAI_API_KEY;
+  if (isProduction) {
+    openaiBaseURL = 'https://integrations.replit.com/api/openai/v1';
+  } else {
+    openaiBaseURL = process.env.AI_INTEGRATIONS_OPENAI_BASE_URL || 'https://integrations.replit.com/api/openai/v1';
+  }
+  console.log("[OpenAI Config] Using Replit AI Integrations");
+} else {
+  console.error("[OpenAI Config] WARNING: No OpenAI API key configured!");
+}
 
 const openai = new OpenAI({
-  apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY,
+  apiKey: openaiApiKey,
   baseURL: openaiBaseURL,
 });
 
 // Log AI configuration at startup for debugging
 console.log("[OpenAI Config] Configuration:", {
-  hasApiKey: !!process.env.AI_INTEGRATIONS_OPENAI_API_KEY,
+  hasOwnKey: hasOwnOpenAIKey,
+  hasReplitKey: hasReplitAIKey,
   baseURL: openaiBaseURL,
   isProduction,
   nodeEnv: process.env.NODE_ENV,
@@ -1437,9 +1457,10 @@ export async function registerRoutes(
       isProduction: !!process.env.REPLIT_DEPLOYMENT,
       config: {
         openai: {
-          hasApiKey: !!process.env.AI_INTEGRATIONS_OPENAI_API_KEY,
-          keyLength: process.env.AI_INTEGRATIONS_OPENAI_API_KEY ? process.env.AI_INTEGRATIONS_OPENAI_API_KEY.length : 0,
-          baseUrl: openaiBaseURL,
+          hasOwnKey: hasOwnOpenAIKey,
+          hasReplitKey: hasReplitAIKey,
+          keyLength: openaiApiKey ? openaiApiKey.length : 0,
+          baseUrl: openaiBaseURL || 'NOT SET',
         },
         supabase: {
           hasUrl: !!process.env.SUPABASE_URL,

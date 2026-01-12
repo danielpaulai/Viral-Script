@@ -1,0 +1,69 @@
+index-CkVHBZV1.js:8  GET https://viralscript.co/api/knowledge-base 403 (Forbidden)
+(anonymous) @ index-CkVHBZV1.js:8
+o @ index-CkVHBZV1.js:8
+k @ index-CkVHBZV1.js:8
+start @ index-CkVHBZV1.js:8
+fetch @ index-CkVHBZV1.js:8
+#u @ index-CkVHBZV1.js:8
+onSubscribe @ index-CkVHBZV1.js:8
+subscribe @ index-CkVHBZV1.js:8
+(anonymous) @ index-CkVHBZV1.js:8
+ux @ index-CkVHBZV1.js:6
+wc @ index-CkVHBZV1.js:8
+si @ index-CkVHBZV1.js:8
+VS @ index-CkVHBZV1.js:8
+ma @ index-CkVHBZV1.js:8
+lv @ index-CkVHBZV1.js:8
+Ts @ index-CkVHBZV1.js:6
+(anonymous) @ index-CkVHBZV1.js:8
+setTimeout
+o @ index-CkVHBZV1.js:8
+u @ index-CkVHBZV1.js:8
+batch @ index-CkVHBZV1.js:8
+#s @ index-CkVHBZV1.js:8
+setData @ index-CkVHBZV1.js:8
+setQueryData @ index-CkVHBZV1.js:8
+onSuccess @ index-CkVHBZV1.js:52
+execute @ index-CkVHBZV1.js:8
+await in execute
+mutate @ index-CkVHBZV1.js:8
+(anonymous) @ index-CkVHBZV1.js:8
+B @ index-CkVHBZV1.js:160
+vu @ index-CkVHBZV1.js:5
+l2 @ index-CkVHBZV1.js:5
+c2 @ index-CkVHBZV1.js:5
+Lg @ index-CkVHBZV1.js:5
+Fg @ index-CkVHBZV1.js:5
+(anonymous) @ index-CkVHBZV1.js:5
+Um @ index-CkVHBZV1.js:8
+ze @ index-CkVHBZV1.js:5
+Uu @ index-CkVHBZV1.js:5
+Cu @ index-CkVHBZV1.js:5
+k2 @ index-CkVHBZV1.js:5Understand this error
+index-CkVHBZV1.js:137 Calling /api/solutions/generate with params: {problem: 'Narcissistic women in relationships. ', targetAudience: '', platform: 'tiktok', videoPurpose: 'education'}
+index-CkVHBZV1.js:8  POST https://viralscript.co/api/solutions/generate 500 (Internal Server Error)
+ct @ index-CkVHBZV1.js:8
+mutationFn @ index-CkVHBZV1.js:137
+fn @ index-CkVHBZV1.js:8
+k @ index-CkVHBZV1.js:8
+start @ index-CkVHBZV1.js:8
+execute @ index-CkVHBZV1.js:8
+await in execute
+mutate @ index-CkVHBZV1.js:8
+(anonymous) @ index-CkVHBZV1.js:8
+Be @ index-CkVHBZV1.js:137
+vu @ index-CkVHBZV1.js:5
+l2 @ index-CkVHBZV1.js:5
+c2 @ index-CkVHBZV1.js:5
+Lg @ index-CkVHBZV1.js:5
+Fg @ index-CkVHBZV1.js:5
+(anonymous) @ index-CkVHBZV1.js:5
+Um @ index-CkVHBZV1.js:8
+ze @ index-CkVHBZV1.js:5
+Uu @ index-CkVHBZV1.js:5
+Cu @ index-CkVHBZV1.js:5
+k2 @ index-CkVHBZV1.js:5Understand this error
+index-CkVHBZV1.js:137 Solution generation failed: Error: 500: {"error":"Failed to generate solutions. Please try again."}
+    at C0 (index-CkVHBZV1.js:8:96600)
+    at async ct (index-CkVHBZV1.js:8:96801)
+    at async Object.mutationFn (index-CkVHBZV1.js:137:4481)
