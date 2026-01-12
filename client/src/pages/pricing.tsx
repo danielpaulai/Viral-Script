@@ -8,20 +8,22 @@ const pricingTiers = [
     id: "starter",
     name: "Starter",
     price: 19.99,
+    priceLabel: null,
     description: "Perfect for beginners and solo creators",
     icon: Zap,
     features: [
+      "AI-powered script generation",
       "50 viral hooks library",
       "30+ CTA templates",
       "6 script structures",
-      "Deep research mode",
       "Hemingway readability analysis",
       "30 scripts per month",
       "All platforms supported",
     ],
     limitations: [
       "No Knowledge Base",
-      "No competitor analysis",
+      "No Deep Research mode",
+      "No Viral Examples",
     ],
     popular: false,
     buttonText: "Start Free Trial",
@@ -31,7 +33,8 @@ const pricingTiers = [
   {
     id: "pro",
     name: "Pro",
-    price: 29.99,
+    price: 39.99,
+    priceLabel: null,
     description: "For creators who want brand-consistent scripts",
     icon: Crown,
     features: [
@@ -39,10 +42,10 @@ const pricingTiers = [
       "Unlimited Knowledge Base",
       "ICP & Brand Positioning docs",
       "Voice DNA templates",
-      "Messaging House pillars",
-      "Rule of One framework",
-      "AI learns your brand voice",
-      "Unlimited scripts",
+      "Deep Research mode",
+      "Viral Examples feature",
+      "100 scripts per month",
+      "Priority support",
     ],
     limitations: [
       "No competitor analysis",
@@ -55,22 +58,23 @@ const pricingTiers = [
   {
     id: "agency",
     name: "Agency",
-    price: 39.99,
+    price: null,
+    priceLabel: "Contact Us",
     description: "Full content strategy for teams and agencies",
     icon: Building2,
     features: [
       "Everything in Pro",
+      "Unlimited scripts",
       "Competitor script analysis",
       "Content strategy builder",
-      "Funnel categories (TOFU/MOFU/BOFU)",
-      "Personal stories framework",
-      "Hot takes generator",
+      "TOFU/MOFU/BOFU planning",
+      "Multi-brand support",
       "Team collaboration",
-      "Priority support",
+      "Dedicated support",
     ],
     limitations: [],
     popular: false,
-    buttonText: "Coming Soon",
+    buttonText: "Contact Sales",
     trialDays: null,
     comingSoon: true,
   },
@@ -131,13 +135,21 @@ export default function Pricing() {
                 </CardHeader>
                 <CardContent className="flex-1">
                   <div className="text-center mb-6">
-                    <span className="text-4xl font-bold" data-testid={`text-tier-price-${tier.id}`}>
-                      ${tier.price}
-                    </span>
-                    <span className="text-muted-foreground">/month</span>
-                    {!tier.comingSoon && (
+                    {tier.price !== null ? (
+                      <>
+                        <span className="text-4xl font-bold" data-testid={`text-tier-price-${tier.id}`}>
+                          ${tier.price}
+                        </span>
+                        <span className="text-muted-foreground">/month</span>
+                      </>
+                    ) : (
+                      <span className="text-4xl font-bold" data-testid={`text-tier-price-${tier.id}`}>
+                        {tier.priceLabel}
+                      </span>
+                    )}
+                    {!tier.comingSoon && tier.trialDays && (
                       <p className="text-sm text-primary font-medium mt-2" data-testid={`text-trial-${tier.id}`}>
-                        7 days free
+                        {tier.trialDays} days free
                       </p>
                     )}
                   </div>

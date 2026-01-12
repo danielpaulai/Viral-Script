@@ -876,15 +876,17 @@ export const pricingTiers = [
     price: 19.99, 
     description: "Essential script generation for content creators",
     popular: false,
+    comingSoon: false,
     features: [
       "AI-powered script generation",
       "50 viral hooks library",
       "30+ CTA templates",
       "All structure formats",
-      "Basic production notes"
+      "Basic production notes",
+      "30 scripts per month"
     ],
     limits: {
-      scriptsPerMonth: 50,
+      scriptsPerMonth: 30,
       knowledgeBaseDocs: 0,
       competitorAssets: 0
     }
@@ -892,16 +894,17 @@ export const pricingTiers = [
   { 
     id: "pro", 
     name: "Pro", 
-    price: 29.99, 
+    price: 39.99, 
     description: "Knowledge Base powered scripts for your brand",
     popular: true,
+    comingSoon: true,
     features: [
       "Everything in Starter",
       "100 scripts per month",
       "Knowledge Base (unlimited docs)",
       "ICP & Brand Voice integration",
-      "Content strategy categories",
       "Deep Research mode",
+      "Viral Examples feature",
       "Priority support"
     ],
     limits: {
@@ -911,11 +914,13 @@ export const pricingTiers = [
     }
   },
   { 
-    id: "ultimate", 
-    name: "Ultimate", 
-    price: 99.99, 
-    description: "Full content strategy with competitor intelligence",
+    id: "agency", 
+    name: "Agency", 
+    price: null,
+    priceLabel: "Contact Us",
+    description: "Full content strategy for teams and agencies",
     popular: false,
+    comingSoon: true,
     features: [
       "Everything in Pro",
       "Unlimited scripts",
@@ -923,7 +928,8 @@ export const pricingTiers = [
       "Full content strategy builder",
       "TOFU/MOFU/BOFU planning",
       "Multi-brand support",
-      "White-label exports"
+      "Team collaboration",
+      "Dedicated support"
     ],
     limits: {
       scriptsPerMonth: -1,
