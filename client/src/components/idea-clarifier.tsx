@@ -735,16 +735,10 @@ export function IdeaClarifier({
               </p>
             </div>
             <Button
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                alert("Button clicked! Starting generation...");
-                handleGenerateProblems();
-              }}
+              onClick={handleGenerateProblems}
               disabled={generateProblemsMutation.isPending || skeleton.isLocked}
               className="w-full"
               data-testid="button-generate-problems"
-              type="button"
             >
               {generateProblemsMutation.isPending ? (
                 <>
