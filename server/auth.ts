@@ -35,7 +35,11 @@ export function setupAuth(app: Express) {
   const isProduction = process.env.NODE_ENV === "production";
   const useSecureCookies = isReplit || isProduction;
   
-  console.log(`Session config: Replit=${isReplit}, Production=${isProduction}, SecureCookies=${useSecureCookies}`);
+  // For cross-origin auth flows (production deployments), use sameSite: "none"
+  // This is required when the app is accessed from external domains
+  const sameSiteValue = useSecureCookies ? "none" as const : "lax" as const;
+  
+  console.log(`Session config: Replit=${isReplit}, Production=${isProduction}, SecureCookies=${useSecureCookies}, SameSite=${sameSiteValue}`);
   
   const sessionSettings: session.SessionOptions = {
     secret: process.env.SESSION_SECRET!,
@@ -45,7 +49,7 @@ export function setupAuth(app: Express) {
     cookie: {
       secure: useSecureCookies,
       httpOnly: true,
-      sameSite: "lax" as const,
+      sameSite: sameSiteValue,
       maxAge: 7 * 24 * 60 * 60 * 1000,
     },
   };
