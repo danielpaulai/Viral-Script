@@ -1,5 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { GradientButton } from "@/components/ui/gradient-button";
 import { Badge } from "@/components/ui/badge";
 import { Check, Zap, Crown, Building2, Clock } from "lucide-react";
 
@@ -168,15 +169,24 @@ export default function Pricing() {
                     ))}
                   </ul>
                 </CardContent>
-                <CardFooter>
-                  <Button 
-                    className="w-full" 
-                    variant={tier.comingSoon ? "secondary" : tier.popular ? "default" : "outline"}
-                    disabled={tier.comingSoon}
-                    data-testid={`button-select-${tier.id}`}
-                  >
-                    {tier.buttonText}
-                  </Button>
+                <CardFooter className="flex justify-center">
+                  {tier.id === "starter" && !tier.comingSoon ? (
+                    <GradientButton 
+                      className="w-full"
+                      data-testid={`button-select-${tier.id}`}
+                    >
+                      {tier.buttonText}
+                    </GradientButton>
+                  ) : (
+                    <Button 
+                      className="w-full" 
+                      variant={tier.comingSoon ? "secondary" : tier.popular ? "default" : "outline"}
+                      disabled={tier.comingSoon}
+                      data-testid={`button-select-${tier.id}`}
+                    >
+                      {tier.buttonText}
+                    </Button>
+                  )}
                 </CardFooter>
               </Card>
             );
