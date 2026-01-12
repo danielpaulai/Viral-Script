@@ -42,7 +42,15 @@ interface SubscriptionData {
 }
 
 export default function Settings() {
-  const { user, isLoading: authLoading, isAuthenticated } = useAuth();
+  const { user, isLoading: authLoading, isAuthenticated, logoutMutation } = useAuth();
+
+  const handleLogout = () => {
+    logoutMutation.mutate(undefined, {
+      onSuccess: () => {
+        window.location.href = "/";
+      },
+    });
+  };
 
   const { data: usage, isLoading: usageLoading } = useQuery<UsageData>({
     queryKey: ["/api/user/usage"],
@@ -127,8 +135,13 @@ export default function Settings() {
             <h1 className="text-2xl font-bold" data-testid="text-settings-title">Settings</h1>
             <p className="text-muted-foreground">Manage your account and subscription</p>
           </div>
-          <Button variant="outline" onClick={() => window.location.href = "/api/logout"} data-testid="button-logout">
-            Sign Out
+          <Button 
+            variant="outline" 
+            onClick={handleLogout} 
+            disabled={logoutMutation.isPending}
+            data-testid="button-logout"
+          >
+            {logoutMutation.isPending ? "Signing out..." : "Sign Out"}
           </Button>
         </div>
 
