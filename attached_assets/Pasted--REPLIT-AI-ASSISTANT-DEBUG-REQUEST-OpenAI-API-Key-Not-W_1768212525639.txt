@@ -1,0 +1,311 @@
+# REPLIT AI ASSISTANT - DEBUG REQUEST
+## OpenAI API Key Not Working in Production Deployment
+
+---
+
+# PASTE THIS ENTIRE MESSAGE INTO REPLIT AI:
+
+---
+
+I need your help debugging a critical issue with my OpenAI API integration. The app works perfectly in development/preview mode, but fails in production deployment with a 500 error saying "Failed to generate solutions. Please try again."
+
+## THE PROBLEM:
+
+1. **Development (Preview):** ✅ Works perfectly - OpenAI API calls succeed
+2. **Production (Deployed):** ❌ Fails with 500 error - OpenAI API calls fail
+
+The error indicates the OpenAI API key is not being exposed to the production deployment environment.
+
+## WHAT I'VE ALREADY TRIED:
+
+1. Added OPENAI_API_KEY to development Secrets (Tools → Secrets)
+2. Confirmed OpenAI integration multiple times
+3. Redeployed multiple times
+4. The issue persists - production still cannot access the API key
+
+## WHAT I NEED YOU TO DO:
+
+### 1. CHECK IF THE API KEY EXISTS IN PRODUCTION
+
+Add this diagnostic code at the very start of my main server file (before any routes):
+
+```javascript
+// DIAGNOSTIC: Check OpenAI API Key availability
+console.log('='.repeat(60));
+console.log('🔍 ENVIRONMENT DIAGNOSTIC');
+console.log('='.repeat(60));
+console.log('NODE_ENV:', process.env.NODE_ENV);
+console.log('OPENAI_API_KEY exists:', !!process.env.OPENAI_API_KEY);
+console.log('OPENAI_API_KEY length:', process.env.OPENAI_API_KEY ? process.env.OPENAI_API_KEY.length : 0);
+console.log('OPENAI_API_KEY starts with:', process.env.OPENAI_API_KEY ? process.env.OPENAI_API_KEY.substring(0, 7) + '...' : 'N/A');
+console.log('='.repeat(60));
+
+// List all environment variables (names only, not values)
+console.log('Available environment variables:', Object.keys(process.env).filter(key => 
+  key.includes('OPENAI') || 
+  key.includes('API') || 
+  key.includes('KEY') ||
+  key.includes('SECRET')
+));
+console.log('='.repeat(60));
+```
+
+### 2. ADD A STARTUP GUARD
+
+Add this function and call it immediately on server start:
+
+```javascript
+function validateOpenAIConfiguration() {
+  const apiKey = process.env.OPENAI_API_KEY;
+  
+  if (!apiKey) {
+    console.error('❌ CRITICAL ERROR: OPENAI_API_KEY is not set!');
+    console.error('');
+    console.error('This means the secret is not available in this environment.');
+    console.error('');
+    console.error('POSSIBLE CAUSES:');
+    console.error('1. Secret exists in development but not in production deployment');
+    console.error('2. Secret name mismatch (must be exactly: OPENAI_API_KEY)');
+    console.error('3. Deployment was created before secret was added');
+    console.error('4. Replit integration not properly configured for deployment');
+    console.error('');
+    console.error('TO FIX:');
+    console.error('1. Go to Deployments panel');
+    console.error('2. Click on the active deployment');
+    console.error('3. Go to Settings or Configuration');
+    console.error('4. Find Secrets/Environment Variables section');
+    console.error('5. Manually add: OPENAI_API_KEY = your-key-here');
+    console.error('6. Redeploy');
+    
+    return false;
+  }
+  
+  if (!apiKey.startsWith('sk-')) {
+    console.error('❌ WARNING: OPENAI_API_KEY does not start with "sk-"');
+    console.error('This may indicate an invalid or incorrectly formatted key.');
+    return false;
+  }
+  
+  console.log('✅ OPENAI_API_KEY is configured correctly');
+  console.log('   Key length:', apiKey.length);
+  console.log('   Key prefix:', apiKey.substring(0, 7) + '...');
+  
+  return true;
+}
+
+// Call this at startup
+const isConfigValid = validateOpenAIConfiguration();
+if (!isConfigValid) {
+  console.error('⚠️ Server starting with invalid configuration - API calls will fail');
+}
+```
+
+### 3. WRAP ALL OPENAI CALLS WITH ERROR HANDLING
+
+Find all places where I call the OpenAI API and wrap them like this:
+
+```javascript
+async function callOpenAI(prompt) {
+  // Pre-flight check
+  if (!process.env.OPENAI_API_KEY) {
+    console.error('OpenAI API call attempted but OPENAI_API_KEY is not set');
+    throw new Error('Server configuration error: OpenAI API key is not available. Please contact support.');
+  }
+
+  try {
+    const response = await openai.chat.completions.create({
+      model: "gpt-4",
+      messages: [{ role: "user", content: prompt }],
+    });
+    
+    return response.choices[0].message.content;
+    
+  } catch (error) {
+    console.error('OpenAI API Error:', error.message);
+    
+    // Specific error handling
+    if (error.message.includes('API key')) {
+      console.error('Authentication error - API key may be invalid');
+      throw new Error('Authentication failed. Please check API key configuration.');
+    }
+    
+    if (error.message.includes('rate limit')) {
+      console.error('Rate limit exceeded');
+      throw new Error('Service temporarily unavailable. Please try again in a moment.');
+    }
+    
+    if (error.message.includes('insufficient_quota')) {
+      console.error('OpenAI quota exceeded');
+      throw new Error('API quota exceeded. Please check your OpenAI billing.');
+    }
+    
+    throw error;
+  }
+}
+```
+
+### 4. CHECK THE OPENAI CLIENT INITIALIZATION
+
+Find where the OpenAI client is initialized and ensure it looks like this:
+
+```javascript
+import OpenAI from 'openai';
+
+// Check for API key before initializing
+if (!process.env.OPENAI_API_KEY) {
+  console.error('WARNING: Initializing OpenAI client without API key');
+}
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
+// Verify initialization
+console.log('OpenAI client initialized with API key:', !!process.env.OPENAI_API_KEY);
+```
+
+### 5. CHECK DEPLOYMENT SECRETS CONFIGURATION
+
+Please verify and fix the deployment configuration:
+
+1. **Check if Secrets are configured for the DEPLOYMENT (not just development)**
+   - Development Secrets (Tools → Secrets) are SEPARATE from Deployment Secrets
+   - Both need to have the OPENAI_API_KEY
+
+2. **Manually add the secret to deployment if needed:**
+   - Go to Deployments panel
+   - Click on active deployment
+   - Find Settings/Configuration
+   - Add secret: `OPENAI_API_KEY` = `sk-proj-...` (the actual key)
+   - Redeploy
+
+### 6. CHECK THE .replit FILE
+
+Look at my `.replit` file and ensure it has the correct configuration for secrets:
+
+```toml
+[env]
+# This should reference the secret
+OPENAI_API_KEY = "${OPENAI_API_KEY}"
+```
+
+Or for newer Replit format:
+```toml
+[[secrets]]
+key = "OPENAI_API_KEY"
+```
+
+### 7. CREATE A HEALTH CHECK ENDPOINT
+
+Add this endpoint so I can verify the configuration is correct in production:
+
+```javascript
+app.get('/api/health', (req, res) => {
+  const health = {
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development',
+    openai: {
+      configured: !!process.env.OPENAI_API_KEY,
+      keyLength: process.env.OPENAI_API_KEY ? process.env.OPENAI_API_KEY.length : 0,
+      keyPrefix: process.env.OPENAI_API_KEY ? process.env.OPENAI_API_KEY.substring(0, 7) : 'NOT_SET'
+    }
+  };
+  
+  if (!process.env.OPENAI_API_KEY) {
+    health.status = 'degraded';
+    health.error = 'OPENAI_API_KEY not configured';
+  }
+  
+  res.json(health);
+});
+```
+
+### 8. FIX THE API ROUTE ERROR HANDLING
+
+Find the route that's returning the 500 error and update it:
+
+```javascript
+app.post('/api/generate-solutions', async (req, res) => {
+  try {
+    // Check configuration first
+    if (!process.env.OPENAI_API_KEY) {
+      console.error('API route called but OPENAI_API_KEY is not set');
+      return res.status(503).json({
+        error: 'Service temporarily unavailable',
+        message: 'Server configuration error. Please try again later.',
+        debug: 'OPENAI_API_KEY not configured in production environment'
+      });
+    }
+
+    const { problem } = req.body;
+    
+    if (!problem) {
+      return res.status(400).json({ error: 'Problem is required' });
+    }
+
+    // Make OpenAI call
+    const response = await openai.chat.completions.create({
+      model: "gpt-4",
+      messages: [{ role: "user", content: `Generate solutions for: ${problem}` }],
+    });
+
+    res.json({ solutions: response.choices[0].message.content });
+
+  } catch (error) {
+    console.error('Generate solutions error:', error);
+    
+    // Return helpful error message
+    res.status(500).json({
+      error: 'Failed to generate solutions',
+      message: error.message,
+      type: error.constructor.name
+    });
+  }
+});
+```
+
+## SUMMARY OF WHAT I NEED:
+
+1. ✅ Add diagnostic logging at startup
+2. ✅ Add startup guard for OPENAI_API_KEY
+3. ✅ Wrap OpenAI calls with proper error handling
+4. ✅ Add /api/health endpoint for verification
+5. ✅ Verify deployment has secrets configured (not just development)
+6. ✅ Check .replit file configuration
+7. ✅ Update error responses to be more helpful
+8. ✅ Redeploy after all changes
+
+## EXPECTED OUTCOME:
+
+After these changes:
+- I can visit `/api/health` to verify if OpenAI is configured
+- The logs will clearly show if the API key is missing
+- Error messages will be helpful instead of generic 500 errors
+- The root cause will be identified
+
+Please implement all of these changes and then help me verify the deployment secrets are correctly configured.
+
+---
+
+# END OF REPLIT AI PROMPT
+
+---
+
+# ADDITIONAL NOTES FOR DANNY:
+
+## After Replit Makes These Changes:
+
+1. **Check the deployment logs** for the diagnostic output
+2. **Visit yourdomain.com/api/health** to see if OpenAI is configured
+3. **If it says "NOT_SET"**, you need to add the secret to deployment manually:
+   - Deployments → Your Deployment → Settings → Secrets → Add OPENAI_API_KEY
+
+## The Core Issue:
+
+Replit's development Secrets and deployment Secrets are **separate**. When you add a secret via "Tools → Secrets", it only works in development. For production deployments, you often need to add secrets again in the deployment configuration.
+
+## If Replit AI Can't Fix It:
+
+Contact Replit support and say:
+> "My OPENAI_API_KEY secret works in development but is not accessible in my production deployment. I've added it to both development secrets and attempted to configure the deployment, but the environment variable is still undefined in production. Can you help me ensure the secret is properly propagated to my deployment?"
