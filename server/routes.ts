@@ -2665,6 +2665,46 @@ DO NOT make up fake statistics. Use the research data provided, or clearly state
     }
   });
 
+  // Update script content - used for saving edits which improves Script Memory
+  app.patch("/api/scripts/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+      
+      const { script: scriptContent, title } = req.body;
+      if (!scriptContent && !title) {
+        return res.status(400).json({ error: "No updates provided" });
+      }
+      
+      const updates: any = {};
+      if (scriptContent) {
+        updates.script = scriptContent;
+        // Recalculate word count
+        updates.wordCount = scriptContent.split(/\s+/).filter((w: string) => w.length > 0).length;
+      }
+      if (title) {
+        updates.title = title;
+      }
+      
+      const updated = await storage.updateScript(req.params.id, updates, userId);
+      if (!updated) {
+        return res.status(404).json({ error: "Script not found" });
+      }
+      
+      // Clear style analysis cache so Script Memory picks up edits
+      if (styleAnalysisCache.has(userId)) {
+        styleAnalysisCache.delete(userId);
+      }
+      
+      res.json(updated);
+    } catch (error) {
+      console.error("Error updating script:", error);
+      res.status(500).json({ error: "Failed to update script" });
+    }
+  });
+
   app.delete("/api/scripts/:id", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user?.id;
