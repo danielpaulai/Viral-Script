@@ -2810,6 +2810,96 @@ Generate 4 CORE TEACHING ideas - each should be THE central insight that an enti
     }
   });
 
+  // Generate problem ideas based on target audience and niche
+  app.post("/api/problems/generate", async (req, res) => {
+    try {
+      const { targetAudience, platform, videoPurpose, niche } = req.body;
+      
+      if (!targetAudience && !niche) {
+        return res.status(400).json({ error: "Target audience or niche is required" });
+      }
+
+      const purposeContext: Record<string, string> = {
+        authority: "Focus on problems where the creator can share bold opinions or unique insights",
+        education: "Focus on problems where the creator can teach practical solutions",
+        storytelling: "Focus on problems that are emotionally relatable and personal",
+      };
+
+      const systemPrompt = `You are an expert content strategist helping creators identify compelling PROBLEMS or PAIN POINTS that resonate with their target audience.
+
+A good problem for short-form video content should:
+- Be specific and immediately relatable to the audience
+- Create an emotional response (frustration, anxiety, curiosity)
+- Be solvable or addressable in a short video format
+- Make viewers think "Yes! That's exactly my problem!"
+
+${videoPurpose ? purposeContext[videoPurpose] || '' : ''}
+
+Generate 5 unique problem/pain point ideas that would make great video topics.
+
+Return ONLY a JSON array with this format:
+[
+  {
+    "id": "prob_1",
+    "problem": "A specific problem statement in 1-2 sentences",
+    "why": "Why this resonates with the target audience",
+    "hook_potential": "High/Medium - why this would grab attention"
+  }
+]`;
+
+      const userPrompt = `Generate 5 compelling PROBLEM/PAIN POINT ideas for video content:
+
+TARGET AUDIENCE: ${targetAudience || 'General audience'}
+NICHE/TOPIC AREA: ${niche || 'General content creation'}
+PLATFORM: ${platform || 'TikTok/Reels'}
+VIDEO TYPE: ${videoPurpose || 'education'}
+
+Create problems that are:
+1. Specific enough to relate to immediately
+2. Emotional enough to grab attention
+3. Solvable in a short-form video`;
+
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userPrompt }
+        ],
+        max_tokens: 800,
+        temperature: 0.9,
+      });
+
+      const content = response.choices[0]?.message?.content || "[]";
+      
+      try {
+        const cleanedJson = content
+          .replace(/```json\s*/g, "")
+          .replace(/```\s*/g, "")
+          .trim();
+        
+        const problems = JSON.parse(cleanedJson);
+        
+        const normalizedProblems = (Array.isArray(problems) ? problems : []).slice(0, 5).map((p: any, i: number) => ({
+          id: `prob_${i + 1}_${Date.now()}`,
+          problem: p.problem || `Problem ${i + 1}`,
+          why: p.why || "Resonates with the audience",
+          hookPotential: p.hook_potential || "Medium",
+        }));
+        
+        res.json({ 
+          problems: normalizedProblems,
+          targetAudience: targetAudience?.substring(0, 50),
+        });
+      } catch (parseError) {
+        console.error("Failed to parse problem generation response:", parseError);
+        res.status(500).json({ error: "Failed to parse generated problems" });
+      }
+    } catch (error) {
+      console.error("Problem generation error:", error);
+      res.status(500).json({ error: "Failed to generate problems" });
+    }
+  });
+
   app.get("/api/categories", (req, res) => {
     res.json(scriptCategories);
   });

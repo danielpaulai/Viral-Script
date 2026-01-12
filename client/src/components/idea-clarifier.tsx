@@ -210,6 +210,14 @@ export function IdeaClarifier({
   const [isEditingHook, setIsEditingHook] = useState(false);
   const [browseCategoryFilter, setBrowseCategoryFilter] = useState<string>("personal_experience");
   
+  // Problem ideas
+  const [generatedProblems, setGeneratedProblems] = useState<Array<{
+    id: string;
+    problem: string;
+    why: string;
+    hookPotential: string;
+  }>>([]);
+  
   // Solution suggestions
   const [generatedSolutions, setGeneratedSolutions] = useState<GeneratedSolution[]>([]);
   const [editingSolutionId, setEditingSolutionId] = useState<string | null>(null);
@@ -338,6 +346,38 @@ export function IdeaClarifier({
       targetAudience: skeleton.targetAudience,
       videoPurpose: skeleton.videoPurpose,
     });
+  };
+
+  // Problem ideas generation mutation
+  const generateProblemsMutation = useMutation({
+    mutationFn: async (params: {
+      targetAudience: string;
+      platform: string;
+      videoPurpose: string;
+      niche: string;
+    }) => {
+      const response = await apiRequest("POST", "/api/problems/generate", params);
+      return await response.json() as { problems: Array<{ id: string; problem: string; why: string; hookPotential: string }>; targetAudience: string };
+    },
+    onSuccess: (data) => {
+      setGeneratedProblems(data.problems);
+    },
+  });
+
+  // Trigger problem generation
+  const handleGenerateProblems = () => {
+    generateProblemsMutation.mutate({
+      targetAudience: skeleton.targetAudience,
+      platform: skeleton.platform,
+      videoPurpose: skeleton.videoPurpose,
+      niche: skeleton.rawIdea || "content creation",
+    });
+  };
+
+  // Handle selecting a generated problem
+  const handleSelectProblem = (problem: string) => {
+    updateSection("problem", problem);
+    setGeneratedProblems([]); // Clear after selection
   };
 
   // Solution generation mutation
@@ -644,6 +684,58 @@ export function IdeaClarifier({
           {section.guidingQuestion}
         </p>
 
+        {/* Generate Problem Ideas - shown when problem is empty or short */}
+        {!section.isValid && (
+          <div className="mb-4 p-3 rounded-lg bg-primary/10 border border-primary/30">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-sm font-medium text-primary flex items-center gap-2">
+                <Wand2 className="w-4 h-4" />
+                Need inspiration? Generate problem ideas
+              </p>
+            </div>
+            <Button
+              onClick={handleGenerateProblems}
+              disabled={generateProblemsMutation.isPending || skeleton.isLocked}
+              className="w-full"
+              data-testid="button-generate-problems"
+            >
+              {generateProblemsMutation.isPending ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Generating problem ideas...
+                </>
+              ) : (
+                <>
+                  <Wand2 className="w-4 h-4 mr-2" />
+                  Generate Problem Ideas
+                </>
+              )}
+            </Button>
+
+            {/* Generated Problems */}
+            {generatedProblems.length > 0 && (
+              <div className="mt-3 space-y-2">
+                <Label className="text-xs font-medium">Click to use a problem:</Label>
+                {generatedProblems.map((prob) => (
+                  <button
+                    key={prob.id}
+                    onClick={() => handleSelectProblem(prob.problem)}
+                    className="w-full text-left p-3 rounded-lg bg-background/80 border border-border hover-elevate transition-all"
+                    disabled={skeleton.isLocked}
+                    data-testid={`problem-idea-${prob.id}`}
+                  >
+                    <p className="text-sm font-medium mb-1">{prob.problem}</p>
+                    <p className="text-xs text-muted-foreground">{prob.why}</p>
+                    <Badge variant="outline" className="mt-2 text-xs">
+                      Hook Potential: {prob.hookPotential}
+                    </Badge>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
         <Textarea
           value={section.content}
           onChange={(e) => updateSection("problem", e.target.value)}
@@ -680,25 +772,23 @@ export function IdeaClarifier({
           </div>
         </div>
 
-        {/* AI Teaching Ideas */}
-        <div className="mt-4 pt-4 border-t border-border/50">
-          <div className="flex items-center justify-between mb-3">
-            <p className="text-xs font-medium text-muted-foreground flex items-center gap-1">
-              <Wand2 className="w-3 h-3" />
-              AI Teaching Ideas
+        {/* AI Teaching Ideas - More Prominent when problem is ready */}
+        {canGenerateSolutions && (
+          <div className="mt-4 p-4 rounded-lg bg-green-500/10 border-2 border-green-500/40">
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-sm font-medium text-green-400 flex items-center gap-2">
+                <Wand2 className="w-4 h-4" />
+                Generate Teaching Ideas
+              </p>
+              {generatedSolutions.length > 0 && selectedCount > 0 && (
+                <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
+                  {selectedCount} selected
+                </Badge>
+              )}
+            </div>
+            <p className="text-xs text-muted-foreground mb-3">
+              Your problem is ready. Now generate the core teaching for your video.
             </p>
-            {generatedSolutions.length > 0 && selectedCount > 0 && (
-              <Badge variant="outline" className="text-xs">
-                {selectedCount} selected
-              </Badge>
-            )}
-          </div>
-
-          {!canGenerateSolutions ? (
-            <p className="text-xs text-muted-foreground italic">
-              Write at least 15 characters above to generate teaching ideas
-            </p>
-          ) : (
             <div className="space-y-3">
               <Button
                 size="sm"
@@ -814,8 +904,8 @@ export function IdeaClarifier({
                 </div>
               )}
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     );
   };
