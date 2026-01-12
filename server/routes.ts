@@ -613,7 +613,7 @@ ${customDocs.map(d => `${d.title}:\n${d.content}`).join("\n\n")}`);
   return sections.join("\n\n---\n\n");
 }
 
-async function generateScriptWithAI(params: ScriptParameters, knowledgeBaseDocs?: KnowledgeBaseDoc[]): Promise<GeneratedScript> {
+async function generateScriptWithAI(params: ScriptParameters, knowledgeBaseDocs?: KnowledgeBaseDoc[], creatorStyleMemory?: string): Promise<GeneratedScript> {
   const hook = viralHooks.find((h) => h.id === params.hook);
   const structure = structureFormats.find((s) => s.id === params.structure);
   const duration = durationOptions.find((d) => d.id === params.duration);
@@ -991,6 +991,7 @@ ${skeleton.suggestedHooks.map((h: string) => `- "${h}"`).join('\n')}
   const userPrompt = `Write a ${params.duration}-second video script (aim for ${targetWords.min}-${targetWords.max} words).
 
 ${knowledgeBaseInstructions}
+${creatorStyleMemory || ''}
 === YOUR TOPIC - STAY 100% ON THIS ===
 ${params.topic}
 === EVERY SENTENCE MUST BE ABOUT THIS EXACT TOPIC ===
@@ -1802,7 +1803,21 @@ Generate 3 CTAs now:`;
         knowledgeBaseDocs = await storage.getKnowledgeBaseDocs(userId);
       }
       
-      const generatedScript = await generateScriptWithAI(params, knowledgeBaseDocs);
+      // Script Memory: Analyze creator's past scripts for voice consistency
+      let creatorStyleMemory = "";
+      if (userId) {
+        try {
+          const styleAnalysis = await getCachedStyleAnalysis(userId, () => storage.getRecentScripts(userId, 8));
+          if (styleAnalysis.hasHistory) {
+            creatorStyleMemory = styleAnalysis.summary;
+            console.log(`[Script Memory] Using style analysis from ${styleAnalysis.scriptCount} past scripts for user ${userId}`);
+          }
+        } catch (error) {
+          console.error("[Script Memory] Failed to analyze past scripts:", error);
+        }
+      }
+      
+      const generatedScript = await generateScriptWithAI(params, knowledgeBaseDocs, creatorStyleMemory);
       
       const savedScript = await storage.createScript({
         userId: userId || null,

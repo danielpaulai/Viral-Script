@@ -27,13 +27,14 @@ import {
   type InsertCtaTemplate,
   users,
   passwordResetTokens,
+  scripts as scriptsTable,
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import session from "express-session";
 import createMemoryStore from "memorystore";
 import connectPgSimple from "connect-pg-simple";
 import { db, pool, isDatabaseAvailable } from "./db";
-import { eq } from "drizzle-orm";
+import { eq, desc } from "drizzle-orm";
 
 const MemoryStore = createMemoryStore(session);
 const PgSession = connectPgSimple(session);
@@ -243,6 +244,22 @@ export class MemStorage implements IStorage {
   }
 
   async getScripts(userId: string): Promise<Script[]> {
+    // Try database first
+    if (isDatabaseAvailable && db) {
+      try {
+        const dbScripts = await db.select()
+          .from(scriptsTable)
+          .where(eq(scriptsTable.userId, userId))
+          .orderBy(desc(scriptsTable.createdAt));
+        if (dbScripts.length > 0) {
+          return dbScripts;
+        }
+      } catch (error) {
+        console.error("[Storage] Database scripts query failed, falling back to memory:", error);
+      }
+    }
+    
+    // Fall back to memory
     return Array.from(this.scripts.values())
       .filter(s => s.userId === userId)
       .sort((a, b) => {
@@ -253,6 +270,21 @@ export class MemStorage implements IStorage {
   }
 
   async getRecentScripts(userId: string, limit: number = 8): Promise<Script[]> {
+    // Try database first for better performance with limit
+    if (isDatabaseAvailable && db) {
+      try {
+        const dbScripts = await db.select()
+          .from(scriptsTable)
+          .where(eq(scriptsTable.userId, userId))
+          .orderBy(desc(scriptsTable.createdAt))
+          .limit(limit);
+        return dbScripts;
+      } catch (error) {
+        console.error("[Storage] Database recent scripts query failed:", error);
+      }
+    }
+    
+    // Fall back to memory
     const allScripts = await this.getScripts(userId);
     return allScripts.slice(0, limit);
   }
@@ -279,7 +311,32 @@ export class MemStorage implements IStorage {
       status: insertScript.status ?? null,
       createdAt: new Date(),
     };
-    this.scripts.set(id, script);
+    
+    // Try to persist to database
+    if (isDatabaseAvailable && db) {
+      try {
+        await db.insert(scriptsTable).values({
+          id: script.id,
+          userId: script.userId,
+          title: script.title,
+          script: script.script,
+          wordCount: script.wordCount,
+          gradeLevel: script.gradeLevel,
+          productionNotes: script.productionNotes,
+          bRollIdeas: script.bRollIdeas,
+          onScreenText: script.onScreenText,
+          parameters: script.parameters,
+          status: script.status,
+        });
+        console.log(`[Storage] Script ${id} saved to database`);
+      } catch (error) {
+        console.error("[Storage] Failed to save script to database, using memory:", error);
+        this.scripts.set(id, script);
+      }
+    } else {
+      this.scripts.set(id, script);
+    }
+    
     return script;
   }
 
