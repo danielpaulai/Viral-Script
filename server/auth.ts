@@ -103,6 +103,18 @@ export function setupAuth(app: Express) {
       });
       console.log("User created in Replit DB:", newUser.id);
 
+      // Regenerate session to ensure fresh cookie with correct SameSite/Secure settings
+      await new Promise<void>((resolve, reject) => {
+        req.session.regenerate((err) => {
+          if (err) {
+            console.error("Session regenerate error:", err);
+            reject(err);
+          } else {
+            resolve();
+          }
+        });
+      });
+
       req.session.userId = newUser.id;
       req.session.userEmail = username;
       
@@ -179,6 +191,19 @@ export function setupAuth(app: Express) {
         }
         console.log("Login successful via local auth:", user.id);
       }
+
+      // Regenerate session to ensure fresh cookie with correct SameSite/Secure settings
+      // This fixes issues where users have stale sessions with old cookie attributes
+      await new Promise<void>((resolve, reject) => {
+        req.session.regenerate((err) => {
+          if (err) {
+            console.error("Session regenerate error:", err);
+            reject(err);
+          } else {
+            resolve();
+          }
+        });
+      });
 
       req.session.userId = user.id;
       req.session.userEmail = user.username || undefined;
