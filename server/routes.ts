@@ -161,6 +161,115 @@ function isActionable(script: string): { actionable: boolean; reasons: string[] 
   return { actionable: reasons.length === 0, reasons };
 }
 
+// Script Memory: Style analysis cache (15 min TTL)
+const styleCache = new Map<string, { summary: string; timestamp: number }>();
+const STYLE_CACHE_TTL = 15 * 60 * 1000; // 15 minutes
+
+interface StyleAnalysis {
+  summary: string;
+  hasHistory: boolean;
+  scriptCount: number;
+}
+
+// Analyze user's past scripts to extract style patterns for continuity
+function analyzeUserStyle(scripts: Array<{ script: string; parameters: any; title: string }>): StyleAnalysis {
+  if (!scripts || scripts.length === 0) {
+    return { summary: "", hasHistory: false, scriptCount: 0 };
+  }
+
+  // Extract patterns from scripts
+  const tones: string[] = [];
+  const hookStyles: string[] = [];
+  const ctaVerbs: string[] = [];
+  const signaturePhrases: string[] = [];
+  const structureTypes: string[] = [];
+
+  scripts.forEach(s => {
+    const params = s.parameters as any;
+    if (params?.tone) tones.push(params.tone);
+    if (params?.hook) hookStyles.push(params.hook);
+    if (params?.structure) structureTypes.push(params.structure);
+    
+    // Extract CTA verbs from script content
+    const ctaMatch = s.script?.match(/(?:Follow|Subscribe|Save|Comment|Share|DM|Click|Check out|Grab|Download|Join|Watch|Try)/gi);
+    if (ctaMatch) ctaVerbs.push(...ctaMatch.slice(0, 2));
+    
+    // Extract opening patterns (first 50 chars)
+    const opening = s.script?.substring(0, 80).trim();
+    if (opening) signaturePhrases.push(opening);
+  });
+
+  // Count frequencies
+  const countFrequency = (arr: string[]) => {
+    const counts: Record<string, number> = {};
+    arr.forEach(item => {
+      const key = item.toLowerCase();
+      counts[key] = (counts[key] || 0) + 1;
+    });
+    return Object.entries(counts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 3)
+      .map(([item]) => item);
+  };
+
+  const topTones = countFrequency(tones);
+  const topHooks = countFrequency(hookStyles);
+  const topCtas = countFrequency(ctaVerbs);
+  const topStructures = countFrequency(structureTypes);
+
+  // Build concise style summary (max ~300 tokens)
+  let summary = `\n== CREATOR STYLE MEMORY (Based on ${scripts.length} past scripts) ==\n`;
+  
+  if (topTones.length > 0) {
+    summary += `Preferred tone: ${topTones.join(", ")}\n`;
+  }
+  if (topHooks.length > 0) {
+    summary += `Favorite hook styles: ${topHooks.join(", ")}\n`;
+  }
+  if (topStructures.length > 0) {
+    summary += `Common structures: ${topStructures.join(", ")}\n`;
+  }
+  if (topCtas.length > 0) {
+    summary += `CTA patterns: ${topCtas.join(", ")}\n`;
+  }
+  
+  // Sample opening styles (show 2 examples max)
+  if (signaturePhrases.length > 0) {
+    summary += `\nOpening style examples from past work:\n`;
+    signaturePhrases.slice(0, 2).forEach((phrase, i) => {
+      summary += `${i + 1}. "${phrase.substring(0, 60)}..."\n`;
+    });
+  }
+  
+  summary += `\nMaintain voice consistency with this creator's established style while keeping content fresh.\n`;
+  summary += `== END STYLE MEMORY ==\n`;
+
+  return { summary, hasHistory: true, scriptCount: scripts.length };
+}
+
+// Get cached or compute style analysis
+async function getCachedStyleAnalysis(userId: string, getScripts: () => Promise<any[]>): Promise<StyleAnalysis> {
+  const cached = styleCache.get(userId);
+  const now = Date.now();
+  
+  if (cached && (now - cached.timestamp) < STYLE_CACHE_TTL) {
+    return { summary: cached.summary, hasHistory: true, scriptCount: 0 };
+  }
+  
+  const scripts = await getScripts();
+  const analysis = analyzeUserStyle(scripts.map(s => ({
+    script: s.script,
+    parameters: s.parameters,
+    title: s.title
+  })));
+  
+  if (analysis.hasHistory) {
+    styleCache.set(userId, { summary: analysis.summary, timestamp: now });
+  }
+  
+  return analysis;
+}
+
 function generateScript(params: ScriptParameters): GeneratedScript {
   const category = scriptCategories.find((c) => c.id === params.category);
   const hook = viralHooks.find((h) => h.id === params.hook);

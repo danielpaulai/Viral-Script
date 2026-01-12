@@ -49,6 +49,7 @@ export interface IStorage {
   checkTrialStatus(userId: string): Promise<{ isOnTrial: boolean; trialEnded: boolean; scriptsRemaining: number; daysRemaining: number }>;
   
   getScripts(userId: string): Promise<Script[]>;
+  getRecentScripts(userId: string, limit?: number): Promise<Script[]>;
   getScript(id: string, userId: string): Promise<Script | undefined>;
   createScript(script: InsertScript): Promise<Script>;
   updateScript(id: string, script: Partial<InsertScript>, userId: string): Promise<Script | undefined>;
@@ -249,6 +250,11 @@ export class MemStorage implements IStorage {
         const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
         return dateB - dateA;
       });
+  }
+
+  async getRecentScripts(userId: string, limit: number = 8): Promise<Script[]> {
+    const allScripts = await this.getScripts(userId);
+    return allScripts.slice(0, limit);
   }
 
   async getScript(id: string, userId: string): Promise<Script | undefined> {
