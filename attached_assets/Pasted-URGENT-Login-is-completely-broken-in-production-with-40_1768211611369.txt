@@ -1,0 +1,66 @@
+URGENT: Login is completely broken in production with 401 errors.
+
+SITUATION:
+- User: dannypurlpz@gmail.com trying to login
+- Browser shows: "Login failed 401: Invalid email or password"
+- Network tab shows: POST /api/login returns 401
+- This is on the PUBLISHED production app
+
+IMMEDIATE DEBUGGING NEEDED:
+
+1. Check if the /api/login endpoint even exists in production
+   - Verify server/routes.ts is properly registering the auth routes
+   - Confirm setupAuth(app) is being called before the server starts
+
+2. Add a simple test endpoint to verify routing works:
+```typescript
+   app.post("/api/login-test", (req, res) => {
+     res.json({ message: "Login endpoint is reachable", body: req.body });
+   });
+```
+
+3. Check if the login endpoint is receiving the request:
+   - Add this as the FIRST line in the /api/login handler:
+```typescript
+   console.log("=== LOGIN ENDPOINT HIT ===", { 
+     username: req.body?.username,
+     hasPassword: !!req.body?.password,
+     timestamp: new Date().toISOString()
+   });
+```
+
+4. Verify request body is being parsed:
+   - Ensure express.json() middleware is before the auth routes
+   - Check if req.body is undefined
+
+5. Check production logs specifically:
+   - Look at the DEPLOYMENT logs (not dev logs)
+   - See if "LOGIN ENDPOINT HIT" appears when user tries to login
+   - If it doesn't appear, the endpoint isn't being registered properly
+
+6. Verify the auth routes are being set up correctly:
+   - In server/index.ts or wherever routes are registered
+   - Make sure setupAuth(app) is called BEFORE app.listen()
+   - Confirm no middleware is blocking the /api/login endpoint
+
+7. Test with curl to isolate frontend issues:
+```bash
+   curl -X POST https://viralscript.co/api/login \
+     -H "Content-Type: application/json" \
+     -d '{"username":"test@example.com","password":"test123"}'
+```
+
+CRITICAL: The 401 response suggests the endpoint might not even be running, or middleware is blocking it before it reaches the handler.
+
+Please:
+1. Add the console.log at the top of the login endpoint
+2. Add the test endpoint
+3. Restart and REPUBLISH
+4. Try to login
+5. Check the PRODUCTION logs (Deployments tab in Replit)
+6. Show me what appears (or doesn't appear) in the logs
+
+The issue is likely that:
+- Auth routes aren't being registered in production
+- OR there's middleware blocking the endpoint
+- OR the endpoint exists but crashes immediately (before any logging)
