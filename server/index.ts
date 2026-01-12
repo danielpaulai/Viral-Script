@@ -16,10 +16,10 @@ console.log('NODE_ENV:', process.env.NODE_ENV);
 console.log('REPLIT_DEPLOYMENT:', process.env.REPLIT_DEPLOYMENT);
 console.log('Is Production Deployment:', !!process.env.REPLIT_DEPLOYMENT);
 console.log('');
-console.log('--- OpenAI/AI Integration ---');
-console.log('AI_INTEGRATIONS_OPENAI_API_KEY exists:', !!process.env.AI_INTEGRATIONS_OPENAI_API_KEY);
-console.log('AI_INTEGRATIONS_OPENAI_API_KEY length:', process.env.AI_INTEGRATIONS_OPENAI_API_KEY ? process.env.AI_INTEGRATIONS_OPENAI_API_KEY.length : 0);
-console.log('AI_INTEGRATIONS_OPENAI_BASE_URL:', process.env.AI_INTEGRATIONS_OPENAI_BASE_URL || 'NOT SET');
+console.log('--- OpenAI ---');
+console.log('OPENAI_API_KEY exists:', !!process.env.OPENAI_API_KEY);
+console.log('OPENAI_API_KEY length:', process.env.OPENAI_API_KEY ? process.env.OPENAI_API_KEY.length : 0);
+console.log('Using direct OpenAI API: https://api.openai.com/v1');
 console.log('');
 console.log('--- Supabase ---');
 console.log('SUPABASE_URL exists:', !!process.env.SUPABASE_URL);
@@ -37,11 +37,8 @@ console.log('='.repeat(60));
 function validateConfiguration() {
   const issues: string[] = [];
   
-  if (!process.env.AI_INTEGRATIONS_OPENAI_API_KEY) {
-    issues.push('AI_INTEGRATIONS_OPENAI_API_KEY is not set - AI features will fail');
-  }
-  if (!process.env.AI_INTEGRATIONS_OPENAI_BASE_URL) {
-    issues.push('AI_INTEGRATIONS_OPENAI_BASE_URL is not set - AI features will fail');
+  if (!process.env.OPENAI_API_KEY) {
+    issues.push('OPENAI_API_KEY is not set - AI features will fail');
   }
   if (!process.env.SUPABASE_URL) {
     issues.push('SUPABASE_URL is not set - Authentication will fail');

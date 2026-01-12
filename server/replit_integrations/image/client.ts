@@ -2,16 +2,12 @@ import fs from "node:fs";
 import OpenAI, { toFile } from "openai";
 import { Buffer } from "node:buffer";
 
-// Configure OpenAI client - priority: own key > Replit AI Integrations
-const isProduction = !!process.env.REPLIT_DEPLOYMENT || process.env.NODE_ENV === 'production';
-const hasOwnKey = !!process.env.OPENAI_API_KEY;
-const openaiApiKey = hasOwnKey ? process.env.OPENAI_API_KEY : process.env.AI_INTEGRATIONS_OPENAI_API_KEY;
-const openaiBaseURL = hasOwnKey 
-  ? 'https://api.openai.com/v1'
-  : (isProduction ? 'https://integrations.replit.com/api/openai/v1' : (process.env.AI_INTEGRATIONS_OPENAI_BASE_URL || 'https://integrations.replit.com/api/openai/v1'));
+// Configure OpenAI client - Always use direct OpenAI API
+const openaiApiKey = process.env.OPENAI_API_KEY;
+const openaiBaseURL = 'https://api.openai.com/v1';
 
 export const openai = new OpenAI({
-  apiKey: openaiApiKey,
+  apiKey: openaiApiKey || 'not-configured',
   baseURL: openaiBaseURL,
 });
 

@@ -63,10 +63,8 @@ Script generation uses predefined catalogs:
 - **CTA Library**: 30+ predefined CTAs across 6 categories (Follow, Engage, Save, Link, Action, Community)
 
 ### AI-Powered Script Generation
-- **OpenAI Integration**: Uses gpt-4o-mini via Replit AI Integrations (no API key needed, charges to user's Replit credits)
-- **Centralized AI Config**: All OpenAI clients use `server/aiConfig.ts` which guarantees production ALWAYS uses the correct URL
-  - Development: Uses localhost modelfarm (when REPLIT_DEV_DOMAIN is set AND NODE_ENV=development)
-  - Production: ALWAYS uses `https://integrations.replit.com/api/openai/v1`
+- **OpenAI Integration**: Uses direct OpenAI API (`https://api.openai.com/v1`) with `OPENAI_API_KEY` environment variable
+- **Centralized AI Config**: All OpenAI clients use the same configuration - direct OpenAI API for both development and production
 - **Deep Research Mode**: Two-phase AI approach - first researches topic (stats, expert quotes, contrarian takes), then generates script with enhanced context
 - **Viral Examples Feature** (Pro/Ultimate only): Fetches real viral TikTok captions for inspiration, including engagement metrics, format detection, and hook type analysis
 - **Word Count Targets**: Platform/duration specific (15s: 30-45, 30s: 60-90, 60s: 120-180, 90s: 180-270, 180s: 360-540 words)
