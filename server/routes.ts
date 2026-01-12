@@ -56,6 +56,9 @@ import { scrapeTikTokProfile, scrapeInstagramProfile, analyzeCreatorStyle, searc
 // Configure OpenAI client - Always use direct OpenAI API
 const openaiApiKey = process.env.OPENAI_API_KEY;
 const openaiBaseURL = 'https://api.openai.com/v1';
+const hasOwnOpenAIKey = !!process.env.OPENAI_API_KEY;
+const hasReplitAIKey = false; // No longer using Replit AI integration
+const isProductionDeployment = !!process.env.REPLIT_DEPLOYMENT;
 
 if (!openaiApiKey) {
   console.error("[OpenAI Config] WARNING: OPENAI_API_KEY not configured! AI features will fail.");
@@ -1636,9 +1639,9 @@ Generate 3 CTAs now:`;
         code: error?.code,
         type: error?.type,
         cause: error?.cause?.message,
-        baseURL: aiConfig.baseURL,
-        hasApiKey: !!aiConfig.apiKey,
-        isProduction: aiConfig.isProduction,
+        baseURL: openaiBaseURL,
+        hasApiKey: hasOwnOpenAIKey,
+        isProduction: isProductionDeployment,
       };
       console.error("CTA generation error details:", JSON.stringify(errorDetails, null, 2));
       
@@ -2797,9 +2800,9 @@ Start with words like: "If you're...", "Okay so...", "Look,", "I'm going to...",
         code: error?.code,
         type: error?.type,
         cause: error?.cause?.message,
-        baseURL: aiConfig.baseURL,
-        hasApiKey: !!aiConfig.apiKey,
-        isProduction: aiConfig.isProduction,
+        baseURL: openaiBaseURL,
+        hasApiKey: hasOwnOpenAIKey,
+        isProduction: isProductionDeployment,
       };
       console.error("Hook generation error details:", JSON.stringify(errorDetails, null, 2));
       
@@ -2899,9 +2902,9 @@ Adapt this hook template to match the specific problem and solution above. Retur
         message: error?.message || "Unknown error",
         status: error?.status,
         code: error?.code,
-        baseURL: aiConfig.baseURL,
-        hasApiKey: !!aiConfig.apiKey,
-        isProduction: aiConfig.isProduction,
+        baseURL: openaiBaseURL,
+        hasApiKey: hasOwnOpenAIKey,
+        isProduction: isProductionDeployment,
       };
       console.error("Hook adaptation error details:", JSON.stringify(errorDetails, null, 2));
       res.status(500).json({ 
@@ -3124,9 +3127,9 @@ Create problems that are:
         code: error?.code,
         type: error?.type,
         cause: error?.cause?.message,
-        baseURL: aiConfig.baseURL,
-        hasApiKey: !!aiConfig.apiKey,
-        isProduction: aiConfig.isProduction,
+        baseURL: openaiBaseURL,
+        hasApiKey: hasOwnOpenAIKey,
+        isProduction: isProductionDeployment,
       };
       console.error("Problem generation error details:", JSON.stringify(errorDetails, null, 2));
       
