@@ -2,9 +2,15 @@ import fs from "node:fs";
 import OpenAI, { toFile } from "openai";
 import { Buffer } from "node:buffer";
 
+// Production uses remote integrations endpoint, development uses local modelfarm
+const isProduction = !!process.env.REPLIT_DEPLOYMENT;
+const openaiBaseURL = isProduction 
+  ? "https://integrations.replit.com/api/openai/v1"
+  : process.env.AI_INTEGRATIONS_OPENAI_BASE_URL;
+
 export const openai = new OpenAI({
   apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY,
-  baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL,
+  baseURL: openaiBaseURL,
 });
 
 /**

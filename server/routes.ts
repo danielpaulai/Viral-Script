@@ -55,18 +55,22 @@ import { scrapeTikTokProfile, scrapeInstagramProfile, analyzeCreatorStyle, searc
 
 // Configure OpenAI client using Replit AI Integrations
 // In development, the modelfarm proxy runs on localhost:1106
-// In production (deployment), the modelfarm proxy should also be available
+// In production (deployment), use the remote integrations URL
 const isProduction = !!process.env.REPLIT_DEPLOYMENT;
 
-// Always use the AI Integrations configuration - it should work in both dev and production
+// Production uses the remote integrations endpoint, development uses local modelfarm
+const openaiBaseURL = isProduction 
+  ? "https://integrations.replit.com/api/openai/v1"
+  : process.env.AI_INTEGRATIONS_OPENAI_BASE_URL;
+
 const openai = new OpenAI({
   apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY,
-  baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL,
+  baseURL: openaiBaseURL,
 });
 
 console.log("[OpenAI] Configured with AI integrations:", {
   hasApiKey: !!process.env.AI_INTEGRATIONS_OPENAI_API_KEY,
-  baseUrl: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL,
+  baseUrl: openaiBaseURL,
   isProduction,
 });
 
