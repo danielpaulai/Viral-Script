@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { useToast } from "@/hooks/use-toast";
 import {
   Select,
   SelectContent,
@@ -196,6 +197,7 @@ export function IdeaClarifier({
   initialIdea = "",
   isGenerating = false,
 }: IdeaClarifierProps) {
+  const { toast } = useToast();
   const [skeleton, setSkeleton] = useState<VideoIdeaSkeleton>(() =>
     createEmptySkeleton(initialIdea)
   );
@@ -401,14 +403,25 @@ export function IdeaClarifier({
     }) => {
       console.log("Calling /api/solutions/generate with params:", params);
       const response = await apiRequest("POST", "/api/solutions/generate", params);
-      return await response.json() as { solutions: GeneratedSolution[]; problem: string };
+      const data = await response.json() as { solutions: GeneratedSolution[]; problem: string };
+      console.log("Solutions API response:", data);
+      return data;
     },
     onSuccess: (data) => {
       console.log("Solutions generated successfully:", data);
       setGeneratedSolutions(data.solutions);
+      toast({
+        title: "Solutions Generated",
+        description: `${data.solutions.length} solution ideas ready for review`,
+      });
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       console.error("Solution generation failed:", error);
+      toast({
+        title: "Generation Failed",
+        description: error.message || "Failed to generate solutions. Please try again.",
+        variant: "destructive",
+      });
     },
   });
 
