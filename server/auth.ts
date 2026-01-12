@@ -1,3 +1,5 @@
+console.log("🔐 AUTH.TS LOADED - HYBRID VERSION WITH SUPABASE");
+
 import { Express } from "express";
 import session from "express-session";
 import { storage } from "./storage";
