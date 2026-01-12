@@ -719,7 +719,7 @@ export function IdeaClarifier({
                   <button
                     key={prob.id}
                     onClick={() => handleSelectProblem(prob.problem)}
-                    className="w-full text-left p-3 rounded-lg bg-background/80 border border-border hover-elevate transition-all"
+                    className="w-full text-left p-3 rounded-lg bg-background/80 border border-border hover:border-primary/50 hover:shadow-md hover:scale-[1.01] hover-elevate transition-all duration-200"
                     disabled={skeleton.isLocked}
                     data-testid={`problem-idea-${prob.id}`}
                   >
@@ -761,7 +761,7 @@ export function IdeaClarifier({
               <button
                 key={i}
                 onClick={() => !skeleton.isLocked && updateSection("problem", example)}
-                className="text-xs px-2 py-1 rounded bg-muted/50 text-muted-foreground hover-elevate cursor-pointer border border-border"
+                className="text-xs px-2 py-1 rounded bg-muted/50 text-muted-foreground hover:text-foreground hover:border-primary/50 hover:scale-105 hover-elevate cursor-pointer border border-border transition-all duration-200"
                 disabled={skeleton.isLocked}
                 data-testid={`example-problem-${i}`}
               >
@@ -840,7 +840,7 @@ export function IdeaClarifier({
               <button
                 key={i}
                 onClick={() => !skeleton.isLocked && updateSection("solution", example)}
-                className="text-xs px-2 py-1 rounded bg-muted/50 text-muted-foreground hover-elevate cursor-pointer border border-border"
+                className="text-xs px-2 py-1 rounded bg-muted/50 text-muted-foreground hover:text-foreground hover:border-primary/50 hover:scale-105 hover-elevate cursor-pointer border border-border transition-all duration-200"
                 disabled={skeleton.isLocked}
                 data-testid={`example-solution-${i}`}
               >
@@ -902,8 +902,8 @@ export function IdeaClarifier({
                       key={sol.id}
                       className={`p-3 rounded-lg border transition-all cursor-pointer ${
                         sol.selected
-                          ? "bg-green-500/20 border-green-500/50"
-                          : "bg-background/50 border-border hover-elevate"
+                          ? "bg-green-500/20 border-green-500/50 scale-[1.01] shadow-md"
+                          : "bg-background/50 border-border hover:border-green-500/40 hover:shadow-md hover:scale-[1.01] hover-elevate"
                       }`}
                       onClick={() => !skeleton.isLocked && handleToggleSolution(sol.id)}
                       data-testid={`solution-card-${sol.id}`}
@@ -1132,8 +1132,8 @@ export function IdeaClarifier({
                       onClick={() => handleSelectHook(hook)}
                       className={`w-full text-left p-3 rounded-lg border transition-all ${
                         selectedHookId === hook.id
-                          ? "bg-primary/20 border-primary"
-                          : "bg-background/50 border-border hover-elevate"
+                          ? "bg-primary/20 border-primary scale-[1.01] shadow-md"
+                          : "bg-background/50 border-border hover:border-primary/50 hover:shadow-md hover:scale-[1.01] hover-elevate"
                       }`}
                       disabled={skeleton.isLocked}
                       data-testid={`hook-option-${hook.id}`}
@@ -1480,8 +1480,8 @@ export function IdeaClarifier({
                   onClick={() => handleSelectCta(template.content)}
                   className={`text-xs px-3 py-2 rounded border transition-all ${
                     section.content === template.content
-                      ? "bg-primary/20 border-primary text-foreground"
-                      : "bg-muted/50 text-muted-foreground border-border hover-elevate"
+                      ? "bg-primary/20 border-primary text-foreground scale-105 shadow-sm"
+                      : "bg-muted/50 text-muted-foreground border-border hover:border-primary/50 hover:text-foreground hover:scale-105 hover-elevate"
                   }`}
                   disabled={skeleton.isLocked}
                   data-testid={`cta-template-${template.id}`}
@@ -1598,16 +1598,16 @@ export function IdeaClarifier({
               <button
                 key={purpose.id}
                 onClick={() => handleVideoPurposeChange(purpose.id)}
-                className={`p-3 rounded-lg border text-left transition-all ${
+                className={`p-3 rounded-lg border text-left transition-all duration-200 ${
                   isSelected
-                    ? "bg-primary/20 border-primary"
-                    : "bg-muted/30 border-border hover-elevate"
+                    ? "bg-primary/20 border-primary scale-[1.02] shadow-md"
+                    : "bg-muted/30 border-border hover:scale-[1.02] hover:border-primary/50 hover:shadow-sm hover-elevate"
                 }`}
                 data-testid={`purpose-${purpose.id}`}
               >
                 <div className="flex items-center gap-2 mb-1">
-                  <Icon className={`w-4 h-4 ${isSelected ? "text-primary" : "text-muted-foreground"}`} />
-                  <span className={`text-sm font-medium ${isSelected ? "text-primary" : ""}`}>
+                  <Icon className={`w-4 h-4 transition-colors duration-200 ${isSelected ? "text-primary" : "text-muted-foreground group-hover:text-primary"}`} />
+                  <span className={`text-sm font-medium transition-colors duration-200 ${isSelected ? "text-primary" : ""}`}>
                     {purpose.name}
                   </span>
                 </div>
@@ -1706,11 +1706,11 @@ export function IdeaClarifier({
                     <div
                       className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${
                         isComplete
-                          ? "bg-green-500/20 border-2 border-green-500 text-green-400"
+                          ? "bg-green-500/20 border-2 border-green-500 text-green-400 group-hover:shadow-lg group-hover:shadow-green-500/20"
                           : isActive
-                          ? "bg-primary/20 border-2 border-primary text-primary scale-110"
-                          : "bg-muted/50 border-2 border-muted-foreground/30 text-muted-foreground"
-                      } ${!skeleton.isLocked ? "group-hover:scale-105" : ""}`}
+                          ? "bg-primary/20 border-2 border-primary text-primary scale-110 shadow-lg shadow-primary/20"
+                          : "bg-muted/50 border-2 border-muted-foreground/30 text-muted-foreground group-hover:border-primary/50 group-hover:shadow-md"
+                      } ${!skeleton.isLocked ? "group-hover:scale-110" : ""}`}
                     >
                       {isComplete ? (
                         <Check className="w-5 h-5" />
