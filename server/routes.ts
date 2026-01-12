@@ -53,32 +53,18 @@ import {
 import { getCreatorById, creatorStyles as comprehensiveCreatorStyles } from "@shared/creator-styles";
 import { scrapeTikTokProfile, scrapeInstagramProfile, analyzeCreatorStyle, searchTikTokByKeyword } from "./apify";
 
-// Configure OpenAI client
-// In production deployments, the AI integrations local proxy may not be available
-// We check if the base URL is localhost and we're in production - if so, use standard OpenAI API
-const isProductionDeployment = !!process.env.REPLIT_DEPLOYMENT;
-const baseUrl = process.env.AI_INTEGRATIONS_OPENAI_BASE_URL;
-const isLocalProxy = baseUrl?.includes('localhost') || baseUrl?.includes('127.0.0.1');
+// Configure OpenAI client using Replit AI Integrations
+// The AI integrations are automatically configured by Replit and work in both dev and production
+const openai = new OpenAI({
+  apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY,
+  baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL,
+});
 
-let openaiConfig: { apiKey: string; baseURL?: string };
-
-if (isProductionDeployment && isLocalProxy) {
-  // In production with localhost URL, use standard OpenAI API without custom baseURL
-  // This requires a real OpenAI API key in production
-  console.log("[OpenAI] Production deployment detected - using standard OpenAI API");
-  openaiConfig = {
-    apiKey: process.env.OPENAI_API_KEY || process.env.AI_INTEGRATIONS_OPENAI_API_KEY || '',
-  };
-} else {
-  // In development or with proper production URL, use the AI integrations
-  console.log("[OpenAI] Using AI integrations:", { baseUrl, isProduction: isProductionDeployment });
-  openaiConfig = {
-    apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY || '',
-    baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL,
-  };
-}
-
-const openai = new OpenAI(openaiConfig);
+console.log("[OpenAI] Configured with AI integrations:", {
+  hasApiKey: !!process.env.AI_INTEGRATIONS_OPENAI_API_KEY,
+  baseUrl: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL,
+  isProduction: !!process.env.REPLIT_DEPLOYMENT,
+});
 
 // Words that sound like AI - NEVER use these
 const aiWordsToAvoid = [
