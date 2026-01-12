@@ -1565,9 +1565,35 @@ Generate 3 CTAs now:`;
       const suggestions = jsonMatch ? JSON.parse(jsonMatch[0]) : [];
 
       res.json({ suggestions });
-    } catch (error) {
-      console.error("Error generating CTAs:", error);
-      res.status(500).json({ message: "Failed to generate CTAs" });
+    } catch (error: any) {
+      console.error("CTA generation error:", error);
+      const errorDetails = {
+        message: error?.message || "Unknown error",
+        status: error?.status,
+        code: error?.code,
+        type: error?.type,
+        cause: error?.cause?.message,
+        baseURL: aiConfig.baseURL,
+        hasApiKey: !!aiConfig.apiKey,
+        isProduction: aiConfig.isProduction,
+      };
+      console.error("CTA generation error details:", JSON.stringify(errorDetails, null, 2));
+      
+      const isConnectionError = error?.message?.includes('ECONNREFUSED') || 
+                                error?.message?.includes('fetch failed') ||
+                                error?.code === 'ECONNREFUSED';
+      
+      if (isConnectionError) {
+        res.status(500).json({ 
+          message: "AI service temporarily unavailable. Please try again.",
+          details: process.env.NODE_ENV === 'development' ? errorDetails : undefined
+        });
+      } else {
+        res.status(500).json({ 
+          message: "Failed to generate CTAs. Please try again.",
+          details: process.env.NODE_ENV === 'development' ? errorDetails : undefined
+        });
+      }
     }
   });
 
@@ -2700,9 +2726,35 @@ Start with words like: "If you're...", "Okay so...", "Look,", "I'm going to...",
         console.error("Failed to parse hook generation response:", parseError);
         res.status(500).json({ error: "Failed to parse generated hooks" });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Hook generation error:", error);
-      res.status(500).json({ error: "Failed to generate hooks" });
+      const errorDetails = {
+        message: error?.message || "Unknown error",
+        status: error?.status,
+        code: error?.code,
+        type: error?.type,
+        cause: error?.cause?.message,
+        baseURL: aiConfig.baseURL,
+        hasApiKey: !!aiConfig.apiKey,
+        isProduction: aiConfig.isProduction,
+      };
+      console.error("Hook generation error details:", JSON.stringify(errorDetails, null, 2));
+      
+      const isConnectionError = error?.message?.includes('ECONNREFUSED') || 
+                                error?.message?.includes('fetch failed') ||
+                                error?.code === 'ECONNREFUSED';
+      
+      if (isConnectionError) {
+        res.status(500).json({ 
+          error: "AI service temporarily unavailable. Please try again.",
+          details: process.env.NODE_ENV === 'development' ? errorDetails : undefined
+        });
+      } else {
+        res.status(500).json({ 
+          error: "Failed to generate hooks. Please try again.",
+          details: process.env.NODE_ENV === 'development' ? errorDetails : undefined
+        });
+      }
     }
   });
 
@@ -2778,9 +2830,21 @@ Adapt this hook template to match the specific problem and solution above. Retur
         originalTemplate: hookTemplate,
         hookName: hookName,
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Hook adaptation error:", error);
-      res.status(500).json({ error: "Failed to adapt hook" });
+      const errorDetails = {
+        message: error?.message || "Unknown error",
+        status: error?.status,
+        code: error?.code,
+        baseURL: aiConfig.baseURL,
+        hasApiKey: !!aiConfig.apiKey,
+        isProduction: aiConfig.isProduction,
+      };
+      console.error("Hook adaptation error details:", JSON.stringify(errorDetails, null, 2));
+      res.status(500).json({ 
+        error: "Failed to adapt hook. Please try again.",
+        details: process.env.NODE_ENV === 'development' ? errorDetails : undefined
+      });
     }
   });
 
@@ -2989,9 +3053,35 @@ Create problems that are:
         console.error("Failed to parse problem generation response:", parseError);
         res.status(500).json({ error: "Failed to parse generated problems" });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Problem generation error:", error);
-      res.status(500).json({ error: "Failed to generate problems" });
+      const errorDetails = {
+        message: error?.message || "Unknown error",
+        status: error?.status,
+        code: error?.code,
+        type: error?.type,
+        cause: error?.cause?.message,
+        baseURL: aiConfig.baseURL,
+        hasApiKey: !!aiConfig.apiKey,
+        isProduction: aiConfig.isProduction,
+      };
+      console.error("Problem generation error details:", JSON.stringify(errorDetails, null, 2));
+      
+      const isConnectionError = error?.message?.includes('ECONNREFUSED') || 
+                                error?.message?.includes('fetch failed') ||
+                                error?.code === 'ECONNREFUSED';
+      
+      if (isConnectionError) {
+        res.status(500).json({ 
+          error: "AI service temporarily unavailable. Please try again in a moment.",
+          details: process.env.NODE_ENV === 'development' ? errorDetails : undefined
+        });
+      } else {
+        res.status(500).json({ 
+          error: "Failed to generate problems. Please try again.",
+          details: process.env.NODE_ENV === 'development' ? errorDetails : undefined
+        });
+      }
     }
   });
 

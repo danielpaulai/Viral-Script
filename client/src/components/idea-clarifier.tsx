@@ -725,58 +725,6 @@ export function IdeaClarifier({
           {section.guidingQuestion}
         </p>
 
-        {/* Generate Problem Ideas - shown when problem is empty or short */}
-        {!section.isValid && (
-          <div className="mb-4 p-3 rounded-lg bg-primary/10 border border-primary/30">
-            <div className="flex items-center justify-between mb-2">
-              <p className="text-sm font-medium text-primary flex items-center gap-2">
-                <Wand2 className="w-4 h-4" />
-                Need inspiration? Generate problem ideas
-              </p>
-            </div>
-            <Button
-              onClick={handleGenerateProblems}
-              disabled={generateProblemsMutation.isPending || skeleton.isLocked}
-              className="w-full"
-              data-testid="button-generate-problems"
-            >
-              {generateProblemsMutation.isPending ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Generating problem ideas...
-                </>
-              ) : (
-                <>
-                  <Wand2 className="w-4 h-4 mr-2" />
-                  Generate Problem Ideas
-                </>
-              )}
-            </Button>
-
-            {/* Generated Problems */}
-            {generatedProblems.length > 0 && (
-              <div className="mt-3 space-y-2">
-                <Label className="text-xs font-medium">Click to use a problem:</Label>
-                {generatedProblems.map((prob) => (
-                  <button
-                    key={prob.id}
-                    onClick={() => handleSelectProblem(prob.problem)}
-                    className="w-full text-left p-3 rounded-lg bg-background/80 border border-border hover:border-primary/50 hover:shadow-md hover:scale-[1.01] hover-elevate transition-all duration-200"
-                    disabled={skeleton.isLocked}
-                    data-testid={`problem-idea-${prob.id}`}
-                  >
-                    <p className="text-sm font-medium mb-1">{prob.problem}</p>
-                    <p className="text-xs text-muted-foreground">{prob.why}</p>
-                    <Badge variant="outline" className="mt-2 text-xs">
-                      Hook Potential: {prob.hookPotential}
-                    </Badge>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
         <Textarea
           value={section.content}
           onChange={(e) => updateSection("problem", e.target.value)}
