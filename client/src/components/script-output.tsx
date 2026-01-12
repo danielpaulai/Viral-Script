@@ -76,6 +76,7 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
   const [showBoostPanel, setShowBoostPanel] = useState(false);
   const [showVersionHistory, setShowVersionHistory] = useState(false);
   const [showCollabEditor, setShowCollabEditor] = useState(false);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
   const boostViralityMutation = useMutation({
     mutationFn: async () => {
@@ -175,6 +176,31 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
       toast({
         title: "Error",
         description: "Failed to add to project.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const saveScriptMutation = useMutation({
+    mutationFn: async () => {
+      const currentScript = enhancedScript || script.script;
+      const res = await apiRequest("PATCH", `/api/scripts/${script.id}`, {
+        script: currentScript,
+      });
+      return res.json();
+    },
+    onSuccess: () => {
+      setHasUnsavedChanges(false);
+      toast({
+        title: "Saved",
+        description: "Your edits have been saved. Script Memory will learn from your changes.",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/scripts"] });
+    },
+    onError: () => {
+      toast({
+        title: "Save Failed",
+        description: "Could not save your edits. Please try again.",
         variant: "destructive",
       });
     },
@@ -1404,11 +1430,16 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
             variant="outline"
             size="sm"
             className="bg-muted/50 border-border"
-            onClick={() => setShowCollabEditor(true)}
-            data-testid="button-collaborate"
+            onClick={() => {
+              if (!enhancedScript) {
+                setEnhancedScript(script.script);
+              }
+              setShowCollabEditor(true);
+            }}
+            data-testid="button-edit-script"
           >
-            <Users className="w-4 h-4 mr-1" />
-            Collaborate
+            <FileText className="w-4 h-4 mr-1" />
+            Edit & Save
           </Button>
         )}
       </div>
@@ -1434,20 +1465,47 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
       
       {showCollabEditor && script.id && (
         <div className="mt-4 p-4 rounded-lg bg-muted/50 border border-border">
-          <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center justify-between mb-3 gap-2 flex-wrap">
             <h3 className="text-sm font-medium flex items-center gap-2">
               <Users className="w-4 h-4" />
-              Collaborative Editor
+              Edit Script
+              {hasUnsavedChanges && (
+                <Badge variant="outline" className="text-xs bg-yellow-500/10 text-yellow-500 border-yellow-500/30">
+                  Unsaved changes
+                </Badge>
+              )}
             </h3>
-            <Button variant="ghost" size="sm" onClick={() => setShowCollabEditor(false)}>
-              Close
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button 
+                size="sm" 
+                onClick={() => saveScriptMutation.mutate()}
+                disabled={saveScriptMutation.isPending || !hasUnsavedChanges}
+                className="bg-green-600 hover:bg-green-700"
+                data-testid="button-save-script"
+              >
+                {saveScriptMutation.isPending ? (
+                  <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin mr-1" />
+                ) : (
+                  <Save className="w-4 h-4 mr-1" />
+                )}
+                Save Changes
+              </Button>
+              <Button variant="ghost" size="sm" onClick={() => setShowCollabEditor(false)}>
+                Close
+              </Button>
+            </div>
           </div>
+          <p className="text-xs text-muted-foreground mb-3">
+            Edit your script below. Saving helps Script Memory learn your voice and style.
+          </p>
           <CollaborativeEditor
             scriptId={script.id}
             initialContent={enhancedScript || script.script}
-            isEnabled={true}
-            onContentChange={(content) => setEnhancedScript(content)}
+            isEnabled={false}
+            onContentChange={(content) => {
+              setEnhancedScript(content);
+              setHasUnsavedChanges(true);
+            }}
           />
         </div>
       )}

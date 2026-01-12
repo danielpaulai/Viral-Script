@@ -2694,8 +2694,8 @@ DO NOT make up fake statistics. Use the research data provided, or clearly state
       }
       
       // Clear style analysis cache so Script Memory picks up edits
-      if (styleAnalysisCache.has(userId)) {
-        styleAnalysisCache.delete(userId);
+      if (styleCache.has(userId)) {
+        styleCache.delete(userId);
       }
       
       res.json(updated);
