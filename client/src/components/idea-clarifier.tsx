@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import { Card } from "@/components/ui/card";
+import { GlowCard } from "@/components/ui/spotlight-card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -1975,7 +1976,7 @@ export function IdeaClarifier({
   };
 
   return (
-    <Card className="p-4 md:p-6" data-testid="card-idea-clarifier">
+    <GlowCard className="p-4 md:p-6" glowColor="pink" data-testid="card-idea-clarifier">
       {/* Wizard Stage Header */}
       <div className="mb-6">
         <div className="flex items-center justify-between mb-4">
