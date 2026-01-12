@@ -54,16 +54,25 @@ import { getCreatorById, creatorStyles as comprehensiveCreatorStyles } from "@sh
 import { scrapeTikTokProfile, scrapeInstagramProfile, analyzeCreatorStyle, searchTikTokByKeyword } from "./apify";
 
 // Configure OpenAI client using Replit AI Integrations environment variables
-// These are automatically set when the integration is configured
+// CRITICAL: In production deployments, ALWAYS use the production URL
+const isProduction = !!process.env.REPLIT_DEPLOYMENT || process.env.NODE_ENV === 'production';
+const PRODUCTION_OPENAI_URL = 'https://integrations.replit.com/api/openai/v1';
+
+// Use production URL if deployed, otherwise use env variable (for local dev)
+const openaiBaseURL = isProduction 
+  ? PRODUCTION_OPENAI_URL 
+  : (process.env.AI_INTEGRATIONS_OPENAI_BASE_URL || PRODUCTION_OPENAI_URL);
+
 const openai = new OpenAI({
   apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY,
-  baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL,
+  baseURL: openaiBaseURL,
 });
 
 // Log AI configuration at startup for debugging
-console.log("[OpenAI Config] Using environment variables:", {
+console.log("[OpenAI Config] Configuration:", {
   hasApiKey: !!process.env.AI_INTEGRATIONS_OPENAI_API_KEY,
-  baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL || "not set",
+  baseURL: openaiBaseURL,
+  isProduction,
   nodeEnv: process.env.NODE_ENV,
   isDeployment: !!process.env.REPLIT_DEPLOYMENT,
 });
@@ -1430,7 +1439,7 @@ export async function registerRoutes(
         openai: {
           hasApiKey: !!process.env.AI_INTEGRATIONS_OPENAI_API_KEY,
           keyLength: process.env.AI_INTEGRATIONS_OPENAI_API_KEY ? process.env.AI_INTEGRATIONS_OPENAI_API_KEY.length : 0,
-          baseUrl: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL || 'NOT SET',
+          baseUrl: openaiBaseURL,
         },
         supabase: {
           hasUrl: !!process.env.SUPABASE_URL,

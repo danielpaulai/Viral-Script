@@ -2,10 +2,14 @@ import fs from "node:fs";
 import OpenAI, { toFile } from "openai";
 import { Buffer } from "node:buffer";
 
-// Configure OpenAI client using Replit AI Integrations environment variables
+// Configure OpenAI client - use production URL in deployments
+const isProduction = !!process.env.REPLIT_DEPLOYMENT || process.env.NODE_ENV === 'production';
+const PRODUCTION_OPENAI_URL = 'https://integrations.replit.com/api/openai/v1';
+const openaiBaseURL = isProduction ? PRODUCTION_OPENAI_URL : (process.env.AI_INTEGRATIONS_OPENAI_BASE_URL || PRODUCTION_OPENAI_URL);
+
 export const openai = new OpenAI({
   apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY,
-  baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL,
+  baseURL: openaiBaseURL,
 });
 
 /**
