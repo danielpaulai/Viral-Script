@@ -6,6 +6,77 @@ import { runMigrations } from 'stripe-replit-sync';
 import { getStripeSync } from './stripeClient';
 import { WebhookHandlers } from './webhookHandlers';
 
+// ============================================================
+// ENVIRONMENT DIAGNOSTIC - Runs at startup
+// ============================================================
+console.log('='.repeat(60));
+console.log('ENVIRONMENT DIAGNOSTIC');
+console.log('='.repeat(60));
+console.log('NODE_ENV:', process.env.NODE_ENV);
+console.log('REPLIT_DEPLOYMENT:', process.env.REPLIT_DEPLOYMENT);
+console.log('Is Production Deployment:', !!process.env.REPLIT_DEPLOYMENT);
+console.log('');
+console.log('--- OpenAI/AI Integration ---');
+console.log('AI_INTEGRATIONS_OPENAI_API_KEY exists:', !!process.env.AI_INTEGRATIONS_OPENAI_API_KEY);
+console.log('AI_INTEGRATIONS_OPENAI_API_KEY length:', process.env.AI_INTEGRATIONS_OPENAI_API_KEY ? process.env.AI_INTEGRATIONS_OPENAI_API_KEY.length : 0);
+console.log('AI_INTEGRATIONS_OPENAI_BASE_URL:', process.env.AI_INTEGRATIONS_OPENAI_BASE_URL || 'NOT SET');
+console.log('');
+console.log('--- Supabase ---');
+console.log('SUPABASE_URL exists:', !!process.env.SUPABASE_URL);
+console.log('SUPABASE_ANON_KEY exists:', !!process.env.SUPABASE_ANON_KEY);
+console.log('SUPABASE_SERVICE_ROLE_KEY exists:', !!process.env.SUPABASE_SERVICE_ROLE_KEY);
+console.log('');
+console.log('--- Database ---');
+console.log('DATABASE_URL exists:', !!process.env.DATABASE_URL);
+console.log('');
+console.log('--- Session ---');
+console.log('SESSION_SECRET exists:', !!process.env.SESSION_SECRET);
+console.log('='.repeat(60));
+
+// Validate critical configuration
+function validateConfiguration() {
+  const issues: string[] = [];
+  
+  if (!process.env.AI_INTEGRATIONS_OPENAI_API_KEY) {
+    issues.push('AI_INTEGRATIONS_OPENAI_API_KEY is not set - AI features will fail');
+  }
+  if (!process.env.AI_INTEGRATIONS_OPENAI_BASE_URL) {
+    issues.push('AI_INTEGRATIONS_OPENAI_BASE_URL is not set - AI features will fail');
+  }
+  if (!process.env.SUPABASE_URL) {
+    issues.push('SUPABASE_URL is not set - Authentication will fail');
+  }
+  if (!process.env.SUPABASE_ANON_KEY) {
+    issues.push('SUPABASE_ANON_KEY is not set - Authentication will fail');
+  }
+  if (!process.env.DATABASE_URL) {
+    issues.push('DATABASE_URL is not set - Database features will fail');
+  }
+  
+  if (issues.length > 0) {
+    console.log('');
+    console.log('CONFIGURATION ISSUES DETECTED:');
+    issues.forEach((issue, i) => console.log(`  ${i + 1}. ${issue}`));
+    console.log('');
+    if (process.env.REPLIT_DEPLOYMENT) {
+      console.log('FIX: Add these secrets to your Deployment settings:');
+      console.log('  1. Go to Deployments panel');
+      console.log('  2. Click on your active deployment');
+      console.log('  3. Go to Settings → Secrets');
+      console.log('  4. Add the missing secrets');
+      console.log('  5. Redeploy');
+    }
+    console.log('='.repeat(60));
+  } else {
+    console.log('All critical configuration is present');
+    console.log('='.repeat(60));
+  }
+  
+  return issues.length === 0;
+}
+
+validateConfiguration();
+
 const app = express();
 const httpServer = createServer(app);
 

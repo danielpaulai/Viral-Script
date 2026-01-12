@@ -1419,6 +1419,58 @@ export async function registerRoutes(
   setupAuth(app);
   setupPasswordReset(app);
   
+  // Comprehensive health check endpoint - verify ALL configuration
+  app.get("/api/health", (req, res) => {
+    const health = {
+      status: 'ok',
+      timestamp: new Date().toISOString(),
+      environment: process.env.NODE_ENV || 'development',
+      isProduction: !!process.env.REPLIT_DEPLOYMENT,
+      config: {
+        openai: {
+          hasApiKey: !!process.env.AI_INTEGRATIONS_OPENAI_API_KEY,
+          keyLength: process.env.AI_INTEGRATIONS_OPENAI_API_KEY ? process.env.AI_INTEGRATIONS_OPENAI_API_KEY.length : 0,
+          baseUrl: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL || 'NOT SET',
+        },
+        supabase: {
+          hasUrl: !!process.env.SUPABASE_URL,
+          hasAnonKey: !!process.env.SUPABASE_ANON_KEY,
+          hasServiceKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
+        },
+        database: {
+          hasUrl: !!process.env.DATABASE_URL,
+        },
+        session: {
+          hasSecret: !!process.env.SESSION_SECRET,
+        }
+      },
+      issues: [] as string[]
+    };
+    
+    // Check for issues
+    if (!process.env.AI_INTEGRATIONS_OPENAI_API_KEY) {
+      health.issues.push('AI_INTEGRATIONS_OPENAI_API_KEY not set - AI features will fail');
+    }
+    if (!process.env.AI_INTEGRATIONS_OPENAI_BASE_URL) {
+      health.issues.push('AI_INTEGRATIONS_OPENAI_BASE_URL not set - AI features will fail');
+    }
+    if (!process.env.SUPABASE_URL) {
+      health.issues.push('SUPABASE_URL not set - Authentication will fail');
+    }
+    if (!process.env.SUPABASE_ANON_KEY) {
+      health.issues.push('SUPABASE_ANON_KEY not set - Authentication will fail');
+    }
+    if (!process.env.DATABASE_URL) {
+      health.issues.push('DATABASE_URL not set - Database features will fail');
+    }
+    
+    if (health.issues.length > 0) {
+      health.status = 'degraded';
+    }
+    
+    res.json(health);
+  });
+
   // AI Health Check endpoint - test if OpenAI integration is working
   app.get("/api/ai/health", async (req, res) => {
     try {
