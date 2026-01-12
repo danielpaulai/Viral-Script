@@ -295,12 +295,17 @@ export function IdeaClarifier({
       duration: string;
       videoPurpose: string;
     }) => {
+      console.log("Calling /api/hooks/generate with params:", params);
       const response = await apiRequest("POST", "/api/hooks/generate", params);
       return await response.json() as { hooks: GeneratedHook[]; style: string; styleName: string };
     },
     onSuccess: (data) => {
+      console.log("Hooks generated successfully:", data);
       setGeneratedHooks(data.hooks);
       setSelectedHookId(null);
+    },
+    onError: (error) => {
+      console.error("Hook generation failed:", error);
     },
   });
 
@@ -357,11 +362,16 @@ export function IdeaClarifier({
       videoPurpose: string;
       niche: string;
     }) => {
+      console.log("Calling /api/problems/generate with params:", params);
       const response = await apiRequest("POST", "/api/problems/generate", params);
       return await response.json() as { problems: Array<{ id: string; problem: string; why: string; hookPotential: string }>; targetAudience: string };
     },
     onSuccess: (data) => {
+      console.log("Problems generated successfully:", data);
       setGeneratedProblems(data.problems);
+    },
+    onError: (error) => {
+      console.error("Problem generation failed:", error);
     },
   });
 
@@ -426,11 +436,16 @@ export function IdeaClarifier({
       videoPurpose: string;
       targetAudience: string;
     }) => {
+      console.log("Calling /api/cta/generate with params:", params);
       const response = await apiRequest("POST", "/api/cta/generate", params);
       return await response.json() as { suggestions: GeneratedCta[] };
     },
     onSuccess: (data) => {
+      console.log("CTAs generated successfully:", data);
       setGeneratedCtas(data.suggestions);
+    },
+    onError: (error) => {
+      console.error("CTA generation failed:", error);
     },
   });
 
