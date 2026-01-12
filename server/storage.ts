@@ -198,6 +198,10 @@ export class MemStorage implements IStorage {
     const id = randomUUID();
     const now = new Date();
     
+    // Calculate trial end date (7 days from now) for all new users
+    const trialEndsAt = new Date();
+    trialEndsAt.setDate(trialEndsAt.getDate() + 7);
+    
     // Try database first
     if (db) {
       try {
@@ -207,6 +211,8 @@ export class MemStorage implements IStorage {
           password: insertUser.password,
           plan: "starter",
           planExpiresAt: null,
+          trialEndsAt: trialEndsAt,
+          trialScriptsUsed: 0,
         }).returning();
         if (result[0]) return result[0];
       } catch (e) {
@@ -214,9 +220,7 @@ export class MemStorage implements IStorage {
       }
     }
     
-    // Fall back to memory storage
-    const trialEndsAt = new Date();
-    trialEndsAt.setDate(trialEndsAt.getDate() + 7);
+    // Fall back to memory storage (trialEndsAt already calculated above)
     
     const user: User = {
       id,

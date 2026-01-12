@@ -1880,9 +1880,23 @@ Focus on the weak areas identified. Return ONLY the improved script.`
     }
   });
 
-  // Competitor Research: Scrape top-performing TikTok content for a topic
-  app.post("/api/research/competitors", async (req, res) => {
+  // Competitor Research: Scrape top-performing TikTok content for a topic (Pro feature)
+  app.post("/api/research/competitors", isAuthenticated, async (req: any, res) => {
     try {
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({ error: "User not found" });
+      }
+
+      // Check if user has Pro subscription
+      const user = await storage.getUser(userId);
+      if (!user || (user.plan !== "pro" && user.plan !== "agency")) {
+        return res.status(403).json({ 
+          error: "This feature requires a Pro or Agency subscription",
+          requiresPlan: "pro"
+        });
+      }
+
       const { keyword, limit = 15 } = req.body;
       
       if (!keyword || typeof keyword !== 'string' || keyword.trim().length < 2) {
@@ -1934,9 +1948,23 @@ Focus on the weak areas identified. Return ONLY the improved script.`
     }
   });
 
-  // Deep Research: Expand raw topic into detailed brief
-  app.post("/api/scripts/expand-topic", async (req, res) => {
+  // Deep Research: Expand raw topic into detailed brief (Pro feature)
+  app.post("/api/scripts/expand-topic", isAuthenticated, async (req: any, res) => {
     try {
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({ error: "User not found" });
+      }
+
+      // Check if user has Pro subscription
+      const user = await storage.getUser(userId);
+      if (!user || (user.plan !== "pro" && user.plan !== "agency")) {
+        return res.status(403).json({ 
+          error: "Deep Research requires a Pro or Agency subscription",
+          requiresPlan: "pro"
+        });
+      }
+
       const { topic, targetAudience, includeCompetitorResearch = false } = req.body;
       
       if (!topic || typeof topic !== 'string' || topic.trim().length < 5) {
@@ -2916,10 +2944,20 @@ Create problems that are:
     });
   });
 
-  // Knowledge Base routes - require authentication for user-specific documents
+  // Knowledge Base routes - require Pro subscription for user-specific documents
   app.get("/api/knowledge-base", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user?.id;
+      
+      // Check if user has Pro subscription for Knowledge Base
+      const user = await storage.getUser(userId);
+      if (!user || (user.plan !== "pro" && user.plan !== "agency")) {
+        return res.status(403).json({ 
+          error: "Knowledge Base requires a Pro or Agency subscription",
+          requiresPlan: "pro"
+        });
+      }
+
       const docs = await storage.getKnowledgeBaseDocs(userId);
       res.json(docs);
     } catch (error) {
@@ -2929,12 +2967,22 @@ Create problems that are:
 
   app.get("/api/knowledge-base/:id", isAuthenticated, async (req: any, res) => {
     try {
+      const userId = req.user?.id;
+      
+      // Check if user has Pro subscription for Knowledge Base
+      const user = await storage.getUser(userId);
+      if (!user || (user.plan !== "pro" && user.plan !== "agency")) {
+        return res.status(403).json({ 
+          error: "Knowledge Base requires a Pro or Agency subscription",
+          requiresPlan: "pro"
+        });
+      }
+
       const doc = await storage.getKnowledgeBaseDoc(req.params.id);
       if (!doc) {
         return res.status(404).json({ error: "Document not found" });
       }
       // Check ownership
-      const userId = req.user?.id;
       if (doc.userId && doc.userId !== userId) {
         return res.status(403).json({ error: "Access denied" });
       }
@@ -2947,6 +2995,16 @@ Create problems that are:
   app.post("/api/knowledge-base", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user?.id;
+      
+      // Check if user has Pro subscription for Knowledge Base
+      const user = await storage.getUser(userId);
+      if (!user || (user.plan !== "pro" && user.plan !== "agency")) {
+        return res.status(403).json({ 
+          error: "Knowledge Base requires a Pro or Agency subscription",
+          requiresPlan: "pro"
+        });
+      }
+
       const { type, title, content, summary, tags } = req.body;
       if (!type || !title || !content) {
         return res.status(400).json({ error: "Type, title, and content are required" });
@@ -2968,6 +3026,16 @@ Create problems that are:
   app.patch("/api/knowledge-base/:id", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user?.id;
+      
+      // Check if user has Pro subscription for Knowledge Base
+      const user = await storage.getUser(userId);
+      if (!user || (user.plan !== "pro" && user.plan !== "agency")) {
+        return res.status(403).json({ 
+          error: "Knowledge Base requires a Pro or Agency subscription",
+          requiresPlan: "pro"
+        });
+      }
+
       const existingDoc = await storage.getKnowledgeBaseDoc(req.params.id);
       if (!existingDoc) {
         return res.status(404).json({ error: "Document not found" });
@@ -2987,6 +3055,16 @@ Create problems that are:
   app.delete("/api/knowledge-base/:id", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user?.id;
+      
+      // Check if user has Pro subscription for Knowledge Base
+      const user = await storage.getUser(userId);
+      if (!user || (user.plan !== "pro" && user.plan !== "agency")) {
+        return res.status(403).json({ 
+          error: "Knowledge Base requires a Pro or Agency subscription",
+          requiresPlan: "pro"
+        });
+      }
+
       const existingDoc = await storage.getKnowledgeBaseDoc(req.params.id);
       if (!existingDoc) {
         return res.status(404).json({ error: "Document not found" });
@@ -3024,6 +3102,15 @@ Create problems that are:
       const userId = req.user?.id;
       if (!userId) {
         return res.status(401).json({ error: "User not found" });
+      }
+
+      // Check if user has Pro subscription for Knowledge Base
+      const user = await storage.getUser(userId);
+      if (!user || (user.plan !== "pro" && user.plan !== "agency")) {
+        return res.status(403).json({ 
+          error: "Knowledge Base requires a Pro or Agency subscription",
+          requiresPlan: "pro"
+        });
       }
 
       const files = req.files as Express.Multer.File[];
@@ -3221,11 +3308,11 @@ Create problems that are:
         return res.status(401).json({ error: "User not found" });
       }
 
-      // Check if user has Pro or Ultimate plan
+      // Check if user has Pro or Agency plan
       const user = await storage.getUser(userId);
-      if (!user || (user.plan !== "pro" && user.plan !== "ultimate")) {
+      if (!user || (user.plan !== "pro" && user.plan !== "agency")) {
         return res.status(403).json({ 
-          error: "This feature requires a Pro or Ultimate subscription",
+          error: "This feature requires a Pro or Agency subscription",
           requiresPlan: "pro"
         });
       }
@@ -3261,12 +3348,21 @@ Create problems that are:
     }
   });
 
-  // Viral Examples API - Fetch top TikTok captions for inspiration
+  // Viral Examples API - Fetch top TikTok captions for inspiration (Pro feature)
   app.post("/api/viral-examples", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user?.id;
       if (!userId) {
         return res.status(401).json({ error: "User not found" });
+      }
+
+      // Check if user has Pro subscription
+      const user = await storage.getUser(userId);
+      if (!user || (user.plan !== "pro" && user.plan !== "agency")) {
+        return res.status(403).json({ 
+          error: "Viral Examples requires a Pro or Agency subscription",
+          requiresPlan: "pro"
+        });
       }
 
       const { topic, limit = 5 } = req.body;
@@ -3298,12 +3394,21 @@ Create problems that are:
     }
   });
 
-  // AP5 Strategic Insights API - Enhanced research for script generation
+  // AP5 Strategic Insights API - Enhanced research for script generation (Pro feature)
   app.post("/api/strategic-insights", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user?.id;
       if (!userId) {
         return res.status(401).json({ error: "User not found" });
+      }
+
+      // Check if user has Pro subscription
+      const user = await storage.getUser(userId);
+      if (!user || (user.plan !== "pro" && user.plan !== "agency")) {
+        return res.status(403).json({ 
+          error: "Strategic Insights requires a Pro or Agency subscription",
+          requiresPlan: "pro"
+        });
       }
 
       const { topic, platforms, limit = 20 } = req.body;
@@ -3337,12 +3442,21 @@ Create problems that are:
     }
   });
 
-  // Instagram Viral Examples API - Fetch top Instagram captions for inspiration
+  // Instagram Viral Examples API - Fetch top Instagram captions for inspiration (Pro feature)
   app.post("/api/viral-examples/instagram", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user?.id;
       if (!userId) {
         return res.status(401).json({ error: "User not found" });
+      }
+
+      // Check if user has Pro subscription
+      const user = await storage.getUser(userId);
+      if (!user || (user.plan !== "pro" && user.plan !== "agency")) {
+        return res.status(403).json({ 
+          error: "Instagram Viral Examples requires a Pro or Agency subscription",
+          requiresPlan: "pro"
+        });
       }
 
       const { topic, limit = 5 } = req.body;
@@ -3381,11 +3495,11 @@ Create problems that are:
         return res.status(401).json({ error: "User not found" });
       }
 
-      // Check if user has Pro or Ultimate plan
+      // Check if user has Pro or Agency plan
       const user = await storage.getUser(userId);
-      if (!user || (user.plan !== "pro" && user.plan !== "ultimate")) {
+      if (!user || (user.plan !== "pro" && user.plan !== "agency")) {
         return res.status(403).json({ 
-          error: "This feature requires a Pro or Ultimate subscription",
+          error: "This feature requires a Pro or Agency subscription",
           requiresPlan: "pro"
         });
       }
