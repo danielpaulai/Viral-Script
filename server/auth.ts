@@ -143,7 +143,32 @@ export function setupAuth(app: Express) {
     }
   });
 
+  // Debug test endpoint to verify routing works in production
+  app.post("/api/login-test", (req, res) => {
+    console.log("=== LOGIN TEST ENDPOINT HIT ===", {
+      body: req.body,
+      contentType: req.headers['content-type'],
+      timestamp: new Date().toISOString()
+    });
+    res.json({ 
+      message: "Login test endpoint is reachable", 
+      receivedBody: req.body,
+      hasBody: !!req.body,
+      bodyKeys: req.body ? Object.keys(req.body) : []
+    });
+  });
+
   app.post("/api/login", async (req, res) => {
+    // CRITICAL DEBUG: Log at very start to confirm endpoint is hit
+    console.log("=== LOGIN ENDPOINT HIT ===", { 
+      username: req.body?.username,
+      hasPassword: !!req.body?.password,
+      hasBody: !!req.body,
+      bodyKeys: req.body ? Object.keys(req.body) : [],
+      contentType: req.headers['content-type'],
+      timestamp: new Date().toISOString()
+    });
+
     try {
       console.log("Login attempt:", { username: req.body?.username });
 
@@ -157,21 +182,45 @@ export function setupAuth(app: Express) {
 
       let supabaseSuccess = false;
       try {
+        console.log("Attempting Supabase auth for:", username);
         const { data: authData, error: authError } =
           await supabase.auth.signInWithPassword({
             email: username,
             password: password,
           });
 
+        console.log("Supabase auth response:", {
+          hasUser: !!authData?.user,
+          userId: authData?.user?.id,
+          error: authError?.message,
+          errorCode: authError?.status,
+        });
+
         if (!authError && authData.user) {
           supabaseSuccess = true;
           console.log("Login successful via Supabase:", authData.user.id);
+        } else if (authError) {
+          console.log("Supabase auth error details:", {
+            message: authError.message,
+            status: authError.status,
+            name: authError.name,
+          });
         }
-      } catch (supabaseError) {
-        console.log("Supabase auth failed, trying local:", supabaseError);
+      } catch (supabaseError: any) {
+        console.log("Supabase auth exception:", {
+          message: supabaseError?.message,
+          name: supabaseError?.name,
+        });
       }
 
+      console.log("Looking up user in database:", username);
       const user = await storage.getUserByUsername(username);
+      console.log("Database user lookup result:", {
+        found: !!user,
+        userId: user?.id,
+        hasPassword: !!user?.password,
+        username: user?.username,
+      });
       
       if (!user) {
         console.log("Login failed: User not found in Replit DB");
