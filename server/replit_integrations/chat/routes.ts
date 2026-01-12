@@ -2,13 +2,10 @@ import type { Express, Request, Response } from "express";
 import OpenAI from "openai";
 import { chatStorage } from "./storage";
 
-// Configure OpenAI client using centralized AI config
-// This guarantees production ALWAYS uses the correct URL
-import { aiConfig } from "../../aiConfig";
-
+// Configure OpenAI client using Replit AI Integrations environment variables
 const openai = new OpenAI({
-  apiKey: aiConfig.apiKey,
-  baseURL: aiConfig.baseURL,
+  apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY,
+  baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL,
 });
 
 export function registerChatRoutes(app: Express): void {

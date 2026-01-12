@@ -53,13 +53,19 @@ import {
 import { getCreatorById, creatorStyles as comprehensiveCreatorStyles } from "@shared/creator-styles";
 import { scrapeTikTokProfile, scrapeInstagramProfile, analyzeCreatorStyle, searchTikTokByKeyword } from "./apify";
 
-// Configure OpenAI client using centralized AI config
-// This guarantees production ALWAYS uses the correct URL
-import { aiConfig } from "./aiConfig";
-
+// Configure OpenAI client using Replit AI Integrations environment variables
+// These are automatically set when the integration is configured
 const openai = new OpenAI({
-  apiKey: aiConfig.apiKey,
-  baseURL: aiConfig.baseURL,
+  apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY,
+  baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL,
+});
+
+// Log AI configuration at startup for debugging
+console.log("[OpenAI Config] Using environment variables:", {
+  hasApiKey: !!process.env.AI_INTEGRATIONS_OPENAI_API_KEY,
+  baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL || "not set",
+  nodeEnv: process.env.NODE_ENV,
+  isDeployment: !!process.env.REPLIT_DEPLOYMENT,
 });
 
 // Words that sound like AI - NEVER use these
