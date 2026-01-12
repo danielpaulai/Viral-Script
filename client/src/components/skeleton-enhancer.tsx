@@ -29,6 +29,8 @@ import {
   ArrowRight,
   Quote,
   BarChart3,
+  Crown,
+  Lock,
 } from "lucide-react";
 import type {
   VideoIdeaSkeleton,
@@ -43,6 +45,7 @@ interface SkeletonEnhancerProps {
   onSkeletonChange: (skeleton: VideoIdeaSkeleton) => void;
   onEnhancementComplete: (enhanced: EnhancedSkeleton) => void;
   onBack: () => void;
+  userPlan?: string;
 }
 
 function formatNumber(num: number): string {
@@ -56,7 +59,10 @@ export function SkeletonEnhancer({
   onSkeletonChange,
   onEnhancementComplete,
   onBack,
+  userPlan = "starter",
 }: SkeletonEnhancerProps) {
+  const isPro = userPlan === "pro" || userPlan === "agency";
+  const [requiresProError, setRequiresProError] = useState(false);
   const { toast } = useToast();
   const [editingSection, setEditingSection] = useState<SkeletonSectionType | null>(null);
   const [research, setResearch] = useState<DeepResearchBrief | null>(null);
@@ -95,11 +101,15 @@ export function SkeletonEnhancer({
       });
     },
     onError: (error: any) => {
-      toast({
-        title: "Research Failed",
-        description: error.message || "Could not complete deep research",
-        variant: "destructive",
-      });
+      if (error.message?.includes("403") || error.message?.includes("Pro")) {
+        setRequiresProError(true);
+      } else {
+        toast({
+          title: "Research Failed",
+          description: error.message || "Could not complete deep research",
+          variant: "destructive",
+        });
+      }
     },
   });
 
@@ -131,10 +141,10 @@ export function SkeletonEnhancer({
   });
 
   useEffect(() => {
-    if (!research && !deepResearchMutation.isPending) {
+    if (isPro && !research && !deepResearchMutation.isPending && !requiresProError) {
       deepResearchMutation.mutate();
     }
-  }, []);
+  }, [isPro]);
 
   const toggleInsight = (insight: string) => {
     setSelectedInsights(prev =>
@@ -170,6 +180,114 @@ export function SkeletonEnhancer({
     { type: "solution" as const, label: "Solution", icon: Lightbulb, color: "text-green-500" },
     { type: "cta" as const, label: "Call to Action", icon: Zap, color: "text-blue-500" },
   ];
+
+  // For Starter users, show simplified flow with skip option
+  if (!isPro) {
+    return (
+      <div className="space-y-6" data-testid="skeleton-enhancer">
+        <div className="flex items-center justify-between gap-4 flex-wrap">
+          <div>
+            <h2 className="text-xl font-semibold">Review Your Skeleton</h2>
+            <p className="text-sm text-muted-foreground">
+              Review your content before generating the script
+            </p>
+          </div>
+          <Button variant="outline" onClick={onBack} data-testid="button-back-to-skeleton">
+            Back to Edit
+          </Button>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base flex items-center gap-2">
+                <Edit3 className="w-4 h-4" />
+                Your Content Skeleton
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {sectionConfig.map(({ type, label, icon: Icon, color }) => (
+                <div key={type} className="space-y-2">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <Icon className={`w-4 h-4 ${color}`} />
+                      <span className="text-sm font-medium">{label}</span>
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => setEditingSection(editingSection === type ? null : type)}
+                      data-testid={`button-edit-${type}`}
+                    >
+                      {editingSection === type ? <Check className="w-3 h-3" /> : <Edit3 className="w-3 h-3" />}
+                    </Button>
+                  </div>
+                  {editingSection === type ? (
+                    <Textarea
+                      value={skeleton[type].content}
+                      onChange={(e) => updateSection(type, e.target.value)}
+                      className="min-h-[80px] text-sm"
+                      data-testid={`input-${type}-content`}
+                    />
+                  ) : (
+                    <div className="p-3 bg-muted/50 rounded-md text-sm">
+                      {skeleton[type].content || <span className="text-muted-foreground italic">Not set</span>}
+                    </div>
+                  )}
+                </div>
+              ))}
+
+              <Textarea
+                placeholder="Add any additional context or notes..."
+                value={additionalNotes}
+                onChange={(e) => setAdditionalNotes(e.target.value)}
+                className="min-h-[80px]"
+                data-testid="input-additional-notes"
+              />
+            </CardContent>
+          </Card>
+
+          <Card className="border-dashed border-2 bg-muted/20">
+            <CardContent className="py-8 text-center space-y-4">
+              <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-r from-rose-500 to-pink-500 text-white">
+                <Crown className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-lg">Unlock Deep Research</h3>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Pro users get AI-powered research, competitor analysis, and viral insights to supercharge their scripts
+                </p>
+              </div>
+              <div className="flex flex-wrap justify-center gap-2">
+                {["Deep Research", "Competitor Analysis", "Viral Examples"].map((feature) => (
+                  <Badge key={feature} variant="secondary" className="flex items-center gap-1">
+                    <Lock className="w-3 h-3" />
+                    {feature}
+                  </Badge>
+                ))}
+              </div>
+              <Button
+                variant="outline"
+                className="mt-2"
+                onClick={() => window.location.href = "/pricing"}
+                data-testid="button-upgrade-pro"
+              >
+                <Crown className="w-4 h-4 mr-2" />
+                Upgrade to Pro
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="flex justify-end">
+          <Button onClick={handleContinue} size="lg" data-testid="button-generate-script">
+            Generate Script
+            <ArrowRight className="w-4 h-4 ml-2" />
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6" data-testid="skeleton-enhancer">

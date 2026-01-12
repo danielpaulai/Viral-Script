@@ -335,6 +335,12 @@ export default function Home() {
     enabled: !!user, // Only fetch if authenticated
   });
 
+  const { data: subscriptionData } = useQuery<{ plan: string; status: string }>({
+    queryKey: ["/api/user/subscription"],
+    enabled: !!user,
+  });
+  const userPlan = subscriptionData?.plan || "starter";
+
   const generateMutation = useMutation({
     mutationFn: async (params: ScriptParameters) => {
       const res = await apiRequest("POST", "/api/scripts/generate", params);
@@ -807,6 +813,7 @@ export default function Home() {
               onSkeletonChange={setVideoSkeleton}
               onEnhancementComplete={handleEnhancementComplete}
               onBack={handleBackToSkeleton}
+              userPlan={userPlan}
             />
           )}
 
