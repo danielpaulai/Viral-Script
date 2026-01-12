@@ -10,6 +10,7 @@ import { AuthProvider, useAuth } from "@/hooks/use-auth";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { CreditsDisplay } from "@/components/credits-display";
+import { Footer } from "@/components/footer";
 import Home from "@/pages/home";
 import Scripts from "@/pages/scripts";
 import Projects from "@/pages/projects";
@@ -63,7 +64,7 @@ function AuthenticatedApp() {
     <SidebarProvider style={style as React.CSSProperties}>
       <div className="flex min-h-screen w-full bg-background">
         <AppSidebar />
-        <SidebarInset className="flex-1">
+        <SidebarInset className="flex-1 flex flex-col">
           <header className="sticky top-0 z-50 flex h-12 items-center justify-between gap-2 border-b border-border bg-background/95 backdrop-blur px-4">
             <SidebarTrigger data-testid="button-sidebar-toggle" />
             <ThemeToggle />
@@ -71,6 +72,7 @@ function AuthenticatedApp() {
           <main className="flex-1 pb-12">
             <AuthenticatedRouter />
           </main>
+          <Footer />
         </SidebarInset>
         <CreditsDisplay />
       </div>
@@ -80,13 +82,18 @@ function AuthenticatedApp() {
 
 function PublicRouter() {
   return (
-    <Switch>
-      <Route path="/" component={Landing} />
-      <Route path="/login" component={Login} />
-      <Route path="/reset-password" component={ResetPassword} />
-      <Route path="/pricing" component={Pricing} />
-      <Route component={Landing} />
-    </Switch>
+    <div className="min-h-screen flex flex-col">
+      <div className="flex-1">
+        <Switch>
+          <Route path="/" component={Landing} />
+          <Route path="/login" component={Login} />
+          <Route path="/reset-password" component={ResetPassword} />
+          <Route path="/pricing" component={Pricing} />
+          <Route component={Landing} />
+        </Switch>
+      </div>
+      <Footer />
+    </div>
   );
 }
 
