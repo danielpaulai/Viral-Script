@@ -1417,6 +1417,36 @@ export async function registerRoutes(
   setupAuth(app);
   setupPasswordReset(app);
   
+  // AI Health Check endpoint - test if OpenAI integration is working
+  app.get("/api/ai/health", async (req, res) => {
+    try {
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [{ role: "user", content: "Say 'OK' if you can hear me." }],
+        max_tokens: 10,
+      });
+      
+      const content = response.choices[0]?.message?.content || "";
+      res.json({
+        status: "healthy",
+        response: content,
+        hasApiKey: !!process.env.AI_INTEGRATIONS_OPENAI_API_KEY,
+        hasBaseUrl: !!process.env.AI_INTEGRATIONS_OPENAI_BASE_URL,
+        isProduction: !!process.env.REPLIT_DEPLOYMENT,
+      });
+    } catch (error: any) {
+      console.error("AI health check failed:", error);
+      res.status(500).json({
+        status: "unhealthy",
+        error: error?.message || "Unknown error",
+        code: error?.code,
+        hasApiKey: !!process.env.AI_INTEGRATIONS_OPENAI_API_KEY,
+        hasBaseUrl: !!process.env.AI_INTEGRATIONS_OPENAI_BASE_URL,
+        isProduction: !!process.env.REPLIT_DEPLOYMENT,
+      });
+    }
+  });
+  
   app.get("/api/ctas", (req, res) => {
     res.json({
       categories: ctaCategories,
@@ -2851,13 +2881,31 @@ Generate 4 CORE TEACHING ideas - each should be THE central insight that an enti
       }
     } catch (error: any) {
       console.error("Solution generation error:", error);
-      console.error("Error details:", {
-        message: error?.message,
+      const errorDetails = {
+        message: error?.message || "Unknown error",
         status: error?.status,
         code: error?.code,
         type: error?.type,
-      });
-      res.status(500).json({ error: "Failed to generate solutions" });
+        cause: error?.cause?.message,
+      };
+      console.error("Error details:", errorDetails);
+      
+      // Return detailed error in development or if it's a connection issue
+      const isConnectionError = error?.message?.includes('ECONNREFUSED') || 
+                                error?.message?.includes('fetch failed') ||
+                                error?.code === 'ECONNREFUSED';
+      
+      if (isConnectionError) {
+        res.status(500).json({ 
+          error: "AI service temporarily unavailable. Please try again in a moment.",
+          details: process.env.NODE_ENV === 'development' ? errorDetails : undefined
+        });
+      } else {
+        res.status(500).json({ 
+          error: "Failed to generate solutions. Please try again.",
+          details: process.env.NODE_ENV === 'development' ? errorDetails : undefined
+        });
+      }
     }
   });
 
