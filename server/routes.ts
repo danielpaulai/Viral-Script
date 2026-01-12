@@ -54,14 +54,14 @@ import { getCreatorById, creatorStyles as comprehensiveCreatorStyles } from "@sh
 import { scrapeTikTokProfile, scrapeInstagramProfile, analyzeCreatorStyle, searchTikTokByKeyword } from "./apify";
 
 // Configure OpenAI client using Replit AI Integrations
-// In development, the modelfarm proxy runs on localhost:1106
-// In production (deployment), use the remote integrations URL
-// Detection: if base URL contains "localhost", we're in development
+// Detection: REPLIT_DEV_DOMAIN is ONLY set in development workspaces, not in deployments
+// This provides reliable dev vs production detection
+const isDevelopmentWorkspace = !!process.env.REPLIT_DEV_DOMAIN;
 const envBaseURL = process.env.AI_INTEGRATIONS_OPENAI_BASE_URL || "";
-const isDevelopment = envBaseURL.includes("localhost");
 
-// Default to production URL, only use localhost in development
-const openaiBaseURL = isDevelopment 
+// PERMANENT FIX: Production ALWAYS uses the hosted integrations URL
+// Development uses localhost modelfarm only if REPLIT_DEV_DOMAIN is present
+const openaiBaseURL = isDevelopmentWorkspace && envBaseURL.includes("localhost")
   ? envBaseURL
   : "https://integrations.replit.com/api/openai/v1";
 
@@ -73,7 +73,8 @@ const openai = new OpenAI({
 console.log("[OpenAI] Configured with AI integrations:", {
   hasApiKey: !!process.env.AI_INTEGRATIONS_OPENAI_API_KEY,
   baseUrl: openaiBaseURL,
-  isDevelopment,
+  isDevelopmentWorkspace,
+  willUseProduction: !isDevelopmentWorkspace || !envBaseURL.includes("localhost"),
 });
 
 // Words that sound like AI - NEVER use these

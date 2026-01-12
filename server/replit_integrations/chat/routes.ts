@@ -2,13 +2,12 @@ import type { Express, Request, Response } from "express";
 import OpenAI from "openai";
 import { chatStorage } from "./storage";
 
-// Production uses remote integrations endpoint, development uses local modelfarm
-// Detection: if base URL contains "localhost", we're in development
+// PERMANENT FIX: Detection uses REPLIT_DEV_DOMAIN which is ONLY set in development workspaces
+// Production deployments will ALWAYS use the hosted integrations URL
+const isDevelopmentWorkspace = !!process.env.REPLIT_DEV_DOMAIN;
 const envBaseURL = process.env.AI_INTEGRATIONS_OPENAI_BASE_URL || "";
-const isDevelopment = envBaseURL.includes("localhost");
 
-// Default to production URL, only use localhost in development
-const openaiBaseURL = isDevelopment 
+const openaiBaseURL = isDevelopmentWorkspace && envBaseURL.includes("localhost")
   ? envBaseURL
   : "https://integrations.replit.com/api/openai/v1";
 
