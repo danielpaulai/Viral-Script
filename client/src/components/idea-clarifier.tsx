@@ -645,12 +645,11 @@ export function IdeaClarifier({
     setWizardStage(1);
   };
 
-  // Render the problem section with AI solution suggestions
+  // Render the problem section with AI problem idea suggestions
   const renderProblemSection = () => {
     const section = skeleton.problem;
     const bgClass = sectionBgColors.problem;
     const colorClass = sectionColors.problem;
-    const selectedCount = generatedSolutions.filter((s) => s.selected).length;
 
     return (
       <div
@@ -772,13 +771,92 @@ export function IdeaClarifier({
           </div>
         </div>
 
-        {/* AI Teaching Ideas - More Prominent when problem is ready */}
+      </div>
+    );
+  };
+
+  // Render the solution section with AI generation
+  const renderSolutionSection = () => {
+    const section = skeleton.solution;
+    const bgClass = sectionBgColors.solution;
+    const colorClass = sectionColors.solution;
+    const selectedCount = generatedSolutions.filter((s) => s.selected).length;
+
+    return (
+      <div
+        className={`p-4 rounded-lg border ${bgClass} transition-all`}
+        data-testid="section-solution"
+      >
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <Lightbulb className={`w-5 h-5 ${colorClass}`} />
+            <span className={`font-semibold ${colorClass}`}>{section.title}</span>
+            {section.isValid && (
+              <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
+                <Check className="w-3 h-3 mr-1" />
+                Ready
+              </Badge>
+            )}
+          </div>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button size="icon" variant="ghost" className="h-6 w-6">
+                <HelpCircle className="w-4 h-4 text-muted-foreground" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="left" className="max-w-xs">
+              <p className="text-sm">{section.guidingQuestion}</p>
+            </TooltipContent>
+          </Tooltip>
+        </div>
+
+        <p className="text-sm text-muted-foreground mb-3 italic">
+          {section.guidingQuestion}
+        </p>
+
+        <Textarea
+          value={section.content}
+          onChange={(e) => updateSection("solution", e.target.value)}
+          placeholder={`Write your ${section.title.toLowerCase()} here...`}
+          className="min-h-[100px] bg-background/50 border-border mb-2"
+          disabled={skeleton.isLocked}
+          data-testid="input-solution"
+        />
+
+        {section.validationMessage && !section.isValid && section.content && (
+          <p className="text-xs text-amber-400 mb-2 flex items-center gap-1">
+            <AlertTriangle className="w-3 h-3" />
+            {section.validationMessage}
+          </p>
+        )}
+
+        <div className="mt-3">
+          <p className="text-xs text-muted-foreground mb-2 flex items-center gap-1">
+            <Lightbulb className="w-3 h-3" />
+            Examples that work:
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {section.examples.map((example, i) => (
+              <button
+                key={i}
+                onClick={() => !skeleton.isLocked && updateSection("solution", example)}
+                className="text-xs px-2 py-1 rounded bg-muted/50 text-muted-foreground hover-elevate cursor-pointer border border-border"
+                disabled={skeleton.isLocked}
+                data-testid={`example-solution-${i}`}
+              >
+                "{example}"
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* AI Generate Solution - Show when problem is ready */}
         {canGenerateSolutions && (
           <div className="mt-4 p-4 rounded-lg bg-green-500/10 border-2 border-green-500/40">
             <div className="flex items-center justify-between mb-3">
               <p className="text-sm font-medium text-green-400 flex items-center gap-2">
                 <Wand2 className="w-4 h-4" />
-                Generate Teaching Ideas
+                Generate Solution Ideas
               </p>
               {generatedSolutions.length > 0 && selectedCount > 0 && (
                 <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
@@ -787,7 +865,7 @@ export function IdeaClarifier({
               )}
             </div>
             <p className="text-xs text-muted-foreground mb-3">
-              Your problem is ready. Now generate the core teaching for your video.
+              Generate AI-powered solution ideas based on your problem. Select ideas to add to your core teaching.
             </p>
             <div className="space-y-3">
               <Button
@@ -801,17 +879,17 @@ export function IdeaClarifier({
                 {generateSolutionsMutation.isPending ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Generating teaching ideas...
+                    Generating solutions...
                   </>
                 ) : generatedSolutions.length > 0 ? (
                   <>
                     <RefreshCw className="w-4 h-4 mr-2" />
-                    Regenerate Teaching Ideas
+                    Regenerate Solutions
                   </>
                 ) : (
                   <>
                     <Wand2 className="w-4 h-4 mr-2" />
-                    Generate Teaching Ideas
+                    Generate Solution Ideas
                   </>
                 )}
               </Button>
@@ -891,19 +969,28 @@ export function IdeaClarifier({
                       onClick={(e) => {
                         e.stopPropagation();
                         handleAddSolutionsToSkeleton();
-                        setCurrentStep(1); // Move to Solution step
                       }}
                       disabled={skeleton.isLocked}
                       className="w-full"
                       data-testid="button-add-solutions"
                     >
-                      <ChevronRight className="w-4 h-4 mr-2" />
-                      Add {selectedCount} Solution{selectedCount > 1 ? "s" : ""} & Continue
+                      <Check className="w-4 h-4 mr-2" />
+                      Add {selectedCount} Solution{selectedCount > 1 ? "s" : ""} to Core Teaching
                     </Button>
                   )}
                 </div>
               )}
             </div>
+          </div>
+        )}
+
+        {/* Show message when problem not ready */}
+        {!canGenerateSolutions && (
+          <div className="mt-4 p-3 rounded-lg bg-amber-500/10 border border-amber-500/30">
+            <p className="text-xs text-amber-400 flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4" />
+              Complete the Problem section first to unlock AI solution generation
+            </p>
           </div>
         )}
       </div>
@@ -1438,11 +1525,18 @@ export function IdeaClarifier({
       return renderHookSection();
     }
 
-    // Special handling for problem section (with AI solution suggestions)
+    // Special handling for problem section (with AI problem suggestions)
     if (type === "problem") {
       const isActive = currentSectionType === type || showAllSections;
       if (!isActive && !showAllSections) return null;
       return renderProblemSection();
+    }
+
+    // Special handling for solution section (with AI solution generation)
+    if (type === "solution") {
+      const isActive = currentSectionType === type || showAllSections;
+      if (!isActive && !showAllSections) return null;
+      return renderSolutionSection();
     }
 
     // Special handling for CTA section (with AI suggestions and templates)
@@ -1452,84 +1546,8 @@ export function IdeaClarifier({
       return renderCtaSection();
     }
 
-    const section = skeleton[type];
-    const Icon = sectionIcons[type];
-    const colorClass = sectionColors[type];
-    const bgClass = sectionBgColors[type];
-    const isActive = currentSectionType === type || showAllSections;
-
-    if (!isActive && !showAllSections) return null;
-
-    return (
-      <div
-        key={type}
-        className={`p-4 rounded-lg border ${bgClass} transition-all`}
-        data-testid={`section-${type}`}
-      >
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
-            <Icon className={`w-5 h-5 ${colorClass}`} />
-            <span className={`font-semibold ${colorClass}`}>{section.title}</span>
-            {section.isValid && (
-              <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
-                <Check className="w-3 h-3 mr-1" />
-                Ready
-              </Badge>
-            )}
-          </div>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button size="icon" variant="ghost" className="h-6 w-6">
-                <HelpCircle className="w-4 h-4 text-muted-foreground" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side="left" className="max-w-xs">
-              <p className="text-sm">{section.guidingQuestion}</p>
-            </TooltipContent>
-          </Tooltip>
-        </div>
-
-        <p className="text-sm text-muted-foreground mb-3 italic">
-          {section.guidingQuestion}
-        </p>
-
-        <Textarea
-          value={section.content}
-          onChange={(e) => updateSection(type, e.target.value)}
-          placeholder={`Write your ${section.title.toLowerCase()} here...`}
-          className="min-h-[100px] bg-background/50 border-border mb-2"
-          disabled={skeleton.isLocked}
-          data-testid={`input-${type}`}
-        />
-
-        {section.validationMessage && !section.isValid && section.content && (
-          <p className="text-xs text-amber-400 mb-2 flex items-center gap-1">
-            <AlertTriangle className="w-3 h-3" />
-            {section.validationMessage}
-          </p>
-        )}
-
-        <div className="mt-3">
-          <p className="text-xs text-muted-foreground mb-2 flex items-center gap-1">
-            <Lightbulb className="w-3 h-3" />
-            Examples that work:
-          </p>
-          <div className="flex flex-wrap gap-2">
-            {section.examples.map((example, i) => (
-              <button
-                key={i}
-                onClick={() => !skeleton.isLocked && updateSection(type, example)}
-                className="text-xs px-2 py-1 rounded bg-muted/50 text-muted-foreground hover-elevate cursor-pointer border border-border"
-                disabled={skeleton.isLocked}
-                data-testid={`example-${type}-${i}`}
-              >
-                "{example}"
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-    );
+    // All section types are now handled explicitly above
+    return null;
   };
 
   // Render Stage 1: Set Your Brief
