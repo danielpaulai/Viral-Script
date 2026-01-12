@@ -53,10 +53,32 @@ import {
 import { getCreatorById, creatorStyles as comprehensiveCreatorStyles } from "@shared/creator-styles";
 import { scrapeTikTokProfile, scrapeInstagramProfile, analyzeCreatorStyle, searchTikTokByKeyword } from "./apify";
 
-const openai = new OpenAI({
-  apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY,
-  baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL,
-});
+// Configure OpenAI client
+// In production deployments, the AI integrations local proxy may not be available
+// We check if the base URL is localhost and we're in production - if so, use standard OpenAI API
+const isProductionDeployment = !!process.env.REPLIT_DEPLOYMENT;
+const baseUrl = process.env.AI_INTEGRATIONS_OPENAI_BASE_URL;
+const isLocalProxy = baseUrl?.includes('localhost') || baseUrl?.includes('127.0.0.1');
+
+let openaiConfig: { apiKey: string; baseURL?: string };
+
+if (isProductionDeployment && isLocalProxy) {
+  // In production with localhost URL, use standard OpenAI API without custom baseURL
+  // This requires a real OpenAI API key in production
+  console.log("[OpenAI] Production deployment detected - using standard OpenAI API");
+  openaiConfig = {
+    apiKey: process.env.OPENAI_API_KEY || process.env.AI_INTEGRATIONS_OPENAI_API_KEY || '',
+  };
+} else {
+  // In development or with proper production URL, use the AI integrations
+  console.log("[OpenAI] Using AI integrations:", { baseUrl, isProduction: isProductionDeployment });
+  openaiConfig = {
+    apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY || '',
+    baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL,
+  };
+}
+
+const openai = new OpenAI(openaiConfig);
 
 // Words that sound like AI - NEVER use these
 const aiWordsToAvoid = [
@@ -2752,10 +2774,18 @@ Adapt this hook template to match the specific problem and solution above. Retur
 
   // Generate solution suggestions based on problem
   app.post("/api/solutions/generate", async (req, res) => {
+    console.log("Solution generation request received:", { 
+      problem: req.body?.problem?.substring(0, 50),
+      targetAudience: req.body?.targetAudience,
+      platform: req.body?.platform,
+      videoPurpose: req.body?.videoPurpose
+    });
+    
     try {
       const { problem, targetAudience, platform, videoPurpose } = req.body;
       
       if (!problem || problem.trim().length < 10) {
+        console.log("Solution generation failed: Problem too short");
         return res.status(400).json({ error: "Problem description required (at least 10 characters)" });
       }
 
@@ -2830,10 +2860,17 @@ Generate 4 CORE TEACHING ideas - each should be THE central insight that an enti
         });
       } catch (parseError) {
         console.error("Failed to parse solution generation response:", parseError);
+        console.error("Raw content that failed to parse:", content);
         res.status(500).json({ error: "Failed to parse generated solutions" });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Solution generation error:", error);
+      console.error("Error details:", {
+        message: error?.message,
+        status: error?.status,
+        code: error?.code,
+        type: error?.type,
+      });
       res.status(500).json({ error: "Failed to generate solutions" });
     }
   });
