@@ -28,6 +28,8 @@ import {
   users,
   passwordResetTokens,
   scripts as scriptsTable,
+  scriptTemplates as scriptTemplatesTable,
+  ctaTemplates as ctaTemplatesTable,
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import session from "express-session";
@@ -892,6 +894,17 @@ export class MemStorage implements IStorage {
 
   // Script Template methods
   async getScriptTemplates(userId: string): Promise<ScriptTemplate[]> {
+    if (db) {
+      try {
+        const results = await db.select().from(scriptTemplatesTable)
+          .where(eq(scriptTemplatesTable.userId, userId))
+          .orderBy(desc(scriptTemplatesTable.createdAt));
+        results.forEach(t => this.scriptTemplates.set(t.id, t));
+        return results;
+      } catch (e) {
+        console.error("DB getScriptTemplates failed:", (e as Error).message);
+      }
+    }
     const templates = Array.from(this.scriptTemplates.values())
       .filter(t => t.userId === userId || t.isPublic === "true")
       .sort((a, b) => {
@@ -903,6 +916,20 @@ export class MemStorage implements IStorage {
   }
 
   async getScriptTemplate(id: string): Promise<ScriptTemplate | undefined> {
+    if (db) {
+      try {
+        const [result] = await db.select().from(scriptTemplatesTable)
+          .where(eq(scriptTemplatesTable.id, id))
+          .limit(1);
+        if (result) {
+          this.scriptTemplates.set(result.id, result);
+          return result;
+        }
+        return undefined;
+      } catch (e) {
+        console.error("DB getScriptTemplate failed:", (e as Error).message);
+      }
+    }
     return this.scriptTemplates.get(id);
   }
 
@@ -931,12 +958,22 @@ export class MemStorage implements IStorage {
       createdAt: now,
       updatedAt: now,
     };
+    
+    if (db) {
+      try {
+        await db.insert(scriptTemplatesTable).values(newTemplate);
+        console.log(`[DB] Created script template: ${id}`);
+      } catch (e) {
+        console.error("DB createScriptTemplate failed:", (e as Error).message);
+      }
+    }
+    
     this.scriptTemplates.set(id, newTemplate);
     return newTemplate;
   }
 
   async updateScriptTemplate(id: string, updates: Partial<InsertScriptTemplate>): Promise<ScriptTemplate | undefined> {
-    const template = this.scriptTemplates.get(id);
+    const template = await this.getScriptTemplate(id);
     if (!template) return undefined;
     
     const updated: ScriptTemplate = {
@@ -944,24 +981,70 @@ export class MemStorage implements IStorage {
       ...updates,
       updatedAt: new Date(),
     };
+    
+    if (db) {
+      try {
+        await db.update(scriptTemplatesTable)
+          .set({
+            ...updates,
+            updatedAt: new Date(),
+          })
+          .where(eq(scriptTemplatesTable.id, id));
+        console.log(`[DB] Updated script template: ${id}`);
+      } catch (e) {
+        console.error("DB updateScriptTemplate failed:", (e as Error).message);
+      }
+    }
+    
     this.scriptTemplates.set(id, updated);
     return updated;
   }
 
   async deleteScriptTemplate(id: string): Promise<boolean> {
+    if (db) {
+      try {
+        await db.delete(scriptTemplatesTable).where(eq(scriptTemplatesTable.id, id));
+        console.log(`[DB] Deleted script template: ${id}`);
+      } catch (e) {
+        console.error("DB deleteScriptTemplate failed:", (e as Error).message);
+      }
+    }
     return this.scriptTemplates.delete(id);
   }
 
   async incrementTemplateUsage(id: string): Promise<void> {
-    const template = this.scriptTemplates.get(id);
+    const template = await this.getScriptTemplate(id);
     if (template) {
-      template.usageCount = String(parseInt(template.usageCount || "0") + 1);
+      const newCount = String(parseInt(template.usageCount || "0") + 1);
+      template.usageCount = newCount;
+      
+      if (db) {
+        try {
+          await db.update(scriptTemplatesTable)
+            .set({ usageCount: newCount })
+            .where(eq(scriptTemplatesTable.id, id));
+        } catch (e) {
+          console.error("DB incrementTemplateUsage failed:", (e as Error).message);
+        }
+      }
+      
       this.scriptTemplates.set(id, template);
     }
   }
 
   // CTA Template methods
   async getCtaTemplates(userId: string): Promise<CtaTemplate[]> {
+    if (db) {
+      try {
+        const results = await db.select().from(ctaTemplatesTable)
+          .where(eq(ctaTemplatesTable.userId, userId))
+          .orderBy(desc(ctaTemplatesTable.createdAt));
+        results.forEach(t => this.ctaTemplates.set(t.id, t));
+        return results;
+      } catch (e) {
+        console.error("DB getCtaTemplates failed:", (e as Error).message);
+      }
+    }
     const templates = Array.from(this.ctaTemplates.values())
       .filter(t => t.userId === userId)
       .sort((a, b) => {
@@ -973,6 +1056,20 @@ export class MemStorage implements IStorage {
   }
 
   async getCtaTemplate(id: string): Promise<CtaTemplate | undefined> {
+    if (db) {
+      try {
+        const [result] = await db.select().from(ctaTemplatesTable)
+          .where(eq(ctaTemplatesTable.id, id))
+          .limit(1);
+        if (result) {
+          this.ctaTemplates.set(result.id, result);
+          return result;
+        }
+        return undefined;
+      } catch (e) {
+        console.error("DB getCtaTemplate failed:", (e as Error).message);
+      }
+    }
     return this.ctaTemplates.get(id);
   }
 
@@ -989,18 +1086,48 @@ export class MemStorage implements IStorage {
       usageCount: "0",
       createdAt: now,
     };
+    
+    if (db) {
+      try {
+        await db.insert(ctaTemplatesTable).values(newTemplate);
+        console.log(`[DB] Created CTA template: ${id}`);
+      } catch (e) {
+        console.error("DB createCtaTemplate failed:", (e as Error).message);
+      }
+    }
+    
     this.ctaTemplates.set(id, newTemplate);
     return newTemplate;
   }
 
   async deleteCtaTemplate(id: string): Promise<boolean> {
+    if (db) {
+      try {
+        await db.delete(ctaTemplatesTable).where(eq(ctaTemplatesTable.id, id));
+        console.log(`[DB] Deleted CTA template: ${id}`);
+      } catch (e) {
+        console.error("DB deleteCtaTemplate failed:", (e as Error).message);
+      }
+    }
     return this.ctaTemplates.delete(id);
   }
 
   async incrementCtaTemplateUsage(id: string): Promise<void> {
-    const template = this.ctaTemplates.get(id);
+    const template = await this.getCtaTemplate(id);
     if (template) {
-      template.usageCount = String(parseInt(template.usageCount || "0") + 1);
+      const newCount = String(parseInt(template.usageCount || "0") + 1);
+      template.usageCount = newCount;
+      
+      if (db) {
+        try {
+          await db.update(ctaTemplatesTable)
+            .set({ usageCount: newCount })
+            .where(eq(ctaTemplatesTable.id, id));
+        } catch (e) {
+          console.error("DB incrementCtaTemplateUsage failed:", (e as Error).message);
+        }
+      }
+      
       this.ctaTemplates.set(id, template);
     }
   }
