@@ -36,15 +36,23 @@ class AuthStorage implements IAuthStorage {
       trialScriptsUsed: 0,
     };
     
+    // On conflict update, preserve trial dates if they exist, or set them if missing
+    const updateData: any = {
+      ...userData,
+      updatedAt: new Date(),
+    };
+    
+    // If existing user has no trial end date, set it now (migration for legacy users)
+    if (existingUser && !existingUser.trialEndsAt) {
+      updateData.trialEndsAt = getTrialEndDate();
+    }
+    
     const [user] = await db
       .insert(users)
       .values(insertData)
       .onConflictDoUpdate({
         target: users.id,
-        set: {
-          ...userData,
-          updatedAt: new Date(),
-        },
+        set: updateData,
       })
       .returning();
     return user;
