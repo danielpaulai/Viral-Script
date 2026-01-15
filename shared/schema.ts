@@ -645,7 +645,7 @@ export const skeletonValidationRules = {
     requiresSpecificity: true,
     guidingQuestion: "What pain, frustration, or tension does the viewer recognize immediately?",
     examples: [
-      "Most people waste 3 hours daily on tasks that could be automated",
+      "Most people waste 3 hours daily on tasks they should automate",
       "You're told to 'just be confident' but no one explains how",
       "Every productivity tip ignores the real reason you procrastinate"
     ]
