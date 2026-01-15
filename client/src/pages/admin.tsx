@@ -27,6 +27,9 @@ import {
   PieChart,
   Pie,
   Cell,
+  BarChart,
+  Bar,
+  Legend,
 } from "recharts";
 import { format } from "date-fns";
 
@@ -98,6 +101,26 @@ interface AnalyticsData {
     email: string;
     username: string | null;
     scriptCount: number;
+  }>;
+  contentAnalytics?: {
+    categories: Array<{ category: string; count: number }>;
+    platforms: Array<{ platform: string; count: number }>;
+    durations: Array<{ duration: string; count: number }>;
+    tones: Array<{ tone: string; count: number }>;
+  };
+  retention?: {
+    returningUsers: number;
+    powerUsers: number;
+    superUsers: number;
+    totalActive: number;
+    returnRate: number;
+  };
+  hourlyActivity?: Array<{ hour: number; count: number }>;
+  cohorts?: Array<{
+    week: string;
+    signups: number;
+    activated: number;
+    activationRate: number;
   }>;
   generatedAt: string;
 }
@@ -733,6 +756,206 @@ export default function Admin() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Content Analytics Section */}
+      {analytics.contentAnalytics && (
+        <div className="grid gap-4 md:grid-cols-2">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base flex items-center gap-2">
+                <BarChart3 className="h-4 w-4" />
+                Content Categories
+              </CardTitle>
+              <CardDescription>Most popular script categories</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {analytics.contentAnalytics.categories.length > 0 ? (
+                <ResponsiveContainer width="100%" height={200}>
+                  <BarChart data={analytics.contentAnalytics.categories} layout="vertical">
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                    <XAxis type="number" tick={{ fontSize: 12 }} />
+                    <YAxis 
+                      dataKey="category" 
+                      type="category" 
+                      width={100} 
+                      tick={{ fontSize: 11 }}
+                      tickFormatter={(value) => value.replace(/_/g, ' ').slice(0, 15)}
+                    />
+                    <Tooltip 
+                      contentStyle={{ 
+                        backgroundColor: "hsl(var(--card))",
+                        border: "1px solid hsl(var(--border))",
+                        borderRadius: "6px",
+                      }}
+                    />
+                    <Bar dataKey="count" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="h-[200px] flex items-center justify-center text-muted-foreground">
+                  No category data yet
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base flex items-center gap-2">
+                <Activity className="h-4 w-4" />
+                Platform Preferences
+              </CardTitle>
+              <CardDescription>Scripts by target platform</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {analytics.contentAnalytics.platforms.length > 0 ? (
+                <div className="space-y-3">
+                  {analytics.contentAnalytics.platforms.map((item, index) => {
+                    const total = analytics.contentAnalytics?.platforms.reduce((sum, p) => sum + p.count, 0) || 1;
+                    const percent = Math.round((item.count / total) * 100);
+                    return (
+                      <div key={item.platform} className="space-y-1">
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="capitalize">{item.platform || 'Unknown'}</span>
+                          <span className="text-muted-foreground">{item.count} ({percent}%)</span>
+                        </div>
+                        <div className="h-2 bg-muted rounded-full overflow-hidden">
+                          <div 
+                            className="h-full bg-primary rounded-full transition-all"
+                            style={{ width: `${percent}%` }}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="h-[200px] flex items-center justify-center text-muted-foreground">
+                  No platform data yet
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Retention & Engagement */}
+      {analytics.retention && (
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <StatCard
+            title="Return Rate"
+            value={`${analytics.retention.returnRate}%`}
+            icon={TrendingUp}
+            subValue="users who came back"
+          />
+          <StatCard
+            title="Returning Users"
+            value={analytics.retention.returningUsers}
+            icon={Users}
+            subValue="2+ scripts"
+          />
+          <StatCard
+            title="Power Users"
+            value={analytics.retention.powerUsers}
+            icon={Zap}
+            subValue="5+ scripts"
+          />
+          <StatCard
+            title="Super Users"
+            value={analytics.retention.superUsers}
+            icon={Crown}
+            subValue="10+ scripts"
+          />
+        </div>
+      )}
+
+      {/* Weekly Cohorts */}
+      {analytics.cohorts && analytics.cohorts.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base flex items-center gap-2">
+              <Calendar className="h-4 w-4" />
+              Weekly Cohort Analysis
+            </CardTitle>
+            <CardDescription>User activation by signup week</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={200}>
+              <BarChart data={analytics.cohorts}>
+                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                <XAxis 
+                  dataKey="week" 
+                  tick={{ fontSize: 11 }}
+                  tickFormatter={(value) => format(new Date(value), "MMM d")}
+                />
+                <YAxis tick={{ fontSize: 12 }} />
+                <Tooltip 
+                  contentStyle={{ 
+                    backgroundColor: "hsl(var(--card))",
+                    border: "1px solid hsl(var(--border))",
+                    borderRadius: "6px",
+                  }}
+                  labelFormatter={(value) => `Week of ${format(new Date(value), "MMM d, yyyy")}`}
+                />
+                <Legend />
+                <Bar dataKey="signups" name="Signups" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="activated" name="Activated" fill="#22c55e" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+            <div className="mt-4 grid grid-cols-4 gap-2 text-center text-xs">
+              <div className="font-medium text-muted-foreground">Week</div>
+              <div className="font-medium text-muted-foreground">Signups</div>
+              <div className="font-medium text-muted-foreground">Activated</div>
+              <div className="font-medium text-muted-foreground">Rate</div>
+              {analytics.cohorts.slice(0, 4).map((cohort) => (
+                <>
+                  <div key={`${cohort.week}-date`}>{format(new Date(cohort.week), "MMM d")}</div>
+                  <div key={`${cohort.week}-signups`}>{cohort.signups}</div>
+                  <div key={`${cohort.week}-activated`}>{cohort.activated}</div>
+                  <div key={`${cohort.week}-rate`} className={cohort.activationRate >= 50 ? 'text-green-500' : cohort.activationRate >= 25 ? 'text-amber-500' : 'text-red-500'}>
+                    {cohort.activationRate}%
+                  </div>
+                </>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Hourly Activity Heatmap */}
+      {analytics.hourlyActivity && analytics.hourlyActivity.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base flex items-center gap-2">
+              <Activity className="h-4 w-4" />
+              Hourly Activity Pattern
+            </CardTitle>
+            <CardDescription>Script generation by hour (last 30 days)</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={150}>
+              <BarChart data={analytics.hourlyActivity}>
+                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                <XAxis 
+                  dataKey="hour" 
+                  tick={{ fontSize: 10 }}
+                  tickFormatter={(h) => `${h}:00`}
+                />
+                <YAxis tick={{ fontSize: 12 }} />
+                <Tooltip 
+                  contentStyle={{ 
+                    backgroundColor: "hsl(var(--card))",
+                    border: "1px solid hsl(var(--border))",
+                    borderRadius: "6px",
+                  }}
+                  labelFormatter={(h) => `${h}:00 - ${h}:59`}
+                />
+                <Bar dataKey="count" name="Scripts" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      )}
 
       <div className="text-xs text-muted-foreground text-center">
         Last updated: {format(new Date(analytics.generatedAt), "MMM d, yyyy h:mm a")}

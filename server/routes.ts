@@ -4695,12 +4695,12 @@ Create a style guide for writing scripts that sound exactly like this creator.`
         ORDER BY date ASC
       `);
       
-      // Get feature usage from user_usage table
+      // Get feature usage from user_usage table (cast TEXT to INTEGER)
       const featureUsage = await pool.query(`
         SELECT 
-          COALESCE(SUM(scripts_generated), 0) as total_scripts_tracked,
-          COALESCE(SUM(deep_research_used), 0) as deep_research_count,
-          COALESCE(SUM(knowledge_base_queries), 0) as kb_queries_count
+          COALESCE(SUM(CAST(scripts_generated AS INTEGER)), 0) as total_scripts_tracked,
+          COALESCE(SUM(CAST(deep_research_used AS INTEGER)), 0) as deep_research_count,
+          COALESCE(SUM(CAST(knowledge_base_queries AS INTEGER)), 0) as kb_queries_count
         FROM user_usage
       `);
       
@@ -4723,6 +4723,91 @@ Create a style guide for writing scripts that sound exactly like this creator.`
           FROM scripts 
           GROUP BY user_id
         ) user_scripts
+      `);
+      
+      // Get category breakdown from script parameters
+      const categoryBreakdown = await pool.query(`
+        SELECT 
+          COALESCE(parameters->>'category', 'uncategorized') as category,
+          COUNT(*) as count
+        FROM scripts
+        WHERE parameters IS NOT NULL
+        GROUP BY parameters->>'category'
+        ORDER BY count DESC
+        LIMIT 10
+      `);
+      
+      // Get platform preferences from script parameters
+      const platformBreakdown = await pool.query(`
+        SELECT 
+          COALESCE(parameters->>'platform', 'tiktok') as platform,
+          COUNT(*) as count
+        FROM scripts
+        WHERE parameters IS NOT NULL
+        GROUP BY parameters->>'platform'
+        ORDER BY count DESC
+      `);
+      
+      // Get duration preferences
+      const durationBreakdown = await pool.query(`
+        SELECT 
+          COALESCE(parameters->>'duration', '60') as duration,
+          COUNT(*) as count
+        FROM scripts
+        WHERE parameters IS NOT NULL
+        GROUP BY parameters->>'duration'
+        ORDER BY count DESC
+      `);
+      
+      // Get script tone preferences
+      const toneBreakdown = await pool.query(`
+        SELECT 
+          COALESCE(parameters->>'tone', 'professional') as tone,
+          COUNT(*) as count
+        FROM scripts
+        WHERE parameters IS NOT NULL
+        GROUP BY parameters->>'tone'
+        ORDER BY count DESC
+        LIMIT 8
+      `);
+      
+      // User retention: users who generated more than 1 script
+      const retentionStats = await pool.query(`
+        SELECT 
+          COUNT(DISTINCT CASE WHEN script_count >= 2 THEN user_id END) as returning_users,
+          COUNT(DISTINCT CASE WHEN script_count >= 5 THEN user_id END) as power_users,
+          COUNT(DISTINCT CASE WHEN script_count >= 10 THEN user_id END) as super_users,
+          COUNT(DISTINCT user_id) as total_active
+        FROM (
+          SELECT user_id, COUNT(*) as script_count 
+          FROM scripts 
+          GROUP BY user_id
+        ) user_scripts
+      `);
+      
+      // Scripts by hour of day (for usage patterns)
+      const hourlyActivity = await pool.query(`
+        SELECT 
+          EXTRACT(HOUR FROM created_at) as hour,
+          COUNT(*) as count
+        FROM scripts
+        WHERE created_at >= CURRENT_DATE - INTERVAL '30 days'
+        GROUP BY EXTRACT(HOUR FROM created_at)
+        ORDER BY hour
+      `);
+      
+      // Weekly retention cohorts (users created in each week who generated scripts)
+      const weeklyCohorts = await pool.query(`
+        SELECT 
+          DATE_TRUNC('week', u.created_at) as cohort_week,
+          COUNT(DISTINCT u.id) as users_signed_up,
+          COUNT(DISTINCT s.user_id) as users_with_scripts
+        FROM users u
+        LEFT JOIN scripts s ON u.id = s.user_id
+        WHERE u.created_at >= CURRENT_DATE - INTERVAL '8 weeks'
+        GROUP BY DATE_TRUNC('week', u.created_at)
+        ORDER BY cohort_week DESC
+        LIMIT 8
       `);
       
       // Get daily signups for the last 30 days
@@ -4922,6 +5007,49 @@ Create a style guide for writing scripts that sound exactly like this creator.`
           email: row.email,
           username: row.username,
           scriptCount: parseInt(row.script_count),
+        })),
+        // Content Analytics
+        contentAnalytics: {
+          categories: categoryBreakdown.rows.map(row => ({
+            category: row.category,
+            count: parseInt(row.count),
+          })),
+          platforms: platformBreakdown.rows.map(row => ({
+            platform: row.platform,
+            count: parseInt(row.count),
+          })),
+          durations: durationBreakdown.rows.map(row => ({
+            duration: row.duration,
+            count: parseInt(row.count),
+          })),
+          tones: toneBreakdown.rows.map(row => ({
+            tone: row.tone,
+            count: parseInt(row.count),
+          })),
+        },
+        // User Retention
+        retention: {
+          returningUsers: parseInt(retentionStats.rows[0]?.returning_users || '0'),
+          powerUsers: parseInt(retentionStats.rows[0]?.power_users || '0'),
+          superUsers: parseInt(retentionStats.rows[0]?.super_users || '0'),
+          totalActive: parseInt(retentionStats.rows[0]?.total_active || '0'),
+          returnRate: parseInt(retentionStats.rows[0]?.total_active || '0') > 0 
+            ? Math.round((parseInt(retentionStats.rows[0]?.returning_users || '0') / parseInt(retentionStats.rows[0]?.total_active || '1')) * 100)
+            : 0,
+        },
+        // Hourly activity pattern
+        hourlyActivity: hourlyActivity.rows.map(row => ({
+          hour: parseInt(row.hour),
+          count: parseInt(row.count),
+        })),
+        // Weekly cohorts
+        cohorts: weeklyCohorts.rows.map(row => ({
+          week: row.cohort_week,
+          signups: parseInt(row.users_signed_up),
+          activated: parseInt(row.users_with_scripts),
+          activationRate: parseInt(row.users_signed_up) > 0 
+            ? Math.round((parseInt(row.users_with_scripts) / parseInt(row.users_signed_up)) * 100)
+            : 0,
         })),
         generatedAt: new Date().toISOString(),
       });
