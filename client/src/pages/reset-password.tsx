@@ -11,7 +11,9 @@ import { useToast } from "@/hooks/use-toast";
 export default function ResetPassword() {
   const [, setLocation] = useLocation();
   const searchString = useSearch();
-  const token = new URLSearchParams(searchString).get("token");
+  
+  // Try to get token from query params first, then from hash fragment (Supabase format)
+  const queryToken = new URLSearchParams(searchString).get("token");
   
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -19,29 +21,54 @@ export default function ResetPassword() {
   const [isValidating, setIsValidating] = useState(true);
   const [isValidToken, setIsValidToken] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [accessToken, setAccessToken] = useState<string | null>(null);
+  const [tokenType, setTokenType] = useState<string | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
-    async function validateToken() {
-      if (!token) {
+    // Parse the hash fragment for Supabase tokens
+    // Supabase sends: #access_token=xxx&token_type=bearer&type=recovery
+    const hash = window.location.hash.substring(1);
+    if (hash) {
+      const hashParams = new URLSearchParams(hash);
+      const hashAccessToken = hashParams.get("access_token");
+      const hashType = hashParams.get("type");
+      
+      if (hashAccessToken && hashType === "recovery") {
+        setAccessToken(hashAccessToken);
+        setTokenType("supabase");
+        setIsValidToken(true);
         setIsValidating(false);
-        setIsValidToken(false);
         return;
       }
-
-      try {
-        const response = await fetch(`/api/verify-reset-token?token=${token}`);
-        const data = await response.json();
-        setIsValidToken(data.valid);
-      } catch {
-        setIsValidToken(false);
-      } finally {
-        setIsValidating(false);
-      }
     }
-
-    validateToken();
-  }, [token]);
+    
+    // Fallback: check for legacy token in query params
+    if (queryToken) {
+      validateLegacyToken(queryToken);
+    } else {
+      setIsValidating(false);
+      setIsValidToken(false);
+    }
+  }, [queryToken]);
+  
+  async function validateLegacyToken(token: string) {
+    try {
+      const response = await fetch(`/api/verify-reset-token?token=${token}`);
+      const data = await response.json();
+      if (data.valid) {
+        setAccessToken(token);
+        setTokenType("legacy");
+        setIsValidToken(true);
+      } else {
+        setIsValidToken(false);
+      }
+    } catch {
+      setIsValidToken(false);
+    } finally {
+      setIsValidating(false);
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,7 +94,23 @@ export default function ResetPassword() {
     setIsLoading(true);
 
     try {
-      await apiRequest("POST", "/api/reset-password", { token, password });
+      if (tokenType === "supabase" && accessToken) {
+        // Use the Supabase access token to update password via API
+        const response = await fetch("/api/reset-password-supabase", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ accessToken, password }),
+        });
+        
+        if (!response.ok) {
+          const data = await response.json();
+          throw new Error(data.message || "Failed to reset password");
+        }
+      } else {
+        // Legacy token flow
+        await apiRequest("POST", "/api/reset-password", { token: accessToken, password });
+      }
+      
       setIsSuccess(true);
       toast({
         title: "Success",

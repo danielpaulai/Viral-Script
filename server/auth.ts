@@ -375,8 +375,20 @@ export function setupPasswordReset(app: Express) {
         return res.status(400).json({ message: "Email is required" });
       }
 
+      // Build the correct redirect URL with https:// prefix
+      let redirectUrl = 'http://localhost:5000/reset-password';
+      if (process.env.REPLIT_DEV_DOMAIN) {
+        redirectUrl = `https://${process.env.REPLIT_DEV_DOMAIN}/reset-password`;
+      } else if (process.env.REPLIT_DOMAINS) {
+        // Use the first domain from REPLIT_DOMAINS
+        const domain = process.env.REPLIT_DOMAINS.split(',')[0];
+        redirectUrl = `https://${domain}/reset-password`;
+      }
+      
+      console.log("Password reset redirectTo:", redirectUrl);
+
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${process.env.REPLIT_DEV_DOMAIN || 'http://localhost:5000'}/reset-password`,
+        redirectTo: redirectUrl,
       });
 
       if (error) {
@@ -389,6 +401,51 @@ export function setupPasswordReset(app: Express) {
     } catch (error) {
       console.error("Password reset error:", error);
       res.status(500).json({ message: "Failed to send reset email" });
+    }
+  });
+  
+  // Handle Supabase token-based password reset
+  app.post("/api/reset-password-supabase", async (req, res) => {
+    try {
+      const { accessToken, password } = req.body;
+      
+      if (!accessToken || !password) {
+        return res.status(400).json({ message: "Access token and password are required" });
+      }
+      
+      if (password.length < 6) {
+        return res.status(400).json({ message: "Password must be at least 6 characters" });
+      }
+      
+      // Create a new Supabase client with the user's access token
+      const { createClient } = await import("@supabase/supabase-js");
+      const userSupabase = createClient(
+        process.env.SUPABASE_URL!,
+        process.env.SUPABASE_ANON_KEY!,
+        {
+          global: {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+          },
+        }
+      );
+      
+      // Update the user's password using their session
+      const { error: updateError } = await userSupabase.auth.updateUser({
+        password: password,
+      });
+      
+      if (updateError) {
+        console.error("Supabase password update error:", updateError);
+        return res.status(400).json({ message: updateError.message || "Failed to reset password" });
+      }
+      
+      console.log("Password reset successfully via Supabase");
+      res.json({ message: "Password reset successfully" });
+    } catch (error) {
+      console.error("Password reset error:", error);
+      res.status(500).json({ message: "Failed to reset password" });
     }
   });
 }
