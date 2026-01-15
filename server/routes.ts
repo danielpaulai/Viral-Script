@@ -4653,24 +4653,76 @@ Create a style guide for writing scripts that sound exactly like this creator.`
         console.error("[Admin] Could not fetch Supabase users:", supabaseError);
       }
       
-      // Get user statistics
+      // Get user statistics with proper date filtering
       const userStats = await pool.query(`
         SELECT 
           COUNT(*) as total_users,
-          COUNT(CASE WHEN created_at >= NOW() - INTERVAL '1 day' THEN 1 END) as new_today,
-          COUNT(CASE WHEN created_at >= NOW() - INTERVAL '7 days' THEN 1 END) as new_this_week,
-          COUNT(CASE WHEN created_at >= NOW() - INTERVAL '30 days' THEN 1 END) as new_this_month
+          COUNT(CASE WHEN DATE(created_at) = CURRENT_DATE THEN 1 END) as new_today,
+          COUNT(CASE WHEN created_at >= CURRENT_DATE - INTERVAL '7 days' THEN 1 END) as new_this_week,
+          COUNT(CASE WHEN created_at >= CURRENT_DATE - INTERVAL '30 days' THEN 1 END) as new_this_month,
+          COUNT(CASE WHEN DATE(created_at) = CURRENT_DATE - INTERVAL '1 day' THEN 1 END) as new_yesterday
         FROM users
       `);
       
-      // Get script statistics
+      // Get script statistics with active creators
       const scriptStats = await pool.query(`
         SELECT 
           COUNT(*) as total_scripts,
           COUNT(DISTINCT user_id) as users_with_scripts,
-          COUNT(CASE WHEN created_at >= NOW() - INTERVAL '1 day' THEN 1 END) as scripts_today,
-          COUNT(CASE WHEN created_at >= NOW() - INTERVAL '7 days' THEN 1 END) as scripts_this_week
+          COUNT(CASE WHEN DATE(created_at) = CURRENT_DATE THEN 1 END) as scripts_today,
+          COUNT(CASE WHEN created_at >= CURRENT_DATE - INTERVAL '7 days' THEN 1 END) as scripts_this_week,
+          COUNT(CASE WHEN created_at >= CURRENT_DATE - INTERVAL '30 days' THEN 1 END) as scripts_this_month
         FROM scripts
+      `);
+      
+      // Get active users (users who generated scripts in timeframes)
+      const activeUsersStats = await pool.query(`
+        SELECT 
+          COUNT(DISTINCT CASE WHEN s.created_at >= CURRENT_DATE THEN s.user_id END) as dau,
+          COUNT(DISTINCT CASE WHEN s.created_at >= CURRENT_DATE - INTERVAL '7 days' THEN s.user_id END) as wau,
+          COUNT(DISTINCT CASE WHEN s.created_at >= CURRENT_DATE - INTERVAL '30 days' THEN s.user_id END) as mau
+        FROM scripts s
+      `);
+      
+      // Get daily script generation for last 30 days
+      const dailyScripts = await pool.query(`
+        SELECT 
+          DATE(created_at) as date,
+          COUNT(*) as count
+        FROM scripts
+        WHERE created_at >= CURRENT_DATE - INTERVAL '30 days'
+        GROUP BY DATE(created_at)
+        ORDER BY date ASC
+      `);
+      
+      // Get feature usage from user_usage table
+      const featureUsage = await pool.query(`
+        SELECT 
+          COALESCE(SUM(scripts_generated), 0) as total_scripts_tracked,
+          COALESCE(SUM(deep_research_used), 0) as deep_research_count,
+          COALESCE(SUM(knowledge_base_queries), 0) as kb_queries_count
+        FROM user_usage
+      `);
+      
+      // Get conversion metrics (trial to paid)
+      const conversionStats = await pool.query(`
+        SELECT 
+          COUNT(*) FILTER (WHERE plan = 'starter' OR plan IS NULL) as trial_users,
+          COUNT(*) FILTER (WHERE plan IN ('pro', 'ultimate', 'agency')) as paid_users,
+          COUNT(*) FILTER (WHERE plan = 'admin') as admin_users,
+          COUNT(*) FILTER (WHERE trial_ends_at < NOW() AND (plan = 'starter' OR plan IS NULL)) as expired_trials
+        FROM users
+      `);
+      
+      // Get average scripts per user
+      const avgScriptsPerUser = await pool.query(`
+        SELECT 
+          ROUND(COALESCE(AVG(script_count), 0), 1) as avg_scripts
+        FROM (
+          SELECT user_id, COUNT(*) as script_count 
+          FROM scripts 
+          GROUP BY user_id
+        ) user_scripts
       `);
       
       // Get daily signups for the last 30 days
@@ -4811,6 +4863,7 @@ Create a style guide for writing scripts that sound exactly like this creator.`
           totalSupabase: supabaseUsers.length,
           supabaseOnly: supabaseOnlyUsers.length,
           newToday: parseInt(userStats.rows[0]?.new_today || '0'),
+          newYesterday: parseInt(userStats.rows[0]?.new_yesterday || '0'),
           newThisWeek: parseInt(userStats.rows[0]?.new_this_week || '0'),
           newThisMonth: parseInt(userStats.rows[0]?.new_this_month || '0'),
         },
@@ -4819,8 +4872,32 @@ Create a style guide for writing scripts that sound exactly like this creator.`
           usersWithScripts: parseInt(scriptStats.rows[0]?.users_with_scripts || '0'),
           scriptsToday: parseInt(scriptStats.rows[0]?.scripts_today || '0'),
           scriptsThisWeek: parseInt(scriptStats.rows[0]?.scripts_this_week || '0'),
+          scriptsThisMonth: parseInt(scriptStats.rows[0]?.scripts_this_month || '0'),
+          avgPerUser: parseFloat(avgScriptsPerUser.rows[0]?.avg_scripts || '0'),
+        },
+        activity: {
+          dau: parseInt(activeUsersStats.rows[0]?.dau || '0'),
+          wau: parseInt(activeUsersStats.rows[0]?.wau || '0'),
+          mau: parseInt(activeUsersStats.rows[0]?.mau || '0'),
+        },
+        conversion: {
+          trialUsers: parseInt(conversionStats.rows[0]?.trial_users || '0'),
+          paidUsers: parseInt(conversionStats.rows[0]?.paid_users || '0'),
+          adminUsers: parseInt(conversionStats.rows[0]?.admin_users || '0'),
+          expiredTrials: parseInt(conversionStats.rows[0]?.expired_trials || '0'),
+          conversionRate: (parseInt(conversionStats.rows[0]?.paid_users || '0') + parseInt(conversionStats.rows[0]?.trial_users || '0')) > 0
+            ? Math.round((parseInt(conversionStats.rows[0]?.paid_users || '0') / (parseInt(conversionStats.rows[0]?.trial_users || '0') + parseInt(conversionStats.rows[0]?.paid_users || '0'))) * 100)
+            : 0,
+        },
+        featureUsage: {
+          deepResearch: parseInt(featureUsage.rows[0]?.deep_research_count || '0'),
+          knowledgeBase: parseInt(featureUsage.rows[0]?.kb_queries_count || '0'),
         },
         dailySignups: dailySignups.rows.map(row => ({
+          date: row.date,
+          count: parseInt(row.count),
+        })),
+        dailyScripts: dailyScripts.rows.map(row => ({
           date: row.date,
           count: parseInt(row.count),
         })),

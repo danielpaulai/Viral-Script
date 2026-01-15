@@ -47,7 +47,11 @@ interface UserDetail {
 interface AnalyticsData {
   users: {
     total: number;
+    totalLocal: number;
+    totalSupabase: number;
+    supabaseOnly: number;
     newToday: number;
+    newYesterday: number;
     newThisWeek: number;
     newThisMonth: number;
   };
@@ -56,8 +60,30 @@ interface AnalyticsData {
     usersWithScripts: number;
     scriptsToday: number;
     scriptsThisWeek: number;
+    scriptsThisMonth: number;
+    avgPerUser: number;
+  };
+  activity: {
+    dau: number;
+    wau: number;
+    mau: number;
+  };
+  conversion: {
+    trialUsers: number;
+    paidUsers: number;
+    adminUsers: number;
+    expiredTrials: number;
+    conversionRate: number;
+  };
+  featureUsage: {
+    deepResearch: number;
+    knowledgeBase: number;
   };
   dailySignups: Array<{
+    date: string;
+    count: number;
+  }>;
+  dailyScripts: Array<{
     date: string;
     count: number;
   }>;
@@ -240,9 +266,18 @@ export default function Admin() {
     );
   }
 
-  const chartData = analytics.dailySignups.map(d => ({
-    date: format(new Date(d.date), "MMM d"),
-    signups: d.count,
+  // Combine signups and scripts data for chart
+  const signupsMap = new Map(analytics.dailySignups.map(d => [d.date, d.count]));
+  const scriptsMap = new Map((analytics.dailyScripts || []).map(d => [d.date, d.count]));
+  
+  // Get all unique dates
+  const allDates = new Set([...Array.from(signupsMap.keys()), ...Array.from(scriptsMap.keys())]);
+  const sortedDates = Array.from(allDates).sort();
+  
+  const chartData = sortedDates.map(date => ({
+    date: format(new Date(date), "MMM d"),
+    signups: signupsMap.get(date) || 0,
+    scripts: scriptsMap.get(date) || 0,
   }));
 
   const pieData = analytics.subscriptions.map(s => ({
@@ -279,6 +314,7 @@ export default function Admin() {
         </Badge>
       </div>
 
+      {/* Primary Metrics Row */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <StatCard
           title="Total Users"
@@ -291,7 +327,8 @@ export default function Admin() {
           title="New Today"
           value={analytics.users.newToday}
           icon={UserPlus}
-          subValue="new signups"
+          trend={analytics.users.newToday > analytics.users.newYesterday ? "up" : analytics.users.newToday < analytics.users.newYesterday ? "down" : "neutral"}
+          trendLabel={`${analytics.users.newYesterday} yesterday`}
         />
         <StatCard
           title="Scripts Generated"
@@ -302,9 +339,93 @@ export default function Admin() {
         />
         <StatCard
           title="Active Creators"
-          value={analytics.scripts.usersWithScripts}
+          value={analytics.activity?.mau || analytics.scripts.usersWithScripts}
           icon={TrendingUp}
-          subValue={`${Math.round((analytics.scripts.usersWithScripts / Math.max(analytics.users.total, 1)) * 100)}% of users`}
+          subValue={`${Math.round(((analytics.activity?.mau || analytics.scripts.usersWithScripts) / Math.max(analytics.users.total, 1)) * 100)}% of users`}
+        />
+      </div>
+
+      {/* Activity & Engagement Row */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <StatCard
+          title="Daily Active"
+          value={analytics.activity?.dau || 0}
+          icon={Activity}
+          subValue="users today"
+        />
+        <StatCard
+          title="Weekly Active"
+          value={analytics.activity?.wau || 0}
+          icon={Activity}
+          subValue="last 7 days"
+        />
+        <StatCard
+          title="Monthly Active"
+          value={analytics.activity?.mau || 0}
+          icon={Activity}
+          subValue="last 30 days"
+        />
+        <StatCard
+          title="Avg Scripts/User"
+          value={analytics.scripts.avgPerUser || 0}
+          icon={FileText}
+          subValue="among active users"
+        />
+      </div>
+
+      {/* Conversion & Revenue Row */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <StatCard
+          title="Trial Users"
+          value={analytics.conversion?.trialUsers || 0}
+          icon={Users}
+          subValue="on free trial"
+        />
+        <StatCard
+          title="Paid Users"
+          value={analytics.conversion?.paidUsers || 0}
+          icon={Crown}
+          subValue="converted"
+        />
+        <StatCard
+          title="Expired Trials"
+          value={analytics.conversion?.expiredTrials || 0}
+          icon={Calendar}
+          subValue="need follow-up"
+        />
+        <StatCard
+          title="Conversion Rate"
+          value={`${analytics.conversion?.conversionRate || 0}%`}
+          icon={TrendingUp}
+          subValue="trial to paid"
+        />
+      </div>
+
+      {/* Feature Usage Row */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <StatCard
+          title="Deep Research"
+          value={analytics.featureUsage?.deepResearch || 0}
+          icon={Zap}
+          subValue="total uses"
+        />
+        <StatCard
+          title="Knowledge Base"
+          value={analytics.featureUsage?.knowledgeBase || 0}
+          icon={FileText}
+          subValue="queries made"
+        />
+        <StatCard
+          title="Scripts Today"
+          value={analytics.scripts.scriptsToday}
+          icon={FileText}
+          subValue="generated today"
+        />
+        <StatCard
+          title="Scripts This Month"
+          value={analytics.scripts.scriptsThisMonth || 0}
+          icon={FileText}
+          subValue="last 30 days"
         />
       </div>
 
@@ -313,8 +434,9 @@ export default function Admin() {
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
               <Calendar className="h-4 w-4" />
-              User Signups (Last 30 Days)
+              Activity (Last 30 Days)
             </CardTitle>
+            <CardDescription>User signups and scripts generated</CardDescription>
           </CardHeader>
           <CardContent>
             {chartData.length > 0 ? (
@@ -324,6 +446,10 @@ export default function Admin() {
                     <linearGradient id="signupGradient" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
                       <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+                    </linearGradient>
+                    <linearGradient id="scriptsGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#22c55e" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="#22c55e" stopOpacity={0} />
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
@@ -351,15 +477,24 @@ export default function Admin() {
                   <Area
                     type="monotone"
                     dataKey="signups"
+                    name="Signups"
                     stroke="hsl(var(--primary))"
                     strokeWidth={2}
                     fill="url(#signupGradient)"
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="scripts"
+                    name="Scripts"
+                    stroke="#22c55e"
+                    strokeWidth={2}
+                    fill="url(#scriptsGradient)"
                   />
                 </AreaChart>
               </ResponsiveContainer>
             ) : (
               <div className="h-[220px] flex items-center justify-center text-muted-foreground">
-                No signup data available
+                No activity data available
               </div>
             )}
           </CardContent>
