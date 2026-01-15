@@ -239,14 +239,52 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
     });
   };
 
+  // Mutation to adapt a hook template to the user's content
+  const adaptHookMutation = useMutation({
+    mutationFn: async ({ hookId, hookTemplate, hookName }: { hookId: string; hookTemplate: string; hookName: string }) => {
+      const params = script.parameters as Record<string, unknown>;
+      const res = await apiRequest("POST", "/api/hooks/adapt", {
+        hookTemplate,
+        hookName,
+        problem: script.parameters.topic || "",
+        solution: script.parameters.targetAudience || "",
+        targetAudience: script.parameters.targetAudience || "",
+        videoPurpose: params.videoPurpose || "education",
+      });
+      return { ...(await res.json()), hookId };
+    },
+    onSuccess: (data) => {
+      setSelectedHook(data.hookId);
+      setCustomHookLine(data.adaptedHook);
+      toast({
+        title: "Hook Adapted",
+        description: `"${data.hookName}" customized to your content.`,
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Adaptation Failed",
+        description: "Couldn't personalize the hook. Using template example instead.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleHookChange = (hookId: string) => {
     const hook = viralHooks.find(h => h.id === hookId);
     if (hook) {
+      // Show loading state
       setSelectedHook(hookId);
-      setCustomHookLine(hook.example);
       toast({
-        title: "Hook Changed",
-        description: `Now using "${hook.name}" hook style.`,
+        title: "Adapting Hook",
+        description: `Customizing "${hook.name}" for your content...`,
+      });
+      
+      // Call the API to adapt the hook to the user's content
+      adaptHookMutation.mutate({
+        hookId: hook.id,
+        hookTemplate: hook.template,
+        hookName: hook.name,
       });
     }
   };
@@ -635,15 +673,28 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
                   {hookCategories.find(c => c.id === currentHook.category)?.name}
                 </Badge>
                 <span className="text-sm font-medium text-foreground">{currentHook.name}</span>
+                {adaptHookMutation.isPending && (
+                  <Badge variant="secondary" className="animate-pulse">Adapting...</Badge>
+                )}
               </div>
               <div>
                 <p className="text-xs text-muted-foreground mb-1">TEMPLATE</p>
                 <p className="text-sm text-muted-foreground italic">"{currentHook.template}"</p>
               </div>
-              <div>
-                <p className="text-xs text-muted-foreground mb-1">EXAMPLE</p>
-                <p className="text-sm text-foreground font-medium">"{currentHook.example}"</p>
-              </div>
+              {customHookLine && !adaptHookMutation.isPending && (
+                <div>
+                  <p className="text-xs text-green-400 mb-1">YOUR PERSONALIZED HOOK</p>
+                  <p className="text-sm text-foreground font-medium bg-green-500/10 p-2 rounded border border-green-500/20">
+                    "{customHookLine}"
+                  </p>
+                </div>
+              )}
+              {adaptHookMutation.isPending && (
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1">GENERATING...</p>
+                  <div className="h-8 bg-muted/50 rounded animate-pulse" />
+                </div>
+              )}
               <div>
                 <p className="text-xs text-muted-foreground mb-1">WHY IT WORKS</p>
                 <p className="text-xs text-muted-foreground">{currentHook.why}</p>
