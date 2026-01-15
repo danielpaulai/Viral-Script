@@ -216,7 +216,7 @@ export function setupAuth(app: Express) {
       }
 
       console.log("Looking up user in database:", username);
-      const user = await storage.getUserByUsername(username);
+      let user = await storage.getUserByUsername(username);
       console.log("Database user lookup result:", {
         found: !!user,
         userId: user?.id,
@@ -224,9 +224,39 @@ export function setupAuth(app: Express) {
         username: user?.username,
       });
       
+      // If Supabase auth succeeded but no local user exists, create one with trial data
+      if (!user && supabaseSuccess) {
+        console.log("Creating local user record for Supabase-authenticated user:", username);
+        const hashedPassword = await hashPassword(password);
+        user = await storage.createUser({
+          username,
+          password: hashedPassword,
+        });
+        console.log("Local user created with trial data:", user.id);
+      }
+      
       if (!user) {
         console.log("Login failed: User not found in Replit DB");
         return res.status(401).json({ message: "Invalid email or password" });
+      }
+      
+      // Ensure existing users have trial data set (backfill for older accounts)
+      if (user.trialEndsAt === null && user.plan !== 'admin') {
+        console.log("Backfilling trial data for existing user:", user.id);
+        try {
+          const { pool } = await import("./db");
+          if (pool) {
+            const trialEndsAt = new Date();
+            trialEndsAt.setDate(trialEndsAt.getDate() + 7);
+            await pool.query(
+              `UPDATE users SET trial_ends_at = $1, trial_scripts_used = COALESCE(trial_scripts_used, 0) WHERE id = $2`,
+              [trialEndsAt, user.id]
+            );
+            console.log("Trial data backfilled for user:", user.id);
+          }
+        } catch (e) {
+          console.error("Failed to backfill trial data:", e);
+        }
       }
 
       if (!supabaseSuccess) {
