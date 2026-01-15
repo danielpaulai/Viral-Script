@@ -21,6 +21,7 @@ import KnowledgeBase from "@/pages/knowledge-base";
 import Templates from "@/pages/templates";
 import Competitive from "@/pages/competitive";
 import Settings from "@/pages/settings";
+import Admin from "@/pages/admin";
 import Landing from "@/pages/landing";
 import Login from "@/pages/login";
 import ResetPassword from "@/pages/reset-password";
@@ -49,6 +50,7 @@ function AuthenticatedRouter() {
       <Route path="/knowledge-base" component={KnowledgeBase} />
       <Route path="/templates" component={Templates} />
       <Route path="/settings" component={Settings} />
+      <Route path="/admin" component={Admin} />
       <Route component={NotFound} />
     </Switch>
   );

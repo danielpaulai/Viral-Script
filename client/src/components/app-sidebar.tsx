@@ -50,6 +50,7 @@ const proNavItems = [
   { href: "/knowledge-base", label: "Knowledge Base", icon: BookOpen, isPro: true, comingSoon: true },
   { href: "/pricing", label: "Pricing", icon: CreditCard },
   { href: "/settings", label: "Settings", icon: Settings },
+  { href: "/admin", label: "Admin Analytics", icon: BarChart3, isAdmin: true },
 ];
 
 const footerNavItems = [

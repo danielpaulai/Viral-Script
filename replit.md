@@ -78,11 +78,24 @@ Script generation uses predefined catalogs:
 - **Aggregate Analytics**: Calculates avgViews, avgEngagement, dominantFormats, bestPerformingDuration
 - **Skeleton Enhancement**: Viral examples data is fed into the AI prompt to improve content skeleton quality
 
+### Admin Analytics Dashboard
+- **Admin Dashboard Page**: `/admin` - Shows platform usage and user statistics
+- **API Endpoint**: `GET /api/admin/analytics` (requires authentication)
+- **Metrics Tracked**:
+  - Total users, new signups (today/week/month)
+  - Scripts generated and active creators
+  - Subscription breakdown (trial/starter/pro/ultimate)
+  - Recent users list with tier information
+  - Most active users by script count
+  - Daily signup trends (30-day chart)
+- **Charts**: Uses Recharts for AreaChart (signups) and PieChart (subscriptions)
+- **Access Control**: Currently available to all authenticated users (TODO: add admin role check)
+
 ### Key Design Decisions
 
 **Shared Schema Pattern**: Schema definitions live in `shared/` directory, imported by both frontend and backend. This ensures type safety across the stack.
 
-**Memory-First Storage**: The `IStorage` interface with `MemStorage` implementation allows rapid development. PostgreSQL integration is configured via Drizzle ORM but storage currently uses in-memory maps.
+**Database-First Storage**: The app now uses PostgreSQL for all data persistence with memory cache synchronization for performance. All CRUD operations query the database first, then update the memory cache.
 
 **Light/Dark Theme Toggle**: The application supports both light and dark themes with a toggle in the header. Dark theme is the default, optimized for content creators who often work in low-light environments. Theme preference is persisted in localStorage.
 

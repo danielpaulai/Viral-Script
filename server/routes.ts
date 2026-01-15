@@ -4620,6 +4620,135 @@ Create a style guide for writing scripts that sound exactly like this creator.`
     }
   });
 
+  // ==========================================
+  // ADMIN ANALYTICS ENDPOINTS
+  // ==========================================
+  
+  // Admin analytics dashboard data
+  app.get("/api/admin/analytics", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.id;
+      
+      // For now, allow any authenticated user to see stats
+      // In production, you'd check for admin role
+      // TODO: Add admin role check when role system is implemented
+      
+      const db = await import("./db");
+      const pool = db.pool;
+      
+      if (!pool) {
+        return res.status(500).json({ error: "Database not available" });
+      }
+      
+      // Get user statistics
+      const userStats = await pool.query(`
+        SELECT 
+          COUNT(*) as total_users,
+          COUNT(CASE WHEN created_at >= NOW() - INTERVAL '1 day' THEN 1 END) as new_today,
+          COUNT(CASE WHEN created_at >= NOW() - INTERVAL '7 days' THEN 1 END) as new_this_week,
+          COUNT(CASE WHEN created_at >= NOW() - INTERVAL '30 days' THEN 1 END) as new_this_month
+        FROM users
+      `);
+      
+      // Get script statistics
+      const scriptStats = await pool.query(`
+        SELECT 
+          COUNT(*) as total_scripts,
+          COUNT(DISTINCT user_id) as users_with_scripts,
+          COUNT(CASE WHEN created_at >= NOW() - INTERVAL '1 day' THEN 1 END) as scripts_today,
+          COUNT(CASE WHEN created_at >= NOW() - INTERVAL '7 days' THEN 1 END) as scripts_this_week
+        FROM scripts
+      `);
+      
+      // Get daily signups for the last 30 days
+      const dailySignups = await pool.query(`
+        SELECT 
+          DATE(created_at) as date,
+          COUNT(*) as count
+        FROM users
+        WHERE created_at >= NOW() - INTERVAL '30 days'
+        GROUP BY DATE(created_at)
+        ORDER BY date ASC
+      `);
+      
+      // Get subscription breakdown
+      const subscriptionStats = await pool.query(`
+        SELECT 
+          COALESCE(subscription_tier, 'trial') as tier,
+          COUNT(*) as count
+        FROM users
+        GROUP BY COALESCE(subscription_tier, 'trial')
+      `);
+      
+      // Get recent users
+      const recentUsers = await pool.query(`
+        SELECT 
+          id, 
+          email, 
+          username, 
+          subscription_tier,
+          created_at
+        FROM users
+        ORDER BY created_at DESC
+        LIMIT 10
+      `);
+      
+      // Get top active users (by script count)
+      const activeUsers = await pool.query(`
+        SELECT 
+          u.id,
+          u.email,
+          u.username,
+          COUNT(s.id) as script_count
+        FROM users u
+        LEFT JOIN scripts s ON u.id = s.user_id
+        GROUP BY u.id, u.email, u.username
+        ORDER BY script_count DESC
+        LIMIT 10
+      `);
+      
+      res.json({
+        users: {
+          total: parseInt(userStats.rows[0]?.total_users || '0'),
+          newToday: parseInt(userStats.rows[0]?.new_today || '0'),
+          newThisWeek: parseInt(userStats.rows[0]?.new_this_week || '0'),
+          newThisMonth: parseInt(userStats.rows[0]?.new_this_month || '0'),
+        },
+        scripts: {
+          total: parseInt(scriptStats.rows[0]?.total_scripts || '0'),
+          usersWithScripts: parseInt(scriptStats.rows[0]?.users_with_scripts || '0'),
+          scriptsToday: parseInt(scriptStats.rows[0]?.scripts_today || '0'),
+          scriptsThisWeek: parseInt(scriptStats.rows[0]?.scripts_this_week || '0'),
+        },
+        dailySignups: dailySignups.rows.map(row => ({
+          date: row.date,
+          count: parseInt(row.count),
+        })),
+        subscriptions: subscriptionStats.rows.map(row => ({
+          tier: row.tier,
+          count: parseInt(row.count),
+        })),
+        recentUsers: recentUsers.rows.map(row => ({
+          id: row.id,
+          email: row.email,
+          username: row.username,
+          tier: row.subscription_tier || 'trial',
+          createdAt: row.created_at,
+        })),
+        activeUsers: activeUsers.rows.map(row => ({
+          id: row.id,
+          email: row.email,
+          username: row.username,
+          scriptCount: parseInt(row.script_count),
+        })),
+        generatedAt: new Date().toISOString(),
+      });
+    } catch (error) {
+      console.error("Admin analytics error:", error);
+      res.status(500).json({ error: "Failed to fetch analytics" });
+    }
+  });
+
   return httpServer;
 }
 
