@@ -182,18 +182,24 @@ export class MemStorage implements IStorage {
 
   async getUserByUsername(username: string): Promise<User | undefined> {
     // Try database first, fall back to memory
+    // Check both username AND email fields since users may authenticate with email
     if (db) {
       try {
-        const result = await db.select().from(users).where(eq(users.username, username));
-        if (result[0]) return result[0];
+        // First try exact username match
+        const usernameResult = await db.select().from(users).where(eq(users.username, username));
+        if (usernameResult[0]) return usernameResult[0];
+        
+        // Also try email field match (users authenticate with email)
+        const emailResult = await db.select().from(users).where(eq(users.email, username));
+        if (emailResult[0]) return emailResult[0];
       } catch (e) {
         console.log("Database query failed, using memory:", (e as Error).message);
       }
     }
-    // Check memory storage
+    // Check memory storage (both username and email)
     const memUsers = Array.from(this.usersMemory.values());
     for (const user of memUsers) {
-      if (user.username === username) return user;
+      if (user.username === username || user.email === username) return user;
     }
     return undefined;
   }
@@ -206,12 +212,18 @@ export class MemStorage implements IStorage {
     const trialEndsAt = new Date();
     trialEndsAt.setDate(trialEndsAt.getDate() + 7);
     
+    // If username looks like an email, also set the email field
+    const usernameStr = insertUser.username ?? '';
+    const isEmail = usernameStr.includes('@');
+    const emailValue: string | null = isEmail ? usernameStr : (insertUser.email ?? null);
+    
     // Try database first
     if (db) {
       try {
         const result = await db.insert(users).values({
           id,
           username: insertUser.username,
+          email: emailValue,
           password: insertUser.password,
           plan: "starter",
           planExpiresAt: null,
@@ -230,7 +242,7 @@ export class MemStorage implements IStorage {
       id,
       username: insertUser.username || null,
       password: insertUser.password || null,
-      email: null,
+      email: emailValue,
       firstName: null,
       lastName: null,
       profileImageUrl: null,
