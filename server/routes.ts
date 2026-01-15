@@ -4714,22 +4714,26 @@ Create a style guide for writing scripts that sound exactly like this creator.`
       `);
       
       // Get ALL users with detailed info for admin table (no limit)
+      // Join with scripts table to get actual script counts
       const allUsersDetailed = await pool.query(`
         SELECT 
-          id, 
-          email, 
-          username,
-          plan,
-          trial_ends_at,
-          trial_scripts_used,
-          created_at,
+          u.id, 
+          u.email, 
+          u.username,
+          u.plan,
+          u.trial_ends_at,
+          u.trial_scripts_used,
+          u.created_at,
+          COUNT(s.id) as actual_scripts_generated,
           CASE 
-            WHEN trial_ends_at IS NULL THEN 0
-            WHEN trial_ends_at < NOW() THEN 0
-            ELSE GREATEST(0, CEIL(EXTRACT(EPOCH FROM (trial_ends_at - NOW())) / 86400))
+            WHEN u.trial_ends_at IS NULL THEN 0
+            WHEN u.trial_ends_at < NOW() THEN 0
+            ELSE GREATEST(0, CEIL(EXTRACT(EPOCH FROM (u.trial_ends_at - NOW())) / 86400))
           END as trial_days_remaining
-        FROM users
-        ORDER BY created_at DESC
+        FROM users u
+        LEFT JOIN scripts s ON u.id = s.user_id
+        GROUP BY u.id, u.email, u.username, u.plan, u.trial_ends_at, u.trial_scripts_used, u.created_at
+        ORDER BY u.created_at DESC
       `);
       
       // Get top active users (by script count)
@@ -4778,14 +4782,15 @@ Create a style guide for writing scripts that sound exactly like this creator.`
           };
         });
       
-      // Format local users
+      // Format local users - use actual_scripts_generated for real count
       const localUsers = allUsersDetailed.rows.map(row => ({
         id: row.id,
         email: row.email,
         username: row.username,
         plan: row.plan || 'starter',
         tier: row.plan || 'starter',
-        scriptsUsed: parseInt(row.trial_scripts_used || '0'),
+        scriptsUsed: parseInt(row.actual_scripts_generated || row.trial_scripts_used || '0'),
+        scriptsGenerated: parseInt(row.actual_scripts_generated || '0'),
         trialDaysRemaining: Math.ceil(parseFloat(row.trial_days_remaining || '0')),
         trialEndsAt: row.trial_ends_at,
         createdAt: row.created_at,

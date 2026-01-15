@@ -37,9 +37,11 @@ interface UserDetail {
   plan: string;
   tier: string;
   scriptsUsed: number;
+  scriptsGenerated?: number;
   trialDaysRemaining: number;
   trialEndsAt: string | null;
   createdAt: string;
+  source?: string;
 }
 
 interface AnalyticsData {
@@ -504,7 +506,7 @@ export default function Admin() {
                 <tr className="border-b border-border">
                   <th className="text-left py-3 px-2 font-medium text-muted-foreground">User</th>
                   <th className="text-left py-3 px-2 font-medium text-muted-foreground">Plan</th>
-                  <th className="text-center py-3 px-2 font-medium text-muted-foreground">Scripts Used</th>
+                  <th className="text-center py-3 px-2 font-medium text-muted-foreground">Scripts</th>
                   <th className="text-center py-3 px-2 font-medium text-muted-foreground">Trial Days Left</th>
                   <th className="text-left py-3 px-2 font-medium text-muted-foreground">Joined</th>
                 </tr>
@@ -513,7 +515,7 @@ export default function Admin() {
                 {(analytics.allUsers || analytics.recentUsers).map((user) => {
                   const isTrialExpired = user.trialDaysRemaining <= 0 && user.plan === 'starter';
                   const isTrialActive = user.trialDaysRemaining > 0 && user.plan === 'starter';
-                  const isPaidPlan = user.plan === 'pro' || user.plan === 'ultimate' || user.plan === 'agency';
+                  const isPaidPlan = user.plan === 'pro' || user.plan === 'ultimate' || user.plan === 'agency' || user.plan === 'admin';
                   
                   return (
                     <tr 
@@ -547,13 +549,19 @@ export default function Admin() {
                         </Badge>
                       </td>
                       <td className="py-3 px-2 text-center">
-                        <span className={`font-mono font-medium ${
-                          user.scriptsUsed >= 20 ? 'text-red-500' :
-                          user.scriptsUsed >= 15 ? 'text-amber-500' :
-                          'text-foreground'
-                        }`}>
-                          {user.scriptsUsed}/20
-                        </span>
+                        {user.plan === 'admin' || user.plan === 'pro' || user.plan === 'ultimate' || user.plan === 'agency' ? (
+                          <span className="font-mono font-medium text-foreground">
+                            {user.scriptsUsed}
+                          </span>
+                        ) : (
+                          <span className={`font-mono font-medium ${
+                            user.scriptsUsed >= 20 ? 'text-red-500' :
+                            user.scriptsUsed >= 15 ? 'text-amber-500' :
+                            'text-foreground'
+                          }`}>
+                            {user.scriptsUsed}/20
+                          </span>
+                        )}
                       </td>
                       <td className="py-3 px-2 text-center">
                         {isPaidPlan ? (
