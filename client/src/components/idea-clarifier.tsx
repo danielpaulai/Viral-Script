@@ -1949,17 +1949,114 @@ export function IdeaClarifier({
           </div>
         </div>
 
-        {/* Clarity Score */}
-        <div className="p-4 rounded-lg bg-green-500/10 border border-green-500/30">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-green-400">Clarity Score</span>
-            <span className="text-lg font-bold text-green-400">{skeleton.clarityScore}%</span>
-          </div>
-          <Progress value={skeleton.clarityScore} className="h-2" />
-          <p className="text-xs text-green-400/80 mt-2">
-            Your script is ready to generate!
-          </p>
-        </div>
+        {/* Clarity Score with Breakdown */}
+        {(() => {
+          const scoreColor = skeleton.clarityScore >= 70 ? "green" : skeleton.clarityScore >= 50 ? "amber" : "red";
+          const scoreLabel = skeleton.clarityScore >= 70 ? "High" : skeleton.clarityScore >= 50 ? "Medium" : "Low";
+          
+          const sectionScores = [
+            { 
+              name: "Problem", 
+              icon: AlertTriangle, 
+              color: "text-red-400",
+              isValid: skeleton.problem.isValid,
+              hasContent: skeleton.problem.content.length > 0,
+              points: skeleton.problem.isValid ? 25 : (skeleton.problem.content.length > 0 ? 10 : 0),
+              tip: skeleton.problem.isValid ? null : "Be specific about the pain point. Avoid vague words like 'maybe', 'might', 'could be'."
+            },
+            { 
+              name: "Teaching", 
+              icon: Lightbulb, 
+              color: "text-green-400",
+              isValid: skeleton.solution.isValid,
+              hasContent: skeleton.solution.content.length > 0,
+              points: skeleton.solution.isValid ? 25 : (skeleton.solution.content.length > 0 ? 10 : 0),
+              tip: skeleton.solution.isValid ? null : "Expand your core insight. Write the full teaching, not just a headline."
+            },
+            { 
+              name: "Hook", 
+              icon: Sparkles, 
+              color: "text-amber-400",
+              isValid: skeleton.hook.isValid,
+              hasContent: skeleton.hook.content.length > 0,
+              points: skeleton.hook.isValid ? 25 : (skeleton.hook.content.length > 0 ? 10 : 0),
+              tip: skeleton.hook.isValid ? null : "Make it attention-grabbing. Use numbers, questions, or bold statements."
+            },
+            { 
+              name: "CTA", 
+              icon: Target, 
+              color: "text-blue-400",
+              isValid: skeleton.cta.isValid,
+              hasContent: skeleton.cta.content.length > 0,
+              points: skeleton.cta.isValid ? 25 : (skeleton.cta.content.length > 0 ? 10 : 0),
+              tip: skeleton.cta.isValid ? null : "Add a clear action. Tell viewers exactly what to do next."
+            },
+          ];
+          
+          const audienceBonus = skeleton.targetAudience.trim().length >= 10 ? 5 : 0;
+          
+          return (
+            <div className={`p-4 rounded-lg bg-${scoreColor}-500/10 border border-${scoreColor}-500/30`}>
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <span className={`text-sm font-medium text-${scoreColor}-400`}>Clarity Score</span>
+                  <Badge variant="outline" className={`text-xs border-${scoreColor}-500/50 text-${scoreColor}-400`}>
+                    {scoreLabel}
+                  </Badge>
+                </div>
+                <span className={`text-lg font-bold text-${scoreColor}-400`}>{skeleton.clarityScore}%</span>
+              </div>
+              <Progress value={skeleton.clarityScore} className="h-2 mb-3" />
+              
+              {/* How Scoring Works */}
+              <div className="space-y-2 pt-2 border-t border-border/50">
+                <p className="text-xs text-muted-foreground font-medium mb-2">Score Breakdown:</p>
+                {sectionScores.map((section) => {
+                  const IconComponent = section.icon;
+                  return (
+                    <div key={section.name} className="flex items-start gap-2">
+                      <div className="flex items-center gap-1.5 min-w-[100px]">
+                        {section.isValid ? (
+                          <Check className="w-3 h-3 text-green-400" />
+                        ) : section.hasContent ? (
+                          <AlertTriangle className="w-3 h-3 text-amber-400" />
+                        ) : (
+                          <div className="w-3 h-3 rounded-full border border-muted-foreground/50" />
+                        )}
+                        <IconComponent className={`w-3 h-3 ${section.color}`} />
+                        <span className="text-xs">{section.name}</span>
+                      </div>
+                      <span className={`text-xs font-medium ${section.isValid ? 'text-green-400' : section.hasContent ? 'text-amber-400' : 'text-muted-foreground'}`}>
+                        +{section.points}pts
+                      </span>
+                      {section.tip && (
+                        <span className="text-xs text-muted-foreground/80 flex-1">{section.tip}</span>
+                      )}
+                    </div>
+                  );
+                })}
+                {audienceBonus > 0 && (
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1.5 min-w-[100px]">
+                      <Check className="w-3 h-3 text-green-400" />
+                      <Users className="w-3 h-3 text-purple-400" />
+                      <span className="text-xs">Audience</span>
+                    </div>
+                    <span className="text-xs font-medium text-green-400">+5pts bonus</span>
+                  </div>
+                )}
+              </div>
+              
+              <p className={`text-xs text-${scoreColor}-400/80 mt-3 pt-2 border-t border-border/50`}>
+                {skeleton.clarityScore >= 70 
+                  ? "Your script is ready to generate!" 
+                  : skeleton.clarityScore >= 50
+                  ? "Almost there! Review the tips above to boost your score."
+                  : "Complete the sections above to unlock script generation."}
+              </p>
+            </div>
+          );
+        })()}
       </div>
     );
   };
