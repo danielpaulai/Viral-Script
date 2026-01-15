@@ -237,6 +237,14 @@ export function setupAuth(app: Express) {
         });
         console.log("Local user created with trial data:", user.id);
         
+        // Send welcome email to new user
+        try {
+          const { sendWelcomeEmail } = await import("./resend");
+          await sendWelcomeEmail(username, username.split('@')[0]);
+        } catch (emailError) {
+          console.error("Failed to send welcome email:", emailError);
+        }
+        
         // Link Supabase user ID to local record
         if (supabaseUserId) {
           try {

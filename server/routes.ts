@@ -2723,6 +2723,34 @@ DO NOT make up fake statistics. Use the research data provided, or clearly state
     }
   });
 
+  // Send script via email - Resend integration
+  app.post("/api/scripts/:id/email", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+      
+      const script = await storage.getScript(req.params.id, userId);
+      if (!script) {
+        return res.status(404).json({ error: "Script not found" });
+      }
+      
+      const userEmail = req.user?.email || req.user?.username;
+      if (!userEmail) {
+        return res.status(400).json({ error: "No email address available" });
+      }
+      
+      const { sendScriptEmail } = await import("./resend");
+      await sendScriptEmail(userEmail, script.title || 'Your Script', script.script);
+      
+      res.json({ success: true, message: "Script sent to your email" });
+    } catch (error) {
+      console.error("Error sending script email:", error);
+      res.status(500).json({ error: "Failed to send email" });
+    }
+  });
+
   app.get("/api/projects", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user?.id;
