@@ -30,6 +30,18 @@ import {
 } from "recharts";
 import { format } from "date-fns";
 
+interface UserDetail {
+  id: string;
+  email: string;
+  username: string | null;
+  plan: string;
+  tier: string;
+  scriptsUsed: number;
+  trialDaysRemaining: number;
+  trialEndsAt: string | null;
+  createdAt: string;
+}
+
 interface AnalyticsData {
   users: {
     total: number;
@@ -51,13 +63,8 @@ interface AnalyticsData {
     tier: string;
     count: number;
   }>;
-  recentUsers: Array<{
-    id: string;
-    email: string;
-    username: string | null;
-    tier: string;
-    createdAt: string;
-  }>;
+  recentUsers: UserDetail[];
+  allUsers: UserDetail[];
   activeUsers: Array<{
     id: string;
     email: string;
@@ -480,6 +487,109 @@ export default function Admin() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Detailed User Table */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base flex items-center gap-2">
+            <Users className="h-4 w-4" />
+            All Users - Detailed View
+          </CardTitle>
+          <CardDescription>Scripts used, trial status, and plan information</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border">
+                  <th className="text-left py-3 px-2 font-medium text-muted-foreground">User</th>
+                  <th className="text-left py-3 px-2 font-medium text-muted-foreground">Plan</th>
+                  <th className="text-center py-3 px-2 font-medium text-muted-foreground">Scripts Used</th>
+                  <th className="text-center py-3 px-2 font-medium text-muted-foreground">Trial Days Left</th>
+                  <th className="text-left py-3 px-2 font-medium text-muted-foreground">Joined</th>
+                </tr>
+              </thead>
+              <tbody>
+                {(analytics.allUsers || analytics.recentUsers).map((user) => {
+                  const isTrialExpired = user.trialDaysRemaining <= 0 && user.plan === 'starter';
+                  const isTrialActive = user.trialDaysRemaining > 0 && user.plan === 'starter';
+                  const isPaidPlan = user.plan === 'pro' || user.plan === 'ultimate' || user.plan === 'agency';
+                  
+                  return (
+                    <tr 
+                      key={user.id} 
+                      className="border-b border-border last:border-0 hover:bg-muted/50"
+                      data-testid={`detailed-user-row-${user.id}`}
+                    >
+                      <td className="py-3 px-2">
+                        <div className="flex flex-col">
+                          <span className="font-medium truncate max-w-[200px]">
+                            {user.username || user.email?.split("@")[0] || "User"}
+                          </span>
+                          <span className="text-xs text-muted-foreground truncate max-w-[200px]">
+                            {user.email}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="py-3 px-2">
+                        <Badge 
+                          variant={isPaidPlan ? "default" : "outline"}
+                          className={`text-xs ${
+                            user.plan === 'ultimate' ? 'bg-amber-500 hover:bg-amber-600' :
+                            user.plan === 'pro' ? 'bg-purple-500 hover:bg-purple-600' :
+                            user.plan === 'agency' ? 'bg-blue-500 hover:bg-blue-600' :
+                            ''
+                          }`}
+                        >
+                          {user.plan === "ultimate" && <Crown className="h-3 w-3 mr-1" />}
+                          {user.plan === "pro" && <Zap className="h-3 w-3 mr-1" />}
+                          {formatTierName(user.plan)}
+                        </Badge>
+                      </td>
+                      <td className="py-3 px-2 text-center">
+                        <span className={`font-mono font-medium ${
+                          user.scriptsUsed >= 20 ? 'text-red-500' :
+                          user.scriptsUsed >= 15 ? 'text-amber-500' :
+                          'text-foreground'
+                        }`}>
+                          {user.scriptsUsed}/20
+                        </span>
+                      </td>
+                      <td className="py-3 px-2 text-center">
+                        {isPaidPlan ? (
+                          <Badge variant="secondary" className="text-xs bg-green-500/20 text-green-400">
+                            Paid
+                          </Badge>
+                        ) : isTrialExpired ? (
+                          <Badge variant="destructive" className="text-xs">
+                            Expired
+                          </Badge>
+                        ) : isTrialActive ? (
+                          <span className={`font-mono font-medium ${
+                            user.trialDaysRemaining <= 2 ? 'text-red-500' :
+                            user.trialDaysRemaining <= 4 ? 'text-amber-500' :
+                            'text-green-500'
+                          }`}>
+                            {user.trialDaysRemaining} days
+                          </span>
+                        ) : (
+                          <span className="text-muted-foreground">-</span>
+                        )}
+                      </td>
+                      <td className="py-3 px-2 text-muted-foreground">
+                        {format(new Date(user.createdAt), "MMM d, yyyy")}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+            {(!analytics.allUsers || analytics.allUsers.length === 0) && (
+              <p className="text-sm text-muted-foreground text-center py-4">No users found</p>
+            )}
+          </div>
+        </CardContent>
+      </Card>
 
       <div className="text-xs text-muted-foreground text-center">
         Last updated: {format(new Date(analytics.generatedAt), "MMM d, yyyy h:mm a")}

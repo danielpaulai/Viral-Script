@@ -4680,17 +4680,46 @@ Create a style guide for writing scripts that sound exactly like this creator.`
         GROUP BY COALESCE(subscription_tier, 'trial')
       `);
       
-      // Get recent users
+      // Get recent users with full trial/plan details
       const recentUsers = await pool.query(`
         SELECT 
           id, 
           email, 
           username, 
+          plan,
           subscription_tier,
-          created_at
+          trial_ends_at,
+          trial_scripts_used,
+          created_at,
+          CASE 
+            WHEN trial_ends_at IS NULL THEN 0
+            WHEN trial_ends_at < NOW() THEN 0
+            ELSE GREATEST(0, EXTRACT(EPOCH FROM (trial_ends_at - NOW())) / 86400)
+          END as trial_days_remaining
         FROM users
         ORDER BY created_at DESC
         LIMIT 10
+      `);
+      
+      // Get all users with detailed info for admin table
+      const allUsersDetailed = await pool.query(`
+        SELECT 
+          id, 
+          email, 
+          username,
+          plan,
+          subscription_tier,
+          trial_ends_at,
+          trial_scripts_used,
+          created_at,
+          CASE 
+            WHEN trial_ends_at IS NULL THEN 0
+            WHEN trial_ends_at < NOW() THEN 0
+            ELSE GREATEST(0, CEIL(EXTRACT(EPOCH FROM (trial_ends_at - NOW())) / 86400))
+          END as trial_days_remaining
+        FROM users
+        ORDER BY created_at DESC
+        LIMIT 50
       `);
       
       // Get top active users (by script count)
@@ -4732,7 +4761,22 @@ Create a style guide for writing scripts that sound exactly like this creator.`
           id: row.id,
           email: row.email,
           username: row.username,
-          tier: row.subscription_tier || 'trial',
+          tier: row.subscription_tier || row.plan || 'trial',
+          plan: row.plan || 'starter',
+          scriptsUsed: parseInt(row.trial_scripts_used || '0'),
+          trialDaysRemaining: Math.ceil(parseFloat(row.trial_days_remaining || '0')),
+          trialEndsAt: row.trial_ends_at,
+          createdAt: row.created_at,
+        })),
+        allUsers: allUsersDetailed.rows.map(row => ({
+          id: row.id,
+          email: row.email,
+          username: row.username,
+          plan: row.plan || 'starter',
+          tier: row.subscription_tier || row.plan || 'trial',
+          scriptsUsed: parseInt(row.trial_scripts_used || '0'),
+          trialDaysRemaining: Math.ceil(parseFloat(row.trial_days_remaining || '0')),
+          trialEndsAt: row.trial_ends_at,
           createdAt: row.created_at,
         })),
         activeUsers: activeUsers.rows.map(row => ({
