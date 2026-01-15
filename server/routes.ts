@@ -4700,7 +4700,7 @@ Create a style guide for writing scripts that sound exactly like this creator.`
         LIMIT 10
       `);
       
-      // Get all users with detailed info for admin table
+      // Get ALL users with detailed info for admin table (no limit)
       const allUsersDetailed = await pool.query(`
         SELECT 
           id, 
@@ -4717,7 +4717,6 @@ Create a style guide for writing scripts that sound exactly like this creator.`
           END as trial_days_remaining
         FROM users
         ORDER BY created_at DESC
-        LIMIT 50
       `);
       
       // Get top active users (by script count)
