@@ -321,17 +321,23 @@ export default function Admin() {
   }
 
   // Combine signups and scripts data for chart
-  const signupsMap = new Map(analytics.dailySignups.map(d => [d.date, d.count]));
-  const scriptsMap = new Map((analytics.dailyScripts || []).map(d => [d.date, d.count]));
+  // Normalize date keys to YYYY-MM-DD format for consistent matching
+  const normalizeDate = (d: string | Date) => {
+    const date = typeof d === 'string' ? new Date(d) : d;
+    return date.toISOString().split('T')[0];
+  };
+  
+  const signupsMap = new Map(analytics.dailySignups.map(d => [normalizeDate(d.date), d.count]));
+  const scriptsMap = new Map((analytics.dailyScripts || []).map(d => [normalizeDate(d.date), d.count]));
   
   // Get all unique dates
   const allDates = new Set([...Array.from(signupsMap.keys()), ...Array.from(scriptsMap.keys())]);
   const sortedDates = Array.from(allDates).sort();
   
-  const chartData = sortedDates.map(date => ({
-    date: format(new Date(date), "MMM d"),
-    signups: signupsMap.get(date) || 0,
-    scripts: scriptsMap.get(date) || 0,
+  const chartData = sortedDates.map(dateKey => ({
+    date: format(new Date(dateKey), "MMM d"),
+    signups: signupsMap.get(dateKey) || 0,
+    scripts: scriptsMap.get(dateKey) || 0,
   }));
 
   const pieData = analytics.subscriptions.map(s => ({
@@ -404,11 +410,10 @@ export default function Admin() {
           trendLabel={`+${analytics.users.newThisWeek} this week`}
         />
         <StatCard
-          title="New Today"
-          value={analytics.users.newToday}
-          icon={UserPlus}
-          trend={analytics.users.newToday > analytics.users.newYesterday ? "up" : analytics.users.newToday < analytics.users.newYesterday ? "down" : "neutral"}
-          trendLabel={`${analytics.users.newYesterday} yesterday`}
+          title="Supabase Auth Users"
+          value={analytics.users.totalSupabase || 0}
+          icon={Cloud}
+          subValue={`${analytics.users.supabaseOnly || 0} not synced to local`}
         />
         <StatCard
           title="Scripts Generated"
@@ -425,29 +430,59 @@ export default function Admin() {
         />
       </div>
 
+      {/* New Users Row */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <StatCard
+          title="New Today"
+          value={analytics.users.newToday}
+          icon={UserPlus}
+          trend={analytics.users.newToday > analytics.users.newYesterday ? "up" : analytics.users.newToday < analytics.users.newYesterday ? "down" : "neutral"}
+          trendLabel={`${analytics.users.newYesterday} yesterday`}
+        />
+        <StatCard
+          title="New This Week"
+          value={analytics.users.newThisWeek}
+          icon={UserPlus}
+          subValue="last 7 days"
+        />
+        <StatCard
+          title="New This Month"
+          value={analytics.users.newThisMonth}
+          icon={UserPlus}
+          subValue="last 30 days"
+        />
+        <StatCard
+          title="Scripts Today"
+          value={analytics.scripts.scriptsToday}
+          icon={FileText}
+          trend="up"
+          trendLabel={`${analytics.scripts.scriptsThisWeek} this week`}
+        />
+      </div>
+
       {/* Activity & Engagement Row */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <StatCard
-          title="Daily Active"
+          title="Daily Active Users"
           value={analytics.activity?.dau || 0}
           icon={Activity}
-          subValue="users today"
+          subValue="created scripts today"
         />
         <StatCard
-          title="Weekly Active"
+          title="Weekly Active Users"
           value={analytics.activity?.wau || 0}
           icon={Activity}
           subValue="last 7 days"
         />
         <StatCard
-          title="Monthly Active"
+          title="Monthly Active Users"
           value={analytics.activity?.mau || 0}
           icon={Activity}
           subValue="last 30 days"
         />
         <StatCard
           title="Avg Scripts/User"
-          value={analytics.scripts.avgPerUser || 0}
+          value={typeof analytics.scripts.avgPerUser === 'number' ? analytics.scripts.avgPerUser.toFixed(1) : '0'}
           icon={FileText}
           subValue="among active users"
         />
@@ -964,15 +999,15 @@ export default function Admin() {
               <div className="font-medium text-muted-foreground">Signups</div>
               <div className="font-medium text-muted-foreground">Activated</div>
               <div className="font-medium text-muted-foreground">Rate</div>
-              {analytics.cohorts.slice(0, 4).map((cohort) => (
-                <>
-                  <div key={`${cohort.week}-date`}>{format(new Date(cohort.week), "MMM d")}</div>
-                  <div key={`${cohort.week}-signups`}>{cohort.signups}</div>
-                  <div key={`${cohort.week}-activated`}>{cohort.activated}</div>
-                  <div key={`${cohort.week}-rate`} className={cohort.activationRate >= 50 ? 'text-green-500' : cohort.activationRate >= 25 ? 'text-amber-500' : 'text-red-500'}>
+              {analytics.cohorts.slice(0, 4).map((cohort, index) => (
+                <div key={`cohort-${cohort.week}-${index}`} className="contents">
+                  <div>{format(new Date(cohort.week), "MMM d")}</div>
+                  <div>{cohort.signups}</div>
+                  <div>{cohort.activated}</div>
+                  <div className={cohort.activationRate >= 50 ? 'text-green-500' : cohort.activationRate >= 25 ? 'text-amber-500' : 'text-red-500'}>
                     {cohort.activationRate}%
                   </div>
-                </>
+                </div>
               ))}
             </div>
           </CardContent>
