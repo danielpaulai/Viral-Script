@@ -4640,6 +4640,19 @@ Create a style guide for writing scripts that sound exactly like this creator.`
         return res.status(500).json({ error: "Database not available" });
       }
       
+      // Also fetch users from Supabase Auth to get complete picture
+      let supabaseUsers: any[] = [];
+      try {
+        const { supabase } = await import("./supabase");
+        const { data, error } = await supabase.auth.admin.listUsers();
+        if (!error && data?.users) {
+          supabaseUsers = data.users;
+          console.log(`[Admin] Fetched ${supabaseUsers.length} users from Supabase Auth`);
+        }
+      } catch (supabaseError) {
+        console.error("[Admin] Could not fetch Supabase users:", supabaseError);
+      }
+      
       // Get user statistics
       const userStats = await pool.query(`
         SELECT 
@@ -4733,9 +4746,56 @@ Create a style guide for writing scripts that sound exactly like this creator.`
         LIMIT 10
       `);
       
+      // Merge local DB users with Supabase users (avoiding duplicates by email)
+      const localUsersMap = new Map<string, any>();
+      allUsersDetailed.rows.forEach(row => {
+        const email = row.email || row.username;
+        if (email) localUsersMap.set(email.toLowerCase(), row);
+      });
+      
+      // Add Supabase users that aren't in local DB
+      const supabaseOnlyUsers = supabaseUsers
+        .filter(su => !localUsersMap.has((su.email || '').toLowerCase()))
+        .map(su => ({
+          id: su.id,
+          email: su.email,
+          username: su.email,
+          plan: 'starter',
+          tier: 'starter',
+          scriptsUsed: 0,
+          trialDaysRemaining: 7,
+          trialEndsAt: null,
+          createdAt: su.created_at,
+          source: 'supabase',
+        }));
+      
+      // Format local users
+      const localUsers = allUsersDetailed.rows.map(row => ({
+        id: row.id,
+        email: row.email,
+        username: row.username,
+        plan: row.plan || 'starter',
+        tier: row.plan || 'starter',
+        scriptsUsed: parseInt(row.trial_scripts_used || '0'),
+        trialDaysRemaining: Math.ceil(parseFloat(row.trial_days_remaining || '0')),
+        trialEndsAt: row.trial_ends_at,
+        createdAt: row.created_at,
+        source: 'local',
+      }));
+      
+      // Combine all users
+      const combinedUsers = [...localUsers, ...supabaseOnlyUsers]
+        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      
+      // Calculate total including Supabase-only users
+      const totalUsers = parseInt(userStats.rows[0]?.total_users || '0') + supabaseOnlyUsers.length;
+      
       res.json({
         users: {
-          total: parseInt(userStats.rows[0]?.total_users || '0'),
+          total: totalUsers,
+          totalLocal: parseInt(userStats.rows[0]?.total_users || '0'),
+          totalSupabase: supabaseUsers.length,
+          supabaseOnly: supabaseOnlyUsers.length,
           newToday: parseInt(userStats.rows[0]?.new_today || '0'),
           newThisWeek: parseInt(userStats.rows[0]?.new_this_week || '0'),
           newThisMonth: parseInt(userStats.rows[0]?.new_this_month || '0'),
@@ -4765,17 +4825,7 @@ Create a style guide for writing scripts that sound exactly like this creator.`
           trialEndsAt: row.trial_ends_at,
           createdAt: row.created_at,
         })),
-        allUsers: allUsersDetailed.rows.map(row => ({
-          id: row.id,
-          email: row.email,
-          username: row.username,
-          plan: row.plan || 'starter',
-          tier: row.plan || 'starter',
-          scriptsUsed: parseInt(row.trial_scripts_used || '0'),
-          trialDaysRemaining: Math.ceil(parseFloat(row.trial_days_remaining || '0')),
-          trialEndsAt: row.trial_ends_at,
-          createdAt: row.created_at,
-        })),
+        allUsers: combinedUsers,
         activeUsers: activeUsers.rows.map(row => ({
           id: row.id,
           email: row.email,
