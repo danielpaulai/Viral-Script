@@ -67,7 +67,7 @@ Script generation uses predefined catalogs:
 - **Centralized AI Config**: All OpenAI clients use the same configuration - direct OpenAI API for both development and production
 - **Deep Research Mode**: Two-phase AI approach - first researches topic (stats, expert quotes, contrarian takes), then generates script with enhanced context
 - **Viral Examples Feature** (Pro/Ultimate only): Fetches real viral TikTok captions for inspiration, including engagement metrics, format detection, and hook type analysis
-- **Word Count Targets**: Platform/duration specific (15s: 30-45, 30s: 60-90, 60s: 120-180, 90s: 180-270, 180s: 360-540 words)
+- **Word Count Targets**: Platform/duration specific at ~2.7-3.3 words/sec speaking rate (15s: 38-50, 30s: 80-100, 60s: 160-200, 90s: 240-300, 180s: 480-600 words)
 - **Fallback**: Automatically falls back to template-based generation if AI fails
 
 ### Apify Social Media Integration
@@ -88,8 +88,20 @@ Script generation uses predefined catalogs:
   - Recent users list with tier information
   - Most active users by script count
   - Daily signup trends (30-day chart)
-- **Charts**: Uses Recharts for AreaChart (signups) and PieChart (subscriptions)
-- **Access Control**: Currently available to all authenticated users (TODO: add admin role check)
+  - Content analytics (categories, platforms, durations, tones)
+  - User retention (returning users, power users, activation rates)
+  - Hourly activity patterns and weekly cohorts
+- **Charts**: Uses Recharts for AreaChart (signups), PieChart (subscriptions), BarChart (content)
+- **Supabase Sync**: Admin-only button to sync Supabase Auth users to local DB for complete analytics
+- **Access Control**: Analytics visible to all authenticated users; sync restricted to admin plan
+
+### Hybrid Authentication System
+- **Supabase Auth**: Primary authentication provider for user registration and login
+- **Local Database**: Stores user records, subscriptions, usage data, and trial status
+- **User Sync**: When Supabase users log in, local records are created/updated with `supabase_user_id` link
+- **Shadow Users**: Admin can manually sync Supabase users who haven't logged in yet via `/api/admin/sync-supabase-users`
+- **Trial Tracking**: 7-day free trial with 20 script limit, tracked in local database
+- **Subscription Enforcement**: All subscription/usage checks use local DB records (source of truth)
 
 ### Key Design Decisions
 

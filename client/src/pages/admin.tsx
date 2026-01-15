@@ -1,7 +1,8 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 import { 
   Users, 
   FileText, 
@@ -13,9 +14,13 @@ import {
   Calendar,
   BarChart3,
   ArrowUpRight,
-  ArrowDownRight
+  ArrowDownRight,
+  RefreshCw,
+  Cloud
 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import {
   AreaChart,
   Area,
@@ -123,6 +128,7 @@ interface AnalyticsData {
     activationRate: number;
   }>;
   generatedAt: string;
+  isAdmin?: boolean;
 }
 
 const TIER_COLORS: Record<string, string> = {
@@ -209,11 +215,36 @@ function LoadingSkeleton() {
 
 export default function Admin() {
   const { isAuthenticated, isLoading: authLoading } = useAuth();
+  const { toast } = useToast();
 
-  const { data: analytics, isLoading, error } = useQuery<AnalyticsData>({
+  const { data: analytics, isLoading, error, refetch } = useQuery<AnalyticsData>({
     queryKey: ["/api/admin/analytics"],
     enabled: isAuthenticated,
     refetchInterval: 60000,
+  });
+  
+  const syncMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest("POST", "/api/admin/sync-supabase-users", {});
+      return response.json();
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Sync Complete",
+        description: `Synced ${data.stats?.synced || 0} new users from Supabase (${data.stats?.skipped || 0} already existed)`,
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/analytics"] });
+    },
+    onError: (error: any) => {
+      const message = error?.message?.includes("403") || error?.message?.includes("Admin")
+        ? "Admin access required to sync users."
+        : "Failed to sync Supabase users. Check console for details.";
+      toast({
+        title: "Sync Failed",
+        description: message,
+        variant: "destructive",
+      });
+    },
   });
 
   if (authLoading) {
@@ -323,7 +354,7 @@ export default function Admin() {
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-2">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
             <BarChart3 className="h-6 w-6" />
@@ -331,10 +362,36 @@ export default function Admin() {
           </h1>
           <p className="text-muted-foreground">Platform usage and user statistics</p>
         </div>
-        <Badge variant="outline" className="gap-1">
-          <Activity className="h-3 w-3" />
-          Live
-        </Badge>
+        <div className="flex items-center gap-2">
+          {analytics?.isAdmin && (
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => syncMutation.mutate()}
+              disabled={syncMutation.isPending}
+              data-testid="button-sync-supabase"
+            >
+              {syncMutation.isPending ? (
+                <RefreshCw className="h-4 w-4 animate-spin mr-1" />
+              ) : (
+                <Cloud className="h-4 w-4 mr-1" />
+              )}
+              Sync Supabase Users
+            </Button>
+          )}
+          <Button 
+            variant="ghost" 
+            size="icon"
+            onClick={() => refetch()}
+            data-testid="button-refresh-analytics"
+          >
+            <RefreshCw className="h-4 w-4" />
+          </Button>
+          <Badge variant="outline" className="gap-1">
+            <Activity className="h-3 w-3" />
+            Live
+          </Badge>
+        </div>
       </div>
 
       {/* Primary Metrics Row */}

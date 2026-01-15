@@ -183,6 +183,7 @@ export function setupAuth(app: Express) {
       const { username, password, rememberMe } = parsed.data;
 
       let supabaseSuccess = false;
+      let supabaseUserId: string | null = null;
       try {
         console.log("Attempting Supabase auth for:", username);
         const { data: authData, error: authError } =
@@ -200,6 +201,7 @@ export function setupAuth(app: Express) {
 
         if (!authError && authData.user) {
           supabaseSuccess = true;
+          supabaseUserId = authData.user.id;
           console.log("Login successful via Supabase:", authData.user.id);
         } else if (authError) {
           console.log("Supabase auth error details:", {
@@ -231,8 +233,40 @@ export function setupAuth(app: Express) {
         user = await storage.createUser({
           username,
           password: hashedPassword,
+          email: username,
         });
         console.log("Local user created with trial data:", user.id);
+        
+        // Link Supabase user ID to local record
+        if (supabaseUserId) {
+          try {
+            const { pool } = await import("./db");
+            if (pool) {
+              await pool.query(
+                `UPDATE users SET supabase_user_id = $1 WHERE id = $2 AND supabase_user_id IS NULL`,
+                [supabaseUserId, user.id]
+              );
+              console.log("Linked Supabase user ID to local user:", supabaseUserId);
+            }
+          } catch (e) {
+            console.error("Failed to link Supabase user ID:", e);
+          }
+        }
+      }
+      
+      // If user exists and Supabase auth succeeded, update supabase_user_id if not set
+      if (user && supabaseSuccess && supabaseUserId) {
+        try {
+          const { pool } = await import("./db");
+          if (pool) {
+            await pool.query(
+              `UPDATE users SET supabase_user_id = $1 WHERE id = $2 AND supabase_user_id IS NULL`,
+              [supabaseUserId, user.id]
+            );
+          }
+        } catch (e) {
+          console.error("Failed to update Supabase user ID:", e);
+        }
       }
       
       if (!user) {

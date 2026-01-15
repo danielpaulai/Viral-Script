@@ -26,6 +26,8 @@ export const users = pgTable("users", {
   firstName: varchar("first_name"),
   lastName: varchar("last_name"),
   profileImageUrl: varchar("profile_image_url"),
+  // Supabase auth link (for tracking Supabase-only users)
+  supabaseUserId: varchar("supabase_user_id").unique(),
   // Common fields
   plan: varchar("plan").default("starter"),
   planExpiresAt: timestamp("plan_expires_at"),

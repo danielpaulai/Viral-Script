@@ -4631,9 +4631,9 @@ Create a style guide for writing scripts that sound exactly like this creator.`
     try {
       const userId = req.user?.id;
       
-      // For now, allow any authenticated user to see stats
-      // In production, you'd check for admin role
-      // TODO: Add admin role check when role system is implemented
+      // Get the current user to check admin status
+      const currentUser = await storage.getUser(userId);
+      const isAdmin = currentUser?.plan === 'admin';
       
       const db = await import("./db");
       const pool = db.pool;
@@ -5054,10 +5054,114 @@ Create a style guide for writing scripts that sound exactly like this creator.`
             : 0,
         })),
         generatedAt: new Date().toISOString(),
+        // Include admin status for UI to show/hide admin-only features
+        isAdmin: isAdmin,
       });
     } catch (error) {
       console.error("Admin analytics error:", error);
       res.status(500).json({ error: "Failed to fetch analytics" });
+    }
+  });
+
+  // Admin endpoint to sync Supabase users to local database
+  // This creates "shadow" local records for Supabase users who haven't logged in yet
+  // RESTRICTED TO ADMIN USERS ONLY
+  app.post("/api/admin/sync-supabase-users", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.id;
+      const user = await storage.getUser(userId);
+      
+      // Security check: Only allow admin users to sync
+      if (!user) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+      
+      if (user.plan !== 'admin') {
+        console.log(`[Sync] Access denied for non-admin user: ${user.email || user.username}`);
+        return res.status(403).json({ error: "Admin access required" });
+      }
+      
+      const { supabase } = await import("./supabase");
+      const db = await import("./db");
+      const pool = db.pool;
+      
+      if (!pool) {
+        return res.status(500).json({ error: "Database not available" });
+      }
+      
+      // Fetch all users from Supabase Auth
+      const { data: supabaseData, error: supabaseError } = await supabase.auth.admin.listUsers();
+      
+      if (supabaseError || !supabaseData?.users) {
+        console.error("Failed to fetch Supabase users:", supabaseError);
+        return res.status(500).json({ error: "Failed to fetch Supabase users" });
+      }
+      
+      const supabaseUsers = supabaseData.users;
+      console.log(`[Sync] Found ${supabaseUsers.length} users in Supabase Auth`);
+      
+      let synced = 0;
+      let skipped = 0;
+      let errors = 0;
+      
+      for (const su of supabaseUsers) {
+        const email = su.email?.toLowerCase();
+        if (!email) {
+          skipped++;
+          continue;
+        }
+        
+        try {
+          // Check if user already exists in local DB by email, username, or supabase_user_id
+          const existingUser = await pool.query(
+            `SELECT id FROM users WHERE LOWER(email) = $1 OR LOWER(username) = $1 OR supabase_user_id = $2`,
+            [email, su.id]
+          );
+          
+          if (existingUser.rows.length > 0) {
+            // User exists - update supabase_user_id if not set
+            await pool.query(
+              `UPDATE users SET supabase_user_id = $1 WHERE (LOWER(email) = $2 OR LOWER(username) = $2) AND supabase_user_id IS NULL`,
+              [su.id, email]
+            );
+            skipped++;
+            continue;
+          }
+          
+          // Create new shadow user with trial data
+          const createdAt = new Date(su.created_at);
+          const trialEndsAt = new Date(createdAt.getTime() + 7 * 24 * 60 * 60 * 1000); // +7 days
+          
+          await pool.query(
+            `INSERT INTO users (id, email, username, supabase_user_id, plan, trial_ends_at, trial_scripts_used, created_at, updated_at)
+             VALUES (gen_random_uuid(), $1, $1, $2, 'starter', $3, 0, $4, NOW())
+             ON CONFLICT (email) DO UPDATE SET supabase_user_id = EXCLUDED.supabase_user_id`,
+            [email, su.id, trialEndsAt, createdAt]
+          );
+          
+          synced++;
+          console.log(`[Sync] Created shadow user for: ${email}`);
+        } catch (e) {
+          console.error(`[Sync] Error syncing user ${email}:`, e);
+          errors++;
+        }
+      }
+      
+      console.log(`[Sync] Completed: ${synced} synced, ${skipped} skipped, ${errors} errors`);
+      
+      res.json({
+        success: true,
+        message: `Synced ${synced} new users from Supabase`,
+        stats: {
+          totalSupabase: supabaseUsers.length,
+          synced,
+          skipped,
+          errors,
+        },
+      });
+    } catch (error) {
+      console.error("Sync Supabase users error:", error);
+      res.status(500).json({ error: "Failed to sync Supabase users" });
     }
   });
 
