@@ -633,12 +633,14 @@ async function generateScriptWithAI(params: ScriptParameters, knowledgeBaseDocs?
     : null;
   const finalCta = params.customCta || selectedCta || params.callToAction || "Follow for more.";
 
+  // Word targets based on ~2.5-3 words per second speaking rate for short-form video
+  // Targeting the UPPER range to fill the full duration
   const wordTargets: Record<string, { min: number; max: number }> = {
-    "15": { min: 30, max: 45 },
-    "30": { min: 60, max: 90 },
-    "60": { min: 120, max: 180 },
-    "90": { min: 180, max: 270 },
-    "180": { min: 360, max: 540 },
+    "15": { min: 38, max: 50 },      // ~2.5-3.3 words/sec
+    "30": { min: 80, max: 100 },     // ~2.7-3.3 words/sec  
+    "60": { min: 160, max: 200 },    // ~2.7-3.3 words/sec
+    "90": { min: 240, max: 300 },    // ~2.7-3.3 words/sec
+    "180": { min: 480, max: 600 },   // ~2.7-3.3 words/sec
   };
   const targetWords = wordTargets[params.duration] || wordTargets["60"];
 
@@ -988,7 +990,7 @@ ${skeleton.suggestedHooks.map((h: string) => `- "${h}"`).join('\n')}
 `;
   }
 
-  const userPrompt = `Write a ${params.duration}-second video script (aim for ${targetWords.min}-${targetWords.max} words).
+  const userPrompt = `Write a FULL ${params.duration}-second video script. You MUST write ${targetWords.min}-${targetWords.max} words to fill the entire duration. DO NOT write a shorter script - the viewer needs content for the FULL ${params.duration} seconds.
 
 ${knowledgeBaseInstructions}
 ${creatorStyleMemory || ''}
