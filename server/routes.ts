@@ -4754,20 +4754,29 @@ Create a style guide for writing scripts that sound exactly like this creator.`
       });
       
       // Add Supabase users that aren't in local DB
+      // Calculate their trial days from Supabase created_at (signup date + 7 days)
       const supabaseOnlyUsers = supabaseUsers
         .filter(su => !localUsersMap.has((su.email || '').toLowerCase()))
-        .map(su => ({
-          id: su.id,
-          email: su.email,
-          username: su.email,
-          plan: 'starter',
-          tier: 'starter',
-          scriptsUsed: 0,
-          trialDaysRemaining: 7,
-          trialEndsAt: null,
-          createdAt: su.created_at,
-          source: 'supabase',
-        }));
+        .map(su => {
+          const createdAt = new Date(su.created_at);
+          const trialEndsAt = new Date(createdAt.getTime() + 7 * 24 * 60 * 60 * 1000); // +7 days
+          const now = new Date();
+          const msRemaining = trialEndsAt.getTime() - now.getTime();
+          const daysRemaining = Math.max(0, Math.ceil(msRemaining / (24 * 60 * 60 * 1000)));
+          
+          return {
+            id: su.id,
+            email: su.email,
+            username: su.email,
+            plan: 'starter',
+            tier: 'starter',
+            scriptsUsed: 0, // No local tracking for these users yet
+            trialDaysRemaining: daysRemaining,
+            trialEndsAt: trialEndsAt.toISOString(),
+            createdAt: su.created_at,
+            source: 'supabase',
+          };
+        });
       
       // Format local users
       const localUsers = allUsersDetailed.rows.map(row => ({
