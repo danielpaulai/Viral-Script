@@ -4674,10 +4674,10 @@ Create a style guide for writing scripts that sound exactly like this creator.`
       // Get subscription breakdown
       const subscriptionStats = await pool.query(`
         SELECT 
-          COALESCE(subscription_tier, 'trial') as tier,
+          COALESCE(plan, 'starter') as tier,
           COUNT(*) as count
         FROM users
-        GROUP BY COALESCE(subscription_tier, 'trial')
+        GROUP BY COALESCE(plan, 'starter')
       `);
       
       // Get recent users with full trial/plan details
@@ -4687,7 +4687,6 @@ Create a style guide for writing scripts that sound exactly like this creator.`
           email, 
           username, 
           plan,
-          subscription_tier,
           trial_ends_at,
           trial_scripts_used,
           created_at,
@@ -4708,7 +4707,6 @@ Create a style guide for writing scripts that sound exactly like this creator.`
           email, 
           username,
           plan,
-          subscription_tier,
           trial_ends_at,
           trial_scripts_used,
           created_at,
@@ -4761,7 +4759,7 @@ Create a style guide for writing scripts that sound exactly like this creator.`
           id: row.id,
           email: row.email,
           username: row.username,
-          tier: row.subscription_tier || row.plan || 'trial',
+          tier: row.plan || 'starter',
           plan: row.plan || 'starter',
           scriptsUsed: parseInt(row.trial_scripts_used || '0'),
           trialDaysRemaining: Math.ceil(parseFloat(row.trial_days_remaining || '0')),
@@ -4773,7 +4771,7 @@ Create a style guide for writing scripts that sound exactly like this creator.`
           email: row.email,
           username: row.username,
           plan: row.plan || 'starter',
-          tier: row.subscription_tier || row.plan || 'trial',
+          tier: row.plan || 'starter',
           scriptsUsed: parseInt(row.trial_scripts_used || '0'),
           trialDaysRemaining: Math.ceil(parseFloat(row.trial_days_remaining || '0')),
           trialEndsAt: row.trial_ends_at,
