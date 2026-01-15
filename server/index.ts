@@ -247,8 +247,16 @@ app.use((req, res, next) => {
       host: "0.0.0.0",
       reusePort: true,
     },
-    () => {
+    async () => {
       log(`serving on port ${port}`);
+      
+      // Start email scheduler for trial reminders and weekly summaries
+      try {
+        const { startEmailScheduler } = await import("./email-scheduler");
+        startEmailScheduler();
+      } catch (error) {
+        console.error("Failed to start email scheduler:", error);
+      }
     },
   );
 })();

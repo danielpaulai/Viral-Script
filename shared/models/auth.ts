@@ -34,6 +34,10 @@ export const users = pgTable("users", {
   // Trial tracking - 7 days free, 20 scripts max
   trialEndsAt: timestamp("trial_ends_at"),
   trialScriptsUsed: integer("trial_scripts_used").default(0),
+  // Email tracking for scheduled notifications
+  lastTrialReminderSent: timestamp("last_trial_reminder_sent"),
+  lastTrialExpiredSent: timestamp("last_trial_expired_sent"),
+  lastWeeklySummarySent: timestamp("last_weekly_summary_sent"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

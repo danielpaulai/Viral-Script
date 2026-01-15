@@ -50,6 +50,7 @@ import {
   Target,
   History,
   Users,
+  Mail,
 } from "lucide-react";
 
 interface ScriptOutputProps {
@@ -201,6 +202,27 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
       toast({
         title: "Save Failed",
         description: "Could not save your edits. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const emailScriptMutation = useMutation({
+    mutationFn: async () => {
+      if (!script.id) throw new Error("Script must be saved first");
+      const res = await apiRequest("POST", `/api/scripts/${script.id}/email`, {});
+      return res.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Email Sent",
+        description: "Script has been sent to your email.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Email Failed",
+        description: "Could not send email. Please try again.",
         variant: "destructive",
       });
     },
@@ -1435,6 +1457,20 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
           <Save className="w-4 h-4 mr-1" />
           Save to Vault
         </Button>
+        
+        {script.id && (
+          <Button
+            onClick={() => emailScriptMutation.mutate()}
+            variant="outline"
+            size="sm"
+            disabled={emailScriptMutation.isPending}
+            className="bg-muted/50 border-border"
+            data-testid="button-email-script"
+          >
+            <Mail className="w-4 h-4 mr-1" />
+            {emailScriptMutation.isPending ? "Sending..." : "Email Script"}
+          </Button>
+        )}
         
         <Button
           onClick={() => addToProjectMutation.mutate()}

@@ -170,3 +170,64 @@ ${scriptContent}
     throw error;
   }
 }
+
+export async function sendWeeklyUsageSummaryEmail(
+  toEmail: string, 
+  userName: string,
+  stats: {
+    scriptsCreated: number;
+    topCategory: string;
+    avgWordCount: number;
+    savedToVault: number;
+  }
+) {
+  try {
+    const { client, fromEmail } = await getResendClient();
+    
+    const result = await client.emails.send({
+      from: fromEmail || 'Viral Script Writer <noreply@viralscriptwriter.com>',
+      to: toEmail,
+      subject: 'Your Weekly Viral Script Summary',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h1 style="color: #6366f1;">Your Weekly Summary</h1>
+          <p>Hi ${userName || 'there'},</p>
+          <p>Here's what you accomplished this week:</p>
+          
+          <div style="background: #f8fafc; padding: 20px; border-radius: 8px; margin: 16px 0;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+              <div>
+                <h3 style="margin: 0; color: #6366f1; font-size: 24px;">${stats.scriptsCreated}</h3>
+                <p style="margin: 4px 0 0; color: #666; font-size: 14px;">Scripts Created</p>
+              </div>
+              <div>
+                <h3 style="margin: 0; color: #6366f1; font-size: 24px;">${stats.savedToVault}</h3>
+                <p style="margin: 4px 0 0; color: #666; font-size: 14px;">Saved to Vault</p>
+              </div>
+              <div>
+                <h3 style="margin: 0; color: #6366f1; font-size: 24px;">${stats.avgWordCount}</h3>
+                <p style="margin: 4px 0 0; color: #666; font-size: 14px;">Avg Words/Script</p>
+              </div>
+              <div>
+                <h3 style="margin: 0; color: #6366f1; font-size: 24px;">${stats.topCategory || 'N/A'}</h3>
+                <p style="margin: 4px 0 0; color: #666; font-size: 14px;">Top Category</p>
+              </div>
+            </div>
+          </div>
+          
+          <p>Keep up the great work! Consistency is key to building your content empire.</p>
+          
+          <a href="https://viralscriptwriter.com" style="display: inline-block; background: #6366f1; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; margin-top: 16px;">Create New Script</a>
+          
+          <p style="margin-top: 24px; color: #666;">Keep creating!<br>The Viral Script Writer Team</p>
+        </div>
+      `
+    });
+    
+    console.log('[Resend] Weekly summary email sent to:', toEmail);
+    return result;
+  } catch (error) {
+    console.error('[Resend] Failed to send weekly summary email:', error);
+    throw error;
+  }
+}
