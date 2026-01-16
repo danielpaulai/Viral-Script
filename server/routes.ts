@@ -1,6 +1,8 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
+import { db } from "./db";
+import { sql } from "drizzle-orm";
 import { randomUUID } from "crypto";
 import OpenAI from "openai";
 import multer from "multer";
@@ -3763,8 +3765,24 @@ Create problems that are:
         await storage.updateUserStripeCustomer(userId, stripeCustomerId);
       }
       
-      // Get the Pro subscription price from Stripe products (or use env variable)
-      const priceId = process.env.STRIPE_PRO_PRICE_ID || "price_pro_monthly";
+      // Get the Pro subscription price from database (synced from Stripe)
+      // $19.99/month plan
+      if (!db) {
+        console.error("Database not initialized");
+        return res.status(500).json({ error: "Database not available" });
+      }
+      const priceResult = await db.execute(sql`
+        SELECT id FROM stripe.prices 
+        WHERE unit_amount = 1999 AND active = true 
+        ORDER BY created DESC LIMIT 1
+      `);
+      
+      if (!priceResult.rows || priceResult.rows.length === 0) {
+        console.error("No Pro Plan price found in Stripe");
+        return res.status(500).json({ error: "Subscription plan not configured" });
+      }
+      
+      const priceId = (priceResult.rows[0] as any).id;
       
       // Create checkout session with 7-day trial
       const baseUrl = req.headers.origin || `https://${req.headers.host}`;
