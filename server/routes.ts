@@ -2005,9 +2005,43 @@ Return ONLY the enhanced script with no explanations or commentary.${retryHint}`
       const avgWordsPerSentence = words.length / Math.max(1, sentences.length);
       const gradeLevel = Math.max(3, Math.min(12, 0.39 * avgWordsPerSentence + 4));
       
-      // Hook strength analysis
-      const hookPatterns = [/^stop/i, /^don't/i, /^why/i, /^how/i, /^what if/i, /\?$/, /^here's/i, /^the \d+/i, /^i\s/i, /^\d+/];
-      const hookStrength = hookPatterns.filter(p => p.test(firstLine)).length;
+      // Hook strength analysis - calculate a meaningful 0-10 score
+      const calculateHookStrength = (hook: string): number => {
+        let score = 0;
+        const hookLower = hook.toLowerCase().trim();
+        
+        // Pattern triggers (each worth 1-2 points)
+        const strongPatterns = [
+          { pattern: /^(stop|wait|don't|never)/i, points: 2 },
+          { pattern: /^(why|how|what if)/i, points: 2 },
+          { pattern: /^(i |i'm |i've |i was)/i, points: 1.5 },
+          { pattern: /^(the truth|nobody|most people)/i, points: 2 },
+          { pattern: /^(here's|this is)/i, points: 1 },
+          { pattern: /^\d+/, points: 1.5 },
+          { pattern: /\d+\s*(million|billion|k|\$|%|x)/i, points: 2 },
+          { pattern: /\?$/, points: 1 },
+        ];
+        for (const { pattern, points } of strongPatterns) {
+          if (pattern.test(hook)) score += points;
+        }
+        
+        // Length bonus (short hooks are punchier)
+        if (hookLower.length > 0 && hookLower.length <= 50) score += 1.5;
+        else if (hookLower.length <= 80) score += 0.5;
+        
+        // Emotional/power words bonus
+        const powerWords = /\b(secret|truth|mistake|never|always|best|worst|shocking|crazy|insane|genius)\b/i;
+        if (powerWords.test(hookLower)) score += 1.5;
+        
+        // Contrast/tension bonus
+        const contrastWords = /\b(but|however|instead|actually|until)\b/i;
+        if (contrastWords.test(hookLower)) score += 1;
+        
+        // Cap at 10
+        return Math.min(10, Math.round(score));
+      };
+      
+      const hookStrength = calculateHookStrength(firstLine);
       
       // Specificity analysis - count numbers and specific details
       const numberMatches = script.match(/\d+/g) || [];
@@ -2097,9 +2131,9 @@ Focus on the weak areas identified. Return ONLY the improved script.`
       const newAvgWordsPerSentence = newWords.length / Math.max(1, newSentences.length);
       const newGradeLevel = Math.max(3, Math.min(12, 0.39 * newAvgWordsPerSentence + 4));
       
-      // Calculate new hook strength
+      // Calculate new hook strength using the same scoring function
       const newFirstLine = boostedScript.split('\n')[0] || '';
-      const newHookStrength = hookPatterns.filter(p => p.test(newFirstLine)).length;
+      const newHookStrength = calculateHookStrength(newFirstLine);
       
       // Build suggestions list
       const suggestions = weakAreas.map(area => {
