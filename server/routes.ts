@@ -2053,13 +2053,13 @@ Return ONLY the enhanced script with no explanations or commentary.${retryHint}`
       const engagementPatterns = [/\byou\b/i, /\byour\b/i, /\bbecause\b/i, /\bnow\b/i, /\btoday\b/i];
       const engagementMatches = engagementPatterns.filter(p => p.test(scriptLower)).length;
       
-      // Identify weak areas
+      // Identify weak areas - MORE AGGRESSIVE thresholds for stronger improvements
       const weakAreas: string[] = [];
-      if (gradeLevel > 6) weakAreas.push("reading_level");
-      if (hookStrength < 2) weakAreas.push("hook");
-      if (specificityScore < 15) weakAreas.push("specificity");
-      if (engagementMatches < 3) weakAreas.push("engagement");
-      if (avgWordsPerSentence > 12) weakAreas.push("sentence_length");
+      if (gradeLevel > 5) weakAreas.push("reading_level"); // Lowered from 6 to 5
+      if (hookStrength < 6) weakAreas.push("hook"); // Raised from 2 to 6 - always try to improve hooks
+      if (specificityScore < 20) weakAreas.push("specificity"); // Raised from 15 to 20
+      if (engagementMatches < 4) weakAreas.push("engagement"); // Raised from 3 to 4
+      if (avgWordsPerSentence > 10) weakAreas.push("sentence_length"); // Lowered from 12 to 10
       
       // Build viral examples context for the AI
       let viralContext = "";
@@ -2073,56 +2073,95 @@ Avg engagement: ${viralExamples.avgEngagement}%
 `;
       }
       
-      // Build improvement instructions based on weak areas
+      // Build improvement instructions based on weak areas - MORE AGGRESSIVE improvements
       const improvementInstructions: string[] = [];
       if (weakAreas.includes("reading_level")) {
-        improvementInstructions.push("SIMPLIFY LANGUAGE: Use grade 3 reading level. Replace complex words with simple ones. Max 8 words per sentence.");
+        improvementInstructions.push(`SIMPLIFY LANGUAGE AGGRESSIVELY:
+- Target 4th-5th grade reading level (current: grade ${gradeLevel.toFixed(1)})
+- Replace ALL multi-syllable words with simple alternatives
+- "Utilize" → "use", "Implement" → "do", "Significant" → "big"
+- Max 6-8 words per sentence
+- One syllable words are KING`);
       }
       if (weakAreas.includes("hook")) {
-        improvementInstructions.push("STRENGTHEN HOOK: The first line must stop the scroll. Use a contrarian take, shocking stat, or direct question. Make it impossible to ignore.");
+        improvementInstructions.push(`COMPLETELY REWRITE THE HOOK (current strength: ${hookStrength}/10):
+- First 3 seconds decide everything - make them IMPOSSIBLE to skip
+- Use ONE of these proven patterns:
+  * STOP pattern: "Stop [doing X]..." or "Wait, [shocking statement]"
+  * DIRECT ATTACK: "You're doing [X] wrong" or "Nobody tells you this about [X]"
+  * SHOCKING STAT: "97% of people [fail at X]" or "[Number] that changed everything"
+  * CONTRARIAN: "Unpopular opinion:" or "I'm gonna get hate for this but..."
+  * STORY OPEN: "I was [doing X] when..." or "Last week I [discovered X]"
+- Hook MUST create a curiosity gap or emotional reaction
+- Sound like a REAL person talking, not a headline`);
       }
       if (weakAreas.includes("specificity")) {
-        improvementInstructions.push("ADD SPECIFICS: Include exact numbers, real examples, and concrete details. Replace vague claims with precise data.");
+        improvementInstructions.push(`ADD HARD-HITTING SPECIFICS:
+- Replace "a lot" with exact numbers: "47 people", "$2,340", "3 days"
+- Add timeframes: "in 14 days", "took me 6 months", "in just 2 hours"
+- Include real examples: names, places, specific situations
+- Credibility boosters: "after testing 100 times", "from 500 interviews"`);
       }
       if (weakAreas.includes("engagement")) {
-        improvementInstructions.push("BOOST ENGAGEMENT: Add more 'you' and 'your'. Create curiosity gaps. Add pattern interrupts.");
+        improvementInstructions.push(`MAXIMIZE VIEWER CONNECTION:
+- Add "you" at least 5 times - make it about THEM
+- Create micro-hooks: "Here's the thing..." "But here's what nobody tells you..."
+- Add pattern interrupts every 2-3 sentences
+- Rhetorical questions: "You know what happened?" "Wanna know why?"
+- Direct challenges: "Try this right now" "Watch what happens"`);
       }
       if (weakAreas.includes("sentence_length")) {
-        improvementInstructions.push("SHORTEN SENTENCES: Break long sentences into 2-3 shorter ones. One idea per sentence. Faster rhythm.");
+        improvementInstructions.push(`CHOP SENTENCES RUTHLESSLY:
+- Current avg: ${avgWordsPerSentence.toFixed(0)} words - TARGET: 6-8 words max
+- One idea per sentence. Period.
+- Use fragments for impact. Like this. Boom.
+- Vary rhythm: short. Short. Then slightly longer to explain.`);
       }
       
       const response = await openai.chat.completions.create({
-        model: "gpt-4o-mini",
+        model: "gpt-4o", // Upgraded from gpt-4o-mini for stronger improvements
         messages: [
           {
             role: "system",
-            content: `You are a viral content optimization expert. Your job is to boost the virality score of scripts.
+            content: `You are an ELITE viral content optimizer who has studied 10,000+ viral TikTok/Reels/Shorts. Your improvements are AGGRESSIVE and TRANSFORMATIVE.
 
-CRITICAL RULES:
-1. KEEP THE EXACT SAME CTA - Do NOT change the call-to-action section at all
-2. KEEP THE SAME STRUCTURE - Maintain HOOK, BODY, CTA format
-3. KEEP SIMILAR LENGTH - Stay within 15% of original word count
-4. SOUND HUMAN - Write like a real person, not an AI
-5. NO AI WORDS: Never use leverage, unlock, dive into, game-changing, elevate, empower, unlock, transform
+IDENTITY: You write like Mr. Beast's scriptwriters + Alex Hormozi's directness + Gary Vee's energy.
+
+CORE RULES:
+1. KEEP THE CTA - The call-to-action stays the same
+2. KEEP THE STRUCTURE - Hook → Body → CTA format
+3. KEEP SIMILAR LENGTH - Within 20% of original
+4. SOUND LIKE A REAL HUMAN - Casual, direct, conversational
+5. BANNED WORDS: leverage, unlock, dive into, game-changing, elevate, empower, transform, utilize, implement, journey, delve
+
+VIRAL PSYCHOLOGY TO APPLY:
+- Pattern interrupts every 2-3 sentences (change pace, ask question, drop surprising fact)
+- Open loops - hint at something coming, deliver later
+- Specificity = believability (exact numbers, real examples)
+- Emotional contrast (pain → solution → transformation)
+- "You" is the most powerful word - use it constantly
 
 ${viralContext}
 
-SPECIFIC IMPROVEMENTS NEEDED:
+=== MANDATORY IMPROVEMENTS ===
 ${improvementInstructions.join('\n\n')}
 
-Return ONLY the improved script with no explanations.`
+BE BOLD. BE AGGRESSIVE. MAKE THIS SCRIPT IMPOSSIBLE TO SCROLL PAST.
+
+Return ONLY the improved script. No explanations.`
           },
           {
             role: "user",
-            content: `Boost the virality of this script:
+            content: `ORIGINAL SCRIPT TO TRANSFORM:
 
 ${script}
 
-Focus on the weak areas identified. Return ONLY the improved script.`
+Apply ALL the improvements aggressively. Make this script 10x more viral.
+Return ONLY the improved script.`
           }
         ],
         max_tokens: 1500,
-        temperature: 0.7,
+        temperature: 0.8, // Slightly higher for more creative rewrites
       });
       
       const boostedScript = response.choices[0]?.message?.content || script;
