@@ -34,6 +34,13 @@ export const users = pgTable("users", {
   // Trial tracking - 7 days free, 20 scripts max
   trialEndsAt: timestamp("trial_ends_at"),
   trialScriptsUsed: integer("trial_scripts_used").default(0),
+  // Stripe subscription fields
+  stripeCustomerId: varchar("stripe_customer_id").unique(),
+  stripeSubscriptionId: varchar("stripe_subscription_id"),
+  stripePriceId: varchar("stripe_price_id"),
+  subscriptionStatus: varchar("subscription_status"), // active, trialing, canceled, past_due, etc.
+  currentPeriodEnd: timestamp("current_period_end"),
+  cancelAtPeriodEnd: integer("cancel_at_period_end").default(0), // 0 = false, 1 = true
   // Email tracking for scheduled notifications
   lastTrialReminderSent: timestamp("last_trial_reminder_sent"),
   lastTrialExpiredSent: timestamp("last_trial_expired_sent"),

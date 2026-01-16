@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -20,11 +20,16 @@ import {
   ArrowUpRight,
   Calendar,
   Loader2,
-  LogIn
+  LogIn,
+  AlertTriangle,
+  XCircle,
+  RefreshCw
 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { pricingTiers } from "@shared/schema";
 import { Link } from "wouter";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 
 interface UsageData {
   scriptsGenerated: number | string;
@@ -41,8 +46,19 @@ interface SubscriptionData {
   currentPeriodEnd: string | null;
 }
 
+interface BillingStatus {
+  hasSubscription: boolean;
+  status: string | null;
+  plan: string;
+  currentPeriodEnd: string | null;
+  cancelAtPeriodEnd: boolean;
+  trialEndsAt: string | null;
+  isTrialing: boolean;
+}
+
 export default function Settings() {
   const { user, isLoading: authLoading, isAuthenticated, logoutMutation } = useAuth();
+  const { toast } = useToast();
 
   const handleLogout = () => {
     logoutMutation.mutate(undefined, {
@@ -60,6 +76,71 @@ export default function Settings() {
   const { data: subscription, isLoading: subLoading } = useQuery<SubscriptionData>({
     queryKey: ["/api/user/subscription"],
     enabled: isAuthenticated,
+  });
+
+  const { data: billingStatus, isLoading: billingLoading } = useQuery<BillingStatus>({
+    queryKey: ["/api/billing/status"],
+    enabled: isAuthenticated,
+  });
+
+  const startSubscriptionMutation = useMutation({
+    mutationFn: async () => {
+      const res = await apiRequest("POST", "/api/billing/create-checkout");
+      return res.json();
+    },
+    onSuccess: (data) => {
+      if (data.url) {
+        window.location.href = data.url;
+      }
+    },
+    onError: () => {
+      toast({ title: "Error", description: "Failed to start subscription checkout", variant: "destructive" });
+    },
+  });
+
+  const cancelSubscriptionMutation = useMutation({
+    mutationFn: async () => {
+      const res = await apiRequest("POST", "/api/billing/cancel-subscription");
+      return res.json();
+    },
+    onSuccess: () => {
+      toast({ title: "Subscription Cancelled", description: "Your subscription will end at the current billing period" });
+      queryClient.invalidateQueries({ queryKey: ["/api/billing/status"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/user/subscription"] });
+    },
+    onError: () => {
+      toast({ title: "Error", description: "Failed to cancel subscription", variant: "destructive" });
+    },
+  });
+
+  const resumeSubscriptionMutation = useMutation({
+    mutationFn: async () => {
+      const res = await apiRequest("POST", "/api/billing/resume-subscription");
+      return res.json();
+    },
+    onSuccess: () => {
+      toast({ title: "Subscription Resumed", description: "Your subscription has been reactivated" });
+      queryClient.invalidateQueries({ queryKey: ["/api/billing/status"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/user/subscription"] });
+    },
+    onError: () => {
+      toast({ title: "Error", description: "Failed to resume subscription", variant: "destructive" });
+    },
+  });
+
+  const openBillingPortalMutation = useMutation({
+    mutationFn: async () => {
+      const res = await apiRequest("POST", "/api/billing/portal");
+      return res.json();
+    },
+    onSuccess: (data) => {
+      if (data.url) {
+        window.location.href = data.url;
+      }
+    },
+    onError: () => {
+      toast({ title: "Error", description: "Failed to open billing portal", variant: "destructive" });
+    },
   });
 
   if (authLoading) {
@@ -217,67 +298,168 @@ export default function Settings() {
                     <CardTitle>Current Plan</CardTitle>
                     <CardDescription>Your subscription details</CardDescription>
                   </div>
-                  <Badge variant={subscription?.status === "active" ? "default" : "secondary"}>
-                    {subscription?.status || "Active"}
-                  </Badge>
+                  <div className="flex items-center gap-2">
+                    {billingStatus?.isTrialing && (
+                      <Badge variant="outline" className="border-yellow-500 text-yellow-500">
+                        Trial
+                      </Badge>
+                    )}
+                    {billingStatus?.cancelAtPeriodEnd && (
+                      <Badge variant="destructive">
+                        Cancelling
+                      </Badge>
+                    )}
+                    <Badge variant={billingStatus?.status === "active" || billingStatus?.status === "trialing" ? "default" : "secondary"}>
+                      {billingStatus?.status || subscription?.status || "Active"}
+                    </Badge>
+                  </div>
                 </div>
               </CardHeader>
               <CardContent className="space-y-6">
-                <div className="flex items-center gap-4 p-4 rounded-lg bg-muted/50">
-                  <div className="p-3 rounded-full bg-primary/10">
-                    <PlanIcon className="w-6 h-6 text-primary" />
+                {billingLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader2 className="w-5 h-5 animate-spin" />
                   </div>
-                  <div className="flex-1">
-                    <p className="font-semibold text-lg" data-testid="text-current-plan">
-                      {currentPlan.name}
-                    </p>
-                    <p className="text-muted-foreground text-sm">{currentPlan.description}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-bold text-2xl" data-testid="text-plan-price">${currentPlan.price}</p>
-                    <p className="text-muted-foreground text-sm">/{subscription?.billingCycle || "month"}</p>
-                  </div>
-                </div>
+                ) : (
+                  <>
+                    <div className="flex items-center gap-4 p-4 rounded-lg bg-muted/50">
+                      <div className="p-3 rounded-full bg-primary/10">
+                        <PlanIcon className="w-6 h-6 text-primary" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-semibold text-lg" data-testid="text-current-plan">
+                          {currentPlan.name}
+                        </p>
+                        <p className="text-muted-foreground text-sm">{currentPlan.description}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-bold text-2xl" data-testid="text-plan-price">${currentPlan.price}</p>
+                        <p className="text-muted-foreground text-sm">/{subscription?.billingCycle || "month"}</p>
+                      </div>
+                    </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Billing Cycle</p>
-                    <p className="font-medium capitalize">{subscription?.billingCycle || "Monthly"}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Next Billing Date</p>
-                    <p className="font-medium">{formatDate(subscription?.currentPeriodEnd || null)}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Current Period Started</p>
-                    <p className="font-medium">{formatDate(subscription?.currentPeriodStart || null)}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Status</p>
-                    <p className="font-medium capitalize">{subscription?.status || "Active"}</p>
-                  </div>
-                </div>
+                    {billingStatus?.isTrialing && billingStatus?.trialEndsAt && (
+                      <div className="p-4 rounded-lg bg-yellow-500/10 border border-yellow-500/20">
+                        <div className="flex items-center gap-2 text-yellow-600 dark:text-yellow-400">
+                          <AlertTriangle className="w-5 h-5" />
+                          <p className="font-medium">Free Trial Active</p>
+                        </div>
+                        <p className="text-sm text-muted-foreground mt-1">
+                          Your 7-day free trial ends on {formatDate(billingStatus.trialEndsAt)}. 
+                          You'll be charged $19.99/month after the trial ends.
+                        </p>
+                      </div>
+                    )}
 
-                <Separator />
+                    {billingStatus?.cancelAtPeriodEnd && billingStatus?.currentPeriodEnd && (
+                      <div className="p-4 rounded-lg bg-red-500/10 border border-red-500/20">
+                        <div className="flex items-center gap-2 text-red-600 dark:text-red-400">
+                          <XCircle className="w-5 h-5" />
+                          <p className="font-medium">Subscription Ending</p>
+                        </div>
+                        <p className="text-sm text-muted-foreground mt-1">
+                          Your subscription will end on {formatDate(billingStatus.currentPeriodEnd)}. 
+                          You can resume your subscription before this date.
+                        </p>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="mt-3"
+                          onClick={() => resumeSubscriptionMutation.mutate()}
+                          disabled={resumeSubscriptionMutation.isPending}
+                          data-testid="button-resume-subscription"
+                        >
+                          {resumeSubscriptionMutation.isPending ? (
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          ) : (
+                            <RefreshCw className="w-4 h-4 mr-2" />
+                          )}
+                          Resume Subscription
+                        </Button>
+                      </div>
+                    )}
 
-                <div className="flex flex-wrap gap-3">
-                  {currentPlan.id !== "ultimate" && (
-                    <Link href="/pricing">
-                      <Button data-testid="button-upgrade-plan">
-                        <ArrowUpRight className="w-4 h-4 mr-2" />
-                        Upgrade Plan
-                      </Button>
-                    </Link>
-                  )}
-                  <Button variant="outline" data-testid="button-manage-billing">
-                    <CreditCard className="w-4 h-4 mr-2" />
-                    Manage Billing
-                  </Button>
-                  <Button variant="outline" data-testid="button-change-cycle">
-                    <Calendar className="w-4 h-4 mr-2" />
-                    Change Billing Cycle
-                  </Button>
-                </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-sm text-muted-foreground">Billing Cycle</p>
+                        <p className="font-medium capitalize">{subscription?.billingCycle || "Monthly"}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">Next Billing Date</p>
+                        <p className="font-medium">{formatDate(billingStatus?.currentPeriodEnd || subscription?.currentPeriodEnd || null)}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">Current Period Started</p>
+                        <p className="font-medium">{formatDate(subscription?.currentPeriodStart || null)}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">Status</p>
+                        <p className="font-medium capitalize">{billingStatus?.status || subscription?.status || "Active"}</p>
+                      </div>
+                    </div>
+
+                    <Separator />
+
+                    <div className="flex flex-wrap gap-3">
+                      {!billingStatus?.hasSubscription && (
+                        <Button 
+                          onClick={() => startSubscriptionMutation.mutate()}
+                          disabled={startSubscriptionMutation.isPending}
+                          className="bg-gradient-to-r from-primary to-purple-600"
+                          data-testid="button-start-subscription"
+                        >
+                          {startSubscriptionMutation.isPending ? (
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          ) : (
+                            <Crown className="w-4 h-4 mr-2" />
+                          )}
+                          Start Pro Subscription - 7 Day Free Trial
+                        </Button>
+                      )}
+                      
+                      {billingStatus?.hasSubscription && !billingStatus?.cancelAtPeriodEnd && (
+                        <>
+                          <Button 
+                            variant="outline" 
+                            onClick={() => openBillingPortalMutation.mutate()}
+                            disabled={openBillingPortalMutation.isPending}
+                            data-testid="button-manage-billing"
+                          >
+                            {openBillingPortalMutation.isPending ? (
+                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            ) : (
+                              <CreditCard className="w-4 h-4 mr-2" />
+                            )}
+                            Manage Billing
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            className="text-red-500 hover:text-red-600 border-red-500/30 hover:border-red-500/50"
+                            onClick={() => cancelSubscriptionMutation.mutate()}
+                            disabled={cancelSubscriptionMutation.isPending}
+                            data-testid="button-cancel-subscription"
+                          >
+                            {cancelSubscriptionMutation.isPending ? (
+                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            ) : (
+                              <XCircle className="w-4 h-4 mr-2" />
+                            )}
+                            Cancel Subscription
+                          </Button>
+                        </>
+                      )}
+                      
+                      {currentPlan.id !== "ultimate" && billingStatus?.hasSubscription && (
+                        <Link href="/pricing">
+                          <Button variant="outline" data-testid="button-upgrade-plan">
+                            <ArrowUpRight className="w-4 h-4 mr-2" />
+                            Upgrade Plan
+                          </Button>
+                        </Link>
+                      )}
+                    </div>
+                  </>
+                )}
               </CardContent>
             </Card>
 

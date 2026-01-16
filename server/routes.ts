@@ -3728,6 +3728,186 @@ Create problems that are:
     }
   });
 
+  // Create Stripe Checkout Session for subscription with 7-day trial
+  app.post("/api/billing/create-checkout", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({ error: "User not found" });
+      }
+      
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      
+      // Check if user already has an active subscription
+      if (user.stripeSubscriptionId && (user.subscriptionStatus === 'active' || user.subscriptionStatus === 'trialing')) {
+        return res.status(400).json({ 
+          error: "You already have an active subscription",
+          hasActiveSubscription: true
+        });
+      }
+      
+      // Import Stripe service
+      const { stripeService } = await import("./stripeService");
+      
+      // Get or create Stripe customer
+      let stripeCustomerId = user.stripeCustomerId;
+      if (!stripeCustomerId) {
+        const email = user.email || user.username || `user-${userId}@viralscript.app`;
+        const customer = await stripeService.createCustomer(email, userId);
+        stripeCustomerId = customer.id;
+        
+        // Update user with Stripe customer ID
+        await storage.updateUserStripeCustomer(userId, stripeCustomerId);
+      }
+      
+      // Get the Pro subscription price from Stripe products (or use env variable)
+      const priceId = process.env.STRIPE_PRO_PRICE_ID || "price_pro_monthly";
+      
+      // Create checkout session with 7-day trial
+      const baseUrl = req.headers.origin || `https://${req.headers.host}`;
+      const session = await stripeService.createCheckoutSession(
+        stripeCustomerId,
+        priceId,
+        `${baseUrl}/?subscription=success`,
+        `${baseUrl}/?subscription=cancelled`,
+        7 // 7-day trial
+      );
+      
+      res.json({ url: session.url });
+    } catch (error) {
+      console.error("Error creating checkout session:", error);
+      res.status(500).json({ error: "Failed to create checkout session" });
+    }
+  });
+
+  // Cancel Subscription
+  app.post("/api/billing/cancel-subscription", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({ error: "User not found" });
+      }
+      
+      const user = await storage.getUser(userId);
+      if (!user || !user.stripeSubscriptionId) {
+        return res.status(400).json({ error: "No active subscription found" });
+      }
+      
+      // Import Stripe client
+      const { getUncachableStripeClient } = await import("./stripeClient");
+      const stripe = await getUncachableStripeClient();
+      
+      // Cancel at end of period (not immediately)
+      await stripe.subscriptions.update(user.stripeSubscriptionId, {
+        cancel_at_period_end: true,
+      });
+      
+      // Update local database
+      await storage.updateUserSubscription(userId, {
+        cancelAtPeriodEnd: 1,
+      });
+      
+      res.json({ success: true, message: "Subscription will cancel at end of billing period" });
+    } catch (error) {
+      console.error("Error cancelling subscription:", error);
+      res.status(500).json({ error: "Failed to cancel subscription" });
+    }
+  });
+
+  // Resume/Reactivate Subscription (undo cancel)
+  app.post("/api/billing/resume-subscription", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({ error: "User not found" });
+      }
+      
+      const user = await storage.getUser(userId);
+      if (!user || !user.stripeSubscriptionId) {
+        return res.status(400).json({ error: "No subscription found" });
+      }
+      
+      // Import Stripe client
+      const { getUncachableStripeClient } = await import("./stripeClient");
+      const stripe = await getUncachableStripeClient();
+      
+      // Resume subscription
+      await stripe.subscriptions.update(user.stripeSubscriptionId, {
+        cancel_at_period_end: false,
+      });
+      
+      // Update local database
+      await storage.updateUserSubscription(userId, {
+        cancelAtPeriodEnd: 0,
+      });
+      
+      res.json({ success: true, message: "Subscription resumed" });
+    } catch (error) {
+      console.error("Error resuming subscription:", error);
+      res.status(500).json({ error: "Failed to resume subscription" });
+    }
+  });
+
+  // Get Stripe Customer Portal URL
+  app.post("/api/billing/portal", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({ error: "User not found" });
+      }
+      
+      const user = await storage.getUser(userId);
+      if (!user || !user.stripeCustomerId) {
+        return res.status(400).json({ error: "No billing account found" });
+      }
+      
+      // Import Stripe service
+      const { stripeService } = await import("./stripeService");
+      
+      const baseUrl = req.headers.origin || `https://${req.headers.host}`;
+      const session = await stripeService.createCustomerPortalSession(
+        user.stripeCustomerId,
+        `${baseUrl}/settings`
+      );
+      
+      res.json({ url: session.url });
+    } catch (error) {
+      console.error("Error creating portal session:", error);
+      res.status(500).json({ error: "Failed to create billing portal session" });
+    }
+  });
+
+  // Get Billing Status
+  app.get("/api/billing/status", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({ error: "User not found" });
+      }
+      
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      
+      res.json({
+        hasSubscription: !!user.stripeSubscriptionId,
+        status: user.subscriptionStatus || null,
+        plan: user.plan || "starter",
+        currentPeriodEnd: user.currentPeriodEnd || null,
+        cancelAtPeriodEnd: user.cancelAtPeriodEnd === 1,
+        trialEndsAt: user.trialEndsAt || null,
+        isTrialing: user.subscriptionStatus === "trialing",
+      });
+    } catch (error) {
+      console.error("Error fetching billing status:", error);
+      res.status(500).json({ error: "Failed to fetch billing status" });
+    }
+  });
+
   // Trial Status endpoint
   app.get("/api/user/trial-status", isAuthenticated, async (req: any, res) => {
     try {

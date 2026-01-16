@@ -48,6 +48,9 @@ export interface IStorage {
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: UpsertUser): Promise<User>;
   updateUserPlan(userId: string, plan: string): Promise<User | undefined>;
+  updateUserStripeCustomer(userId: string, stripeCustomerId: string): Promise<User | undefined>;
+  updateUserSubscription(userId: string, data: { stripeSubscriptionId?: string; stripePriceId?: string; subscriptionStatus?: string; currentPeriodEnd?: Date; cancelAtPeriodEnd?: number; trialEndsAt?: Date; plan?: string }): Promise<User | undefined>;
+  getUserByStripeCustomerId(stripeCustomerId: string): Promise<User | undefined>;
   incrementTrialScriptsUsed(userId: string): Promise<void>;
   checkTrialStatus(userId: string): Promise<{ isOnTrial: boolean; trialEnded: boolean; scriptsRemaining: number; daysRemaining: number }>;
   
@@ -246,10 +249,20 @@ export class MemStorage implements IStorage {
       firstName: null,
       lastName: null,
       profileImageUrl: null,
+      supabaseUserId: null,
       plan: "starter",
       planExpiresAt: null,
       trialEndsAt: trialEndsAt,
       trialScriptsUsed: 0,
+      stripeCustomerId: null,
+      stripeSubscriptionId: null,
+      stripePriceId: null,
+      subscriptionStatus: null,
+      currentPeriodEnd: null,
+      cancelAtPeriodEnd: 0,
+      lastTrialReminderSent: null,
+      lastTrialExpiredSent: null,
+      lastWeeklySummarySent: null,
       createdAt: now,
       updatedAt: now,
     };
@@ -536,6 +549,64 @@ export class MemStorage implements IStorage {
       const updated = { ...user, plan, updatedAt: new Date() };
       this.usersMemory.set(userId, updated);
       return updated;
+    }
+    return undefined;
+  }
+
+  async updateUserStripeCustomer(userId: string, stripeCustomerId: string): Promise<User | undefined> {
+    if (db) {
+      try {
+        const result = await db.update(users)
+          .set({ stripeCustomerId, updatedAt: new Date() })
+          .where(eq(users.id, userId))
+          .returning();
+        if (result[0]) return result[0];
+      } catch (e) {
+        console.log("Database update failed:", (e as Error).message);
+      }
+    }
+    const user = this.usersMemory.get(userId);
+    if (user) {
+      const updated = { ...user, stripeCustomerId, updatedAt: new Date() };
+      this.usersMemory.set(userId, updated);
+      return updated;
+    }
+    return undefined;
+  }
+
+  async updateUserSubscription(userId: string, data: { stripeSubscriptionId?: string; stripePriceId?: string; subscriptionStatus?: string; currentPeriodEnd?: Date; cancelAtPeriodEnd?: number; trialEndsAt?: Date; plan?: string }): Promise<User | undefined> {
+    if (db) {
+      try {
+        const result = await db.update(users)
+          .set({ ...data, updatedAt: new Date() })
+          .where(eq(users.id, userId))
+          .returning();
+        if (result[0]) return result[0];
+      } catch (e) {
+        console.log("Database update failed:", (e as Error).message);
+      }
+    }
+    const user = this.usersMemory.get(userId);
+    if (user) {
+      const updated = { ...user, ...data, updatedAt: new Date() };
+      this.usersMemory.set(userId, updated);
+      return updated;
+    }
+    return undefined;
+  }
+
+  async getUserByStripeCustomerId(stripeCustomerId: string): Promise<User | undefined> {
+    if (db) {
+      try {
+        const result = await db.select().from(users).where(eq(users.stripeCustomerId, stripeCustomerId)).limit(1);
+        if (result[0]) return result[0];
+      } catch (e) {
+        console.log("Database query failed:", (e as Error).message);
+      }
+    }
+    const usersArray = Array.from(this.usersMemory.values());
+    for (const user of usersArray) {
+      if (user.stripeCustomerId === stripeCustomerId) return user;
     }
     return undefined;
   }
