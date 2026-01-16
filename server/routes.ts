@@ -3756,10 +3756,26 @@ Create problems that are:
       
       // Get or create Stripe customer
       let stripeCustomerId = user.stripeCustomerId;
+      const email = user.email || user.username || `user-${userId}@viralscript.app`;
+      
+      // Check if existing customer is valid in current Stripe account
+      if (stripeCustomerId) {
+        try {
+          const stripe = await stripeService.getStripeClient();
+          await stripe.customers.retrieve(stripeCustomerId);
+          console.log("Existing Stripe customer verified:", stripeCustomerId);
+        } catch (customerError: any) {
+          // Customer doesn't exist in this Stripe account, create a new one
+          console.log("Existing customer invalid, creating new one:", customerError.message);
+          stripeCustomerId = null;
+        }
+      }
+      
+      // Create new customer if needed
       if (!stripeCustomerId) {
-        const email = user.email || user.username || `user-${userId}@viralscript.app`;
         const customer = await stripeService.createCustomer(email, userId);
         stripeCustomerId = customer.id;
+        console.log("Created new Stripe customer:", stripeCustomerId);
         
         // Update user with Stripe customer ID
         await storage.updateUserStripeCustomer(userId, stripeCustomerId);
