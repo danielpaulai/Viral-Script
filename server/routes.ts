@@ -3821,11 +3821,18 @@ Create problems that are:
         }
       }
       
+      // Use environment variable fallback if all lookups fail
       if (!priceId) {
-        return res.status(500).json({ 
-          error: "No subscription prices found", 
-          details: "Please create a subscription product in your Stripe Dashboard"
-        });
+        const fallbackPriceId = process.env.STRIPE_PRICE_ID;
+        if (fallbackPriceId) {
+          console.log("Using fallback price from environment:", fallbackPriceId);
+          priceId = fallbackPriceId;
+        } else {
+          return res.status(500).json({ 
+            error: "No subscription prices found", 
+            details: "Please set STRIPE_PRICE_ID environment variable"
+          });
+        }
       }
       
       console.log("Using price ID:", priceId);
