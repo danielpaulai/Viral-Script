@@ -8,6 +8,10 @@ function getDb() {
 }
 
 export class StripeService {
+  async getStripeClient() {
+    return await getUncachableStripeClient();
+  }
+
   async createCustomer(email: string, userId: string) {
     const stripe = await getUncachableStripeClient();
     return await stripe.customers.create({

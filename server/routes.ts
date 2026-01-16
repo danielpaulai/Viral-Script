@@ -3773,52 +3773,59 @@ Create problems that are:
       }
       
       const isProduction = process.env.REPLIT_DEPLOYMENT === '1';
-      console.log(`Querying for Stripe price with unit_amount=1999... (env: ${isProduction ? 'production' : 'development'})`);
+      console.log(`Looking for Stripe price... (env: ${isProduction ? 'production' : 'development'})`);
       
-      // Query for $19.99 price in Stripe
-      const priceResult = await db.execute(sql`
-        SELECT id FROM stripe.prices 
-        WHERE unit_amount = 1999 AND active = true 
-        ORDER BY created DESC LIMIT 1
-      `);
+      let priceId: string | null = null;
       
-      console.log("Price query result:", priceResult.rows);
-      
-      if (!priceResult.rows || priceResult.rows.length === 0) {
-        console.error("No Pro Plan price found in Stripe - listing all available prices:");
-        const allPrices = await db.execute(sql`SELECT id, unit_amount, active FROM stripe.prices LIMIT 10`);
-        console.error("Available prices:", allPrices.rows);
+      // First try to get price from local database
+      try {
+        const priceResult = await db.execute(sql`
+          SELECT id FROM stripe.prices 
+          WHERE unit_amount = 1999 AND active = true 
+          ORDER BY created DESC LIMIT 1
+        `);
         
-        // If no $19.99 price, try to use any active subscription price
-        if (allPrices.rows && allPrices.rows.length > 0) {
-          const anyPrice = allPrices.rows.find((p: any) => p.active === true);
-          if (anyPrice) {
-            console.log("Falling back to first available active price:", (anyPrice as any).id);
-            // Continue with fallback price
-          } else {
-            return res.status(500).json({ 
-              error: "Subscription plan not configured", 
-              details: isProduction 
-                ? "Please ensure Stripe live products are set up in your Stripe Dashboard" 
-                : "Please run the product seed script to create subscription prices"
-            });
-          }
-        } else {
-          return res.status(500).json({ 
-            error: "No Stripe products found", 
-            details: isProduction 
-              ? "Please configure live Stripe products in your Stripe Dashboard" 
-              : "Stripe sync may not have completed. Please wait and try again."
+        if (priceResult.rows && priceResult.rows.length > 0) {
+          priceId = (priceResult.rows[0] as any).id;
+          console.log("Found price in database:", priceId);
+        }
+      } catch (dbError) {
+        console.log("Database price lookup failed, will try Stripe API directly");
+      }
+      
+      // If not found in database, fetch directly from Stripe API
+      if (!priceId) {
+        console.log("Price not in database, fetching from Stripe API...");
+        try {
+          const stripe = await stripeService.getStripeClient();
+          const prices = await stripe.prices.list({
+            active: true,
+            type: 'recurring',
+            limit: 10
           });
+          
+          console.log(`Found ${prices.data.length} prices from Stripe API`);
+          
+          // Look for $19.99 price first
+          const targetPrice = prices.data.find(p => p.unit_amount === 1999);
+          if (targetPrice) {
+            priceId = targetPrice.id;
+            console.log("Found $19.99 price from Stripe API:", priceId);
+          } else if (prices.data.length > 0) {
+            // Fall back to first available recurring price
+            priceId = prices.data[0].id;
+            console.log("Using first available price from Stripe API:", priceId);
+          }
+        } catch (stripeApiError: any) {
+          console.error("Failed to fetch prices from Stripe API:", stripeApiError.message);
         }
       }
       
-      const priceId = priceResult.rows.length > 0 
-        ? (priceResult.rows[0] as any).id 
-        : (await db.execute(sql`SELECT id FROM stripe.prices WHERE active = true LIMIT 1`)).rows[0]?.id;
-      
       if (!priceId) {
-        return res.status(500).json({ error: "No active subscription price found" });
+        return res.status(500).json({ 
+          error: "No subscription prices found", 
+          details: "Please create a subscription product in your Stripe Dashboard"
+        });
       }
       
       console.log("Using price ID:", priceId);
