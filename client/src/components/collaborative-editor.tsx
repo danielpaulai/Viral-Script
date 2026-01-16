@@ -146,7 +146,7 @@ export function CollaborativeEditor({
             setContent(e.target.value);
             onContentChange?.(e.target.value);
           }}
-          className="min-h-[300px] bg-white/5 border-white/10 text-white resize-none"
+          className="min-h-[300px] bg-muted/50 border-border text-foreground resize-none"
           placeholder="Your script content..."
           data-testid="textarea-script-editor"
         />
@@ -190,7 +190,7 @@ export function CollaborativeEditor({
             variant="outline"
             size="sm"
             onClick={copyShareLink}
-            className="bg-white/5 border-white/10"
+            className="bg-muted/50 border-border"
             data-testid="button-copy-collab-link"
           >
             <Link2 className="w-3 h-3 mr-1" />
@@ -208,7 +208,7 @@ export function CollaborativeEditor({
       </div>
 
       {showCollabPanel && (
-        <div className="p-3 rounded-md bg-white/5 border border-white/10">
+        <div className="p-3 rounded-md bg-muted/50 border border-border">
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm font-medium">Active Editors</span>
             <Button variant="ghost" size="sm" onClick={() => setShowCollabPanel(false)}>
@@ -236,7 +236,7 @@ export function CollaborativeEditor({
         <Textarea
           value={content}
           onChange={(e) => handleContentChange(e.target.value)}
-          className="min-h-[300px] bg-white/5 border-white/10 text-white resize-none"
+          className="min-h-[300px] bg-muted/50 border-border text-foreground resize-none"
           style={{ borderColor: isConnected ? myColor + "50" : undefined }}
           placeholder="Start typing... changes sync in real-time!"
           data-testid="textarea-collab-editor"

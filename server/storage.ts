@@ -30,6 +30,9 @@ import {
   scripts as scriptsTable,
   scriptTemplates as scriptTemplatesTable,
   ctaTemplates as ctaTemplatesTable,
+  vault as vaultTable,
+  projects as projectsTable,
+  scriptVersions as scriptVersionsTable,
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import session from "express-session";
@@ -444,6 +447,19 @@ export class MemStorage implements IStorage {
   }
 
   async getProjects(userId: string): Promise<Project[]> {
+    // Try database first
+    if (db) {
+      try {
+        const projects = await db.select()
+          .from(projectsTable)
+          .where(eq(projectsTable.userId, userId))
+          .orderBy(desc(projectsTable.createdAt));
+        return projects;
+      } catch (e) {
+        console.log("Database projects fetch failed, using memory:", (e as Error).message);
+      }
+    }
+    // Fall back to memory
     return Array.from(this.projects.values())
       .filter(p => p.userId === userId)
       .sort((a, b) => {
@@ -454,6 +470,18 @@ export class MemStorage implements IStorage {
   }
 
   async getProject(id: string, userId: string): Promise<Project | undefined> {
+    // Try database first
+    if (db) {
+      try {
+        const projects = await db.select()
+          .from(projectsTable)
+          .where(and(eq(projectsTable.id, id), eq(projectsTable.userId, userId)));
+        if (projects[0]) return projects[0];
+      } catch (e) {
+        console.log("Database project fetch failed, using memory:", (e as Error).message);
+      }
+    }
+    // Fall back to memory
     const project = this.projects.get(id);
     if (project && project.userId === userId) return project;
     return undefined;
@@ -468,11 +496,39 @@ export class MemStorage implements IStorage {
       description: insertProject.description ?? null,
       createdAt: new Date(),
     };
+    
+    // Try database first
+    if (db) {
+      try {
+        const result = await db.insert(projectsTable).values(project).returning();
+        if (result[0]) {
+          this.projects.set(id, result[0]);
+          return result[0];
+        }
+      } catch (e) {
+        console.log("Database project insert failed, using memory:", (e as Error).message);
+      }
+    }
+    
+    // Fall back to memory
     this.projects.set(id, project);
     return project;
   }
 
   async deleteProject(id: string, userId: string): Promise<boolean> {
+    // Try database first
+    if (db) {
+      try {
+        await db.delete(projectsTable)
+          .where(and(eq(projectsTable.id, id), eq(projectsTable.userId, userId)));
+        this.projects.delete(id);
+        this.projectScripts.delete(id);
+        return true;
+      } catch (e) {
+        console.log("Database project delete failed, using memory:", (e as Error).message);
+      }
+    }
+    // Fall back to memory
     const project = this.projects.get(id);
     if (!project || project.userId !== userId) return false;
     this.projectScripts.delete(id);
@@ -496,6 +552,19 @@ export class MemStorage implements IStorage {
   }
 
   async getVaultItems(userId: string): Promise<VaultItem[]> {
+    // Try database first
+    if (db) {
+      try {
+        const items = await db.select()
+          .from(vaultTable)
+          .where(eq(vaultTable.userId, userId))
+          .orderBy(desc(vaultTable.createdAt));
+        return items;
+      } catch (e) {
+        console.log("Database vault fetch failed, using memory:", (e as Error).message);
+      }
+    }
+    // Fall back to memory
     return Array.from(this.vault.values())
       .filter(v => v.userId === userId)
       .sort((a, b) => {
@@ -506,6 +575,18 @@ export class MemStorage implements IStorage {
   }
 
   async getVaultItem(id: string, userId: string): Promise<VaultItem | undefined> {
+    // Try database first
+    if (db) {
+      try {
+        const items = await db.select()
+          .from(vaultTable)
+          .where(and(eq(vaultTable.id, id), eq(vaultTable.userId, userId)));
+        if (items[0]) return items[0];
+      } catch (e) {
+        console.log("Database vault item fetch failed, using memory:", (e as Error).message);
+      }
+    }
+    // Fall back to memory
     const item = this.vault.get(id);
     if (item && item.userId === userId) return item;
     return undefined;
@@ -520,11 +601,38 @@ export class MemStorage implements IStorage {
       scriptId: insertItem.scriptId,
       createdAt: new Date(),
     };
+    
+    // Try database first
+    if (db) {
+      try {
+        const result = await db.insert(vaultTable).values(item).returning();
+        if (result[0]) {
+          this.vault.set(id, result[0]);
+          return result[0];
+        }
+      } catch (e) {
+        console.log("Database vault insert failed, using memory:", (e as Error).message);
+      }
+    }
+    
+    // Fall back to memory
     this.vault.set(id, item);
     return item;
   }
 
   async deleteVaultItem(id: string, userId: string): Promise<boolean> {
+    // Try database first
+    if (db) {
+      try {
+        const result = await db.delete(vaultTable)
+          .where(and(eq(vaultTable.id, id), eq(vaultTable.userId, userId)));
+        this.vault.delete(id);
+        return true;
+      } catch (e) {
+        console.log("Database vault delete failed, using memory:", (e as Error).message);
+      }
+    }
+    // Fall back to memory
     const item = this.vault.get(id);
     if (!item || item.userId !== userId) return false;
     return this.vault.delete(id);
@@ -862,6 +970,20 @@ export class MemStorage implements IStorage {
       return []; // Script doesn't exist or doesn't belong to user
     }
     
+    // Try database first
+    if (db) {
+      try {
+        const versions = await db.select()
+          .from(scriptVersionsTable)
+          .where(eq(scriptVersionsTable.scriptId, scriptId))
+          .orderBy(desc(scriptVersionsTable.createdAt));
+        return versions;
+      } catch (e) {
+        console.log("Database script versions fetch failed, using memory:", (e as Error).message);
+      }
+    }
+    
+    // Fall back to memory
     const versions: ScriptVersion[] = [];
     this.scriptVersions.forEach((v) => {
       if (v.scriptId === scriptId) versions.push(v);
@@ -872,17 +994,34 @@ export class MemStorage implements IStorage {
   }
 
   async createScriptVersion(version: InsertScriptVersion): Promise<ScriptVersion> {
-    // Count existing versions for this script (without user check since creation already validates)
-    const allVersions: ScriptVersion[] = [];
-    this.scriptVersions.forEach((v) => {
-      if (v.scriptId === version.scriptId) allVersions.push(v);
-    });
+    // Count existing versions for this script
+    let versionCount = 0;
+    
+    // Try database first for version count
+    if (db) {
+      try {
+        const existingVersions = await db.select()
+          .from(scriptVersionsTable)
+          .where(eq(scriptVersionsTable.scriptId, version.scriptId));
+        versionCount = existingVersions.length;
+      } catch (e) {
+        console.log("Database version count failed, using memory:", (e as Error).message);
+        // Fall back to memory count
+        this.scriptVersions.forEach((v) => {
+          if (v.scriptId === version.scriptId) versionCount++;
+        });
+      }
+    } else {
+      this.scriptVersions.forEach((v) => {
+        if (v.scriptId === version.scriptId) versionCount++;
+      });
+    }
     
     const newVersion: ScriptVersion = {
       id: randomUUID(),
       scriptId: version.scriptId,
       userId: version.userId || null,
-      version: String(allVersions.length + 1),
+      version: String(versionCount + 1),
       label: version.label || null,
       script: version.script,
       wordCount: version.wordCount || null,
@@ -890,11 +1029,44 @@ export class MemStorage implements IStorage {
       parameters: version.parameters || null,
       createdAt: new Date(),
     };
+    
+    // Try database first
+    if (db) {
+      try {
+        const result = await db.insert(scriptVersionsTable).values(newVersion).returning();
+        if (result[0]) {
+          this.scriptVersions.set(newVersion.id, result[0]);
+          return result[0];
+        }
+      } catch (e) {
+        console.log("Database script version insert failed, using memory:", (e as Error).message);
+      }
+    }
+    
+    // Fall back to memory
     this.scriptVersions.set(newVersion.id, newVersion);
     return newVersion;
   }
 
   async getScriptVersion(id: string, userId: string): Promise<ScriptVersion | undefined> {
+    // Try database first
+    if (db) {
+      try {
+        const versions = await db.select()
+          .from(scriptVersionsTable)
+          .where(eq(scriptVersionsTable.id, id));
+        if (versions[0]) {
+          // Verify the parent script belongs to this user
+          const script = await this.getScript(versions[0].scriptId, userId);
+          if (!script) return undefined;
+          return versions[0];
+        }
+      } catch (e) {
+        console.log("Database script version fetch failed, using memory:", (e as Error).message);
+      }
+    }
+    
+    // Fall back to memory
     const version = this.scriptVersions.get(id);
     if (!version) return undefined;
     

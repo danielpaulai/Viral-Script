@@ -264,7 +264,7 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
   // Mutation to adapt a hook template to the user's content
   const adaptHookMutation = useMutation({
     mutationFn: async ({ hookId, hookTemplate, hookName }: { hookId: string; hookTemplate: string; hookName: string }) => {
-      const params = script.parameters as Record<string, unknown>;
+      const params = script.parameters as unknown as Record<string, unknown>;
       const res = await apiRequest("POST", "/api/hooks/adapt", {
         hookTemplate,
         hookName,
