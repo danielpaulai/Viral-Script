@@ -4034,6 +4034,10 @@ Create problems that are:
       const trialStatus = await storage.checkTrialStatus(userId);
       const user = await storage.getUser(userId);
       
+      // Check if user is a paid subscriber (not on trial/starter plan)
+      const isPaidUser = user?.plan && !['starter', 'free', null].includes(user.plan);
+      const hasActiveSubscription = user?.subscriptionStatus === 'active' || user?.subscriptionStatus === 'trialing';
+      
       // Map backend response to frontend expected format
       res.json({
         isActive: trialStatus.isOnTrial && !trialStatus.trialEnded,
@@ -4041,6 +4045,7 @@ Create problems that are:
         scriptsUsed: user?.trialScriptsUsed || 0,
         scriptsLimit: 20,
         trialEndsAt: user?.trialEndsAt || null,
+        isPaidUser: isPaidUser || hasActiveSubscription,
       });
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch trial status" });

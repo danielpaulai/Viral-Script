@@ -889,6 +889,36 @@ export class MemStorage implements IStorage {
 
   async getUserUsage(userId: string, month: string): Promise<UserUsage | undefined> {
     const key = `${userId}_${month}`;
+    
+    // Try database first
+    if (isDatabaseAvailable && pool) {
+      try {
+        const result = await pool.query(
+          `SELECT * FROM user_usage WHERE user_id = $1 AND month = $2`,
+          [userId, month]
+        );
+        if (result.rows.length > 0) {
+          const row = result.rows[0];
+          const usage: UserUsage = {
+            id: row.id,
+            userId: row.user_id,
+            month: row.month,
+            scriptsGenerated: row.scripts_generated || "0",
+            deepResearchUsed: row.deep_research_used || "0",
+            knowledgeBaseQueries: row.knowledge_base_queries || "0",
+            createdAt: row.created_at,
+            updatedAt: row.updated_at,
+          };
+          this.userUsage.set(key, usage);
+          return usage;
+        }
+        return undefined;
+      } catch (error) {
+        console.error("Error fetching usage from database:", error);
+      }
+    }
+    
+    // Fallback to memory
     return this.userUsage.get(key);
   }
 
@@ -915,6 +945,54 @@ export class MemStorage implements IStorage {
 
   async incrementUsage(userId: string, month: string, field: 'scriptsGenerated' | 'deepResearchUsed' | 'knowledgeBaseQueries'): Promise<void> {
     const key = `${userId}_${month}`;
+    
+    // Map field names to database column names
+    const fieldToColumn: Record<string, string> = {
+      'scriptsGenerated': 'scripts_generated',
+      'deepResearchUsed': 'deep_research_used',
+      'knowledgeBaseQueries': 'knowledge_base_queries',
+    };
+    const column = fieldToColumn[field];
+    
+    // Try database first
+    if (isDatabaseAvailable && pool) {
+      try {
+        const id = randomUUID();
+        await pool.query(
+          `INSERT INTO user_usage (id, user_id, month, ${column}, created_at, updated_at)
+           VALUES ($1, $2, $3, '1', NOW(), NOW())
+           ON CONFLICT (user_id, month) 
+           DO UPDATE SET ${column} = (COALESCE(user_usage.${column}, '0')::int + 1)::text, updated_at = NOW()`,
+          [id, userId, month]
+        );
+        
+        // Refresh cache from database
+        const result = await pool.query(
+          `SELECT * FROM user_usage WHERE user_id = $1 AND month = $2`,
+          [userId, month]
+        );
+        if (result.rows.length > 0) {
+          const row = result.rows[0];
+          const usage: UserUsage = {
+            id: row.id,
+            userId: row.user_id,
+            month: row.month,
+            scriptsGenerated: row.scripts_generated || "0",
+            deepResearchUsed: row.deep_research_used || "0",
+            knowledgeBaseQueries: row.knowledge_base_queries || "0",
+            createdAt: row.created_at,
+            updatedAt: row.updated_at,
+          };
+          this.userUsage.set(key, usage);
+          console.log(`[Usage] Incremented ${field} for user ${userId} month ${month}: now ${usage[field]}`);
+        }
+        return;
+      } catch (error) {
+        console.error("Error incrementing usage in database:", error);
+      }
+    }
+    
+    // Fallback to memory-only
     const existing = this.userUsage.get(key);
     if (existing) {
       const currentValue = parseInt(existing[field] || "0", 10);

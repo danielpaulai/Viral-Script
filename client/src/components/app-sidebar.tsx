@@ -64,6 +64,7 @@ interface TrialStatus {
   scriptsUsed: number;
   scriptsLimit: number;
   trialEndsAt: string | null;
+  isPaidUser?: boolean;
 }
 
 function TrialStatusCard() {
@@ -72,6 +73,9 @@ function TrialStatusCard() {
   });
 
   if (isLoading || !trialStatus) return null;
+  
+  // Don't show trial card for paid subscribers
+  if (trialStatus.isPaidUser) return null;
 
   const scriptsRemaining = trialStatus.scriptsLimit - trialStatus.scriptsUsed;
   const progressPercent = (trialStatus.scriptsUsed / trialStatus.scriptsLimit) * 100;
