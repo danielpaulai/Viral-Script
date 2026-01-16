@@ -133,9 +133,14 @@ export function setupAuth(app: Express) {
         });
       });
 
+      // New users always need payment setup (no subscription yet, created after cutoff)
       res.status(201).json({
         id: newUser.id,
         username: newUser.username,
+        email: newUser.email,
+        needsPaymentSetup: true,
+        plan: 'starter',
+        subscriptionStatus: null,
       });
     } catch (error: any) {
       console.error("Registration error:", error);
@@ -351,9 +356,21 @@ export function setupAuth(app: Express) {
         });
       });
 
+      // Compute needsPaymentSetup for login response (same logic as /api/user)
+      const validSubscriptionStatuses = ['active', 'trialing'];
+      const hasValidSubscription = user.subscriptionStatus && validSubscriptionStatuses.includes(user.subscriptionStatus);
+      const paymentRequirementDate = new Date('2026-01-16T00:00:00Z');
+      const userCreatedAt = user.createdAt ? new Date(user.createdAt) : null;
+      const isGrandfatheredUser = userCreatedAt !== null && userCreatedAt < paymentRequirementDate;
+      const needsPaymentSetup = !hasValidSubscription && !isGrandfatheredUser;
+
       res.status(200).json({
         id: user.id,
         username: user.username,
+        email: user.email,
+        needsPaymentSetup,
+        plan: user.plan || 'starter',
+        subscriptionStatus: user.subscriptionStatus,
       });
     } catch (error: any) {
       console.error("Login error:", error);
@@ -385,9 +402,27 @@ export function setupAuth(app: Express) {
 
       console.log("User retrieved from Replit DB:", user.id);
 
+      // Check if user needs to complete payment setup
+      // User needs payment if they don't have an active or trialing subscription
+      // Exception: users created before payment requirement date are grandfathered in
+      const validSubscriptionStatuses = ['active', 'trialing'];
+      const hasValidSubscription = user.subscriptionStatus && validSubscriptionStatuses.includes(user.subscriptionStatus);
+      
+      // Grandfather existing users created before Jan 16, 2026 (payment requirement rollout)
+      // If createdAt is missing, user is NOT grandfathered (require payment setup)
+      const paymentRequirementDate = new Date('2026-01-16T00:00:00Z');
+      const userCreatedAt = user.createdAt ? new Date(user.createdAt) : null;
+      const isGrandfatheredUser = userCreatedAt !== null && userCreatedAt < paymentRequirementDate;
+      
+      const needsPaymentSetup = !hasValidSubscription && !isGrandfatheredUser;
+
       res.json({
         id: user.id,
         username: user.username,
+        email: user.email,
+        needsPaymentSetup,
+        plan: user.plan || 'starter',
+        subscriptionStatus: user.subscriptionStatus,
       });
     } catch (error) {
       console.error("Get user error:", error);

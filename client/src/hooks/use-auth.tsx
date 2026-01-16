@@ -4,9 +4,16 @@ import {
   useMutation,
   UseMutationResult,
 } from "@tanstack/react-query";
-import { User, AuthCredentials } from "@shared/schema";
+import { User as SchemaUser, AuthCredentials } from "@shared/schema";
 import { getQueryFn, apiRequest, queryClient } from "../lib/queryClient";
 import { useToast } from "./use-toast";
+
+// Extended User type with API-computed fields
+type User = SchemaUser & {
+  needsPaymentSetup?: boolean;
+  plan?: string;
+  subscriptionStatus?: string;
+};
 
 type AuthContextType = {
   user: User | null;

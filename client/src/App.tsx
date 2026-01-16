@@ -1,5 +1,5 @@
 import { Switch, Route, useLocation } from "wouter";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -25,6 +25,7 @@ import Admin from "@/pages/admin";
 import Landing from "@/pages/landing";
 import Login from "@/pages/login";
 import ResetPassword from "@/pages/reset-password";
+import Onboarding from "@/pages/onboarding";
 import NotFound from "@/pages/not-found";
 
 function LoginRedirect() {
@@ -101,16 +102,59 @@ function PublicRouter() {
 
 function AppContent() {
   const { user, isLoading } = useAuth();
+  const [location] = useLocation();
+  const [isProcessingSubscription, setIsProcessingSubscription] = useState(false);
   
-  if (isLoading) {
+  // Handle successful subscription redirect - refetch user data
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('subscription') === 'success') {
+      // Show processing state
+      setIsProcessingSubscription(true);
+      
+      // Clear the URL parameter
+      window.history.replaceState({}, '', window.location.pathname);
+      
+      // Immediately refetch user data (webhook may have updated subscription status)
+      // Use refetch with retry to handle webhook timing race
+      const refetchWithRetry = async (attempt = 0) => {
+        await queryClient.refetchQueries({ queryKey: ['/api/user'] });
+        await queryClient.refetchQueries({ queryKey: ['/api/user/trial-status'] });
+        
+        // If still showing needsPaymentSetup after refetch, retry up to 5 times with delay
+        // This handles the case where Stripe webhook hasn't processed yet
+        const currentUser = queryClient.getQueryData(['/api/user']) as { needsPaymentSetup?: boolean } | undefined;
+        if (currentUser?.needsPaymentSetup && attempt < 5) {
+          setTimeout(() => refetchWithRetry(attempt + 1), 2000);
+        } else {
+          // Clear processing state when done
+          setIsProcessingSubscription(false);
+        }
+      };
+      
+      refetchWithRetry();
+    }
+  }, [location]);
+  
+  if (isLoading || isProcessingSubscription) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-background">
-        <div className="animate-pulse text-muted-foreground">Loading...</div>
+        <div className="text-center space-y-3">
+          <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full mx-auto" />
+          <div className="text-muted-foreground">
+            {isProcessingSubscription ? "Setting up your subscription..." : "Loading..."}
+          </div>
+        </div>
       </div>
     );
   }
 
   const isAuthenticated = !!user;
+  
+  // Check if authenticated user needs to complete payment setup
+  if (isAuthenticated && user?.needsPaymentSetup) {
+    return <Onboarding />;
+  }
 
   return isAuthenticated ? <AuthenticatedApp /> : <PublicRouter />;
 }

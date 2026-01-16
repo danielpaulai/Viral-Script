@@ -29,7 +29,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import {
   scriptCategories,
   viralHooks,
@@ -350,6 +350,9 @@ export default function Home() {
       setGeneratedScript(data);
       setExpandedBrief(null); // Clear brief after generating
       setShowBriefEditor(false);
+      // Invalidate all usage-related queries to update script counts everywhere
+      queryClient.invalidateQueries({ queryKey: ['/api/user/trial-status'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/user/usage'] });
       toast({
         title: "Script Generated",
         description: "Your video script is ready!",
