@@ -3771,33 +3771,69 @@ Create problems that are:
         console.error("Database not initialized");
         return res.status(500).json({ error: "Database not available" });
       }
+      
+      console.log("Querying for Stripe price with unit_amount=1999...");
       const priceResult = await db.execute(sql`
         SELECT id FROM stripe.prices 
         WHERE unit_amount = 1999 AND active = true 
         ORDER BY created DESC LIMIT 1
       `);
       
+      console.log("Price query result:", priceResult.rows);
+      
       if (!priceResult.rows || priceResult.rows.length === 0) {
-        console.error("No Pro Plan price found in Stripe");
+        console.error("No Pro Plan price found in Stripe - listing all available prices:");
+        const allPrices = await db.execute(sql`SELECT id, unit_amount, active FROM stripe.prices LIMIT 10`);
+        console.error("Available prices:", allPrices.rows);
         return res.status(500).json({ error: "Subscription plan not configured" });
       }
       
       const priceId = (priceResult.rows[0] as any).id;
+      console.log("Using price ID:", priceId);
       
       // Create checkout session with 7-day trial
       const baseUrl = req.headers.origin || `https://${req.headers.host}`;
-      const session = await stripeService.createCheckoutSession(
-        stripeCustomerId,
+      console.log("Creating checkout session with:", {
+        customerId: stripeCustomerId,
         priceId,
-        `${baseUrl}/?subscription=success`,
-        `${baseUrl}/?subscription=cancelled`,
-        7 // 7-day trial
-      );
+        successUrl: `${baseUrl}/?subscription=success`,
+        cancelUrl: `${baseUrl}/?subscription=cancelled`,
+        trialDays: 7
+      });
       
-      res.json({ url: session.url });
-    } catch (error) {
+      try {
+        const session = await stripeService.createCheckoutSession(
+          stripeCustomerId,
+          priceId,
+          `${baseUrl}/?subscription=success`,
+          `${baseUrl}/?subscription=cancelled`,
+          7 // 7-day trial
+        );
+        
+        console.log("Checkout session created:", session.id, session.url);
+        res.json({ url: session.url });
+      } catch (stripeError: any) {
+        console.error("Stripe createCheckoutSession error:", stripeError);
+        console.error("Stripe error details:", {
+          message: stripeError?.message,
+          type: stripeError?.type,
+          code: stripeError?.code,
+          statusCode: stripeError?.statusCode,
+          param: stripeError?.param,
+          requestId: stripeError?.requestId
+        });
+        throw stripeError;
+      }
+    } catch (error: any) {
       console.error("Error creating checkout session:", error);
-      res.status(500).json({ error: "Failed to create checkout session" });
+      console.error("Stripe error details:", {
+        message: error?.message,
+        type: error?.type,
+        code: error?.code,
+        statusCode: error?.statusCode,
+        raw: error?.raw
+      });
+      res.status(500).json({ error: "Failed to create checkout session", details: error?.message || "Unknown error" });
     }
   });
 
