@@ -3772,7 +3772,10 @@ Create problems that are:
         return res.status(500).json({ error: "Database not available" });
       }
       
-      console.log("Querying for Stripe price with unit_amount=1999...");
+      const isProduction = process.env.REPLIT_DEPLOYMENT === '1';
+      console.log(`Querying for Stripe price with unit_amount=1999... (env: ${isProduction ? 'production' : 'development'})`);
+      
+      // Query for $19.99 price in Stripe
       const priceResult = await db.execute(sql`
         SELECT id FROM stripe.prices 
         WHERE unit_amount = 1999 AND active = true 
@@ -3785,10 +3788,39 @@ Create problems that are:
         console.error("No Pro Plan price found in Stripe - listing all available prices:");
         const allPrices = await db.execute(sql`SELECT id, unit_amount, active FROM stripe.prices LIMIT 10`);
         console.error("Available prices:", allPrices.rows);
-        return res.status(500).json({ error: "Subscription plan not configured" });
+        
+        // If no $19.99 price, try to use any active subscription price
+        if (allPrices.rows && allPrices.rows.length > 0) {
+          const anyPrice = allPrices.rows.find((p: any) => p.active === true);
+          if (anyPrice) {
+            console.log("Falling back to first available active price:", (anyPrice as any).id);
+            // Continue with fallback price
+          } else {
+            return res.status(500).json({ 
+              error: "Subscription plan not configured", 
+              details: isProduction 
+                ? "Please ensure Stripe live products are set up in your Stripe Dashboard" 
+                : "Please run the product seed script to create subscription prices"
+            });
+          }
+        } else {
+          return res.status(500).json({ 
+            error: "No Stripe products found", 
+            details: isProduction 
+              ? "Please configure live Stripe products in your Stripe Dashboard" 
+              : "Stripe sync may not have completed. Please wait and try again."
+          });
+        }
       }
       
-      const priceId = (priceResult.rows[0] as any).id;
+      const priceId = priceResult.rows.length > 0 
+        ? (priceResult.rows[0] as any).id 
+        : (await db.execute(sql`SELECT id FROM stripe.prices WHERE active = true LIMIT 1`)).rows[0]?.id;
+      
+      if (!priceId) {
+        return res.status(500).json({ error: "No active subscription price found" });
+      }
+      
       console.log("Using price ID:", priceId);
       
       // Create checkout session with 7-day trial
