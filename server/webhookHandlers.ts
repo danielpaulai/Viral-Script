@@ -126,6 +126,63 @@ export class WebhookHandlers {
     });
     
     console.log(`Synced subscription ${subscription.id} to user ${user.id} - status: ${status}, plan: ${plan}`);
+    
+    // Safeguard: Ensure user has Supabase account linked (prevents stuck users)
+    if (!user.supabaseUserId && user.email) {
+      try {
+        const { createClient } = await import("@supabase/supabase-js");
+        const supabaseAdmin = createClient(
+          process.env.SUPABASE_URL!,
+          process.env.SUPABASE_SERVICE_ROLE_KEY!,
+          { auth: { autoRefreshToken: false, persistSession: false } }
+        );
+        
+        // Check if Supabase user exists
+        const { data: existingUsers } = await supabaseAdmin.auth.admin.listUsers();
+        const existingSupabaseUser = existingUsers?.users?.find(
+          (u: any) => u.email?.toLowerCase() === user.email?.toLowerCase()
+        );
+        
+        if (existingSupabaseUser) {
+          // Link existing Supabase user
+          const { db } = await import("./db");
+          const { sql } = await import("drizzle-orm");
+          if (db) {
+            await db.execute(
+              sql`UPDATE users SET supabase_user_id = ${existingSupabaseUser.id} WHERE id = ${user.id} AND supabase_user_id IS NULL`
+            );
+            console.log(`[Webhook Safeguard] Linked existing Supabase user ${existingSupabaseUser.id} to local user ${user.id}`);
+          }
+        } else {
+          // Create Supabase user and link
+          const { randomUUID } = await import("crypto");
+          const tempPassword = randomUUID().slice(0, 16) + 'Aa1!';
+          const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
+            email: user.email.toLowerCase(),
+            password: tempPassword,
+            email_confirm: true,
+          });
+          
+          if (!createError && newUser?.user) {
+            const { db } = await import("./db");
+            const { sql } = await import("drizzle-orm");
+            if (db) {
+              await db.execute(
+                sql`UPDATE users SET supabase_user_id = ${newUser.user.id} WHERE id = ${user.id}`
+              );
+              console.log(`[Webhook Safeguard] Created and linked new Supabase user ${newUser.user.id} for local user ${user.id}`);
+              
+              // Send password reset email so user can set their password
+              const { supabase } = await import("./supabase");
+              await supabase.auth.resetPasswordForEmail(user.email.toLowerCase());
+              console.log(`[Webhook Safeguard] Sent password reset email to ${user.email}`);
+            }
+          }
+        }
+      } catch (safeguardError) {
+        console.error(`[Webhook Safeguard] Failed to link Supabase account for user ${user.id}:`, safeguardError);
+      }
+    }
   }
 
   static async handleSubscriptionDeleted(subscription: Stripe.Subscription): Promise<void> {
