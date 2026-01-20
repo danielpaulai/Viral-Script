@@ -3903,10 +3903,11 @@ Create problems that are:
       });
       
       try {
+        // Include session_id in success URL so we can verify it without relying on webhooks
         const session = await stripeService.createCheckoutSession(
           stripeCustomerId,
           priceId,
-          `${baseUrl}/?subscription=success`,
+          `${baseUrl}/checkout-success?session_id={CHECKOUT_SESSION_ID}`,
           `${baseUrl}/?subscription=cancelled`,
           7 // 7-day trial
         );
@@ -3935,6 +3936,90 @@ Create problems that are:
         raw: error?.raw
       });
       res.status(500).json({ error: "Failed to create checkout session", details: error?.message || "Unknown error" });
+    }
+  });
+
+  // Verify Checkout Session - Called after Stripe redirect to sync subscription without relying on webhooks
+  app.get("/api/billing/verify-session", isAuthenticated, async (req: any, res) => {
+    try {
+      const sessionId = req.query.session_id as string;
+      const userId = req.user?.id;
+      
+      if (!sessionId) {
+        return res.status(400).json({ error: "Session ID is required" });
+      }
+      
+      if (!userId) {
+        return res.status(401).json({ error: "User not found" });
+      }
+      
+      console.log(`[Checkout Verify] Verifying session ${sessionId} for user ${userId}`);
+      
+      const { stripeService } = await import("./stripeService");
+      const stripe = await stripeService.getStripeClient();
+      
+      // Retrieve the checkout session from Stripe
+      const session = await stripe.checkout.sessions.retrieve(sessionId, {
+        expand: ['subscription', 'customer']
+      });
+      
+      console.log(`[Checkout Verify] Session status: ${session.status}, payment_status: ${session.payment_status}`);
+      
+      if (session.status !== 'complete') {
+        return res.status(400).json({ 
+          error: "Checkout session is not complete",
+          status: session.status
+        });
+      }
+      
+      // Get subscription details
+      const subscription = session.subscription as any;
+      if (!subscription) {
+        return res.status(400).json({ error: "No subscription found in session" });
+      }
+      
+      const customerId = typeof session.customer === 'string' 
+        ? session.customer 
+        : (session.customer as any)?.id;
+      
+      console.log(`[Checkout Verify] Subscription: ${subscription.id}, Status: ${subscription.status}, Customer: ${customerId}`);
+      
+      // Update user's subscription directly in the database
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      
+      // Update customer ID first
+      if (customerId) {
+        await storage.updateUserStripeCustomer(userId, customerId);
+      }
+      
+      // Calculate trial end date if in trialing status
+      const trialEndsAt = subscription.status === 'trialing' && subscription.trial_end 
+        ? new Date(subscription.trial_end * 1000)
+        : undefined;
+      
+      // Update user with subscription info
+      await storage.updateUserSubscription(userId, {
+        stripeSubscriptionId: subscription.id,
+        subscriptionStatus: subscription.status,
+        plan: 'starter', // Default plan for $19.99 subscription
+        currentPeriodEnd: subscription.current_period_end ? new Date(subscription.current_period_end * 1000) : undefined,
+        trialEndsAt,
+      });
+      
+      console.log(`[Checkout Verify] Successfully synced subscription for user ${userId}`);
+      
+      res.json({ 
+        success: true,
+        subscriptionId: subscription.id,
+        status: subscription.status,
+        message: "Subscription verified and synced successfully"
+      });
+    } catch (error: any) {
+      console.error("[Checkout Verify] Error:", error);
+      res.status(500).json({ error: "Failed to verify checkout session", details: error?.message });
     }
   });
 

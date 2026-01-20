@@ -26,6 +26,7 @@ import Landing from "@/pages/landing";
 import Login from "@/pages/login";
 import ResetPassword from "@/pages/reset-password";
 import Onboarding from "@/pages/onboarding";
+import CheckoutSuccess from "@/pages/checkout-success";
 import NotFound from "@/pages/not-found";
 
 function LoginRedirect() {
@@ -40,6 +41,7 @@ function AuthenticatedRouter() {
   return (
     <Switch>
       <Route path="/" component={Home} />
+      <Route path="/checkout-success" component={CheckoutSuccess} />
       <Route path="/login" component={LoginRedirect} />
       <Route path="/reset-password" component={ResetPassword} />
       <Route path="/competitive" component={Competitive} />
@@ -92,6 +94,7 @@ function PublicRouter() {
           <Route path="/login" component={Login} />
           <Route path="/reset-password" component={ResetPassword} />
           <Route path="/pricing" component={Pricing} />
+          <Route path="/checkout-success" component={CheckoutSuccess} />
           <Route component={Landing} />
         </Switch>
       </div>
