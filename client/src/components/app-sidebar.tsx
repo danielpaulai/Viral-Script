@@ -122,9 +122,22 @@ function TrialStatusCard() {
   );
 }
 
+const ADMIN_EMAIL = 'danny@danielpaul.ai';
+
 export function AppSidebar() {
   const [location, setLocation] = useLocation();
-  const { logoutMutation, isAuthenticated } = useAuth();
+  const { logoutMutation, isAuthenticated, user } = useAuth();
+  
+  // Check if current user is admin
+  const isAdmin = user?.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase();
+  
+  // Filter nav items based on admin status
+  const filteredProNavItems = proNavItems.filter(item => {
+    if ('isAdmin' in item && item.isAdmin) {
+      return isAdmin;
+    }
+    return true;
+  });
   
   const handleLogout = () => {
     logoutMutation.mutate(undefined, {
@@ -179,7 +192,7 @@ export function AppSidebar() {
           <SidebarGroupLabel>Pro Features</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {proNavItems.map((item) => {
+              {filteredProNavItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = location === item.href;
                 const isPro = 'isPro' in item && item.isPro;
