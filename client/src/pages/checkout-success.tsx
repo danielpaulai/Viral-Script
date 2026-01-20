@@ -122,6 +122,16 @@ export default function CheckoutSuccess() {
                   Go to Dashboard
                 </Button>
               </div>
+              <p className="text-sm text-muted-foreground pt-2">
+                Need help? Contact us at{" "}
+                <a 
+                  href="mailto:admin@danielpaul.ai" 
+                  className="text-primary hover:underline"
+                  data-testid="link-contact-email"
+                >
+                  admin@danielpaul.ai
+                </a>
+              </p>
             </div>
           )}
         </CardContent>

@@ -251,6 +251,17 @@ export default function Login() {
               Back to home
             </Link>
           </p>
+          
+          <p className="text-center text-xs text-muted-foreground mt-4">
+            Need help?{" "}
+            <a 
+              href="mailto:admin@danielpaul.ai" 
+              className="text-primary hover:underline"
+              data-testid="link-contact-email"
+            >
+              admin@danielpaul.ai
+            </a>
+          </p>
         </div>
       </div>
 

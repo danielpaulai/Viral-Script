@@ -127,6 +127,17 @@ export default function Onboarding() {
                 <span>Secure checkout</span>
               </div>
             </div>
+            
+            <p className="text-center text-xs text-muted-foreground mt-4">
+              Need help?{" "}
+              <a 
+                href="mailto:admin@danielpaul.ai" 
+                className="text-primary hover:underline"
+                data-testid="link-contact-email"
+              >
+                admin@danielpaul.ai
+              </a>
+            </p>
           </div>
         </CardContent>
       </Card>
