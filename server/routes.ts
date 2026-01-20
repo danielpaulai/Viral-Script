@@ -5652,6 +5652,98 @@ Create a style guide for writing scripts that sound exactly like this creator.`
     }
   });
 
+  // Admin endpoint to recover stuck users by syncing their Stripe subscription
+  // This finds users by email in Stripe and syncs their subscription to our DB
+  app.post("/api/admin/recover-stripe-user", isAuthenticated, async (req: any, res) => {
+    try {
+      const adminId = req.user?.id;
+      const admin = await storage.getUser(adminId);
+      
+      if (!admin || admin.plan !== 'admin') {
+        return res.status(403).json({ error: "Admin access required" });
+      }
+      
+      const { email } = req.body;
+      if (!email) {
+        return res.status(400).json({ error: "Email is required" });
+      }
+      
+      console.log(`[Recovery] Admin ${admin.email} recovering user: ${email}`);
+      
+      const { stripeService } = await import("./stripeService");
+      const stripe = await stripeService.getStripeClient();
+      
+      // Search for customer by email in Stripe
+      const customers = await stripe.customers.list({ email: email.toLowerCase(), limit: 1 });
+      
+      if (customers.data.length === 0) {
+        return res.status(404).json({ error: "No Stripe customer found with this email" });
+      }
+      
+      const stripeCustomer = customers.data[0];
+      console.log(`[Recovery] Found Stripe customer: ${stripeCustomer.id}`);
+      
+      // Get their subscriptions
+      const subscriptions = await stripe.subscriptions.list({ 
+        customer: stripeCustomer.id,
+        status: 'all',
+        limit: 1
+      });
+      
+      if (subscriptions.data.length === 0) {
+        return res.status(404).json({ error: "No subscriptions found for this customer" });
+      }
+      
+      const subscription = subscriptions.data[0] as any;
+      console.log(`[Recovery] Found subscription: ${subscription.id}, status: ${subscription.status}`);
+      
+      // Check if local user exists
+      let localUser = await storage.getUserByUsername(email.toLowerCase());
+      
+      if (!localUser) {
+        // Create the local user record
+        console.log(`[Recovery] Creating local user record for: ${email}`);
+        localUser = await storage.createUser({
+          username: email.toLowerCase(),
+          password: 'supabase-auth-only', // Placeholder, auth is via Supabase
+        });
+        console.log(`[Recovery] Created local user: ${localUser.id}`);
+      }
+      
+      // Sync subscription to local user
+      await storage.updateUserStripeCustomer(localUser.id, stripeCustomer.id);
+      
+      const trialEndsAt = subscription.status === 'trialing' && subscription.trial_end 
+        ? new Date(subscription.trial_end * 1000)
+        : undefined;
+      
+      await storage.updateUserSubscription(localUser.id, {
+        stripeSubscriptionId: subscription.id,
+        subscriptionStatus: subscription.status,
+        plan: 'starter',
+        currentPeriodEnd: subscription.current_period_end ? new Date(subscription.current_period_end * 1000) : undefined,
+        trialEndsAt,
+      });
+      
+      console.log(`[Recovery] Successfully synced subscription for user: ${email}`);
+      
+      res.json({
+        success: true,
+        message: `Successfully recovered user ${email}`,
+        user: {
+          id: localUser.id,
+          email: email,
+          stripeCustomerId: stripeCustomer.id,
+          subscriptionId: subscription.id,
+          subscriptionStatus: subscription.status,
+        }
+      });
+    } catch (error: any) {
+      console.error("[Recovery] Error:", error);
+      res.status(500).json({ error: "Failed to recover user", details: error?.message });
+    }
+  });
+
   return httpServer;
 }
 
