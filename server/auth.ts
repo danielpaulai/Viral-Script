@@ -229,6 +229,9 @@ export function setupAuth(app: Express) {
         userId: user?.id,
         hasPassword: !!user?.password,
         username: user?.username,
+        subscriptionStatus: user?.subscriptionStatus,
+        plan: user?.plan,
+        stripeCustomerId: user?.stripeCustomerId,
       });
       
       // If Supabase auth succeeded but no local user exists, create one with trial data
@@ -364,6 +367,17 @@ export function setupAuth(app: Express) {
       const isGrandfatheredUser = userCreatedAt !== null && userCreatedAt < paymentRequirementDate;
       const needsPaymentSetup = !hasValidSubscription && !isGrandfatheredUser;
 
+      // DEBUG: Log the full calculation for login
+      console.log("[/api/login] Payment setup calculation:", {
+        userId: user.id,
+        email: user.email,
+        subscriptionStatus: user.subscriptionStatus,
+        hasValidSubscription,
+        createdAt: user.createdAt,
+        isGrandfatheredUser,
+        needsPaymentSetup,
+      });
+
       res.status(200).json({
         id: user.id,
         username: user.username,
@@ -459,6 +473,17 @@ export function setupAuth(app: Express) {
       const isGrandfatheredUser = userCreatedAt !== null && userCreatedAt < paymentRequirementDate;
       
       const needsPaymentSetup = !hasValidSubscription && !isGrandfatheredUser;
+
+      // DEBUG: Log the full calculation
+      console.log("[/api/user] Payment setup calculation:", {
+        userId: user.id,
+        email: user.email,
+        subscriptionStatus: user.subscriptionStatus,
+        hasValidSubscription,
+        createdAt: user.createdAt,
+        isGrandfatheredUser,
+        needsPaymentSetup,
+      });
 
       res.json({
         id: user.id,
