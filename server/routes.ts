@@ -3943,14 +3943,10 @@ Create problems that are:
   app.get("/api/billing/verify-session", isAuthenticated, async (req: any, res) => {
     try {
       const sessionId = req.query.session_id as string;
-      const userId = req.user?.id;
+      let userId = req.user?.id;
       
       if (!sessionId) {
         return res.status(400).json({ error: "Session ID is required" });
-      }
-      
-      if (!userId) {
-        return res.status(401).json({ error: "User not found" });
       }
       
       console.log(`[Checkout Verify] Verifying session ${sessionId} for user ${userId}`);
@@ -3982,12 +3978,64 @@ Create problems that are:
         ? session.customer 
         : (session.customer as any)?.id;
       
-      console.log(`[Checkout Verify] Subscription: ${subscription.id}, Status: ${subscription.status}, Customer: ${customerId}`);
+      // Get customer email from Stripe session
+      const customerEmail = session.customer_email || 
+        (session.customer as any)?.email;
       
-      // Update user's subscription directly in the database
-      const user = await storage.getUser(userId);
+      // Get the authenticated user's email from session
+      const sessionUserEmail = req.session?.userEmail || req.user?.email;
+      
+      console.log(`[Checkout Verify] Subscription: ${subscription.id}, Status: ${subscription.status}, Customer: ${customerId}, Email: ${customerEmail}, SessionEmail: ${sessionUserEmail}`);
+      
+      // SECURITY: Validate that the checkout session email matches the authenticated user
+      // This prevents subscription hijacking attacks
+      if (customerEmail && sessionUserEmail && customerEmail.toLowerCase() !== sessionUserEmail.toLowerCase()) {
+        console.error(`[Checkout Verify] SECURITY: Email mismatch - checkout email: ${customerEmail}, session email: ${sessionUserEmail}`);
+        return res.status(403).json({ 
+          error: "Email mismatch", 
+          details: "The subscription email does not match your account email" 
+        });
+      }
+      
+      // Try to find user by ID first, then by email
+      let user = userId ? await storage.getUser(userId) : null;
+      
+      // If user not found by ID, try to find by email (recovery for session/ID mismatch)
+      if (!user && customerEmail && db) {
+        console.log(`[Checkout Verify] User not found by ID, trying to find by email: ${customerEmail}`);
+        
+        // Try to find by email - SECURITY: only find, never create blindly
+        const result = await db.execute(
+          sql`SELECT * FROM users WHERE username = ${customerEmail} OR email = ${customerEmail} LIMIT 1`
+        );
+        
+        if (result.rows.length > 0) {
+          const foundUser = result.rows[0] as any;
+          user = foundUser;
+          userId = foundUser.id;
+          // Update session with correct userId
+          req.session.userId = userId;
+          req.session.userEmail = customerEmail;
+          console.log(`[Checkout Verify] Found user by email: ${userId}`);
+          
+          // Save updated session
+          await new Promise<void>((resolve) => {
+            req.session.save((err: any) => {
+              if (err) console.error("[Checkout Verify] Session save error:", err);
+              resolve();
+            });
+          });
+        } else {
+          console.log(`[Checkout Verify] No existing user found for email: ${customerEmail}`);
+        }
+      }
+      
       if (!user) {
-        return res.status(404).json({ error: "User not found" });
+        console.error(`[Checkout Verify] Could not find user for session ${sessionId}. User may need to login first.`);
+        return res.status(404).json({ 
+          error: "User not found", 
+          details: "Please login or register with the same email you used for checkout"
+        });
       }
       
       // Update customer ID first

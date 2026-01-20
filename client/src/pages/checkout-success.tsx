@@ -41,7 +41,14 @@ export default function CheckoutSuccess() {
             setLocation("/");
           }, 2000);
         } else {
-          if (retryCount < 3) {
+          // Handle specific error cases
+          if (response.status === 403 && data.error === "Email mismatch") {
+            setStatus("error");
+            setErrorMessage("The subscription email doesn't match your account. Please login with the correct email and try again.");
+          } else if (response.status === 404) {
+            setStatus("error");
+            setErrorMessage("Account not found. Please login or register with the same email you used for checkout, then return here.");
+          } else if (retryCount < 3) {
             setTimeout(() => {
               setRetryCount(prev => prev + 1);
             }, 2000);

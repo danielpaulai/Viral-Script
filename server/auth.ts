@@ -394,9 +394,53 @@ export function setupAuth(app: Express) {
         return res.sendStatus(401);
       }
 
-      const user = await storage.getUser(req.session.userId);
+      let user = await storage.getUser(req.session.userId);
+
+      // Auto-recovery: If session exists but user doesn't, try to find existing user by email
+      // SECURITY: Only recover if user already exists by email - never create new users without proper auth
+      if (!user && req.session.userEmail) {
+        console.log("[Auto-Recovery] Session has userId but no user found, attempting to find by email:", req.session.userEmail);
+        
+        // Try to find user by email (might exist with different ID)
+        const { pool } = await import("./db");
+        if (pool) {
+          const result = await pool.query(
+            `SELECT * FROM users WHERE username = $1 OR email = $1 LIMIT 1`,
+            [req.session.userEmail]
+          );
+          
+          if (result.rows.length > 0) {
+            // User exists with different ID, update session
+            const foundUser = result.rows[0];
+            user = foundUser;
+            req.session.userId = foundUser.id;
+            console.log("[Auto-Recovery] Found existing user by email, updated session to user:", foundUser.id);
+            
+            // Save session with updated userId
+            await new Promise<void>((resolve) => {
+              req.session.save((err) => {
+                if (err) console.error("[Auto-Recovery] Session save error:", err);
+                resolve();
+              });
+            });
+          } else {
+            // No user exists - don't create blindly, require proper login/registration
+            console.log("[Auto-Recovery] No existing user found for email, clearing stale session");
+            // Clear the stale session to force re-authentication
+            req.session.userId = undefined;
+            req.session.userEmail = undefined;
+            await new Promise<void>((resolve) => {
+              req.session.save((err) => {
+                if (err) console.error("[Auto-Recovery] Session clear error:", err);
+                resolve();
+              });
+            });
+          }
+        }
+      }
 
       if (!user) {
+        console.log("[/api/user] No user found and recovery failed, returning 401");
         return res.sendStatus(401);
       }
 
