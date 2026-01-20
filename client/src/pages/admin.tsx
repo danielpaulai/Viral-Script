@@ -308,13 +308,34 @@ export default function Admin() {
   }
 
   if (error || !analytics) {
+    // Check if it's an access denied error (403)
+    const isAccessDenied = error?.message?.includes("403") || error?.message?.includes("Admin access required");
+    
     return (
       <div className="p-6 max-w-7xl mx-auto">
         <Card className="p-8 text-center">
-          <CardTitle>Unable to load analytics</CardTitle>
-          <CardDescription className="mt-2">
-            {error ? "An error occurred while loading analytics." : "Please try again later"}
-          </CardDescription>
+          <CardHeader>
+            <div className="mx-auto w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center mb-4">
+              <BarChart3 className="w-8 h-8 text-destructive" />
+            </div>
+            <CardTitle className="text-2xl">
+              {isAccessDenied ? "Access Denied" : "Unable to load analytics"}
+            </CardTitle>
+            <CardDescription className="text-base mt-2">
+              {isAccessDenied 
+                ? "This page is restricted to administrators only."
+                : "Please try again later"}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <a 
+              href="/"
+              className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-md bg-primary text-primary-foreground hover:bg-primary/90"
+              data-testid="button-return-home"
+            >
+              Return to Dashboard
+            </a>
+          </CardContent>
         </Card>
       </div>
     );

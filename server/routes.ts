@@ -5162,13 +5162,22 @@ Create a style guide for writing scripts that sound exactly like this creator.`
   // ==========================================
   
   // Admin analytics dashboard data
+  // RESTRICTED TO: danny@danielpaul.ai only
+  const ADMIN_EMAIL = 'danny@danielpaul.ai';
+  
   app.get("/api/admin/analytics", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user?.id;
       
       // Get the current user to check admin status
       const currentUser = await storage.getUser(userId);
-      const isAdmin = currentUser?.plan === 'admin';
+      const isAdmin = currentUser?.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase();
+      
+      // Block access for non-admin users
+      if (!isAdmin) {
+        console.log(`[Admin] Access denied for non-admin user: ${currentUser?.email || currentUser?.username}`);
+        return res.status(403).json({ error: "Admin access required. Only danny@danielpaul.ai can access this page." });
+      }
       
       const db = await import("./db");
       const pool = db.pool;
@@ -5600,18 +5609,18 @@ Create a style guide for writing scripts that sound exactly like this creator.`
 
   // Admin endpoint to sync Supabase users to local database
   // This creates "shadow" local records for Supabase users who haven't logged in yet
-  // RESTRICTED TO ADMIN USERS ONLY
+  // RESTRICTED TO: danny@danielpaul.ai only
   app.post("/api/admin/sync-supabase-users", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user?.id;
       const user = await storage.getUser(userId);
       
-      // Security check: Only allow admin users to sync
+      // Security check: Only allow admin email to sync
       if (!user) {
         return res.status(401).json({ error: "Unauthorized" });
       }
       
-      if (user.plan !== 'admin') {
+      if (user.email?.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) {
         console.log(`[Sync] Access denied for non-admin user: ${user.email || user.username}`);
         return res.status(403).json({ error: "Admin access required" });
       }
@@ -5702,12 +5711,13 @@ Create a style guide for writing scripts that sound exactly like this creator.`
 
   // Admin endpoint to recover stuck users by syncing their Stripe subscription
   // This finds users by email in Stripe and syncs their subscription to our DB
+  // RESTRICTED TO: danny@danielpaul.ai only
   app.post("/api/admin/recover-stripe-user", isAuthenticated, async (req: any, res) => {
     try {
       const adminId = req.user?.id;
       const admin = await storage.getUser(adminId);
       
-      if (!admin || admin.plan !== 'admin') {
+      if (!admin || admin.email?.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) {
         return res.status(403).json({ error: "Admin access required" });
       }
       
