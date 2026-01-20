@@ -5773,6 +5773,76 @@ Create a style guide for writing scripts that sound exactly like this creator.`
         trialEndsAt,
       });
       
+      // Check if we need to create a Supabase user for them
+      let supabaseUserCreated = false;
+      let passwordResetSent = false;
+      
+      try {
+        const { createClient } = await import("@supabase/supabase-js");
+        const supabaseAdmin = createClient(
+          process.env.SUPABASE_URL!,
+          process.env.SUPABASE_SERVICE_ROLE_KEY!,
+          { auth: { autoRefreshToken: false, persistSession: false } }
+        );
+        
+        // Check if Supabase user exists
+        const { data: existingUsers } = await supabaseAdmin.auth.admin.listUsers();
+        const existingUser = existingUsers?.users?.find((u: any) => u.email?.toLowerCase() === email.toLowerCase());
+        
+        if (!existingUser) {
+          // Create Supabase user with a temporary random password (user will need to reset)
+          const tempPassword = randomUUID().slice(0, 16) + 'Aa1!'; // Meets password requirements
+          const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
+            email: email.toLowerCase(),
+            password: tempPassword,
+            email_confirm: true, // Auto-confirm email
+          });
+          
+          if (createError) {
+            console.error(`[Recovery] Failed to create Supabase user:`, createError);
+          } else {
+            supabaseUserCreated = true;
+            console.log(`[Recovery] Created Supabase user: ${newUser?.user?.id}`);
+            
+            // Link Supabase user ID to local record
+            if (newUser?.user?.id && db) {
+              await db.execute(
+                sql`UPDATE users SET supabase_user_id = ${newUser.user.id} WHERE id = ${localUser.id}`
+              );
+            }
+          }
+        } else {
+          console.log(`[Recovery] Supabase user already exists: ${existingUser.id}`);
+          // Link existing Supabase user if not already linked
+          if (db) {
+            await db.execute(
+              sql`UPDATE users SET supabase_user_id = ${existingUser.id} WHERE id = ${localUser.id} AND supabase_user_id IS NULL`
+            );
+          }
+        }
+        
+        // Trigger password reset email
+        const { supabase } = await import("./supabase");
+        let redirectUrl = 'https://viralscript.co/reset-password';
+        if (process.env.REPLIT_DOMAINS) {
+          const domain = process.env.REPLIT_DOMAINS.split(',')[0];
+          redirectUrl = `https://${domain}/reset-password`;
+        }
+        
+        const { error: resetError } = await supabase.auth.resetPasswordForEmail(email.toLowerCase(), {
+          redirectTo: redirectUrl,
+        });
+        
+        if (!resetError) {
+          passwordResetSent = true;
+          console.log(`[Recovery] Password reset email sent to: ${email}`);
+        } else {
+          console.error(`[Recovery] Failed to send password reset:`, resetError);
+        }
+      } catch (supabaseError) {
+        console.error(`[Recovery] Supabase operations error:`, supabaseError);
+      }
+      
       console.log(`[Recovery] Successfully synced subscription for user: ${email}`);
       
       res.json({
@@ -5784,7 +5854,9 @@ Create a style guide for writing scripts that sound exactly like this creator.`
           stripeCustomerId: stripeCustomer.id,
           subscriptionId: subscription.id,
           subscriptionStatus: subscription.status,
-        }
+        },
+        supabaseUserCreated,
+        passwordResetSent,
       });
     } catch (error: any) {
       console.error("[Recovery] Error:", error);
