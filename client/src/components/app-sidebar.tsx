@@ -54,8 +54,8 @@ const proNavItems = [
 ];
 
 const footerNavItems = [
-  { href: "mailto:danny@danielpaul.ai?subject=ScriptWriter%20Feedback", label: "Share feedback", icon: MessageSquare },
-  { href: "mailto:danny@danielpaul.ai?subject=ScriptWriter%20Support%20Request", label: "Get support", icon: HelpCircle },
+  { href: "mailto:admin@danielpaul.ai?subject=ScriptWriter%20Feedback", label: "Share feedback", icon: MessageSquare },
+  { href: "mailto:admin@danielpaul.ai?subject=ScriptWriter%20Support%20Request", label: "Get support", icon: HelpCircle },
 ];
 
 interface TrialStatus {
