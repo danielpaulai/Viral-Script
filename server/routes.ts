@@ -3782,7 +3782,7 @@ Create problems that are:
         return res.status(404).json({ error: "User not found" });
       }
       
-      // Check if user already has an active subscription
+      // Check if user already has an active subscription in local DB
       if (user.stripeSubscriptionId && (user.subscriptionStatus === 'active' || user.subscriptionStatus === 'trialing')) {
         return res.status(400).json({ 
           error: "You already have an active subscription",
@@ -3792,6 +3792,43 @@ Create problems that are:
       
       // Import Stripe service
       const { stripeService } = await import("./stripeService");
+      
+      // SAFEGUARD: Also check Stripe directly to prevent duplicate subscriptions
+      // This catches cases where webhook hasn't synced yet or user clicks rapidly
+      if (user.stripeCustomerId) {
+        try {
+          const stripe = await stripeService.getStripeClient();
+          const existingSubs = await stripe.subscriptions.list({
+            customer: user.stripeCustomerId,
+            status: 'all',
+            limit: 10,
+          });
+          
+          const activeSubs = existingSubs.data.filter(
+            sub => sub.status === 'active' || sub.status === 'trialing'
+          );
+          
+          if (activeSubs.length > 0) {
+            console.log(`[DUPLICATE PREVENTION] User ${userId} already has ${activeSubs.length} active subscription(s) in Stripe`);
+            
+            // Sync the subscription to local DB
+            const latestSub = activeSubs[0];
+            await storage.updateUserSubscription(userId, {
+              stripeSubscriptionId: latestSub.id,
+              subscriptionStatus: latestSub.status,
+              plan: 'pro',
+            });
+            
+            return res.status(400).json({ 
+              error: "You already have an active subscription",
+              hasActiveSubscription: true
+            });
+          }
+        } catch (stripeCheckError) {
+          console.error("Error checking Stripe for existing subscriptions:", stripeCheckError);
+          // Continue - don't block checkout if check fails
+        }
+      }
       
       // Get or create Stripe customer
       let stripeCustomerId = user.stripeCustomerId;
