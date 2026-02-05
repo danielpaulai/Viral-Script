@@ -106,6 +106,9 @@ import {
   Trash2,
   Loader2,
   ExternalLink,
+  ChevronLeft,
+  Sparkles,
+  CheckCircle,
 } from "lucide-react";
 import { SiTiktok, SiInstagram } from "react-icons/si";
 
@@ -262,7 +265,9 @@ export default function Home() {
   const [enhancedSkeleton, setEnhancedSkeleton] = useState<EnhancedSkeleton | null>(null);
   const [showLegacyFlow, setShowLegacyFlow] = useState(false);
   
-  // Video Clone Feature
+  // Video Clone Feature - Step 1 Method Selection
+  type CreationMethod = "choose" | "scratch" | "clone";
+  const [creationMethod, setCreationMethod] = useState<CreationMethod>("choose");
   const [cloneVideoUrl, setCloneVideoUrl] = useState("");
   const [clonedStructure, setClonedStructure] = useState<any>(null);
   const [isAnalyzingClone, setIsAnalyzingClone] = useState(false);
@@ -770,16 +775,205 @@ export default function Home() {
       {/* New: 3-Step Video Idea Flow */}
       {!showLegacyFlow && !generatedScript && (
         <div className="mb-6">
-          {/* Step indicator */}
-          <div className="flex items-center justify-center gap-2 mb-6">
-            <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium ${
-              currentStep === "skeleton" 
-                ? "bg-primary text-primary-foreground" 
-                : "bg-muted text-muted-foreground"
-            }`}>
-              <span className="w-5 h-5 rounded-full bg-background/20 flex items-center justify-center text-[10px]">1</span>
-              Build Skeleton
+          {/* Step 0: Choose Creation Method */}
+          {creationMethod === "choose" && (
+            <div className="max-w-2xl mx-auto">
+              <div className="text-center mb-6">
+                <h2 className="text-xl font-bold mb-2">How do you want to create your script?</h2>
+                <p className="text-sm text-muted-foreground">Choose your starting point</p>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Option 1: Create from Scratch */}
+                <button
+                  onClick={() => setCreationMethod("scratch")}
+                  className="p-6 rounded-xl border-2 border-border bg-card hover-elevate text-left transition-all group"
+                  data-testid="button-method-scratch"
+                >
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center">
+                      <Wand2 className="w-6 h-6 text-primary" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-lg">Create from Scratch</h3>
+                      <p className="text-xs text-muted-foreground">Build your own unique script</p>
+                    </div>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Start with your idea and let the AI guide you through building a complete video script with hooks, structure, and CTA.
+                  </p>
+                </button>
+
+                {/* Option 2: Clone Video Format */}
+                <button
+                  onClick={() => setCreationMethod("clone")}
+                  className="p-6 rounded-xl border-2 border-purple-500/30 bg-gradient-to-br from-purple-500/10 to-pink-500/10 hover-elevate text-left transition-all group"
+                  data-testid="button-method-clone"
+                >
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-12 h-12 rounded-full bg-purple-500/20 flex items-center justify-center">
+                      <ExternalLink className="w-6 h-6 text-purple-400" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-lg text-purple-300">Clone Video Format</h3>
+                      <Badge variant="outline" className="text-[10px] border-purple-500/50 text-purple-300 ml-1">New</Badge>
+                    </div>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Paste a viral TikTok or Instagram video URL. The AI will analyze its structure and create your script in the same format.
+                  </p>
+                </button>
+              </div>
             </div>
+          )}
+
+          {/* Clone Video Flow */}
+          {creationMethod === "clone" && !clonedStructure && (
+            <div className="max-w-xl mx-auto">
+              <div className="text-center mb-6">
+                <button
+                  onClick={() => {
+                    setCreationMethod("choose");
+                    setCloneVideoUrl("");
+                    setClonedStructure(null);
+                  }}
+                  className="text-xs text-muted-foreground hover:text-foreground mb-4 inline-flex items-center gap-1"
+                >
+                  <ChevronLeft className="w-3 h-3" /> Back to options
+                </button>
+                <h2 className="text-xl font-bold mb-2">Clone a Viral Video</h2>
+                <p className="text-sm text-muted-foreground">Paste a TikTok or Instagram video URL to analyze its format</p>
+              </div>
+              
+              <div className="p-6 rounded-xl border-2 border-purple-500/30 bg-gradient-to-br from-purple-500/5 to-pink-500/5">
+                <Label className="text-sm font-medium mb-2 block">Video URL</Label>
+                <div className="flex gap-2 mb-4">
+                  <Input
+                    placeholder="https://www.tiktok.com/@user/video/123... or https://instagram.com/reel/..."
+                    value={cloneVideoUrl}
+                    onChange={(e) => setCloneVideoUrl(e.target.value)}
+                    className="flex-1"
+                    data-testid="input-clone-video-url-step1"
+                  />
+                  <Button
+                    onClick={async () => {
+                      if (!cloneVideoUrl.trim()) {
+                        toast({ title: "Enter a video URL", variant: "destructive" });
+                        return;
+                      }
+                      setIsAnalyzingClone(true);
+                      try {
+                        const res = await apiRequest("POST", "/api/video-clone/analyze", { videoUrl: cloneVideoUrl.trim() });
+                        const data = await res.json();
+                        if (data.error) {
+                          toast({ title: "Error", description: data.error, variant: "destructive" });
+                        } else {
+                          setClonedStructure(data);
+                          // Store in formData for script generation
+                          setFormData(prev => ({ ...prev, clonedVideoStructure: data.analysis }));
+                          toast({ title: "Video Analyzed!", description: `Format: ${data.analysis?.format?.replace(/_/g, " ") || 'detected'}` });
+                        }
+                      } catch (err: any) {
+                        toast({ title: "Failed to analyze video", description: err.message, variant: "destructive" });
+                      } finally {
+                        setIsAnalyzingClone(false);
+                      }
+                    }}
+                    disabled={isAnalyzingClone || !cloneVideoUrl.trim()}
+                    className="shrink-0"
+                    data-testid="button-analyze-clone-step1"
+                  >
+                    {isAnalyzingClone ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                        Analyzing...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="w-4 h-4 mr-1" />
+                        Analyze
+                      </>
+                    )}
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  We'll extract the video's structure, hook style, pacing, and format to guide your script generation.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* After clone analysis - show structure and proceed to content */}
+          {creationMethod === "clone" && clonedStructure && (
+            <div className="max-w-2xl mx-auto mb-6">
+              <div className="p-4 rounded-xl border border-green-500/30 bg-green-500/10 mb-4">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle className="w-5 h-5 text-green-400" />
+                    <span className="font-semibold text-green-300">Video Format Cloned!</span>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setClonedStructure(null);
+                      setCloneVideoUrl("");
+                      setFormData(prev => ({ ...prev, clonedVideoStructure: undefined }));
+                    }}
+                    className="text-xs"
+                  >
+                    Clear & Start Over
+                  </Button>
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+                  <div>
+                    <p className="text-xs text-muted-foreground">Format</p>
+                    <p className="font-medium capitalize">{clonedStructure.analysis?.format?.replace(/_/g, " ") || "Detected"}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Hook Style</p>
+                    <p className="font-medium capitalize">{clonedStructure.analysis?.hookStyle?.replace(/_/g, " ") || "Detected"}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Pacing</p>
+                    <p className="font-medium capitalize">{clonedStructure.analysis?.pacing?.replace(/_/g, " ") || "Detected"}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Sections</p>
+                    <p className="font-medium">{clonedStructure.analysis?.sections?.length || 0} parts</p>
+                  </div>
+                </div>
+              </div>
+              <p className="text-sm text-center text-muted-foreground">
+                Now continue to build your content. Your script will follow this cloned format.
+              </p>
+            </div>
+          )}
+
+          {/* Show regular flow after method is chosen (scratch or clone with structure) */}
+          {(creationMethod === "scratch" || (creationMethod === "clone" && clonedStructure)) && (
+            <>
+              {/* Back button for scratch mode */}
+              {creationMethod === "scratch" && currentStep === "skeleton" && (
+                <div className="text-center mb-4">
+                  <button
+                    onClick={() => setCreationMethod("choose")}
+                    className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
+                  >
+                    <ChevronLeft className="w-3 h-3" /> Back to options
+                  </button>
+                </div>
+              )}
+              
+              {/* Step indicator */}
+              <div className="flex items-center justify-center gap-2 mb-6">
+                <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium ${
+                  currentStep === "skeleton" 
+                    ? "bg-primary text-primary-foreground" 
+                    : "bg-muted text-muted-foreground"
+                }`}>
+                  <span className="w-5 h-5 rounded-full bg-background/20 flex items-center justify-center text-[10px]">1</span>
+                  Build Skeleton
+                </div>
             <ChevronRight className="w-4 h-4 text-muted-foreground" />
             <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium ${
               currentStep === "enhance" 
@@ -867,7 +1061,7 @@ export default function Home() {
                   </div>
                 </div>
               )}
-            </div>
+            </>
           )}
         </div>
       )}
