@@ -51,7 +51,20 @@ import {
   History,
   Users,
   Mail,
+  Send,
+  Sparkles,
+  Loader2,
+  Bot,
+  User,
 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
+
+interface ChatMessage {
+  role: "user" | "assistant";
+  content: string;
+  timestamp: Date;
+}
 
 interface ScriptOutputProps {
   script: GeneratedScript;
@@ -78,6 +91,11 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
   const [showVersionHistory, setShowVersionHistory] = useState(false);
   const [showCollabEditor, setShowCollabEditor] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  
+  // AI Chat Refinement
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  const [chatInput, setChatInput] = useState("");
+  const [showAiChat, setShowAiChat] = useState(true);
 
   const boostViralityMutation = useMutation({
     mutationFn: async () => {
@@ -206,6 +224,64 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
       });
     },
   });
+
+  // AI Chat Refinement mutation
+  const refineScriptMutation = useMutation({
+    mutationFn: async (userRequest: string) => {
+      const currentScript = enhancedScript || script.script;
+      const res = await apiRequest("POST", "/api/scripts/refine", {
+        script: currentScript,
+        userRequest,
+        parameters: script.parameters,
+        chatHistory: chatMessages.slice(-6), // Send last 6 messages for context
+      });
+      return res.json();
+    },
+    onSuccess: (data, userRequest) => {
+      // Add assistant response to chat
+      setChatMessages(prev => [
+        ...prev,
+        {
+          role: "assistant",
+          content: data.explanation || "I've updated the script based on your request.",
+          timestamp: new Date(),
+        }
+      ]);
+      // Update the script
+      setEnhancedScript(data.refinedScript);
+      setEnhancedMetrics({ wordCount: data.wordCount, gradeLevel: data.gradeLevel });
+      setHasUnsavedChanges(true);
+    },
+    onError: () => {
+      // Remove the pending user message on error
+      setChatMessages(prev => prev.slice(0, -1));
+      toast({
+        title: "Refinement Failed",
+        description: "Could not refine the script. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleSendChat = () => {
+    if (!chatInput.trim() || refineScriptMutation.isPending) return;
+    
+    const userMessage = chatInput.trim();
+    setChatInput("");
+    
+    // Add user message to chat
+    setChatMessages(prev => [
+      ...prev,
+      {
+        role: "user",
+        content: userMessage,
+        timestamp: new Date(),
+      }
+    ]);
+    
+    // Trigger refinement
+    refineScriptMutation.mutate(userMessage);
+  };
 
   const emailScriptMutation = useMutation({
     mutationFn: async () => {
@@ -1544,6 +1620,124 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
           />
         </div>
       )}
+
+      {/* AI Chat Refinement Bar */}
+      <div className="mt-6 pt-4 border-t border-border">
+        <div className="flex items-center justify-between mb-3">
+          <button
+            onClick={() => setShowAiChat(!showAiChat)}
+            className="flex items-center gap-2 text-sm font-medium text-foreground hover:text-primary transition-colors"
+            data-testid="button-toggle-ai-chat"
+          >
+            <Sparkles className="w-4 h-4 text-primary" />
+            AI Script Refiner
+            {chatMessages.length > 0 && (
+              <Badge variant="secondary" className="text-[10px]">{chatMessages.length} messages</Badge>
+            )}
+            {showAiChat ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+          </button>
+          {hasUnsavedChanges && (
+            <Button 
+              size="sm" 
+              onClick={() => saveScriptMutation.mutate()}
+              disabled={saveScriptMutation.isPending}
+              className="bg-green-600 hover:bg-green-700"
+              data-testid="button-save-refined-script"
+            >
+              {saveScriptMutation.isPending ? (
+                <Loader2 className="w-3 h-3 animate-spin mr-1" />
+              ) : (
+                <Save className="w-3 h-3 mr-1" />
+              )}
+              Save Changes
+            </Button>
+          )}
+        </div>
+
+        {showAiChat && (
+          <div className="rounded-lg border border-border bg-muted/30">
+            {/* Chat messages */}
+            {chatMessages.length > 0 && (
+              <ScrollArea className="max-h-[200px] p-3">
+                <div className="space-y-3">
+                  {chatMessages.map((msg, i) => (
+                    <div
+                      key={i}
+                      className={`flex gap-2 ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+                    >
+                      {msg.role === "assistant" && (
+                        <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
+                          <Bot className="w-3 h-3 text-primary" />
+                        </div>
+                      )}
+                      <div
+                        className={`max-w-[80%] px-3 py-2 rounded-lg text-sm ${
+                          msg.role === "user"
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-card border border-border"
+                        }`}
+                      >
+                        {msg.content}
+                      </div>
+                      {msg.role === "user" && (
+                        <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
+                          <User className="w-3 h-3 text-muted-foreground" />
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                  {refineScriptMutation.isPending && (
+                    <div className="flex gap-2 justify-start">
+                      <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
+                        <Bot className="w-3 h-3 text-primary" />
+                      </div>
+                      <div className="px-3 py-2 rounded-lg text-sm bg-card border border-border flex items-center gap-2">
+                        <Loader2 className="w-3 h-3 animate-spin" />
+                        Refining script...
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </ScrollArea>
+            )}
+
+            {/* Input area */}
+            <div className="p-3 border-t border-border">
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Tell me how to change the script... (e.g., 'make the hook more aggressive', 'add humor')"
+                  value={chatInput}
+                  onChange={(e) => setChatInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      e.preventDefault();
+                      handleSendChat();
+                    }
+                  }}
+                  disabled={refineScriptMutation.isPending}
+                  className="flex-1 text-sm"
+                  data-testid="input-ai-refine"
+                />
+                <Button
+                  onClick={handleSendChat}
+                  disabled={!chatInput.trim() || refineScriptMutation.isPending}
+                  size="icon"
+                  data-testid="button-send-refine"
+                >
+                  {refineScriptMutation.isPending ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Send className="w-4 h-4" />
+                  )}
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground mt-2">
+                Ask the AI to make changes like "add more urgency", "make it funnier", "change the CTA", etc.
+              </p>
+            </div>
+          </div>
+        )}
+      </div>
     </Card>
   );
 }

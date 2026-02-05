@@ -2027,6 +2027,96 @@ Return ONLY the enhanced script with no explanations or commentary.${retryHint}`
     }
   });
 
+  // AI Chat Script Refinement - conversational script editing
+  app.post("/api/scripts/refine", async (req, res) => {
+    try {
+      const { script, userRequest, parameters, chatHistory } = req.body;
+      
+      if (!script || typeof script !== 'string') {
+        return res.status(400).json({ error: "Script content is required" });
+      }
+      
+      if (!userRequest || typeof userRequest !== 'string') {
+        return res.status(400).json({ error: "User request is required" });
+      }
+
+      // Build chat context from history
+      const historyMessages = (chatHistory || []).map((msg: any) => ({
+        role: msg.role as "user" | "assistant",
+        content: msg.content,
+      }));
+
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [
+          {
+            role: "system",
+            content: `You are an expert TikTok/Instagram script editor having a conversation with a content creator. They will ask you to make changes to their script.
+
+YOUR TASK:
+1. Apply the user's requested changes to the script
+2. Keep the same structure (HOOK, BODY, CTA sections if present)
+3. Stay within 20% of the original word count
+4. Use grade 3-5 reading level (simple words, short sentences)
+5. Sound human and conversational, not robotic
+
+BANNED AI WORDS: leverage, unleash, game-changer, revolutionary, elevate, empower, unlock, transform, cutting-edge, dive in, unpack, seamlessly, delve, tapestry, embark
+
+Respond in this JSON format:
+{
+  "refinedScript": "the updated script with changes applied",
+  "explanation": "brief 1-2 sentence explanation of what you changed"
+}`
+          },
+          ...historyMessages,
+          {
+            role: "user",
+            content: `Here is the current script:
+
+${script}
+
+---
+
+Please make this change: ${userRequest}
+
+Return JSON with "refinedScript" and "explanation" fields.`
+          }
+        ],
+        max_tokens: 2000,
+        temperature: 0.7,
+        response_format: { type: "json_object" },
+      });
+
+      const content = response.choices[0]?.message?.content || "{}";
+      let parsed;
+      try {
+        parsed = JSON.parse(content);
+      } catch {
+        parsed = { refinedScript: script, explanation: "Could not parse the response." };
+      }
+
+      const refinedScript = parsed.refinedScript || script;
+      const explanation = parsed.explanation || "I've updated the script based on your request.";
+
+      // Calculate metrics
+      const words = refinedScript.split(/\s+/).filter(Boolean);
+      const wordCount = words.length;
+      const sentences = refinedScript.split(/[.!?]+/).filter((s: string) => s.trim().length > 0);
+      const avgWordsPerSentence = words.length / Math.max(1, sentences.length);
+      const gradeLevel = Math.max(3, Math.min(12, 0.39 * avgWordsPerSentence + 4));
+
+      res.json({
+        refinedScript,
+        explanation,
+        wordCount,
+        gradeLevel: Math.round(gradeLevel * 10) / 10,
+      });
+    } catch (error) {
+      console.error("Error refining script:", error);
+      res.status(500).json({ error: "Failed to refine script" });
+    }
+  });
+
   // Boost Virality: Analyze script and improve viral score
   app.post("/api/scripts/boost", async (req, res) => {
     try {
