@@ -271,6 +271,13 @@ export default function Home() {
   const [cloneVideoUrl, setCloneVideoUrl] = useState("");
   const [clonedStructure, setClonedStructure] = useState<any>(null);
   const [isAnalyzingClone, setIsAnalyzingClone] = useState(false);
+  
+  // Clone Template Flow - simplified 2-step process
+  type CloneStep = "template" | "generate";
+  const [cloneStep, setCloneStep] = useState<CloneStep>("template");
+  const [cloneTemplateTopic, setCloneTemplateTopic] = useState("");
+  const [cloneSectionInputs, setCloneSectionInputs] = useState<Record<string, string>>({});
+  const [showOriginalTranscript, setShowOriginalTranscript] = useState(false);
 
   const [formData, setFormData] = useState<ScriptParameters>({
     topic: "",
@@ -809,7 +816,16 @@ export default function Home() {
 
                 {/* Option 2: Clone Video Format */}
                 <button
-                  onClick={() => setCreationMethod("clone")}
+                  onClick={() => {
+                    // Reset all clone-related state for fresh start
+                    setClonedStructure(null);
+                    setCloneVideoUrl("");
+                    setCloneStep("template");
+                    setCloneTemplateTopic("");
+                    setCloneSectionInputs({});
+                    setShowOriginalTranscript(false);
+                    setCreationMethod("clone");
+                  }}
                   className="p-6 rounded-xl border-2 border-primary bg-primary/10 hover-elevate text-left transition-all group relative overflow-visible shadow-lg shadow-primary/20"
                   data-testid="button-method-clone"
                 >
@@ -925,6 +941,11 @@ export default function Home() {
                       setClonedStructure(null);
                       setCloneVideoUrl("");
                       setFormData(prev => ({ ...prev, clonedVideoStructure: undefined }));
+                      // Also reset template state
+                      setCloneStep("template");
+                      setCloneTemplateTopic("");
+                      setCloneSectionInputs({});
+                      setShowOriginalTranscript(false);
                     }}
                     className="text-xs text-muted-foreground"
                     data-testid="button-clear-clone"
@@ -1002,10 +1023,16 @@ export default function Home() {
                 <div className="pt-4 border-t border-border">
                   <Button
                     onClick={() => {
+                      // Reset clone template state to ensure fresh start
+                      setCloneStep("template");
+                      setCloneTemplateTopic("");
+                      setCloneSectionInputs({});
+                      setShowOriginalTranscript(false);
+                      // Apply the format
                       setClonedStructure({ ...clonedStructure, applied: true });
                       toast({ 
                         title: "Format Applied!", 
-                        description: "Your script will follow this video's structure, hook style, and pacing." 
+                        description: "Fill in your content to match this video's structure." 
                       });
                     }}
                     className="w-full"
@@ -1023,41 +1050,360 @@ export default function Home() {
             </div>
           )}
 
-          {/* After format is applied - show confirmation and continue */}
+          {/* TEMPLATE-DRIVEN CLONE FLOW - Simplified 2-step process */}
           {creationMethod === "clone" && clonedStructure?.applied && (
-            <div className="max-w-2xl mx-auto mb-6">
-              <div className="p-4 rounded-xl border border-green-500/30 bg-green-500/10">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle className="w-5 h-5 text-green-500" />
-                    <span className="font-semibold text-green-600 dark:text-green-400">Format Applied: {clonedStructure.analysis?.format?.replace(/_/g, " ")}</span>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      setClonedStructure(null);
-                      setCloneVideoUrl("");
-                      setFormData(prev => ({ ...prev, clonedVideoStructure: undefined }));
-                    }}
-                    className="text-xs"
-                    data-testid="button-change-format"
-                  >
-                    Change
-                  </Button>
-                </div>
-                <p className="text-sm text-muted-foreground mt-1">
-                  {clonedStructure.analysis?.hookStyle?.replace(/_/g, " ")} hook • {clonedStructure.analysis?.pacing} pacing • {clonedStructure.analysis?.sections?.length || 0} sections
-                </p>
+            <div className="max-w-3xl mx-auto">
+              {/* Back button */}
+              <div className="text-center mb-4">
+                <button
+                  onClick={() => {
+                    setClonedStructure({ ...clonedStructure, applied: false });
+                    setCloneStep("template");
+                    setCloneSectionInputs({});
+                    setCloneTemplateTopic("");
+                  }}
+                  className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
+                  data-testid="button-back-to-analysis"
+                >
+                  <ChevronLeft className="w-3 h-3" /> Back to video analysis
+                </button>
               </div>
+
+              {/* Clone step indicator */}
+              <div className="flex items-center justify-center gap-2 mb-6">
+                <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium ${
+                  cloneStep === "template" 
+                    ? "bg-primary text-primary-foreground" 
+                    : "bg-muted text-muted-foreground"
+                }`}>
+                  <span className="w-5 h-5 rounded-full bg-background/20 flex items-center justify-center text-[10px]">1</span>
+                  Fill Template
+                </div>
+                <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium ${
+                  cloneStep === "generate" 
+                    ? "bg-primary text-primary-foreground" 
+                    : "bg-muted text-muted-foreground"
+                }`}>
+                  <span className="w-5 h-5 rounded-full bg-background/20 flex items-center justify-center text-[10px]">2</span>
+                  Generate
+                </div>
+              </div>
+
+              {/* Template Step - Fill in your content */}
+              {cloneStep === "template" && (
+                <Card className="p-6">
+                  {/* Header with format info */}
+                  <div className="flex items-center justify-between mb-6 pb-4 border-b border-border">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+                        <Sparkles className="w-5 h-5 text-primary" />
+                      </div>
+                      <div>
+                        <h2 className="font-semibold text-lg">Fill in Your Version</h2>
+                        <p className="text-sm text-muted-foreground">
+                          Cloning: <span className="capitalize">{clonedStructure.analysis?.format?.replace(/_/g, " ")}</span> • 
+                          {clonedStructure.analysis?.hookStyle?.replace(/_/g, " ")} hook • 
+                          {clonedStructure.analysis?.pacing} pacing
+                        </p>
+                      </div>
+                    </div>
+                    <Badge variant="secondary">{clonedStructure.analysis?.sections?.length || 0} sections</Badge>
+                  </div>
+
+                  {/* Topic input */}
+                  <div className="mb-6">
+                    <Label className="text-sm font-medium mb-2 block">What's your topic?</Label>
+                    <Input
+                      placeholder="e.g., Why most people fail at saving money"
+                      value={cloneTemplateTopic}
+                      onChange={(e) => setCloneTemplateTopic(e.target.value)}
+                      className="text-base"
+                      data-testid="input-clone-topic"
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Your main subject - we'll adapt the cloned format to this
+                    </p>
+                  </div>
+
+                  {/* Original transcript (collapsible) */}
+                  {clonedStructure.transcript && (
+                    <Collapsible open={showOriginalTranscript} onOpenChange={setShowOriginalTranscript} className="mb-6">
+                      <CollapsibleTrigger className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground w-full">
+                        <FileText className="w-4 h-4" />
+                        <span>View original video transcript for inspiration</span>
+                        {showOriginalTranscript ? <ChevronUp className="w-4 h-4 ml-auto" /> : <ChevronDown className="w-4 h-4 ml-auto" />}
+                      </CollapsibleTrigger>
+                      <CollapsibleContent className="mt-3">
+                        <div className="p-4 rounded-lg bg-muted/50 border border-border">
+                          <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">
+                            {clonedStructure.transcript}
+                          </p>
+                        </div>
+                      </CollapsibleContent>
+                    </Collapsible>
+                  )}
+
+                  {/* Sections to fill in */}
+                  <div className="space-y-4 mb-6">
+                    <Label className="text-sm font-medium">Fill in each section (matching the original structure):</Label>
+                    
+                    {clonedStructure.analysis?.sections?.map((section: any, index: number) => (
+                      <div key={index} className="relative">
+                        <div className="flex items-center gap-2 mb-2">
+                          <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
+                            index === 0 ? 'bg-primary text-primary-foreground' : 
+                            index === clonedStructure.analysis.sections.length - 1 ? 'bg-green-500 text-white' : 
+                            'bg-blue-500 text-white'
+                          }`}>
+                            {index + 1}
+                          </div>
+                          <span className="font-medium capitalize">{section.name}</span>
+                          <span className="text-xs text-muted-foreground">({section.durationPercent}% of video)</span>
+                        </div>
+                        <Textarea
+                          placeholder={`Your ${section.name.toLowerCase()}... ${
+                            section.name.toLowerCase().includes('hook') 
+                              ? `(${clonedStructure.analysis?.hookStyle?.replace(/_/g, " ")} style)`
+                              : section.name.toLowerCase().includes('cta') || section.name.toLowerCase().includes('call')
+                              ? `(${clonedStructure.analysis?.ctaStyle?.replace(/_/g, " ")} style)`
+                              : ''
+                          }`}
+                          value={cloneSectionInputs[section.name] || ""}
+                          onChange={(e) => setCloneSectionInputs(prev => ({
+                            ...prev,
+                            [section.name]: e.target.value
+                          }))}
+                          className="min-h-[80px] resize-none"
+                          data-testid={`textarea-clone-section-${index}`}
+                        />
+                        {section.purpose && (
+                          <p className="text-xs text-muted-foreground mt-1 ml-8">
+                            Purpose: {section.purpose}
+                          </p>
+                        )}
+                      </div>
+                    ))}
+
+                    {/* If no sections, show generic inputs */}
+                    {(!clonedStructure.analysis?.sections || clonedStructure.analysis.sections.length === 0) && (
+                      <>
+                        <div>
+                          <div className="flex items-center gap-2 mb-2">
+                            <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center text-xs font-bold text-primary-foreground">1</div>
+                            <span className="font-medium">Hook</span>
+                          </div>
+                          <Textarea
+                            placeholder={`Your hook (${clonedStructure.analysis?.hookStyle?.replace(/_/g, " ")} style)...`}
+                            value={cloneSectionInputs["Hook"] || ""}
+                            onChange={(e) => setCloneSectionInputs(prev => ({ ...prev, Hook: e.target.value }))}
+                            className="min-h-[80px] resize-none"
+                            data-testid="textarea-clone-hook"
+                          />
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2 mb-2">
+                            <div className="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center text-xs font-bold text-white">2</div>
+                            <span className="font-medium">Main Content</span>
+                          </div>
+                          <Textarea
+                            placeholder="Your main teaching or points..."
+                            value={cloneSectionInputs["Main Content"] || ""}
+                            onChange={(e) => setCloneSectionInputs(prev => ({ ...prev, "Main Content": e.target.value }))}
+                            className="min-h-[100px] resize-none"
+                            data-testid="textarea-clone-main"
+                          />
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2 mb-2">
+                            <div className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center text-xs font-bold text-white">3</div>
+                            <span className="font-medium">Call to Action</span>
+                          </div>
+                          <Textarea
+                            placeholder={`Your CTA (${clonedStructure.analysis?.ctaStyle?.replace(/_/g, " ")} style)...`}
+                            value={cloneSectionInputs["CTA"] || ""}
+                            onChange={(e) => setCloneSectionInputs(prev => ({ ...prev, CTA: e.target.value }))}
+                            className="min-h-[60px] resize-none"
+                            data-testid="textarea-clone-cta"
+                          />
+                        </div>
+                      </>
+                    )}
+                  </div>
+
+                  {/* Generate button */}
+                  <Button
+                    onClick={() => {
+                      if (!cloneTemplateTopic.trim()) {
+                        toast({ title: "Please enter your topic", variant: "destructive" });
+                        return;
+                      }
+                      // Build the skeleton from template inputs
+                      const sectionContent = Object.entries(cloneSectionInputs)
+                        .map(([name, content]) => `${name}: ${content}`)
+                        .join("\n\n");
+                      
+                      // Set form data with cloned structure
+                      setFormData(prev => ({
+                        ...prev,
+                        topic: cloneTemplateTopic,
+                        referenceScript: sectionContent,
+                        clonedVideoStructure: clonedStructure.analysis,
+                      }));
+                      setCloneStep("generate");
+                    }}
+                    className="w-full"
+                    size="lg"
+                    disabled={!cloneTemplateTopic.trim()}
+                    data-testid="button-clone-continue"
+                  >
+                    Continue to Generate
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </Button>
+                </Card>
+              )}
+
+              {/* Generate Step */}
+              {cloneStep === "generate" && (
+                <Card className="p-6">
+                  {/* Summary of what will be generated */}
+                  <div className="mb-6">
+                    <h2 className="font-semibold text-lg mb-3">Ready to Generate Your Script</h2>
+                    
+                    <div className="p-4 rounded-lg bg-muted/50 border border-border space-y-3">
+                      <div className="flex items-start gap-3">
+                        <Target className="w-5 h-5 text-primary mt-0.5" />
+                        <div>
+                          <p className="text-sm font-medium">Topic</p>
+                          <p className="text-sm text-muted-foreground">{cloneTemplateTopic}</p>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-start gap-3">
+                        <Sparkles className="w-5 h-5 text-primary mt-0.5" />
+                        <div>
+                          <p className="text-sm font-medium">Cloned Format</p>
+                          <p className="text-sm text-muted-foreground capitalize">
+                            {clonedStructure.analysis?.format?.replace(/_/g, " ")} • 
+                            {clonedStructure.analysis?.hookStyle?.replace(/_/g, " ")} hook • 
+                            {clonedStructure.analysis?.pacing} pacing
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-start gap-3">
+                        <Layers className="w-5 h-5 text-primary mt-0.5" />
+                        <div>
+                          <p className="text-sm font-medium">Your Content Outline</p>
+                          <div className="text-sm text-muted-foreground">
+                            {Object.entries(cloneSectionInputs).filter(([_, v]) => v.trim()).length > 0 ? (
+                              <ul className="list-disc list-inside space-y-1 mt-1">
+                                {Object.entries(cloneSectionInputs)
+                                  .filter(([_, v]) => v.trim())
+                                  .map(([name, content]) => (
+                                    <li key={name}>
+                                      <span className="font-medium">{name}:</span> {content.slice(0, 50)}{content.length > 50 ? '...' : ''}
+                                    </li>
+                                  ))}
+                              </ul>
+                            ) : (
+                              <p>AI will generate content matching the cloned structure</p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Platform/Duration selection */}
+                  <div className="grid grid-cols-2 gap-4 mb-6">
+                    <div>
+                      <Label className="text-sm font-medium mb-2 block">Platform</Label>
+                      <Select 
+                        value={formData.platform} 
+                        onValueChange={(value) => setFormData(prev => ({ ...prev, platform: value }))}
+                      >
+                        <SelectTrigger data-testid="select-clone-platform">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {platformOptions.map(opt => (
+                            <SelectItem key={opt.id} value={opt.id}>{opt.name}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium mb-2 block">Duration</Label>
+                      <Select 
+                        value={formData.duration} 
+                        onValueChange={(value) => setFormData(prev => ({ ...prev, duration: value }))}
+                      >
+                        <SelectTrigger data-testid="select-clone-duration">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {durationOptions.map(opt => (
+                            <SelectItem key={opt.id} value={opt.id}>{opt.name}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  {/* Action buttons */}
+                  <div className="flex gap-3">
+                    <Button
+                      variant="outline"
+                      onClick={() => setCloneStep("template")}
+                      data-testid="button-clone-back"
+                    >
+                      <ChevronLeft className="w-4 h-4 mr-1" />
+                      Back
+                    </Button>
+                    <Button
+                      onClick={() => {
+                        // Build section content for generation
+                        const sectionContent = Object.entries(cloneSectionInputs)
+                          .filter(([_, v]) => v.trim())
+                          .map(([name, content]) => `${name}: ${content}`)
+                          .join("\n\n");
+                        
+                        generateMutation.mutate({
+                          ...formData,
+                          topic: cloneTemplateTopic,
+                          referenceScript: sectionContent,
+                          clonedVideoStructure: clonedStructure.analysis,
+                        } as any);
+                      }}
+                      className="flex-1"
+                      size="lg"
+                      disabled={generateMutation.isPending}
+                      data-testid="button-generate-clone-script"
+                    >
+                      {generateMutation.isPending ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Generating...
+                        </>
+                      ) : (
+                        <>
+                          <Wand2 className="w-4 h-4 mr-2" />
+                          Generate Script
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </Card>
+              )}
             </div>
           )}
 
-          {/* Show regular flow after method is chosen (scratch or clone with format applied) */}
-          {(creationMethod === "scratch" || (creationMethod === "clone" && clonedStructure?.applied)) && (
+          {/* Show regular CREATE FROM SCRATCH flow - only for scratch mode */}
+          {creationMethod === "scratch" && (
             <>
               {/* Back button for scratch mode */}
-              {creationMethod === "scratch" && currentStep === "skeleton" && (
+              {currentStep === "skeleton" && (
                 <div className="text-center mb-4">
                   <button
                     onClick={() => setCreationMethod("choose")}
@@ -1065,43 +1411,6 @@ export default function Home() {
                   >
                     <ChevronLeft className="w-3 h-3" /> Back to options
                   </button>
-                </div>
-              )}
-
-              {/* Clone Format Active Indicator - shows throughout wizard when cloning */}
-              {creationMethod === "clone" && clonedStructure?.applied && (
-                <div className="max-w-2xl mx-auto mb-4">
-                  <div className="flex items-center justify-between p-3 rounded-lg bg-gradient-to-r from-primary/20 to-primary/5 border border-primary/30">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
-                        <Sparkles className="w-4 h-4 text-primary" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium flex items-center gap-2">
-                          Cloning Format: <span className="capitalize">{clonedStructure.analysis?.format?.replace(/_/g, " ")}</span>
-                          <Badge variant="secondary" className="text-[10px]">Active</Badge>
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {clonedStructure.analysis?.hookStyle?.replace(/_/g, " ")} hook • {clonedStructure.analysis?.pacing} pacing
-                        </p>
-                      </div>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => {
-                        setClonedStructure(null);
-                        setCloneVideoUrl("");
-                        setFormData(prev => ({ ...prev, clonedVideoStructure: undefined }));
-                        setCreationMethod("choose");
-                      }}
-                      className="text-xs"
-                      data-testid="button-remove-clone-format"
-                    >
-                      <X className="w-3 h-3 mr-1" />
-                      Remove
-                    </Button>
-                  </div>
                 </div>
               )}
               
