@@ -974,25 +974,25 @@ export default function Home() {
                   <span className="w-5 h-5 rounded-full bg-background/20 flex items-center justify-center text-[10px]">1</span>
                   Build Skeleton
                 </div>
-            <ChevronRight className="w-4 h-4 text-muted-foreground" />
-            <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium ${
-              currentStep === "enhance" 
-                ? "bg-primary text-primary-foreground" 
-                : "bg-muted text-muted-foreground"
-            }`}>
-              <span className="w-5 h-5 rounded-full bg-background/20 flex items-center justify-center text-[10px]">2</span>
-              Enhance
-            </div>
-            <ChevronRight className="w-4 h-4 text-muted-foreground" />
-            <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium ${
-              currentStep === "script" 
-                ? "bg-primary text-primary-foreground" 
-                : "bg-muted text-muted-foreground"
-            }`}>
-              <span className="w-5 h-5 rounded-full bg-background/20 flex items-center justify-center text-[10px]">3</span>
-              Generate
-            </div>
-          </div>
+                <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium ${
+                  currentStep === "enhance" 
+                    ? "bg-primary text-primary-foreground" 
+                    : "bg-muted text-muted-foreground"
+                }`}>
+                  <span className="w-5 h-5 rounded-full bg-background/20 flex items-center justify-center text-[10px]">2</span>
+                  Enhance
+                </div>
+                <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium ${
+                  currentStep === "script" 
+                    ? "bg-primary text-primary-foreground" 
+                    : "bg-muted text-muted-foreground"
+                }`}>
+                  <span className="w-5 h-5 rounded-full bg-background/20 flex items-center justify-center text-[10px]">3</span>
+                  Generate
+                </div>
+              </div>
 
           {/* Step 1: Build Skeleton */}
           {currentStep === "skeleton" && (
@@ -1061,6 +1061,8 @@ export default function Home() {
                   </div>
                 </div>
               )}
+            </div>
+          )}
             </>
           )}
         </div>
