@@ -1067,6 +1067,43 @@ export default function Home() {
                   </button>
                 </div>
               )}
+
+              {/* Clone Format Active Indicator - shows throughout wizard when cloning */}
+              {creationMethod === "clone" && clonedStructure?.applied && (
+                <div className="max-w-2xl mx-auto mb-4">
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-gradient-to-r from-primary/20 to-primary/5 border border-primary/30">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
+                        <Sparkles className="w-4 h-4 text-primary" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium flex items-center gap-2">
+                          Cloning Format: <span className="capitalize">{clonedStructure.analysis?.format?.replace(/_/g, " ")}</span>
+                          <Badge variant="secondary" className="text-[10px]">Active</Badge>
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {clonedStructure.analysis?.hookStyle?.replace(/_/g, " ")} hook • {clonedStructure.analysis?.pacing} pacing
+                        </p>
+                      </div>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setClonedStructure(null);
+                        setCloneVideoUrl("");
+                        setFormData(prev => ({ ...prev, clonedVideoStructure: undefined }));
+                        setCreationMethod("choose");
+                      }}
+                      className="text-xs"
+                      data-testid="button-remove-clone-format"
+                    >
+                      <X className="w-3 h-3 mr-1" />
+                      Remove
+                    </Button>
+                  </div>
+                </div>
+              )}
               
               {/* Step indicator */}
               <div className="flex items-center justify-center gap-2 mb-6">
