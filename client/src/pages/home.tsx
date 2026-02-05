@@ -671,6 +671,8 @@ export default function Home() {
         topHooks: enhanced.competitorAnalysis.topHooks.slice(0, 3),
         avgViews: enhanced.competitorAnalysis.engagementStats.avgViews,
       } : undefined,
+      // Include cloned video structure if user analyzed a video
+      clonedVideoStructure: clonedStructure?.analysis || undefined,
     };
     
     generateMutation.mutate({ ...params, ...enhancedPayload });
@@ -701,7 +703,9 @@ export default function Home() {
         cta: skeleton.cta.content,
         targetAudience: skeleton.targetAudience,
         isLocked: true,
-      }
+      },
+      // Include cloned video structure if user analyzed a video
+      clonedVideoStructure: clonedStructure?.analysis || undefined,
     };
     
     generateMutation.mutate({ ...params, ...skeletonPayload });
