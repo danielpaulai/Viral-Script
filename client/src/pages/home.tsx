@@ -806,19 +806,22 @@ export default function Home() {
                 {/* Option 2: Clone Video Format */}
                 <button
                   onClick={() => setCreationMethod("clone")}
-                  className="p-6 rounded-xl border-2 border-purple-500/30 bg-gradient-to-br from-purple-500/10 to-pink-500/10 hover-elevate text-left transition-all group"
+                  className="p-6 rounded-xl border-2 border-purple-500 bg-gradient-to-br from-purple-600/20 to-pink-600/20 hover-elevate text-left transition-all group relative overflow-visible shadow-lg shadow-purple-500/20"
                   data-testid="button-method-clone"
                 >
+                  <div className="absolute -top-2 -right-2 px-2 py-0.5 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full text-[10px] font-bold text-white uppercase tracking-wider">
+                    Hot
+                  </div>
                   <div className="flex items-center gap-3 mb-3">
-                    <div className="w-12 h-12 rounded-full bg-purple-500/20 flex items-center justify-center">
-                      <ExternalLink className="w-6 h-6 text-purple-400" />
+                    <div className="w-14 h-14 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                      <ExternalLink className="w-7 h-7 text-white" />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-lg text-purple-300">Clone Video Format</h3>
-                      <Badge variant="outline" className="text-[10px] border-purple-500/50 text-purple-300 ml-1">New</Badge>
+                      <h3 className="font-bold text-xl text-white">Clone Video Format</h3>
+                      <p className="text-xs text-purple-200">Copy what's already working</p>
                     </div>
                   </div>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm text-purple-100">
                     Paste a viral TikTok or Instagram video URL. The AI will analyze its structure and create your script in the same format.
                   </p>
                 </button>
