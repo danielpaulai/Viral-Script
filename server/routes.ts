@@ -1811,6 +1811,16 @@ Generate 3 CTAs now:`;
       const params: ScriptParameters = req.body;
       const userId = req.user?.id;
       
+      // Debug: Log if cloned video structure is being received
+      console.log("[Script Generate] Received params:", {
+        hasClonedVideoStructure: !!params.clonedVideoStructure,
+        clonedVideoStructure: params.clonedVideoStructure ? {
+          format: params.clonedVideoStructure.format,
+          hookStyle: params.clonedVideoStructure.hookStyle,
+          pacing: params.clonedVideoStructure.pacing,
+        } : null,
+      });
+      
       // Check trial status for authenticated users
       if (userId) {
         const trialStatus = await storage.checkTrialStatus(userId);
