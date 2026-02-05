@@ -909,14 +909,128 @@ export default function Home() {
             </div>
           )}
 
-          {/* After clone analysis - show structure and proceed to content */}
-          {creationMethod === "clone" && clonedStructure && (
+          {/* After clone analysis - show extracted structure details */}
+          {creationMethod === "clone" && clonedStructure && !clonedStructure.applied && (
             <div className="max-w-2xl mx-auto mb-6">
-              <div className="p-4 rounded-xl border border-green-500/30 bg-green-500/10 mb-4">
-                <div className="flex items-center justify-between mb-3">
+              <div className="p-5 rounded-xl border-2 border-primary/30 bg-card">
+                <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
-                    <CheckCircle className="w-5 h-5 text-green-400" />
-                    <span className="font-semibold text-green-300">Video Format Cloned!</span>
+                    <CheckCircle className="w-5 h-5 text-green-500" />
+                    <span className="font-semibold text-lg">Video Structure Extracted</span>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setClonedStructure(null);
+                      setCloneVideoUrl("");
+                      setFormData(prev => ({ ...prev, clonedVideoStructure: undefined }));
+                    }}
+                    className="text-xs text-muted-foreground"
+                    data-testid="button-clear-clone"
+                  >
+                    <X className="w-3 h-3 mr-1" />
+                    Clear
+                  </Button>
+                </div>
+
+                {/* Main extracted info grid */}
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
+                  <div className="p-3 rounded-lg bg-muted/50">
+                    <p className="text-xs text-muted-foreground mb-1">Format Type</p>
+                    <p className="font-semibold capitalize">{clonedStructure.analysis?.format?.replace(/_/g, " ") || "Detected"}</p>
+                  </div>
+                  <div className="p-3 rounded-lg bg-muted/50">
+                    <p className="text-xs text-muted-foreground mb-1">Hook Style</p>
+                    <p className="font-semibold capitalize">{clonedStructure.analysis?.hookStyle?.replace(/_/g, " ") || "Detected"}</p>
+                  </div>
+                  <div className="p-3 rounded-lg bg-muted/50">
+                    <p className="text-xs text-muted-foreground mb-1">Pacing</p>
+                    <p className="font-semibold capitalize">{clonedStructure.analysis?.pacing?.replace(/_/g, " ") || "Moderate"}</p>
+                  </div>
+                  <div className="p-3 rounded-lg bg-muted/50">
+                    <p className="text-xs text-muted-foreground mb-1">CTA Style</p>
+                    <p className="font-semibold capitalize">{clonedStructure.analysis?.ctaStyle?.replace(/_/g, " ") || "Soft ask"}</p>
+                  </div>
+                  <div className="p-3 rounded-lg bg-muted/50">
+                    <p className="text-xs text-muted-foreground mb-1">Tone</p>
+                    <p className="font-semibold text-sm">{clonedStructure.analysis?.toneDescription?.slice(0, 40) || "Conversational"}...</p>
+                  </div>
+                  <div className="p-3 rounded-lg bg-muted/50">
+                    <p className="text-xs text-muted-foreground mb-1">Sections</p>
+                    <p className="font-semibold">{clonedStructure.analysis?.sections?.length || 0} parts</p>
+                  </div>
+                </div>
+
+                {/* Video sections breakdown */}
+                {clonedStructure.analysis?.sections && clonedStructure.analysis.sections.length > 0 && (
+                  <div className="mb-4">
+                    <p className="text-xs text-muted-foreground mb-2 font-medium">Video Structure Breakdown:</p>
+                    <div className="flex gap-1 h-3 rounded-full overflow-hidden bg-muted">
+                      {clonedStructure.analysis.sections.map((section: any, i: number) => (
+                        <div 
+                          key={i}
+                          className={`h-full ${i === 0 ? 'bg-primary' : i === clonedStructure.analysis.sections.length - 1 ? 'bg-green-500' : 'bg-blue-500'}`}
+                          style={{ width: `${section.durationPercent || 33}%` }}
+                          title={`${section.name}: ${section.durationPercent}%`}
+                        />
+                      ))}
+                    </div>
+                    <div className="flex justify-between text-[10px] text-muted-foreground mt-1">
+                      {clonedStructure.analysis.sections.map((section: any, i: number) => (
+                        <span key={i}>{section.name} ({section.durationPercent}%)</span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Key patterns */}
+                {clonedStructure.analysis?.keyPatterns && clonedStructure.analysis.keyPatterns.length > 0 && (
+                  <div className="mb-4">
+                    <p className="text-xs text-muted-foreground mb-2 font-medium">Key Patterns Detected:</p>
+                    <div className="flex flex-wrap gap-2">
+                      {clonedStructure.analysis.keyPatterns.map((pattern: string, i: number) => (
+                        <span key={i} className="px-2 py-1 rounded-full bg-primary/10 text-primary text-xs">
+                          {pattern}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Apply button */}
+                <div className="pt-4 border-t border-border">
+                  <Button
+                    onClick={() => {
+                      setClonedStructure({ ...clonedStructure, applied: true });
+                      toast({ 
+                        title: "Format Applied!", 
+                        description: "Your script will follow this video's structure, hook style, and pacing." 
+                      });
+                    }}
+                    className="w-full"
+                    size="lg"
+                    data-testid="button-apply-clone-format"
+                  >
+                    <Sparkles className="w-4 h-4 mr-2" />
+                    Apply This Format to My Script
+                  </Button>
+                  <p className="text-xs text-center text-muted-foreground mt-2">
+                    Your generated script will match this video's proven structure
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* After format is applied - show confirmation and continue */}
+          {creationMethod === "clone" && clonedStructure?.applied && (
+            <div className="max-w-2xl mx-auto mb-6">
+              <div className="p-4 rounded-xl border border-green-500/30 bg-green-500/10">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle className="w-5 h-5 text-green-500" />
+                    <span className="font-semibold text-green-600 dark:text-green-400">Format Applied: {clonedStructure.analysis?.format?.replace(/_/g, " ")}</span>
                   </div>
                   <Button
                     variant="ghost"
@@ -927,37 +1041,20 @@ export default function Home() {
                       setFormData(prev => ({ ...prev, clonedVideoStructure: undefined }));
                     }}
                     className="text-xs"
+                    data-testid="button-change-format"
                   >
-                    Clear & Start Over
+                    Change
                   </Button>
                 </div>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-                  <div>
-                    <p className="text-xs text-muted-foreground">Format</p>
-                    <p className="font-medium capitalize">{clonedStructure.analysis?.format?.replace(/_/g, " ") || "Detected"}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Hook Style</p>
-                    <p className="font-medium capitalize">{clonedStructure.analysis?.hookStyle?.replace(/_/g, " ") || "Detected"}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Pacing</p>
-                    <p className="font-medium capitalize">{clonedStructure.analysis?.pacing?.replace(/_/g, " ") || "Detected"}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Sections</p>
-                    <p className="font-medium">{clonedStructure.analysis?.sections?.length || 0} parts</p>
-                  </div>
-                </div>
+                <p className="text-sm text-muted-foreground mt-1">
+                  {clonedStructure.analysis?.hookStyle?.replace(/_/g, " ")} hook • {clonedStructure.analysis?.pacing} pacing • {clonedStructure.analysis?.sections?.length || 0} sections
+                </p>
               </div>
-              <p className="text-sm text-center text-muted-foreground">
-                Now continue to build your content. Your script will follow this cloned format.
-              </p>
             </div>
           )}
 
-          {/* Show regular flow after method is chosen (scratch or clone with structure) */}
-          {(creationMethod === "scratch" || (creationMethod === "clone" && clonedStructure)) && (
+          {/* Show regular flow after method is chosen (scratch or clone with format applied) */}
+          {(creationMethod === "scratch" || (creationMethod === "clone" && clonedStructure?.applied)) && (
             <>
               {/* Back button for scratch mode */}
               {creationMethod === "scratch" && currentStep === "skeleton" && (
