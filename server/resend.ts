@@ -69,12 +69,12 @@ export async function sendWelcomeEmail(toEmail: string, userName: string) {
           <h1 style="color: #6366f1;">Welcome to Viral Script Writer!</h1>
           <p>Hi ${userName || 'there'},</p>
           <p>Thanks for signing up! You now have access to our AI-powered script generation tool.</p>
-          <h2>Your 7-Day Free Trial Includes:</h2>
+          <h2>Your Free Trial Includes:</h2>
           <ul>
-            <li>Up to 20 AI-generated scripts</li>
+            <li>3 free AI-generated scripts to try the tool</li>
             <li>Access to all script formats and hooks</li>
             <li>Deep Research mode for enhanced scripts</li>
-            <li>Script Memory for voice consistency</li>
+            <li>Upgrade anytime for unlimited scripts</li>
           </ul>
           <p>Ready to create your first viral script?</p>
           <a href="https://viralscriptwriter.com" style="display: inline-block; background: #6366f1; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; margin-top: 16px;">Start Creating</a>

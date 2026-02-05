@@ -755,7 +755,7 @@ export class MemStorage implements IStorage {
     const now = new Date();
     const trialEndsAt = user.trialEndsAt ? new Date(user.trialEndsAt) : null;
     const trialScriptsUsed = user.trialScriptsUsed || 0;
-    const maxTrialScripts = 20;
+    const maxTrialScripts = 3; // Free trial: 3 scripts before requiring payment
 
     // If no trial end date, user hasn't started trial yet (legacy user)
     if (!trialEndsAt) {

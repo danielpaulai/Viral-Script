@@ -359,23 +359,16 @@ export function setupAuth(app: Express) {
         });
       });
 
-      // Compute needsPaymentSetup for login response (same logic as /api/user)
-      const validSubscriptionStatuses = ['active', 'trialing'];
-      const hasValidSubscription = user.subscriptionStatus && validSubscriptionStatuses.includes(user.subscriptionStatus);
-      const paymentRequirementDate = new Date('2026-01-16T00:00:00Z');
-      const userCreatedAt = user.createdAt ? new Date(user.createdAt) : null;
-      const isGrandfatheredUser = userCreatedAt !== null && userCreatedAt < paymentRequirementDate;
-      const needsPaymentSetup = !hasValidSubscription && !isGrandfatheredUser;
+      // New flow: users get 3 free scripts before needing to pay
+      // needsPaymentSetup is always false on login - payment is only required after 3 scripts used
+      const needsPaymentSetup = false;
 
-      // DEBUG: Log the full calculation for login
-      console.log("[/api/login] Payment setup calculation:", {
+      // DEBUG: Log login
+      console.log("[/api/login] User logged in:", {
         userId: user.id,
         email: user.email,
+        plan: user.plan,
         subscriptionStatus: user.subscriptionStatus,
-        hasValidSubscription,
-        createdAt: user.createdAt,
-        isGrandfatheredUser,
-        needsPaymentSetup,
       });
 
       res.status(200).json({
@@ -462,27 +455,16 @@ export function setupAuth(app: Express) {
 
       // Check if user needs to complete payment setup
       // User needs payment if they don't have an active or trialing subscription
-      // Exception: users created before payment requirement date are grandfathered in
-      const validSubscriptionStatuses = ['active', 'trialing'];
-      const hasValidSubscription = user.subscriptionStatus && validSubscriptionStatuses.includes(user.subscriptionStatus);
-      
-      // Grandfather existing users created before Jan 16, 2026 (payment requirement rollout)
-      // If createdAt is missing, user is NOT grandfathered (require payment setup)
-      const paymentRequirementDate = new Date('2026-01-16T00:00:00Z');
-      const userCreatedAt = user.createdAt ? new Date(user.createdAt) : null;
-      const isGrandfatheredUser = userCreatedAt !== null && userCreatedAt < paymentRequirementDate;
-      
-      const needsPaymentSetup = !hasValidSubscription && !isGrandfatheredUser;
+      // New flow: users get 3 free scripts before needing to pay
+      // needsPaymentSetup is always false - payment is only required after 3 scripts used
+      const needsPaymentSetup = false;
 
-      // DEBUG: Log the full calculation
-      console.log("[/api/user] Payment setup calculation:", {
+      // DEBUG: Log user fetch
+      console.log("[/api/user] User fetched:", {
         userId: user.id,
         email: user.email,
+        plan: user.plan,
         subscriptionStatus: user.subscriptionStatus,
-        hasValidSubscription,
-        createdAt: user.createdAt,
-        isGrandfatheredUser,
-        needsPaymentSetup,
       });
 
       res.json({

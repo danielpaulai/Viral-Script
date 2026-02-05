@@ -1834,7 +1834,7 @@ Generate 3 CTAs now:`;
         if (trialStatus.scriptsRemaining <= 0) {
           return res.status(403).json({ 
             error: "Script limit reached", 
-            message: "You've used all 20 scripts in your free trial. Please upgrade to continue.",
+            message: "You've used all 3 free scripts. Upgrade to continue creating viral content!",
             trialStatus
           });
         }
@@ -4423,7 +4423,7 @@ Create problems that are:
         isActive: trialStatus.isOnTrial && !trialStatus.trialEnded,
         daysRemaining: trialStatus.daysRemaining,
         scriptsUsed: user?.trialScriptsUsed || 0,
-        scriptsLimit: 20,
+        scriptsLimit: 3, // Free trial: 3 scripts before requiring payment
         trialEndsAt: user?.trialEndsAt || null,
         isPaidUser: isPaidUser || hasActiveSubscription,
       });
