@@ -495,6 +495,20 @@ export interface ScriptParameters {
     videoPurpose?: string;
     isLocked: boolean;
   };
+  clonedVideoStructure?: {
+    format: string;
+    hookStyle: string;
+    pacing: string;
+    toneDescription: string;
+    ctaStyle: string;
+    sections: Array<{
+      name: string;
+      durationPercent: number;
+      description: string;
+    }>;
+    keyPatterns: string[];
+    originalTranscript?: string;
+  };
 }
 
 // Scene breakdown for production

@@ -1226,3 +1226,157 @@ export async function fetchInstagramViralExamples(
     };
   }
 }
+
+// ============================================
+// VIDEO CLONE FEATURE - Extract transcript from single video URL
+// ============================================
+
+export interface VideoCloneData {
+  platform: "tiktok" | "instagram" | "unknown";
+  transcript: string;
+  author?: string;
+  views?: number;
+  likes?: number;
+  comments?: number;
+  duration?: number;
+  success: boolean;
+  error?: string;
+}
+
+// Parse video URL to determine platform and extract ID
+function parseVideoUrl(url: string): { platform: "tiktok" | "instagram" | "unknown"; videoId?: string } {
+  const normalizedUrl = url.toLowerCase().trim();
+  
+  if (normalizedUrl.includes("tiktok.com")) {
+    const videoMatch = url.match(/video\/(\d+)/);
+    return { platform: "tiktok", videoId: videoMatch?.[1] };
+  }
+  
+  if (normalizedUrl.includes("instagram.com")) {
+    const postMatch = url.match(/(?:\/p\/|\/reel\/|\/reels\/)([A-Za-z0-9_-]+)/);
+    return { platform: "instagram", videoId: postMatch?.[1] };
+  }
+  
+  return { platform: "unknown" };
+}
+
+// Scrape a single TikTok video by URL
+export async function scrapeTikTokVideo(videoUrl: string): Promise<VideoCloneData> {
+  if (!APIFY_TOKEN) {
+    return { platform: "tiktok", transcript: "", success: false, error: "APIFY_API_TOKEN is not configured" };
+  }
+
+  const client = new ApifyClient({ token: APIFY_TOKEN });
+
+  try {
+    const input = {
+      postURLs: [videoUrl],
+      resultsPerPage: 1,
+      shouldDownloadVideos: false,
+      shouldDownloadCovers: false,
+      shouldDownloadSubtitles: true,
+      shouldDownloadSlideshowImages: false,
+    };
+
+    console.log("[Video Clone] Scraping TikTok video:", videoUrl);
+    const run = await client.actor("clockworks/free-tiktok-scraper").call(input, {
+      waitSecs: 120,
+    });
+
+    const { items } = await client.dataset(run.defaultDatasetId).listItems();
+
+    if (items.length === 0) {
+      return { platform: "tiktok", transcript: "", success: false, error: "Could not find video" };
+    }
+
+    const video = items[0] as any;
+    let transcript = video.desc || video.text || "";
+    
+    if (video.subtitles || video.captions) {
+      transcript = video.subtitles || video.captions;
+    }
+
+    console.log("[Video Clone] TikTok video scraped successfully, transcript length:", transcript.length);
+
+    return {
+      platform: "tiktok",
+      transcript,
+      author: video.author?.uniqueId || video.authorMeta?.name,
+      views: video.stats?.playCount || video.playCount,
+      likes: video.stats?.diggCount || video.diggCount,
+      comments: video.stats?.commentCount || video.commentCount,
+      duration: video.duration,
+      success: true,
+    };
+  } catch (error: any) {
+    console.error("[Video Clone] TikTok scrape error:", error);
+    return { platform: "tiktok", transcript: "", success: false, error: error.message || "Failed to scrape video" };
+  }
+}
+
+// Scrape a single Instagram post/reel by URL
+export async function scrapeInstagramVideo(postUrl: string): Promise<VideoCloneData> {
+  if (!APIFY_TOKEN) {
+    return { platform: "instagram", transcript: "", success: false, error: "APIFY_API_TOKEN is not configured" };
+  }
+
+  const client = new ApifyClient({ token: APIFY_TOKEN });
+
+  try {
+    const input = {
+      directUrls: [postUrl],
+      resultsType: "posts",
+      resultsLimit: 1,
+    };
+
+    console.log("[Video Clone] Scraping Instagram post:", postUrl);
+    const run = await client.actor("apify/instagram-scraper").call(input, {
+      waitSecs: 120,
+    });
+
+    const { items } = await client.dataset(run.defaultDatasetId).listItems();
+
+    if (items.length === 0) {
+      return { platform: "instagram", transcript: "", success: false, error: "Could not find post" };
+    }
+
+    const post = items[0] as any;
+    const transcript = post.caption || "";
+
+    console.log("[Video Clone] Instagram post scraped successfully, transcript length:", transcript.length);
+
+    return {
+      platform: "instagram",
+      transcript,
+      author: post.ownerUsername || post.owner?.username,
+      views: post.videoViewCount || post.viewCount,
+      likes: post.likesCount,
+      comments: post.commentsCount,
+      duration: post.videoDuration,
+      success: true,
+    };
+  } catch (error: any) {
+    console.error("[Video Clone] Instagram scrape error:", error);
+    return { platform: "instagram", transcript: "", success: false, error: error.message || "Failed to scrape post" };
+  }
+}
+
+// Main function to extract video transcript from any supported URL
+export async function extractVideoTranscript(videoUrl: string): Promise<VideoCloneData> {
+  const { platform } = parseVideoUrl(videoUrl);
+
+  if (platform === "tiktok") {
+    return scrapeTikTokVideo(videoUrl);
+  }
+  
+  if (platform === "instagram") {
+    return scrapeInstagramVideo(videoUrl);
+  }
+
+  return {
+    platform: "unknown",
+    transcript: "",
+    success: false,
+    error: "Unsupported platform. Please use a TikTok or Instagram video URL.",
+  };
+}

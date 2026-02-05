@@ -53,7 +53,7 @@ import {
   type KnowledgeBaseDoc,
 } from "@shared/schema";
 import { getCreatorById, creatorStyles as comprehensiveCreatorStyles } from "@shared/creator-styles";
-import { scrapeTikTokProfile, scrapeInstagramProfile, analyzeCreatorStyle, searchTikTokByKeyword } from "./apify";
+import { scrapeTikTokProfile, scrapeInstagramProfile, analyzeCreatorStyle, searchTikTokByKeyword, extractVideoTranscript, VideoCloneData } from "./apify";
 
 // Configure OpenAI client - Always use direct OpenAI API
 const openaiApiKey = process.env.OPENAI_API_KEY;
@@ -801,7 +801,36 @@ ${referenceAnalysis}
 Generate a NEW script about the user's topic that follows these same patterns but with original content.
 ` : "";
 
+  // Cloned video structure instructions
+  let clonedStructureInstructions = "";
+  if (params.clonedVideoStructure) {
+    const clone = params.clonedVideoStructure;
+    clonedStructureInstructions = `
+=== CLONED VIDEO STRUCTURE (HIGHEST PRIORITY - MATCH THIS EXACT FORMAT) ===
+You MUST structure your script to match this cloned video format exactly:
+
+FORMAT: ${clone.format?.replace(/_/g, " ") || "unknown"}
+HOOK STYLE: ${clone.hookStyle?.replace(/_/g, " ") || "unknown"}
+PACING: ${clone.pacing?.replace(/_/g, " ") || "unknown"}
+TONE: ${clone.toneDescription || "Not specified"}
+CTA STYLE: ${clone.ctaStyle?.replace(/_/g, " ") || "soft ask"}
+
+${clone.sections?.length > 0 ? `STRUCTURE SECTIONS (follow this order and approximate timing):
+${clone.sections.map((s: any, i: number) => `${i + 1}. ${s.name} (${s.durationPercent}% of video): ${s.description}`).join('\n')}` : ''}
+
+${clone.keyPatterns?.length > 0 ? `KEY PATTERNS TO REPLICATE:
+${clone.keyPatterns.map((p: string) => `- ${p}`).join('\n')}` : ''}
+
+${clone.originalTranscript ? `REFERENCE TRANSCRIPT (use as style guide):
+"${clone.originalTranscript.slice(0, 800)}${clone.originalTranscript.length > 800 ? '...' : ''}"` : ''}
+
+IMPORTANT: Match the cloned video's structure, pacing, and format. Use the user's content skeleton but present it in this cloned format.
+=== END CLONED STRUCTURE ===
+`;
+  }
+
   const systemPrompt = `You are a world-class short-form video scriptwriter who writes like a real human, NOT an AI.
+${clonedStructureInstructions}
 ${creatorStyleInstructions ? `
 === CREATOR STYLE EMULATION (HIGHEST PRIORITY) ===
 ${creatorStyleInstructions}
@@ -2410,6 +2439,138 @@ Create a powerful video brief that will make this topic stand out and go viral.`
     } catch (error) {
       console.error("Error expanding topic:", error);
       res.status(500).json({ error: "Failed to expand topic" });
+    }
+  });
+
+  // ============================================
+  // VIDEO CLONE FEATURE - Analyze video and extract structure
+  // ============================================
+  
+  interface VideoStructureAnalysis {
+    format: string;
+    hookStyle: string;
+    pacing: string;
+    sections: Array<{
+      name: string;
+      description: string;
+      durationPercent: number;
+    }>;
+    keyPatterns: string[];
+    toneDescription: string;
+    ctaStyle: string;
+    originalTranscript: string;
+  }
+  
+  app.post("/api/video-clone/analyze", isAuthenticated, async (req: any, res) => {
+    try {
+      const { videoUrl } = req.body;
+      
+      if (!videoUrl || typeof videoUrl !== 'string') {
+        return res.status(400).json({ error: "Video URL is required" });
+      }
+      
+      // Validate URL format before calling Apify
+      const tiktokPattern = /^https?:\/\/(www\.)?(tiktok\.com|vm\.tiktok\.com)/i;
+      const instagramPattern = /^https?:\/\/(www\.)?instagram\.com\/(p|reel|tv)/i;
+      
+      if (!tiktokPattern.test(videoUrl) && !instagramPattern.test(videoUrl)) {
+        return res.status(400).json({ 
+          error: "Please enter a valid TikTok or Instagram video URL (e.g., https://www.tiktok.com/@user/video/123 or https://www.instagram.com/reel/abc)" 
+        });
+      }
+      
+      // Check if Apify is configured
+      if (!process.env.APIFY_API_TOKEN) {
+        return res.status(400).json({ error: "Video analysis is not available. Contact support." });
+      }
+      
+      console.log("[Video Clone] Analyzing video:", videoUrl);
+      
+      // Step 1: Extract transcript from the video
+      const videoData = await extractVideoTranscript(videoUrl);
+      
+      if (!videoData.success || !videoData.transcript) {
+        return res.status(400).json({ 
+          error: videoData.error || "Could not extract transcript from video. Make sure the URL is a valid TikTok or Instagram video." 
+        });
+      }
+      
+      console.log("[Video Clone] Transcript extracted, length:", videoData.transcript.length);
+      
+      // Step 2: Use AI to analyze the video structure
+      const analysisPrompt = `Analyze this video script/caption and extract its structural elements for cloning:
+
+TRANSCRIPT:
+"${videoData.transcript}"
+
+Analyze and return a JSON object with these fields:
+{
+  "format": "The video format type (e.g., 'talking_head', 'duet', 'story_time', 'listicle', 'tutorial', 'reaction', 'clone_conversation', 'text_on_screen')",
+  "hookStyle": "How the video hooks viewers (e.g., 'question', 'bold_statement', 'curiosity_gap', 'direct_address', 'statistic')",
+  "pacing": "The pacing style (e.g., 'fast_cuts', 'conversational', 'dramatic_pauses', 'energetic', 'calm')",
+  "sections": [
+    {
+      "name": "Section name (e.g., 'Hook', 'Problem Setup', 'Main Content', 'CTA')",
+      "description": "What happens in this section",
+      "durationPercent": 15
+    }
+  ],
+  "keyPatterns": ["Array of notable patterns like 'Uses repetition', 'Direct camera address', 'Multiple speakers', etc."],
+  "toneDescription": "Overall tone description (e.g., 'Casual and relatable with humor', 'Professional but accessible')",
+  "ctaStyle": "How the CTA is delivered (e.g., 'soft ask', 'direct command', 'question', 'none')"
+}
+
+Be specific and accurate based on the actual content. If this appears to be a multi-person or clone/duet format, note that in the format and keyPatterns.
+
+Return ONLY valid JSON, no other text.`;
+
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [
+          { role: "system", content: "You are an expert video content analyst. Analyze video scripts and return structured JSON analysis." },
+          { role: "user", content: analysisPrompt }
+        ],
+        temperature: 0.3,
+      });
+      
+      const analysisText = response.choices[0].message.content?.trim() || "{}";
+      
+      // Parse the JSON response
+      let analysis: any;
+      try {
+        // Remove markdown code blocks if present
+        const cleanJson = analysisText.replace(/```json\n?|\n?```/g, '').trim();
+        analysis = JSON.parse(cleanJson);
+      } catch (parseError) {
+        console.error("[Video Clone] Failed to parse AI analysis:", parseError);
+        return res.status(500).json({ error: "Failed to analyze video structure" });
+      }
+      
+      const structureAnalysis: VideoStructureAnalysis = {
+        format: analysis.format || "talking_head",
+        hookStyle: analysis.hookStyle || "direct_address",
+        pacing: analysis.pacing || "conversational",
+        sections: analysis.sections || [],
+        keyPatterns: analysis.keyPatterns || [],
+        toneDescription: analysis.toneDescription || "",
+        ctaStyle: analysis.ctaStyle || "soft_ask",
+        originalTranscript: videoData.transcript,
+      };
+      
+      console.log("[Video Clone] Analysis complete:", structureAnalysis.format, structureAnalysis.sections.length, "sections");
+      
+      res.json({
+        success: true,
+        platform: videoData.platform,
+        author: videoData.author,
+        views: videoData.views,
+        likes: videoData.likes,
+        analysis: structureAnalysis,
+      });
+      
+    } catch (error: any) {
+      console.error("[Video Clone] Error analyzing video:", error);
+      res.status(500).json({ error: "Failed to analyze video. Please try again." });
     }
   });
 

@@ -261,6 +261,11 @@ export default function Home() {
   const [videoSkeleton, setVideoSkeleton] = useState<VideoIdeaSkeleton | null>(null);
   const [enhancedSkeleton, setEnhancedSkeleton] = useState<EnhancedSkeleton | null>(null);
   const [showLegacyFlow, setShowLegacyFlow] = useState(false);
+  
+  // Video Clone Feature
+  const [cloneVideoUrl, setCloneVideoUrl] = useState("");
+  const [clonedStructure, setClonedStructure] = useState<any>(null);
+  const [isAnalyzingClone, setIsAnalyzingClone] = useState(false);
 
   const [formData, setFormData] = useState<ScriptParameters>({
     topic: "",
@@ -724,7 +729,13 @@ export default function Home() {
         isLocked: true,
       }
     } : {};
-    generateMutation.mutate({ ...formData, deepResearch, useKnowledgeBase, ...skeletonData });
+    
+    // Include cloned video structure if available
+    const cloneData = clonedStructure?.analysis ? {
+      clonedVideoStructure: clonedStructure.analysis,
+    } : {};
+    
+    generateMutation.mutate({ ...formData, deepResearch, useKnowledgeBase, ...skeletonData, ...cloneData });
   };
 
   const currentHook = useMemo(() => {
@@ -1547,7 +1558,7 @@ export default function Home() {
                     </Button>
                     <Button
                       onClick={handleGenerate}
-                      disabled={generateMutation.isPending}
+                      disabled={generateMutation.isPending || isAnalyzingClone}
                       className="flex-1"
                       data-testid="button-generate-from-skeleton"
                     >
@@ -1641,7 +1652,7 @@ export default function Home() {
             <div className="flex gap-2 mt-4 pt-3 border-t border-primary/20">
               <Button
                 onClick={handleGenerate}
-                disabled={generateMutation.isPending}
+                disabled={generateMutation.isPending || isAnalyzingClone}
                 className="flex-1"
                 data-testid="button-generate-from-brief"
               >
@@ -1802,6 +1813,109 @@ export default function Home() {
               );
             })}
           </div>
+        </div>
+
+        {/* Video Clone Feature */}
+        <div className="mb-4 p-4 rounded-lg bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/20">
+          <div className="flex items-center gap-2 mb-2">
+            <ExternalLink className="w-4 h-4 text-purple-400" />
+            <Label className="text-xs font-medium uppercase tracking-wider text-purple-300">Clone Video Format</Label>
+            <Badge variant="outline" className="text-[10px] border-purple-500/50 text-purple-300">New</Badge>
+          </div>
+          <p className="text-xs text-muted-foreground mb-3">
+            Paste a TikTok or Instagram video URL to clone its format. The AI will analyze the structure and generate your script in that style.
+          </p>
+          <div className="flex gap-2">
+            <Input
+              placeholder="https://www.tiktok.com/@user/video/123... or https://instagram.com/reel/..."
+              value={cloneVideoUrl}
+              onChange={(e) => setCloneVideoUrl(e.target.value)}
+              className="flex-1 text-sm"
+              data-testid="input-clone-video-url"
+            />
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={async () => {
+                if (!cloneVideoUrl.trim()) {
+                  toast({ title: "Enter a video URL", variant: "destructive" });
+                  return;
+                }
+                setIsAnalyzingClone(true);
+                try {
+                  const res = await apiRequest("POST", "/api/video-clone/analyze", { videoUrl: cloneVideoUrl.trim() });
+                  const data = await res.json();
+                  if (data.error) {
+                    toast({ title: "Error", description: data.error, variant: "destructive" });
+                  } else {
+                    setClonedStructure(data);
+                    toast({ title: "Video Analyzed!", description: `Format: ${data.analysis?.format || 'detected'}. Your script will follow this structure.` });
+                  }
+                } catch (err: any) {
+                  toast({ title: "Failed to analyze video", description: err.message, variant: "destructive" });
+                } finally {
+                  setIsAnalyzingClone(false);
+                }
+              }}
+              disabled={isAnalyzingClone || !cloneVideoUrl.trim()}
+              className="shrink-0"
+              data-testid="button-analyze-clone"
+            >
+              {isAnalyzingClone ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                  Analyzing...
+                </>
+              ) : (
+                <>
+                  <Search className="w-4 h-4 mr-1" />
+                  Analyze
+                </>
+              )}
+            </Button>
+          </div>
+          
+          {clonedStructure && (
+            <div className="mt-3 p-3 bg-background/50 rounded-md border border-purple-500/30">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-medium text-purple-300">Structure Detected</span>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="h-6 px-2 text-xs text-muted-foreground"
+                  onClick={() => { setClonedStructure(null); setCloneVideoUrl(""); }}
+                >
+                  <X className="w-3 h-3 mr-1" />
+                  Clear
+                </Button>
+              </div>
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <div>
+                  <span className="text-muted-foreground">Format:</span>{" "}
+                  <span className="text-foreground font-medium">{clonedStructure.analysis?.format?.replace(/_/g, " ")}</span>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">Hook:</span>{" "}
+                  <span className="text-foreground font-medium">{clonedStructure.analysis?.hookStyle?.replace(/_/g, " ")}</span>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">Pacing:</span>{" "}
+                  <span className="text-foreground font-medium">{clonedStructure.analysis?.pacing?.replace(/_/g, " ")}</span>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">Sections:</span>{" "}
+                  <span className="text-foreground font-medium">{clonedStructure.analysis?.sections?.length || 0}</span>
+                </div>
+              </div>
+              {clonedStructure.analysis?.keyPatterns?.length > 0 && (
+                <div className="mt-2 flex flex-wrap gap-1">
+                  {clonedStructure.analysis.keyPatterns.slice(0, 4).map((pattern: string, idx: number) => (
+                    <Badge key={idx} variant="secondary" className="text-[10px]">{pattern}</Badge>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         <div className="mb-4">
