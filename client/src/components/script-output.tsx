@@ -58,6 +58,7 @@ import {
   User,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface ChatMessage {
@@ -1621,28 +1622,22 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
         </div>
       )}
 
-      {/* AI Chat Refinement - ChatGPT/Claude style */}
-      <div className="mt-6">
-        <div className="rounded-xl border border-border overflow-visible bg-card">
-          {/* Header */}
-          <div className="flex items-center justify-between p-4">
-            <button
-              onClick={() => setShowAiChat(!showAiChat)}
-              className="flex items-center gap-3 flex-1 min-w-0"
-              data-testid="button-toggle-ai-chat"
-            >
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center flex-shrink-0">
-                <Sparkles className="w-4 h-4 text-primary-foreground" />
-              </div>
-              <div className="text-left">
-                <span className="text-sm font-semibold">Refine with AI</span>
-                <p className="text-xs text-muted-foreground">Tell the AI what to change</p>
-              </div>
-            </button>
-            <div className="flex items-center gap-2 flex-shrink-0">
-              {chatMessages.length > 0 && (
+      {/* AI Chat Refinement - Claude style */}
+      <div className="mt-8">
+        {/* Conversation history */}
+        {chatMessages.length > 0 && (
+          <div className="mb-4">
+            <div className="flex items-center justify-between mb-3">
+              <button
+                onClick={() => setShowAiChat(!showAiChat)}
+                className="flex items-center gap-2 text-sm font-medium text-muted-foreground"
+                data-testid="button-toggle-ai-chat"
+              >
+                <Sparkles className="w-4 h-4 text-primary" />
+                Conversation
                 <Badge variant="secondary" className="text-[10px]">{Math.floor(chatMessages.length / 2)} edits</Badge>
-              )}
+                {showAiChat ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+              </button>
               {hasUnsavedChanges && (
                 <Button 
                   size="sm" 
@@ -1658,124 +1653,116 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
                   Save
                 </Button>
               )}
-              <button 
-                onClick={() => setShowAiChat(!showAiChat)}
-                className="p-1"
-                data-testid="button-toggle-ai-chevron"
-              >
-                {showAiChat ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
-              </button>
             </div>
-          </div>
-
-          {showAiChat && (
-            <div className="border-t border-border">
-              {/* Messages area */}
-              {chatMessages.length > 0 ? (
-                <ScrollArea className="max-h-[280px]">
-                  <div className="divide-y divide-border/50">
-                    {chatMessages.map((msg, i) => (
-                      <div
-                        key={i}
-                        className={`px-4 py-3 ${msg.role === "assistant" ? "bg-muted/20" : ""}`}
-                      >
-                        <div className="flex gap-3">
-                          <div className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 ${
-                            msg.role === "assistant" 
-                              ? "bg-gradient-to-br from-primary to-primary/60" 
-                              : "bg-muted"
-                          }`}>
-                            {msg.role === "assistant" ? (
-                              <Sparkles className="w-3.5 h-3.5 text-primary-foreground" />
-                            ) : (
-                              <User className="w-3.5 h-3.5 text-muted-foreground" />
-                            )}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <span className="text-xs font-medium text-muted-foreground">
-                              {msg.role === "assistant" ? "Script AI" : "You"}
-                            </span>
-                            <p className="text-sm mt-0.5 leading-relaxed">{msg.content}</p>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                    {refineScriptMutation.isPending && (
-                      <div className="px-4 py-3 bg-muted/20">
-                        <div className="flex gap-3">
-                          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center flex-shrink-0">
+            {showAiChat && (
+              <ScrollArea className="max-h-[300px]">
+                <div className="space-y-1">
+                  {chatMessages.map((msg, i) => (
+                    <div
+                      key={i}
+                      className={`px-4 py-3 rounded-lg ${msg.role === "assistant" ? "bg-muted/40" : ""}`}
+                    >
+                      <div className="flex gap-3">
+                        <div className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 ${
+                          msg.role === "assistant" 
+                            ? "bg-gradient-to-br from-primary to-primary/60" 
+                            : "bg-muted"
+                        }`}>
+                          {msg.role === "assistant" ? (
                             <Sparkles className="w-3.5 h-3.5 text-primary-foreground" />
-                          </div>
-                          <div className="flex-1">
-                            <span className="text-xs font-medium text-muted-foreground">Script AI</span>
-                            <div className="flex items-center gap-2 mt-1">
-                              <div className="flex gap-1">
-                                <div className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce" style={{animationDelay: "0ms"}} />
-                                <div className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce" style={{animationDelay: "150ms"}} />
-                                <div className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce" style={{animationDelay: "300ms"}} />
-                              </div>
-                              <span className="text-xs text-muted-foreground">Refining your script...</span>
+                          ) : (
+                            <User className="w-3.5 h-3.5 text-muted-foreground" />
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <span className="text-xs font-medium text-muted-foreground">
+                            {msg.role === "assistant" ? "Script AI" : "You"}
+                          </span>
+                          <p className="text-sm mt-0.5 leading-relaxed">{msg.content}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  {refineScriptMutation.isPending && (
+                    <div className="px-4 py-3 rounded-lg bg-muted/40">
+                      <div className="flex gap-3">
+                        <div className="w-7 h-7 rounded-full bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center flex-shrink-0">
+                          <Sparkles className="w-3.5 h-3.5 text-primary-foreground" />
+                        </div>
+                        <div className="flex-1">
+                          <span className="text-xs font-medium text-muted-foreground">Script AI</span>
+                          <div className="flex items-center gap-2 mt-1">
+                            <div className="flex gap-1">
+                              <div className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce" style={{animationDelay: "0ms"}} />
+                              <div className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce" style={{animationDelay: "150ms"}} />
+                              <div className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce" style={{animationDelay: "300ms"}} />
                             </div>
+                            <span className="text-xs text-muted-foreground">Refining your script...</span>
                           </div>
                         </div>
                       </div>
-                    )}
-                  </div>
-                </ScrollArea>
-              ) : (
-                /* Empty state with quick suggestions */
-                <div className="p-4">
-                  <div className="flex flex-wrap gap-2">
-                    {["Make the hook more aggressive", "Add humor throughout", "Shorten to 30 seconds", "Change to storytelling style", "Make the CTA stronger"].map((suggestion, idx) => (
-                      <button
-                        key={suggestion}
-                        onClick={() => {
-                          setChatInput(suggestion);
-                        }}
-                        className="px-3 py-1.5 rounded-full border border-border text-xs text-muted-foreground hover:text-foreground hover:border-primary/50 transition-colors"
-                        data-testid={`button-suggestion-${idx}`}
-                      >
-                        {suggestion}
-                      </button>
-                    ))}
-                  </div>
+                    </div>
+                  )}
                 </div>
-              )}
+              </ScrollArea>
+            )}
+          </div>
+        )}
 
-              {/* Input area - ChatGPT/Claude style */}
-              <div className="p-3 border-t border-border">
-                <div className="flex items-center gap-2">
-                  <Input
-                    placeholder="Tell me what to change..."
-                    value={chatInput}
-                    onChange={(e) => setChatInput(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" && !e.shiftKey) {
-                        e.preventDefault();
-                        handleSendChat();
-                      }
-                    }}
-                    disabled={refineScriptMutation.isPending}
-                    className="flex-1 text-sm"
-                    data-testid="input-ai-refine"
-                  />
-                  <Button
-                    onClick={handleSendChat}
-                    disabled={!chatInput.trim() || refineScriptMutation.isPending}
-                    size="icon"
-                    data-testid="button-send-refine"
-                  >
-                    {refineScriptMutation.isPending ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <Send className="w-4 h-4" />
-                    )}
-                  </Button>
-                </div>
-              </div>
+        {/* Claude-style large input box */}
+        <div className="rounded-2xl border border-border bg-card shadow-sm">
+          <div className="p-4 pb-3">
+            <Textarea
+              placeholder="How can I improve this script?"
+              value={chatInput}
+              onChange={(e) => setChatInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSendChat();
+                }
+              }}
+              disabled={refineScriptMutation.isPending}
+              className="border-0 shadow-none resize-none text-sm min-h-[60px] focus-visible:ring-0 p-0"
+              rows={2}
+              data-testid="input-ai-refine"
+            />
+          </div>
+          <div className="flex items-center justify-between px-4 pb-3">
+            <div className="flex items-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5 text-muted-foreground" />
+              <span className="text-[11px] text-muted-foreground">Script AI</span>
             </div>
-          )}
+            <Button
+              onClick={handleSendChat}
+              disabled={!chatInput.trim() || refineScriptMutation.isPending}
+              size="icon"
+              data-testid="button-send-refine"
+            >
+              {refineScriptMutation.isPending ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Send className="w-4 h-4" />
+              )}
+            </Button>
+          </div>
         </div>
+
+        {/* Quick suggestion chips below the input */}
+        {chatMessages.length === 0 && (
+          <div className="flex flex-wrap gap-2 mt-3 justify-center">
+            {["Make the hook punchier", "Add humor", "Shorten it", "Storytelling style", "Stronger CTA"].map((suggestion, idx) => (
+              <button
+                key={suggestion}
+                onClick={() => setChatInput(suggestion)}
+                className="px-3 py-1.5 rounded-full border border-border text-xs text-muted-foreground hover:text-foreground hover:border-primary/50 transition-colors"
+                data-testid={`button-suggestion-${idx}`}
+              >
+                {suggestion}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
     </Card>
   );
