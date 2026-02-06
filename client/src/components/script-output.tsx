@@ -1621,122 +1621,161 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
         </div>
       )}
 
-      {/* AI Chat Refinement Bar */}
-      <div className="mt-6 pt-4 border-t border-border">
-        <div className="flex items-center justify-between mb-3">
-          <button
-            onClick={() => setShowAiChat(!showAiChat)}
-            className="flex items-center gap-2 text-sm font-medium text-foreground hover:text-primary transition-colors"
-            data-testid="button-toggle-ai-chat"
-          >
-            <Sparkles className="w-4 h-4 text-primary" />
-            AI Script Refiner
-            {chatMessages.length > 0 && (
-              <Badge variant="secondary" className="text-[10px]">{chatMessages.length} messages</Badge>
-            )}
-            {showAiChat ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-          </button>
-          {hasUnsavedChanges && (
-            <Button 
-              size="sm" 
-              onClick={() => saveScriptMutation.mutate()}
-              disabled={saveScriptMutation.isPending}
-              className="bg-green-600 hover:bg-green-700"
-              data-testid="button-save-refined-script"
+      {/* AI Chat Refinement - ChatGPT/Claude style */}
+      <div className="mt-6">
+        <div className="rounded-xl border border-border overflow-visible bg-card">
+          {/* Header */}
+          <div className="flex items-center justify-between p-4">
+            <button
+              onClick={() => setShowAiChat(!showAiChat)}
+              className="flex items-center gap-3 flex-1 min-w-0"
+              data-testid="button-toggle-ai-chat"
             >
-              {saveScriptMutation.isPending ? (
-                <Loader2 className="w-3 h-3 animate-spin mr-1" />
-              ) : (
-                <Save className="w-3 h-3 mr-1" />
-              )}
-              Save Changes
-            </Button>
-          )}
-        </div>
-
-        {showAiChat && (
-          <div className="rounded-lg border border-border bg-muted/30">
-            {/* Chat messages */}
-            {chatMessages.length > 0 && (
-              <ScrollArea className="max-h-[200px] p-3">
-                <div className="space-y-3">
-                  {chatMessages.map((msg, i) => (
-                    <div
-                      key={i}
-                      className={`flex gap-2 ${msg.role === "user" ? "justify-end" : "justify-start"}`}
-                    >
-                      {msg.role === "assistant" && (
-                        <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
-                          <Bot className="w-3 h-3 text-primary" />
-                        </div>
-                      )}
-                      <div
-                        className={`max-w-[80%] px-3 py-2 rounded-lg text-sm ${
-                          msg.role === "user"
-                            ? "bg-primary text-primary-foreground"
-                            : "bg-card border border-border"
-                        }`}
-                      >
-                        {msg.content}
-                      </div>
-                      {msg.role === "user" && (
-                        <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
-                          <User className="w-3 h-3 text-muted-foreground" />
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                  {refineScriptMutation.isPending && (
-                    <div className="flex gap-2 justify-start">
-                      <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
-                        <Bot className="w-3 h-3 text-primary" />
-                      </div>
-                      <div className="px-3 py-2 rounded-lg text-sm bg-card border border-border flex items-center gap-2">
-                        <Loader2 className="w-3 h-3 animate-spin" />
-                        Refining script...
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </ScrollArea>
-            )}
-
-            {/* Input area */}
-            <div className="p-3 border-t border-border">
-              <div className="flex gap-2">
-                <Input
-                  placeholder="Tell me how to change the script... (e.g., 'make the hook more aggressive', 'add humor')"
-                  value={chatInput}
-                  onChange={(e) => setChatInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && !e.shiftKey) {
-                      e.preventDefault();
-                      handleSendChat();
-                    }
-                  }}
-                  disabled={refineScriptMutation.isPending}
-                  className="flex-1 text-sm"
-                  data-testid="input-ai-refine"
-                />
-                <Button
-                  onClick={handleSendChat}
-                  disabled={!chatInput.trim() || refineScriptMutation.isPending}
-                  size="icon"
-                  data-testid="button-send-refine"
-                >
-                  {refineScriptMutation.isPending ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <Send className="w-4 h-4" />
-                  )}
-                </Button>
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center flex-shrink-0">
+                <Sparkles className="w-4 h-4 text-primary-foreground" />
               </div>
-              <p className="text-xs text-muted-foreground mt-2">
-                Ask the AI to make changes like "add more urgency", "make it funnier", "change the CTA", etc.
-              </p>
+              <div className="text-left">
+                <span className="text-sm font-semibold">Refine with AI</span>
+                <p className="text-xs text-muted-foreground">Tell the AI what to change</p>
+              </div>
+            </button>
+            <div className="flex items-center gap-2 flex-shrink-0">
+              {chatMessages.length > 0 && (
+                <Badge variant="secondary" className="text-[10px]">{Math.floor(chatMessages.length / 2)} edits</Badge>
+              )}
+              {hasUnsavedChanges && (
+                <Button 
+                  size="sm" 
+                  onClick={() => saveScriptMutation.mutate()}
+                  disabled={saveScriptMutation.isPending}
+                  data-testid="button-save-refined-script"
+                >
+                  {saveScriptMutation.isPending ? (
+                    <Loader2 className="w-3 h-3 animate-spin mr-1" />
+                  ) : (
+                    <Save className="w-3 h-3 mr-1" />
+                  )}
+                  Save
+                </Button>
+              )}
+              <button 
+                onClick={() => setShowAiChat(!showAiChat)}
+                className="p-1"
+                data-testid="button-toggle-ai-chevron"
+              >
+                {showAiChat ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
+              </button>
             </div>
           </div>
-        )}
+
+          {showAiChat && (
+            <div className="border-t border-border">
+              {/* Messages area */}
+              {chatMessages.length > 0 ? (
+                <ScrollArea className="max-h-[280px]">
+                  <div className="divide-y divide-border/50">
+                    {chatMessages.map((msg, i) => (
+                      <div
+                        key={i}
+                        className={`px-4 py-3 ${msg.role === "assistant" ? "bg-muted/20" : ""}`}
+                      >
+                        <div className="flex gap-3">
+                          <div className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                            msg.role === "assistant" 
+                              ? "bg-gradient-to-br from-primary to-primary/60" 
+                              : "bg-muted"
+                          }`}>
+                            {msg.role === "assistant" ? (
+                              <Sparkles className="w-3.5 h-3.5 text-primary-foreground" />
+                            ) : (
+                              <User className="w-3.5 h-3.5 text-muted-foreground" />
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <span className="text-xs font-medium text-muted-foreground">
+                              {msg.role === "assistant" ? "Script AI" : "You"}
+                            </span>
+                            <p className="text-sm mt-0.5 leading-relaxed">{msg.content}</p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                    {refineScriptMutation.isPending && (
+                      <div className="px-4 py-3 bg-muted/20">
+                        <div className="flex gap-3">
+                          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center flex-shrink-0">
+                            <Sparkles className="w-3.5 h-3.5 text-primary-foreground" />
+                          </div>
+                          <div className="flex-1">
+                            <span className="text-xs font-medium text-muted-foreground">Script AI</span>
+                            <div className="flex items-center gap-2 mt-1">
+                              <div className="flex gap-1">
+                                <div className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce" style={{animationDelay: "0ms"}} />
+                                <div className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce" style={{animationDelay: "150ms"}} />
+                                <div className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce" style={{animationDelay: "300ms"}} />
+                              </div>
+                              <span className="text-xs text-muted-foreground">Refining your script...</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </ScrollArea>
+              ) : (
+                /* Empty state with quick suggestions */
+                <div className="p-4">
+                  <div className="flex flex-wrap gap-2">
+                    {["Make the hook more aggressive", "Add humor throughout", "Shorten to 30 seconds", "Change to storytelling style", "Make the CTA stronger"].map((suggestion, idx) => (
+                      <button
+                        key={suggestion}
+                        onClick={() => {
+                          setChatInput(suggestion);
+                        }}
+                        className="px-3 py-1.5 rounded-full border border-border text-xs text-muted-foreground hover:text-foreground hover:border-primary/50 transition-colors"
+                        data-testid={`button-suggestion-${idx}`}
+                      >
+                        {suggestion}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Input area - ChatGPT/Claude style */}
+              <div className="p-3 border-t border-border">
+                <div className="flex items-center gap-2">
+                  <Input
+                    placeholder="Tell me what to change..."
+                    value={chatInput}
+                    onChange={(e) => setChatInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !e.shiftKey) {
+                        e.preventDefault();
+                        handleSendChat();
+                      }
+                    }}
+                    disabled={refineScriptMutation.isPending}
+                    className="flex-1 text-sm"
+                    data-testid="input-ai-refine"
+                  />
+                  <Button
+                    onClick={handleSendChat}
+                    disabled={!chatInput.trim() || refineScriptMutation.isPending}
+                    size="icon"
+                    data-testid="button-send-refine"
+                  >
+                    {refineScriptMutation.isPending ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Send className="w-4 h-4" />
+                    )}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </Card>
   );

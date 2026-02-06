@@ -278,6 +278,9 @@ export default function Home() {
   const [cloneTemplateTopic, setCloneTemplateTopic] = useState("");
   const [cloneSectionInputs, setCloneSectionInputs] = useState<Record<string, string>>({});
   const [showOriginalTranscript, setShowOriginalTranscript] = useState(false);
+  const [cloneGeneratedHooks, setCloneGeneratedHooks] = useState<Array<{id: string, hook: string, reasoning: string}>>([]);
+  const [isGeneratingCloneHooks, setIsGeneratingCloneHooks] = useState(false);
+  const [selectedCloneHookId, setSelectedCloneHookId] = useState<string | null>(null);
 
   const [formData, setFormData] = useState<ScriptParameters>({
     topic: "",
@@ -1028,6 +1031,9 @@ export default function Home() {
                       setCloneTemplateTopic("");
                       setCloneSectionInputs({});
                       setShowOriginalTranscript(false);
+                      setCloneGeneratedHooks([]);
+                      setSelectedCloneHookId(null);
+                      setIsGeneratingCloneHooks(false);
                       // Apply the format
                       setClonedStructure({ ...clonedStructure, applied: true });
                       toast({ 
@@ -1117,7 +1123,13 @@ export default function Home() {
                     <Input
                       placeholder="e.g., Why most people fail at saving money"
                       value={cloneTemplateTopic}
-                      onChange={(e) => setCloneTemplateTopic(e.target.value)}
+                      onChange={(e) => {
+                        setCloneTemplateTopic(e.target.value);
+                        if (cloneGeneratedHooks.length > 0) {
+                          setCloneGeneratedHooks([]);
+                          setSelectedCloneHookId(null);
+                        }
+                      }}
                       className="text-base"
                       data-testid="input-clone-topic"
                     />
@@ -1144,29 +1156,138 @@ export default function Home() {
                     </Collapsible>
                   )}
 
-                  {/* Sections to fill in */}
+                  {/* AI Hook Generation */}
+                  <div className="mb-6">
+                    <div className="flex items-center justify-between mb-3">
+                      <Label className="text-sm font-medium flex items-center gap-2">
+                        <Zap className="w-4 h-4 text-primary" />
+                        Hook
+                      </Label>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={async () => {
+                          if (!cloneTemplateTopic.trim()) {
+                            toast({ title: "Enter your topic first", variant: "destructive" });
+                            return;
+                          }
+                          setIsGeneratingCloneHooks(true);
+                          try {
+                            const hookStyle = clonedStructure.analysis?.hookStyle || "bold_statement";
+                            const res = await apiRequest("POST", "/api/hooks/generate", {
+                              hookStyle: hookStyle.replace(/\s+/g, "_"),
+                              problem: cloneTemplateTopic,
+                              solution: cloneTemplateTopic,
+                              targetAudience: "general audience",
+                              platform: formData.platform || "tiktok",
+                              duration: formData.duration || "60",
+                              videoPurpose: "education",
+                            });
+                            const data = await res.json();
+                            setCloneGeneratedHooks(data.hooks || []);
+                          } catch (err) {
+                            toast({ title: "Failed to generate hooks", variant: "destructive" });
+                          } finally {
+                            setIsGeneratingCloneHooks(false);
+                          }
+                        }}
+                        disabled={isGeneratingCloneHooks || !cloneTemplateTopic.trim()}
+                        data-testid="button-generate-clone-hooks"
+                      >
+                        {isGeneratingCloneHooks ? (
+                          <>
+                            <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                            Generating...
+                          </>
+                        ) : (
+                          <>
+                            <Sparkles className="w-3 h-3 mr-1" />
+                            Generate AI Hooks
+                          </>
+                        )}
+                      </Button>
+                    </div>
+
+                    {/* Generated hook options */}
+                    {cloneGeneratedHooks.length > 0 && (
+                      <div className="space-y-2 mb-3">
+                        <p className="text-xs text-muted-foreground">Choose a hook or write your own below:</p>
+                        {cloneGeneratedHooks.map((hook) => {
+                          const hookSectionName = clonedStructure.analysis?.sections?.find(
+                            (s: any) => s.name.toLowerCase().includes('hook') || s.name.toLowerCase().includes('intro') || s.name.toLowerCase().includes('opening')
+                          )?.name || "Hook";
+                          return (
+                            <button
+                              key={hook.id}
+                              onClick={() => {
+                                setSelectedCloneHookId(hook.id);
+                                setCloneSectionInputs(prev => ({
+                                  ...prev,
+                                  [hookSectionName]: hook.hook,
+                                }));
+                              }}
+                              className={`w-full text-left p-3 rounded-lg border transition-all ${
+                                selectedCloneHookId === hook.id
+                                  ? "bg-primary/20 border-primary"
+                                  : "bg-background/50 border-border hover-elevate"
+                              }`}
+                              data-testid={`clone-hook-option-${hook.id}`}
+                            >
+                              <p className="text-sm font-medium mb-1">"{hook.hook}"</p>
+                              <p className="text-xs text-muted-foreground">{hook.reasoning}</p>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+
+                    {/* Hook text input (for manual entry or editing selected hook) */}
+                    {(() => {
+                      const hookSectionName = clonedStructure.analysis?.sections?.find(
+                        (s: any) => s.name.toLowerCase().includes('hook') || s.name.toLowerCase().includes('intro') || s.name.toLowerCase().includes('opening')
+                      )?.name || "Hook";
+                      return (
+                        <Textarea
+                          placeholder={`Your hook (${clonedStructure.analysis?.hookStyle?.replace(/_/g, " ")} style)... or use Generate AI Hooks above`}
+                          value={cloneSectionInputs[hookSectionName] || ""}
+                          onChange={(e) => {
+                            setCloneSectionInputs(prev => ({
+                              ...prev,
+                              [hookSectionName]: e.target.value,
+                            }));
+                            setSelectedCloneHookId(null);
+                          }}
+                          className="min-h-[80px] resize-none"
+                          data-testid="textarea-clone-hook-input"
+                        />
+                      );
+                    })()}
+                  </div>
+
+                  {/* Remaining sections to fill in */}
                   <div className="space-y-4 mb-6">
-                    <Label className="text-sm font-medium">Fill in each section (matching the original structure):</Label>
+                    <Label className="text-sm font-medium">Fill in remaining sections:</Label>
                     
-                    {clonedStructure.analysis?.sections?.map((section: any, index: number) => (
+                    {clonedStructure.analysis?.sections?.filter((section: any) => {
+                      const name = section.name.toLowerCase();
+                      return !name.includes('hook') && !name.includes('intro') && !name.includes('opening');
+                    }).map((section: any, index: number) => (
                       <div key={index} className="relative">
                         <div className="flex items-center gap-2 mb-2">
                           <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
-                            index === 0 ? 'bg-primary text-primary-foreground' : 
-                            index === clonedStructure.analysis.sections.length - 1 ? 'bg-green-500 text-white' : 
-                            'bg-blue-500 text-white'
+                            section.name.toLowerCase().includes('cta') || section.name.toLowerCase().includes('call') || section.name.toLowerCase().includes('close')
+                              ? 'bg-green-500 text-white'
+                              : 'bg-blue-500 text-white'
                           }`}>
-                            {index + 1}
+                            {index + 2}
                           </div>
                           <span className="font-medium capitalize">{section.name}</span>
                           <span className="text-xs text-muted-foreground">({section.durationPercent}% of video)</span>
                         </div>
                         <Textarea
-                          placeholder={`Your ${section.name.toLowerCase()}... ${
-                            section.name.toLowerCase().includes('hook') 
-                              ? `(${clonedStructure.analysis?.hookStyle?.replace(/_/g, " ")} style)`
-                              : section.name.toLowerCase().includes('cta') || section.name.toLowerCase().includes('call')
-                              ? `(${clonedStructure.analysis?.ctaStyle?.replace(/_/g, " ")} style)`
+                          placeholder={`Your ${section.name.toLowerCase()}...${
+                            section.name.toLowerCase().includes('cta') || section.name.toLowerCase().includes('call')
+                              ? ` (${clonedStructure.analysis?.ctaStyle?.replace(/_/g, " ")} style)`
                               : ''
                           }`}
                           value={cloneSectionInputs[section.name] || ""}
@@ -1185,22 +1306,9 @@ export default function Home() {
                       </div>
                     ))}
 
-                    {/* If no sections, show generic inputs */}
+                    {/* If no sections, show generic remaining inputs */}
                     {(!clonedStructure.analysis?.sections || clonedStructure.analysis.sections.length === 0) && (
                       <>
-                        <div>
-                          <div className="flex items-center gap-2 mb-2">
-                            <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center text-xs font-bold text-primary-foreground">1</div>
-                            <span className="font-medium">Hook</span>
-                          </div>
-                          <Textarea
-                            placeholder={`Your hook (${clonedStructure.analysis?.hookStyle?.replace(/_/g, " ")} style)...`}
-                            value={cloneSectionInputs["Hook"] || ""}
-                            onChange={(e) => setCloneSectionInputs(prev => ({ ...prev, Hook: e.target.value }))}
-                            className="min-h-[80px] resize-none"
-                            data-testid="textarea-clone-hook"
-                          />
-                        </div>
                         <div>
                           <div className="flex items-center gap-2 mb-2">
                             <div className="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center text-xs font-bold text-white">2</div>
@@ -1238,12 +1346,10 @@ export default function Home() {
                         toast({ title: "Please enter your topic", variant: "destructive" });
                         return;
                       }
-                      // Build the skeleton from template inputs
                       const sectionContent = Object.entries(cloneSectionInputs)
                         .map(([name, content]) => `${name}: ${content}`)
                         .join("\n\n");
                       
-                      // Set form data with cloned structure
                       setFormData(prev => ({
                         ...prev,
                         topic: cloneTemplateTopic,
