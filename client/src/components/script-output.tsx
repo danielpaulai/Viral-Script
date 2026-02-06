@@ -1697,7 +1697,7 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
                               <div className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce" style={{animationDelay: "150ms"}} />
                               <div className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce" style={{animationDelay: "300ms"}} />
                             </div>
-                            <span className="text-xs text-muted-foreground">Refining your script...</span>
+                            <span className="text-xs text-muted-foreground">Researching & rewriting your script...</span>
                           </div>
                         </div>
                       </div>

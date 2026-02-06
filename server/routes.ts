@@ -2040,44 +2040,122 @@ Return ONLY the enhanced script with no explanations or commentary.${retryHint}`
         return res.status(400).json({ error: "User request is required" });
       }
 
+      const topic = parameters?.topic || "";
+      const category = parameters?.category || "";
+      const platform = parameters?.platform || "tiktok";
+
+      // PHASE 1: Deep research & analysis on the user's request
+      const researchResponse = await openai.chat.completions.create({
+        model: "gpt-4o",
+        messages: [
+          {
+            role: "system",
+            content: `You are a viral content research analyst. Your job is to deeply research a topic/angle and produce insights that will make a short-form video script more compelling.
+
+When the user describes what they want changed or improved in their script, you must:
+1. Research the UNDERLYING INTENT behind their request - what would actually make this better?
+2. Find specific data points, statistics, real examples, expert perspectives, and counter-arguments from sources like Reddit threads, Quora discussions, industry blogs, and social media trends
+3. Identify what the TOP viral creators in this niche do differently
+4. Find specific hooks, phrases, storytelling techniques, or psychological triggers that work for this type of content
+5. Consider what objections or questions the audience might have
+6. Look for contrarian angles, surprising facts, or pattern interrupts that would boost engagement
+
+DO NOT just repeat the user's words back. Actually analyze and research.
+
+Respond in JSON:
+{
+  "researchFindings": "Detailed research notes with specific data points, examples, stats, expert quotes, audience psychology insights",
+  "viralTechniques": "Specific viral techniques and patterns from top creators that apply here",
+  "suggestedAngle": "The best angle/approach to take based on research",
+  "specificDetails": "Concrete details, numbers, examples, analogies that should be woven into the script"
+}`
+          },
+          {
+            role: "user",
+            content: `TOPIC/NICHE: ${topic || category}
+PLATFORM: ${platform}
+
+CURRENT SCRIPT:
+${script}
+
+USER'S REQUEST: "${userRequest}"
+
+Research this deeply. Find real insights, data points, viral patterns, audience psychology, and specific details that would genuinely improve this script based on what the user wants. Don't just take their words literally - understand what they're really trying to achieve and find the best way to get there.`
+          }
+        ],
+        max_tokens: 1500,
+        temperature: 0.8,
+        response_format: { type: "json_object" },
+      });
+
+      const researchContent = researchResponse.choices[0]?.message?.content || "{}";
+      let research;
+      try {
+        research = JSON.parse(researchContent);
+      } catch {
+        research = { researchFindings: "", viralTechniques: "", suggestedAngle: "", specificDetails: "" };
+      }
+
       // Build chat context from history
       const historyMessages = (chatHistory || []).map((msg: any) => ({
         role: msg.role as "user" | "assistant",
         content: msg.content,
       }));
 
+      // PHASE 2: Rewrite the script using the research
       const response = await openai.chat.completions.create({
-        model: "gpt-4o-mini",
+        model: "gpt-4o",
         messages: [
           {
             role: "system",
-            content: `You are an expert TikTok/Instagram script editor having a conversation with a content creator. They will ask you to make changes to their script.
+            content: `You are an elite short-form video scriptwriter who creates viral content. You have deep expertise in TikTok/Instagram Reels storytelling, audience psychology, and content virality.
 
-YOUR TASK:
-1. Apply the user's requested changes to the script
-2. Keep the same structure (HOOK, BODY, CTA sections if present)
-3. Stay within 20% of the original word count
-4. Use grade 3-5 reading level (simple words, short sentences)
-5. Sound human and conversational, not robotic
+You just received deep research on how to improve a script. Use this research to INTELLIGENTLY rewrite the script - don't just copy the user's words into it.
 
-BANNED AI WORDS: leverage, unleash, game-changer, revolutionary, elevate, empower, unlock, transform, cutting-edge, dive in, unpack, seamlessly, delve, tapestry, embark
+RESEARCH FINDINGS:
+${research.researchFindings || "No additional research available."}
 
-Respond in this JSON format:
+VIRAL TECHNIQUES TO APPLY:
+${research.viralTechniques || "Use standard viral techniques."}
+
+SUGGESTED ANGLE:
+${research.suggestedAngle || "Maintain current angle."}
+
+SPECIFIC DETAILS TO WEAVE IN:
+${research.specificDetails || "Use compelling details."}
+
+YOUR RULES:
+1. NEVER just copy-paste the user's exact words into the script. Instead, understand their intent and use the research to craft something better
+2. Weave in specific stats, examples, analogies, and details from the research naturally
+3. Keep the same structure (HOOK, BODY, CTA sections if present)
+4. Stay within 25% of the original word count
+5. Use grade 3-5 reading level (simple words, short sentences, conversational)
+6. Sound like a real person talking to camera, not reading an essay
+7. Every sentence should earn its place - cut fluff, add substance
+8. Use pattern interrupts, open loops, and engagement triggers
+9. The hook must stop the scroll within 1-2 seconds
+10. Include specificity (numbers, names, timeframes) instead of vague claims
+
+BANNED AI WORDS: leverage, unleash, game-changer, revolutionary, elevate, empower, unlock, transform, cutting-edge, dive in, unpack, seamlessly, delve, tapestry, embark, journey, robust, passionate, landscape
+
+Respond in JSON:
 {
-  "refinedScript": "the updated script with changes applied",
-  "explanation": "brief 1-2 sentence explanation of what you changed"
+  "refinedScript": "the completely rewritten script using research insights",
+  "explanation": "2-3 sentence explanation of what research you found and how you used it to improve the script (mention specific improvements)"
 }`
           },
           ...historyMessages,
           {
             role: "user",
-            content: `Here is the current script:
+            content: `CURRENT SCRIPT:
 
 ${script}
 
 ---
 
-Please make this change: ${userRequest}
+USER'S REQUEST: "${userRequest}"
+
+Using the research provided in the system prompt, intelligently rewrite this script. Do NOT just insert the user's words - use the research to find the BEST way to accomplish what they're asking for. Make it genuinely better with real insights, specific details, and viral techniques.
 
 Return JSON with "refinedScript" and "explanation" fields.`
           }
@@ -2096,7 +2174,7 @@ Return JSON with "refinedScript" and "explanation" fields.`
       }
 
       const refinedScript = parsed.refinedScript || script;
-      const explanation = parsed.explanation || "I've updated the script based on your request.";
+      const explanation = parsed.explanation || "I've researched and improved the script based on your request.";
 
       // Calculate metrics
       const words = refinedScript.split(/\s+/).filter(Boolean);
