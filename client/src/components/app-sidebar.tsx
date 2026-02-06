@@ -155,7 +155,7 @@ export function AppSidebar() {
             <div className="w-8 h-8 rounded-md bg-primary flex items-center justify-center">
               <Video className="w-4 h-4 text-primary-foreground" />
             </div>
-            <span className="font-semibold text-sm text-white">ScriptWriter</span>
+            <span className="font-semibold text-sm text-sidebar-foreground">ScriptWriter</span>
           </div>
         </Link>
       </SidebarHeader>
