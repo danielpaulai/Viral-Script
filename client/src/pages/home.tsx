@@ -999,8 +999,8 @@ export default function Home() {
                 )}
               </div>
 
-              {/* Frames filmstrip (if available) */}
-              {clonedStructure.analysis?.frames && clonedStructure.analysis.frames.length > 0 && (
+              {/* Frames filmstrip OR cover image */}
+              {clonedStructure.analysis?.frames && clonedStructure.analysis.frames.length > 0 ? (
                 <div className="mb-6">
                   <p className="text-xs text-muted-foreground mb-2 font-medium flex items-center gap-1.5 justify-center">
                     <Film className="w-3.5 h-3.5" />
@@ -1036,7 +1036,22 @@ export default function Home() {
                     })}
                   </div>
                 </div>
-              )}
+              ) : clonedStructure.analysis?.coverImageUrl ? (
+                <div className="mb-6 flex flex-col items-center">
+                  <p className="text-xs text-muted-foreground mb-2 font-medium flex items-center gap-1.5">
+                    <Film className="w-3.5 h-3.5" />
+                    Video Cover
+                  </p>
+                  <div className="relative rounded-md overflow-hidden border border-border w-[140px]" data-testid="cover-image">
+                    <img src={clonedStructure.analysis.coverImageUrl} alt="Video cover" className="w-full aspect-[9/16] object-cover" loading="lazy" />
+                    {clonedStructure.duration && (
+                      <div className="absolute bottom-0 left-0 right-0 bg-black/70 px-1.5 py-0.5">
+                        <p className="text-[10px] text-white font-mono text-center">{clonedStructure.duration}s</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ) : null}
 
               {/* Main content: Original Script + Structure Breakdown */}
               <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 mb-6">
@@ -1755,6 +1770,21 @@ export default function Home() {
                                     </div>
                                   </div>
                                 ))}
+                              </div>
+                            ) : clonedStructure.analysis?.coverImageUrl ? (
+                              <div>
+                                <div className="relative rounded-md overflow-hidden border border-border">
+                                  <img
+                                    src={clonedStructure.analysis.coverImageUrl}
+                                    alt={`${section.name} preview`}
+                                    className="w-full aspect-[9/16] object-cover"
+                                    loading="lazy"
+                                  />
+                                  <div className="absolute bottom-0 left-0 right-0 bg-black/70 px-1 py-0.5">
+                                    <p className="text-[9px] text-white text-center">{section.durationPercent}%</p>
+                                  </div>
+                                </div>
+                                {i === 0 && <p className="text-[9px] text-muted-foreground mt-1 text-center">Video cover</p>}
                               </div>
                             ) : (
                               <div className="w-full aspect-[9/16] rounded-md bg-muted/50 border border-border flex flex-col items-center justify-center">

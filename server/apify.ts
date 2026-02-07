@@ -1282,7 +1282,7 @@ export async function scrapeTikTokVideo(videoUrl: string): Promise<VideoCloneDat
       postURLs: [videoUrl],
       resultsPerPage: 1,
       shouldDownloadVideos: false,
-      shouldDownloadCovers: false,
+      shouldDownloadCovers: true,
       shouldDownloadSubtitles: true,
       shouldDownloadSlideshowImages: false,
     };
@@ -1308,9 +1308,10 @@ export async function scrapeTikTokVideo(videoUrl: string): Promise<VideoCloneDat
     console.log("[Video Clone] TikTok video scraped successfully, transcript length:", transcript.length);
 
     const videoDownloadUrl = video.videoUrl || video.video?.downloadAddr || video.video?.playAddr || video.downloadUrl || "";
-    const coverImageUrl = video.covers?.default || video.video?.cover || video.coverUrl || video.cover || "";
+    const coverImageUrl = video.covers?.default || video.covers?.dynamic || video.video?.cover || video.video?.originCover || video.video?.dynamicCover || video.coverUrl || video.cover || video.thumbnail || video.thumbnailUrl || video.imageUrl || "";
     
-    console.log("[Video Clone] Video download URL available:", !!videoDownloadUrl, "Cover:", !!coverImageUrl);
+    console.log("[Video Clone] Video download URL available:", !!videoDownloadUrl, "Cover URL:", coverImageUrl ? coverImageUrl.substring(0, 80) : "none");
+    console.log("[Video Clone] Raw video keys:", Object.keys(video).join(", "));
 
     return {
       platform: "tiktok",
@@ -1362,9 +1363,10 @@ export async function scrapeInstagramVideo(postUrl: string): Promise<VideoCloneD
     console.log("[Video Clone] Instagram post scraped successfully, transcript length:", transcript.length);
 
     const videoDownloadUrl = post.videoUrl || post.video?.url || "";
-    const coverImageUrl = post.displayUrl || post.thumbnailUrl || "";
+    const coverImageUrl = post.displayUrl || post.thumbnailUrl || post.imageUrl || post.images?.[0] || "";
     
-    console.log("[Video Clone] Instagram video URL available:", !!videoDownloadUrl, "Cover:", !!coverImageUrl);
+    console.log("[Video Clone] Instagram video URL available:", !!videoDownloadUrl, "Cover URL:", coverImageUrl ? coverImageUrl.substring(0, 80) : "none");
+    console.log("[Video Clone] Raw post keys:", Object.keys(post).join(", "));
 
     return {
       platform: "instagram",

@@ -2960,6 +2960,9 @@ Be surgically precise. Every field should contain enough detail that someone cou
       // Attach cover image if available
       if (videoData.coverImageUrl) {
         structureAnalysis.coverImageUrl = videoData.coverImageUrl;
+        console.log("[Video Clone] Cover image attached:", videoData.coverImageUrl.substring(0, 80) + "...");
+      } else {
+        console.log("[Video Clone] No cover image available from video data");
       }
       
       res.json({
