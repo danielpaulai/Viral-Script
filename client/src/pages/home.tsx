@@ -962,23 +962,23 @@ export default function Home() {
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
                   <div className="p-3 rounded-lg bg-muted/50">
                     <p className="text-xs text-muted-foreground mb-1">Format Type</p>
-                    <p className="font-semibold capitalize">{clonedStructure.analysis?.format?.replace(/_/g, " ") || "Detected"}</p>
+                    <p className="font-semibold capitalize">{String(clonedStructure.analysis?.format || "Detected").replace(/_/g, " ")}</p>
                   </div>
                   <div className="p-3 rounded-lg bg-muted/50">
                     <p className="text-xs text-muted-foreground mb-1">Hook Style</p>
-                    <p className="font-semibold capitalize">{clonedStructure.analysis?.hookStyle?.replace(/_/g, " ") || "Detected"}</p>
+                    <p className="font-semibold capitalize">{String(clonedStructure.analysis?.hookAnalysis?.style || clonedStructure.analysis?.hookStyle || "Detected").replace(/_/g, " ")}</p>
                   </div>
                   <div className="p-3 rounded-lg bg-muted/50">
                     <p className="text-xs text-muted-foreground mb-1">Pacing</p>
-                    <p className="font-semibold capitalize">{clonedStructure.analysis?.pacing?.replace(/_/g, " ") || "Moderate"}</p>
+                    <p className="font-semibold capitalize">{String(typeof clonedStructure.analysis?.pacing === 'object' ? clonedStructure.analysis?.pacing?.overall : clonedStructure.analysis?.pacing || "Moderate").replace(/_/g, " ")}</p>
                   </div>
                   <div className="p-3 rounded-lg bg-muted/50">
                     <p className="text-xs text-muted-foreground mb-1">CTA Style</p>
-                    <p className="font-semibold capitalize">{clonedStructure.analysis?.ctaStyle?.replace(/_/g, " ") || "Soft ask"}</p>
+                    <p className="font-semibold capitalize">{String(clonedStructure.analysis?.ctaAnalysis?.style || clonedStructure.analysis?.ctaStyle || "Soft ask").replace(/_/g, " ")}</p>
                   </div>
                   <div className="p-3 rounded-lg bg-muted/50">
                     <p className="text-xs text-muted-foreground mb-1">Tone</p>
-                    <p className="font-semibold text-sm">{clonedStructure.analysis?.toneDescription?.slice(0, 40) || "Conversational"}...</p>
+                    <p className="font-semibold text-sm">{String(clonedStructure.analysis?.toneProfile?.attitude || clonedStructure.analysis?.toneDescription || "Conversational").slice(0, 40)}...</p>
                   </div>
                   <div className="p-3 rounded-lg bg-muted/50">
                     <p className="text-xs text-muted-foreground mb-1">Sections</p>
@@ -1108,9 +1108,9 @@ export default function Home() {
                       <div>
                         <h2 className="font-semibold text-lg">Fill in Your Version</h2>
                         <p className="text-sm text-muted-foreground">
-                          Cloning: <span className="capitalize">{clonedStructure.analysis?.format?.replace(/_/g, " ")}</span> • 
-                          {clonedStructure.analysis?.hookStyle?.replace(/_/g, " ")} hook • 
-                          {clonedStructure.analysis?.pacing} pacing
+                          Cloning: <span className="capitalize">{String(clonedStructure.analysis?.format || "").replace(/_/g, " ")}</span> • 
+                          {String(clonedStructure.analysis?.hookAnalysis?.style || clonedStructure.analysis?.hookStyle || "").replace(/_/g, " ")} hook • 
+                          {String(typeof clonedStructure.analysis?.pacing === 'object' ? clonedStructure.analysis?.pacing?.overall : clonedStructure.analysis?.pacing || "moderate")} pacing
                         </p>
                       </div>
                     </div>
@@ -1173,7 +1173,7 @@ export default function Home() {
                           }
                           setIsGeneratingCloneHooks(true);
                           try {
-                            const hookStyle = clonedStructure.analysis?.hookStyle || "bold_statement";
+                            const hookStyle = clonedStructure.analysis?.hookAnalysis?.style || clonedStructure.analysis?.hookStyle || "bold_statement";
                             const res = await apiRequest("POST", "/api/hooks/generate", {
                               hookStyle: hookStyle.replace(/\s+/g, "_"),
                               problem: cloneTemplateTopic,
@@ -1248,7 +1248,7 @@ export default function Home() {
                       )?.name || "Hook";
                       return (
                         <Textarea
-                          placeholder={`Your hook (${clonedStructure.analysis?.hookStyle?.replace(/_/g, " ")} style)... or use Generate AI Hooks above`}
+                          placeholder={`Your hook (${String(clonedStructure.analysis?.hookAnalysis?.style || clonedStructure.analysis?.hookStyle || "bold").replace(/_/g, " ")} style)... or use Generate AI Hooks above`}
                           value={cloneSectionInputs[hookSectionName] || ""}
                           onChange={(e) => {
                             setCloneSectionInputs(prev => ({
@@ -1287,7 +1287,7 @@ export default function Home() {
                         <Textarea
                           placeholder={`Your ${section.name.toLowerCase()}...${
                             section.name.toLowerCase().includes('cta') || section.name.toLowerCase().includes('call')
-                              ? ` (${clonedStructure.analysis?.ctaStyle?.replace(/_/g, " ")} style)`
+                              ? ` (${String(clonedStructure.analysis?.ctaAnalysis?.style || clonedStructure.analysis?.ctaStyle || "soft ask").replace(/_/g, " ")} style)`
                               : ''
                           }`}
                           value={cloneSectionInputs[section.name] || ""}
@@ -1328,7 +1328,7 @@ export default function Home() {
                             <span className="font-medium">Call to Action</span>
                           </div>
                           <Textarea
-                            placeholder={`Your CTA (${clonedStructure.analysis?.ctaStyle?.replace(/_/g, " ")} style)...`}
+                            placeholder={`Your CTA (${String(clonedStructure.analysis?.ctaAnalysis?.style || clonedStructure.analysis?.ctaStyle || "soft ask").replace(/_/g, " ")} style)...`}
                             value={cloneSectionInputs["CTA"] || ""}
                             onChange={(e) => setCloneSectionInputs(prev => ({ ...prev, CTA: e.target.value }))}
                             className="min-h-[60px] resize-none"
@@ -1390,9 +1390,9 @@ export default function Home() {
                         <div>
                           <p className="text-sm font-medium">Cloned Format</p>
                           <p className="text-sm text-muted-foreground capitalize">
-                            {clonedStructure.analysis?.format?.replace(/_/g, " ")} • 
-                            {clonedStructure.analysis?.hookStyle?.replace(/_/g, " ")} hook • 
-                            {clonedStructure.analysis?.pacing} pacing
+                            {String(clonedStructure.analysis?.format || "").replace(/_/g, " ")} • 
+                            {String(clonedStructure.analysis?.hookAnalysis?.style || clonedStructure.analysis?.hookStyle || "").replace(/_/g, " ")} hook • 
+                            {String(typeof clonedStructure.analysis?.pacing === 'object' ? clonedStructure.analysis?.pacing?.overall : clonedStructure.analysis?.pacing || "moderate")} pacing
                           </p>
                         </div>
                       </div>
@@ -2648,11 +2648,11 @@ export default function Home() {
                 </div>
                 <div>
                   <span className="text-muted-foreground">Hook:</span>{" "}
-                  <span className="text-foreground font-medium">{clonedStructure.analysis?.hookStyle?.replace(/_/g, " ")}</span>
+                  <span className="text-foreground font-medium">{String(clonedStructure.analysis?.hookAnalysis?.style || clonedStructure.analysis?.hookStyle || "").replace(/_/g, " ")}</span>
                 </div>
                 <div>
                   <span className="text-muted-foreground">Pacing:</span>{" "}
-                  <span className="text-foreground font-medium">{clonedStructure.analysis?.pacing?.replace(/_/g, " ")}</span>
+                  <span className="text-foreground font-medium">{String(typeof clonedStructure.analysis?.pacing === 'object' ? clonedStructure.analysis?.pacing?.overall : clonedStructure.analysis?.pacing || "").replace(/_/g, " ")}</span>
                 </div>
                 <div>
                   <span className="text-muted-foreground">Sections:</span>{" "}
