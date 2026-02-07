@@ -1809,12 +1809,14 @@ export async function registerRoutes(
     }
   });
 
-  // Generate CTAs based on hook, problem, and solution
+  // Generate CTAs based on hook, problem, and solution (works for both regular wizard and clone flow)
   app.post("/api/cta/generate", async (req: any, res) => {
     try {
-      const { hook, problem, solution, videoPurpose, targetAudience } = req.body;
+      const { hook, problem, solution, videoPurpose, targetAudience, topic, platform, originalCtaStyle, originalCtaLine } = req.body;
       
-      if (!hook || !problem || !solution) {
+      const isCloneFlow = !!topic && !problem;
+      
+      if (!isCloneFlow && (!hook || !problem || !solution)) {
         return res.status(400).json({ message: "Hook, problem, and solution are required" });
       }
 
@@ -1824,7 +1826,36 @@ export async function registerRoutes(
         storytelling: "Build emotional connection - CTAs should invite personal stories, shares, or follow-ups for part 2"
       };
 
-      const prompt = `You are a viral short-form video CTA expert. Generate 3 unique, conversational call-to-actions based on this video's content.
+      let prompt: string;
+      
+      if (isCloneFlow) {
+        prompt = `You are a viral short-form video CTA expert. Generate 3 unique, conversational call-to-actions for a ${platform || "short-form"} video about "${topic}".
+
+${hook ? `HOOK: "${hook}"` : ''}
+${originalCtaStyle ? `ORIGINAL VIDEO'S CTA STYLE: ${originalCtaStyle.replace(/_/g, " ")}` : ''}
+${originalCtaLine ? `ORIGINAL VIDEO'S CTA: "${originalCtaLine}" — Create variations that match this energy and style but adapt to the new topic.` : ''}
+PLATFORM: ${platform || "tiktok"}
+
+REQUIREMENTS:
+1. Each CTA must feel like natural spoken words, not written copy
+2. Match the style/energy of the original video's CTA if provided
+3. Be specific to the topic "${topic}" — no generic phrases
+4. Be 1-2 sentences max (under 15 words ideal)
+5. Sound like something a real creator would say on camera
+6. Create urgency or emotional resonance tied to the topic
+
+OUTPUT FORMAT (JSON array):
+[
+  {
+    "cta": "The actual call to action text",
+    "category": "one of: follow, engage, save, link, action, community",
+    "rationale": "Brief explanation of why this works"
+  }
+]
+
+Generate 3 CTAs now:`;
+      } else {
+        prompt = `You are a viral short-form video CTA expert. Generate 3 unique, conversational call-to-actions based on this video's content.
 
 VIDEO CONTEXT:
 - Hook: "${hook}"
@@ -1853,6 +1884,7 @@ OUTPUT FORMAT (JSON array):
 ]
 
 Generate 3 CTAs now:`;
+      }
 
       const response = await openai.chat.completions.create({
         model: "gpt-4o-mini",

@@ -284,6 +284,9 @@ export default function Home() {
   const [cloneGeneratedHooks, setCloneGeneratedHooks] = useState<Array<{id: string, hook: string, reasoning: string}>>([]);
   const [isGeneratingCloneHooks, setIsGeneratingCloneHooks] = useState(false);
   const [selectedCloneHookId, setSelectedCloneHookId] = useState<string | null>(null);
+  const [cloneGeneratedCtas, setCloneGeneratedCtas] = useState<Array<{cta: string, category: string, rationale: string}>>([]);
+  const [isGeneratingCloneCtas, setIsGeneratingCloneCtas] = useState(false);
+  const [selectedCloneCtaIndex, setSelectedCloneCtaIndex] = useState<number | null>(null);
 
   const [formData, setFormData] = useState<ScriptParameters>({
     topic: "",
@@ -1337,6 +1340,9 @@ export default function Home() {
                     setCloneGeneratedHooks([]);
                     setSelectedCloneHookId(null);
                     setIsGeneratingCloneHooks(false);
+                    setCloneGeneratedCtas([]);
+                    setSelectedCloneCtaIndex(null);
+                    setIsGeneratingCloneCtas(false);
                     setClonedStructure({ ...clonedStructure, applied: true });
                   }}
                   className="px-8"
@@ -1583,40 +1589,122 @@ export default function Home() {
                     {clonedStructure.analysis?.sections?.filter((section: any) => {
                       const name = section.name.toLowerCase();
                       return !name.includes('hook') && !name.includes('intro') && !name.includes('opening');
-                    }).map((section: any, index: number) => (
-                      <div key={index} className="relative">
-                        <div className="flex items-center gap-2 mb-2">
-                          <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
-                            section.name.toLowerCase().includes('cta') || section.name.toLowerCase().includes('call') || section.name.toLowerCase().includes('close')
-                              ? 'bg-green-500 text-white'
-                              : 'bg-blue-500 text-white'
-                          }`}>
-                            {index + 2}
+                    }).map((section: any, index: number) => {
+                      const isCta = section.name.toLowerCase().includes('cta') || section.name.toLowerCase().includes('call') || section.name.toLowerCase().includes('close');
+                      return (
+                        <div key={index} className="relative">
+                          <div className="flex items-center justify-between gap-2 mb-2 flex-wrap">
+                            <div className="flex items-center gap-2">
+                              <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
+                                isCta ? 'bg-green-500 text-white' : 'bg-blue-500 text-white'
+                              }`}>
+                                {index + 2}
+                              </div>
+                              <span className="font-medium capitalize">{section.name}</span>
+                              <span className="text-xs text-muted-foreground">({section.durationPercent}% of video)</span>
+                            </div>
+                            {isCta && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={async () => {
+                                  if (!cloneTemplateTopic.trim()) {
+                                    toast({ title: "Enter your topic first", variant: "destructive" });
+                                    return;
+                                  }
+                                  setIsGeneratingCloneCtas(true);
+                                  try {
+                                    const hookSectionName = clonedStructure.analysis?.sections?.find(
+                                      (s: any) => s.name.toLowerCase().includes('hook') || s.name.toLowerCase().includes('intro') || s.name.toLowerCase().includes('opening')
+                                    )?.name || "Hook";
+                                    const res = await apiRequest("POST", "/api/cta/generate", {
+                                      topic: cloneTemplateTopic,
+                                      hook: cloneSectionInputs[hookSectionName] || "",
+                                      platform: formData.platform || "tiktok",
+                                      originalCtaStyle: clonedStructure.analysis?.ctaAnalysis?.style || clonedStructure.analysis?.ctaStyle || "",
+                                      originalCtaLine: clonedStructure.analysis?.ctaAnalysis?.exactLine || "",
+                                    });
+                                    const data = await res.json();
+                                    setCloneGeneratedCtas(data.suggestions || []);
+                                  } catch (err) {
+                                    toast({ title: "Failed to generate CTAs", variant: "destructive" });
+                                  } finally {
+                                    setIsGeneratingCloneCtas(false);
+                                  }
+                                }}
+                                disabled={isGeneratingCloneCtas || !cloneTemplateTopic.trim()}
+                                data-testid="button-generate-clone-ctas"
+                              >
+                                {isGeneratingCloneCtas ? (
+                                  <>
+                                    <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                                    Generating...
+                                  </>
+                                ) : (
+                                  <>
+                                    <Sparkles className="w-3 h-3 mr-1" />
+                                    Generate AI CTAs
+                                  </>
+                                )}
+                              </Button>
+                            )}
                           </div>
-                          <span className="font-medium capitalize">{section.name}</span>
-                          <span className="text-xs text-muted-foreground">({section.durationPercent}% of video)</span>
+
+                          {isCta && cloneGeneratedCtas.length > 0 && (
+                            <div className="space-y-2 mb-3">
+                              <p className="text-xs text-muted-foreground">Choose a CTA or write your own below:</p>
+                              {cloneGeneratedCtas.map((ctaOption, ctaIdx) => (
+                                <button
+                                  key={ctaIdx}
+                                  onClick={() => {
+                                    setSelectedCloneCtaIndex(ctaIdx);
+                                    setCloneSectionInputs(prev => ({
+                                      ...prev,
+                                      [section.name]: ctaOption.cta,
+                                    }));
+                                  }}
+                                  className={`w-full text-left p-3 rounded-lg border transition-all ${
+                                    selectedCloneCtaIndex === ctaIdx
+                                      ? "bg-primary/20 border-primary"
+                                      : "bg-background/50 border-border hover-elevate"
+                                  }`}
+                                  data-testid={`clone-cta-option-${ctaIdx}`}
+                                >
+                                  <p className="text-sm font-medium mb-1">"{ctaOption.cta}"</p>
+                                  <div className="flex items-center gap-2 flex-wrap">
+                                    <Badge variant="outline" className="text-[10px] capitalize">{ctaOption.category}</Badge>
+                                    <p className="text-xs text-muted-foreground">{ctaOption.rationale}</p>
+                                  </div>
+                                </button>
+                              ))}
+                            </div>
+                          )}
+
+                          <Textarea
+                            placeholder={`Your ${section.name.toLowerCase()}...${
+                              isCta
+                                ? ` (${String(clonedStructure.analysis?.ctaAnalysis?.style || clonedStructure.analysis?.ctaStyle || "soft ask").replace(/_/g, " ")} style) or use Generate AI CTAs above`
+                                : ''
+                            }`}
+                            value={cloneSectionInputs[section.name] || ""}
+                            onChange={(e) => {
+                              setCloneSectionInputs(prev => ({
+                                ...prev,
+                                [section.name]: e.target.value
+                              }));
+                              if (isCta) setSelectedCloneCtaIndex(null);
+                            }}
+                            className="min-h-[80px] resize-none"
+                            data-testid={`textarea-clone-section-${index}`}
+                          />
+                          {section.purpose && (
+                            <p className="text-xs text-muted-foreground mt-1 ml-8">
+                              Purpose: {section.purpose}
+                            </p>
+                          )}
                         </div>
-                        <Textarea
-                          placeholder={`Your ${section.name.toLowerCase()}...${
-                            section.name.toLowerCase().includes('cta') || section.name.toLowerCase().includes('call')
-                              ? ` (${String(clonedStructure.analysis?.ctaAnalysis?.style || clonedStructure.analysis?.ctaStyle || "soft ask").replace(/_/g, " ")} style)`
-                              : ''
-                          }`}
-                          value={cloneSectionInputs[section.name] || ""}
-                          onChange={(e) => setCloneSectionInputs(prev => ({
-                            ...prev,
-                            [section.name]: e.target.value
-                          }))}
-                          className="min-h-[80px] resize-none"
-                          data-testid={`textarea-clone-section-${index}`}
-                        />
-                        {section.purpose && (
-                          <p className="text-xs text-muted-foreground mt-1 ml-8">
-                            Purpose: {section.purpose}
-                          </p>
-                        )}
-                      </div>
-                    ))}
+                      );
+                    })}
 
                     {/* If no sections, show generic remaining inputs */}
                     {(!clonedStructure.analysis?.sections || clonedStructure.analysis.sections.length === 0) && (
@@ -1635,14 +1723,90 @@ export default function Home() {
                           />
                         </div>
                         <div>
-                          <div className="flex items-center gap-2 mb-2">
-                            <div className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center text-xs font-bold text-white">3</div>
-                            <span className="font-medium">Call to Action</span>
+                          <div className="flex items-center justify-between gap-2 mb-2 flex-wrap">
+                            <div className="flex items-center gap-2">
+                              <div className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center text-xs font-bold text-white">3</div>
+                              <span className="font-medium">Call to Action</span>
+                            </div>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={async () => {
+                                if (!cloneTemplateTopic.trim()) {
+                                  toast({ title: "Enter your topic first", variant: "destructive" });
+                                  return;
+                                }
+                                setIsGeneratingCloneCtas(true);
+                                try {
+                                  const res = await apiRequest("POST", "/api/cta/generate", {
+                                    topic: cloneTemplateTopic,
+                                    hook: cloneSectionInputs["Hook"] || "",
+                                    platform: formData.platform || "tiktok",
+                                    originalCtaStyle: clonedStructure.analysis?.ctaAnalysis?.style || clonedStructure.analysis?.ctaStyle || "",
+                                    originalCtaLine: clonedStructure.analysis?.ctaAnalysis?.exactLine || "",
+                                  });
+                                  const data = await res.json();
+                                  setCloneGeneratedCtas(data.suggestions || []);
+                                } catch (err) {
+                                  toast({ title: "Failed to generate CTAs", variant: "destructive" });
+                                } finally {
+                                  setIsGeneratingCloneCtas(false);
+                                }
+                              }}
+                              disabled={isGeneratingCloneCtas || !cloneTemplateTopic.trim()}
+                              data-testid="button-generate-clone-ctas-generic"
+                            >
+                              {isGeneratingCloneCtas ? (
+                                <>
+                                  <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                                  Generating...
+                                </>
+                              ) : (
+                                <>
+                                  <Sparkles className="w-3 h-3 mr-1" />
+                                  Generate AI CTAs
+                                </>
+                              )}
+                            </Button>
                           </div>
+
+                          {cloneGeneratedCtas.length > 0 && (
+                            <div className="space-y-2 mb-3">
+                              <p className="text-xs text-muted-foreground">Choose a CTA or write your own below:</p>
+                              {cloneGeneratedCtas.map((ctaOption, ctaIdx) => (
+                                <button
+                                  key={ctaIdx}
+                                  onClick={() => {
+                                    setSelectedCloneCtaIndex(ctaIdx);
+                                    setCloneSectionInputs(prev => ({
+                                      ...prev,
+                                      CTA: ctaOption.cta,
+                                    }));
+                                  }}
+                                  className={`w-full text-left p-3 rounded-lg border transition-all ${
+                                    selectedCloneCtaIndex === ctaIdx
+                                      ? "bg-primary/20 border-primary"
+                                      : "bg-background/50 border-border hover-elevate"
+                                  }`}
+                                  data-testid={`clone-cta-option-generic-${ctaIdx}`}
+                                >
+                                  <p className="text-sm font-medium mb-1">"{ctaOption.cta}"</p>
+                                  <div className="flex items-center gap-2 flex-wrap">
+                                    <Badge variant="outline" className="text-[10px] capitalize">{ctaOption.category}</Badge>
+                                    <p className="text-xs text-muted-foreground">{ctaOption.rationale}</p>
+                                  </div>
+                                </button>
+                              ))}
+                            </div>
+                          )}
+
                           <Textarea
-                            placeholder={`Your CTA (${String(clonedStructure.analysis?.ctaAnalysis?.style || clonedStructure.analysis?.ctaStyle || "soft ask").replace(/_/g, " ")} style)...`}
+                            placeholder={`Your CTA (${String(clonedStructure.analysis?.ctaAnalysis?.style || clonedStructure.analysis?.ctaStyle || "soft ask").replace(/_/g, " ")} style)... or use Generate AI CTAs above`}
                             value={cloneSectionInputs["CTA"] || ""}
-                            onChange={(e) => setCloneSectionInputs(prev => ({ ...prev, CTA: e.target.value }))}
+                            onChange={(e) => {
+                              setCloneSectionInputs(prev => ({ ...prev, CTA: e.target.value }));
+                              setSelectedCloneCtaIndex(null);
+                            }}
                             className="min-h-[60px] resize-none"
                             data-testid="textarea-clone-cta"
                           />
