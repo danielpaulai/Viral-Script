@@ -2969,6 +2969,7 @@ Be surgically precise. Every field should contain enough detail that someone cou
         views: videoData.views,
         likes: videoData.likes,
         duration: videoData.duration,
+        transcript: videoData.transcript,
         analysis: structureAnalysis,
       });
       

@@ -109,6 +109,9 @@ import {
   ChevronLeft,
   Sparkles,
   CheckCircle,
+  Quote,
+  ArrowDown,
+  Volume2,
 } from "lucide-react";
 import { SiTiktok, SiInstagram } from "react-icons/si";
 
@@ -928,191 +931,409 @@ export default function Home() {
             </div>
           )}
 
-          {/* After clone analysis - show extracted structure details */}
+          {/* After clone analysis - Full structure breakdown page */}
           {creationMethod === "clone" && clonedStructure && !clonedStructure.applied && (
-            <div className="max-w-2xl mx-auto mb-6">
-              <div className="p-5 rounded-xl border-2 border-primary/30 bg-card">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle className="w-5 h-5 text-green-500" />
-                    <span className="font-semibold text-lg">Video Structure Extracted</span>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
+            <div className="max-w-4xl mx-auto mb-6">
+              {/* Header */}
+              <div className="flex items-center justify-between mb-5">
+                <div className="flex items-center gap-3">
+                  <button
                     onClick={() => {
                       setClonedStructure(null);
                       setCloneVideoUrl("");
                       setFormData(prev => ({ ...prev, clonedVideoStructure: undefined }));
-                      // Also reset template state
                       setCloneStep("template");
                       setCloneTemplateTopic("");
                       setCloneSectionInputs({});
                       setShowOriginalTranscript(false);
                     }}
-                    className="text-xs text-muted-foreground"
-                    data-testid="button-clear-clone"
+                    className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
+                    data-testid="button-back-to-clone-input"
                   >
-                    <X className="w-3 h-3 mr-1" />
-                    Clear
-                  </Button>
+                    <ChevronLeft className="w-3 h-3" /> Try different video
+                  </button>
                 </div>
-
-                {/* Main extracted info grid */}
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
-                  <div className="p-3 rounded-lg bg-muted/50">
-                    <p className="text-xs text-muted-foreground mb-1">Format Type</p>
-                    <p className="font-semibold capitalize">{String(clonedStructure.analysis?.format || "Detected").replace(/_/g, " ")}</p>
-                  </div>
-                  <div className="p-3 rounded-lg bg-muted/50">
-                    <p className="text-xs text-muted-foreground mb-1">Hook Style</p>
-                    <p className="font-semibold capitalize">{String(clonedStructure.analysis?.hookAnalysis?.style || clonedStructure.analysis?.hookStyle || "Detected").replace(/_/g, " ")}</p>
-                  </div>
-                  <div className="p-3 rounded-lg bg-muted/50">
-                    <p className="text-xs text-muted-foreground mb-1">Pacing</p>
-                    <p className="font-semibold capitalize">{String(typeof clonedStructure.analysis?.pacing === 'object' ? clonedStructure.analysis?.pacing?.overall : clonedStructure.analysis?.pacing || "Moderate").replace(/_/g, " ")}</p>
-                  </div>
-                  <div className="p-3 rounded-lg bg-muted/50">
-                    <p className="text-xs text-muted-foreground mb-1">CTA Style</p>
-                    <p className="font-semibold capitalize">{String(clonedStructure.analysis?.ctaAnalysis?.style || clonedStructure.analysis?.ctaStyle || "Soft ask").replace(/_/g, " ")}</p>
-                  </div>
-                  <div className="p-3 rounded-lg bg-muted/50">
-                    <p className="text-xs text-muted-foreground mb-1">Tone</p>
-                    <p className="font-semibold text-sm">{String(clonedStructure.analysis?.toneProfile?.attitude || clonedStructure.analysis?.toneDescription || "Conversational").slice(0, 40)}...</p>
-                  </div>
-                  <div className="p-3 rounded-lg bg-muted/50">
-                    <p className="text-xs text-muted-foreground mb-1">Sections</p>
-                    <p className="font-semibold">{clonedStructure.analysis?.sections?.length || 0} parts</p>
-                  </div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="w-4 h-4 text-green-500" />
+                  <span className="text-sm font-medium text-green-600 dark:text-green-400">Analysis Complete</span>
                 </div>
+              </div>
 
-                {/* Video sections breakdown */}
-                {clonedStructure.analysis?.sections && clonedStructure.analysis.sections.length > 0 && (
-                  <div className="mb-4">
-                    <p className="text-xs text-muted-foreground mb-2 font-medium">Video Structure Breakdown:</p>
-                    <div className="flex gap-1 h-3 rounded-full overflow-hidden bg-muted">
-                      {clonedStructure.analysis.sections.map((section: any, i: number) => (
-                        <div 
-                          key={i}
-                          className={`h-full ${i === 0 ? 'bg-primary' : i === clonedStructure.analysis.sections.length - 1 ? 'bg-green-500' : 'bg-blue-500'}`}
-                          style={{ width: `${section.durationPercent || 33}%` }}
-                          title={`${section.name}: ${section.durationPercent}%`}
-                        />
-                      ))}
-                    </div>
-                    <div className="flex justify-between text-[10px] text-muted-foreground mt-1">
-                      {clonedStructure.analysis.sections.map((section: any, i: number) => (
-                        <span key={i}>{section.name} ({section.durationPercent}%)</span>
-                      ))}
-                    </div>
-                  </div>
+              {/* Step label */}
+              <div className="text-center mb-6">
+                <h2 className="text-xl font-bold mb-1">Step 1: Review the Original Format</h2>
+                <p className="text-sm text-muted-foreground">Study the structure below, then apply it to your own topic</p>
+              </div>
+
+              {/* Video meta info */}
+              {(clonedStructure.author || clonedStructure.views) && (
+                <div className="flex flex-wrap items-center gap-3 mb-4 justify-center">
+                  {clonedStructure.platform && (
+                    <Badge variant="secondary" className="capitalize">{clonedStructure.platform}</Badge>
+                  )}
+                  {clonedStructure.author && (
+                    <span className="text-sm text-muted-foreground">@{clonedStructure.author}</span>
+                  )}
+                  {clonedStructure.views && (
+                    <span className="text-sm text-muted-foreground flex items-center gap-1">
+                      <Eye className="w-3.5 h-3.5" /> {typeof clonedStructure.views === 'number' ? clonedStructure.views.toLocaleString() : clonedStructure.views} views
+                    </span>
+                  )}
+                  {clonedStructure.duration && (
+                    <span className="text-sm text-muted-foreground flex items-center gap-1">
+                      <Clock className="w-3.5 h-3.5" /> {clonedStructure.duration}s
+                    </span>
+                  )}
+                </div>
+              )}
+
+              {/* Format overview badges */}
+              <div className="flex flex-wrap justify-center gap-2 mb-6">
+                <Badge variant="outline" className="capitalize">{String(clonedStructure.analysis?.format || "detected").replace(/_/g, " ")}</Badge>
+                <Badge variant="outline" className="capitalize">{String(clonedStructure.analysis?.hookAnalysis?.style || clonedStructure.analysis?.hookStyle || "detected").replace(/_/g, " ")} hook</Badge>
+                <Badge variant="outline" className="capitalize">{String(typeof clonedStructure.analysis?.pacing === 'object' ? clonedStructure.analysis?.pacing?.overall : clonedStructure.analysis?.pacing || "moderate").replace(/_/g, " ")} pacing</Badge>
+                <Badge variant="outline" className="capitalize">{String(clonedStructure.analysis?.ctaAnalysis?.style || clonedStructure.analysis?.ctaStyle || "soft ask").replace(/_/g, " ")} CTA</Badge>
+                <Badge variant="outline">{clonedStructure.analysis?.sections?.length || 0} sections</Badge>
+                {clonedStructure.analysis?.wordCount && (
+                  <Badge variant="outline">{clonedStructure.analysis.wordCount} words</Badge>
                 )}
+              </div>
 
-                {/* Key patterns */}
-                {clonedStructure.analysis?.keyPatterns && clonedStructure.analysis.keyPatterns.length > 0 && (
-                  <div className="mb-4">
-                    <p className="text-xs text-muted-foreground mb-2 font-medium">Key Patterns Detected:</p>
-                    <div className="flex flex-wrap gap-2">
-                      {clonedStructure.analysis.keyPatterns.map((pattern: string, i: number) => (
-                        <span key={i} className="px-2 py-1 rounded-full bg-primary/10 text-primary text-xs">
-                          {pattern}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Extracted Video Frames Filmstrip */}
-                {clonedStructure.analysis?.frames && clonedStructure.analysis.frames.length > 0 && (
-                  <div className="mb-4">
-                    <p className="text-xs text-muted-foreground mb-2 font-medium flex items-center gap-1.5">
-                      <Film className="w-3.5 h-3.5" />
-                      Video Frames Timeline:
-                    </p>
-                    <div className="flex gap-2 overflow-x-auto pb-2">
-                      {clonedStructure.analysis.frames.map((frame: any, i: number) => {
-                        const totalDuration = clonedStructure.analysis?.estimatedDurationSeconds || clonedStructure.duration || 60;
-                        const sections = clonedStructure.analysis?.sections || [];
-                        let sectionLabel = "";
-                        let cumulativePercent = 0;
-                        const framePercent = totalDuration > 0 ? (frame.timestamp / totalDuration) * 100 : 0;
-                        for (const section of sections) {
-                          cumulativePercent += section.durationPercent || 0;
-                          if (framePercent <= cumulativePercent) {
-                            sectionLabel = section.name;
-                            break;
-                          }
-                        }
-                        return (
-                          <div key={i} className="flex-shrink-0 group" data-testid={`frame-thumbnail-${i}`}>
-                            <div className="relative rounded-md overflow-hidden border border-border w-[120px] h-[160px]">
-                              <img 
-                                src={frame.thumbnailUrl} 
-                                alt={`Frame at ${frame.timestamp}s`}
-                                className="w-full h-full object-cover"
-                                loading="lazy"
-                              />
-                              <div className="absolute bottom-0 left-0 right-0 bg-black/70 px-1.5 py-0.5">
-                                <p className="text-[10px] text-white font-mono">{frame.timestamp}s</p>
-                              </div>
-                            </div>
-                            {sectionLabel && (
-                              <p className="text-[10px] text-muted-foreground mt-1 text-center truncate w-[120px]">{sectionLabel}</p>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-
-                {/* Cover image fallback when no frames */}
-                {(!clonedStructure.analysis?.frames || clonedStructure.analysis.frames.length === 0) && clonedStructure.analysis?.coverImageUrl && (
-                  <div className="mb-4">
-                    <p className="text-xs text-muted-foreground mb-2 font-medium flex items-center gap-1.5">
-                      <Film className="w-3.5 h-3.5" />
-                      Video Cover:
-                    </p>
-                    <div className="rounded-md overflow-hidden border border-border w-[160px] h-[213px]">
-                      <img 
-                        src={clonedStructure.analysis.coverImageUrl} 
-                        alt="Video cover"
-                        className="w-full h-full object-cover"
-                        loading="lazy"
-                        data-testid="video-cover-image"
-                      />
-                    </div>
-                  </div>
-                )}
-
-                {/* Apply button */}
-                <div className="pt-4 border-t border-border">
-                  <Button
-                    onClick={() => {
-                      setCloneStep("template");
-                      setCloneTemplateTopic("");
-                      setCloneSectionInputs({});
-                      setShowOriginalTranscript(false);
-                      setCloneGeneratedHooks([]);
-                      setSelectedCloneHookId(null);
-                      setIsGeneratingCloneHooks(false);
-                      setClonedStructure({ ...clonedStructure, applied: true });
-                      toast({ 
-                        title: "Format Applied!", 
-                        description: "Fill in your content to match this video's structure." 
-                      });
-                    }}
-                    className="w-full"
-                    size="lg"
-                    data-testid="button-apply-clone-format"
-                  >
-                    <Sparkles className="w-4 h-4 mr-2" />
-                    Apply This Format to My Script
-                  </Button>
-                  <p className="text-xs text-center text-muted-foreground mt-2">
-                    Your generated script will match this video's proven structure
+              {/* Frames filmstrip (if available) */}
+              {clonedStructure.analysis?.frames && clonedStructure.analysis.frames.length > 0 && (
+                <div className="mb-6">
+                  <p className="text-xs text-muted-foreground mb-2 font-medium flex items-center gap-1.5 justify-center">
+                    <Film className="w-3.5 h-3.5" />
+                    Video Frames Timeline
                   </p>
+                  <div className="flex gap-2 overflow-x-auto pb-2 justify-center">
+                    {clonedStructure.analysis.frames.map((frame: any, i: number) => {
+                      const totalDuration = clonedStructure.analysis?.estimatedDurationSeconds || clonedStructure.duration || 60;
+                      const sections = clonedStructure.analysis?.sections || [];
+                      let sectionLabel = "";
+                      let cumulativePercent = 0;
+                      const framePercent = totalDuration > 0 ? (frame.timestamp / totalDuration) * 100 : 0;
+                      for (const section of sections) {
+                        cumulativePercent += section.durationPercent || 0;
+                        if (framePercent <= cumulativePercent) {
+                          sectionLabel = section.name;
+                          break;
+                        }
+                      }
+                      return (
+                        <div key={i} className="flex-shrink-0" data-testid={`frame-thumbnail-${i}`}>
+                          <div className="relative rounded-md overflow-hidden border border-border w-[100px] h-[133px]">
+                            <img src={frame.thumbnailUrl} alt={`Frame at ${frame.timestamp}s`} className="w-full h-full object-cover" loading="lazy" />
+                            <div className="absolute bottom-0 left-0 right-0 bg-black/70 px-1.5 py-0.5">
+                              <p className="text-[10px] text-white font-mono">{frame.timestamp}s</p>
+                            </div>
+                          </div>
+                          {sectionLabel && (
+                            <p className="text-[10px] text-muted-foreground mt-1 text-center truncate w-[100px]">{sectionLabel}</p>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
+              )}
+
+              {/* Main content: Original Script + Structure Breakdown */}
+              <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 mb-6">
+                
+                {/* LEFT: Original Transcript with section annotations */}
+                <div className="lg:col-span-3">
+                  <Card className="p-5">
+                    <div className="flex items-center gap-2 mb-4">
+                      <FileText className="w-4 h-4 text-primary" />
+                      <h3 className="font-semibold">Original Script</h3>
+                      {clonedStructure.analysis?.estimatedDurationSeconds && (
+                        <Badge variant="secondary" className="ml-auto text-[10px]">
+                          ~{clonedStructure.analysis.estimatedDurationSeconds}s
+                        </Badge>
+                      )}
+                    </div>
+
+                    {/* Structure bar */}
+                    {clonedStructure.analysis?.sections && clonedStructure.analysis.sections.length > 0 && (
+                      <div className="mb-4">
+                        <div className="flex gap-0.5 h-2 rounded-full overflow-hidden bg-muted">
+                          {clonedStructure.analysis.sections.map((section: any, i: number) => {
+                            const sectionColors = ['bg-primary', 'bg-blue-500', 'bg-indigo-500', 'bg-violet-500', 'bg-purple-500', 'bg-pink-500', 'bg-green-500'];
+                            return (
+                              <div 
+                                key={i}
+                                className={`h-full ${sectionColors[i % sectionColors.length]}`}
+                                style={{ width: `${section.durationPercent || 33}%` }}
+                                title={`${section.name}: ${section.durationPercent}%`}
+                              />
+                            );
+                          })}
+                        </div>
+                        <div className="flex flex-wrap gap-x-3 gap-y-0 mt-1.5">
+                          {clonedStructure.analysis.sections.map((section: any, i: number) => {
+                            const sectionColors = ['text-primary', 'text-blue-500', 'text-indigo-500', 'text-violet-500', 'text-purple-500', 'text-pink-500', 'text-green-500'];
+                            const dotColors = ['bg-primary', 'bg-blue-500', 'bg-indigo-500', 'bg-violet-500', 'bg-purple-500', 'bg-pink-500', 'bg-green-500'];
+                            return (
+                              <span key={i} className={`text-[10px] ${sectionColors[i % sectionColors.length]} flex items-center gap-1`}>
+                                <span className={`w-1.5 h-1.5 rounded-full ${dotColors[i % dotColors.length]}`} />
+                                {section.name} ({section.durationPercent}%)
+                              </span>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Annotated transcript - sections with example lines */}
+                    {clonedStructure.analysis?.sections && clonedStructure.analysis.sections.length > 0 ? (
+                      <div className="space-y-4" data-testid="annotated-transcript">
+                        {clonedStructure.analysis.sections.map((section: any, i: number) => {
+                          const sectionBorders = ['border-l-primary', 'border-l-blue-500', 'border-l-indigo-500', 'border-l-violet-500', 'border-l-purple-500', 'border-l-pink-500', 'border-l-green-500'];
+                          const sectionBgs = ['bg-primary/5', 'bg-blue-500/5', 'bg-indigo-500/5', 'bg-violet-500/5', 'bg-purple-500/5', 'bg-pink-500/5', 'bg-green-500/5'];
+                          return (
+                            <div key={i} className={`border-l-2 ${sectionBorders[i % sectionBorders.length]} pl-4 py-2 ${sectionBgs[i % sectionBgs.length]} rounded-r-md`} data-testid={`transcript-section-${i}`}>
+                              <div className="flex items-center gap-2 mb-2">
+                                <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{section.name}</span>
+                                <span className="text-[10px] text-muted-foreground">({section.durationPercent}%{section.sentenceCount ? ` · ${section.sentenceCount} sentences` : ''})</span>
+                                {section.emotionalTone && (
+                                  <Badge variant="secondary" className="text-[10px] ml-auto">{section.emotionalTone}</Badge>
+                                )}
+                              </div>
+                              {section.exampleLines && section.exampleLines.length > 0 ? (
+                                <div className="space-y-1.5">
+                                  {section.exampleLines.map((line: string, j: number) => (
+                                    <p key={j} className="text-sm leading-relaxed text-foreground italic">
+                                      "{line}"
+                                    </p>
+                                  ))}
+                                </div>
+                              ) : section.exampleLine ? (
+                                <p className="text-sm leading-relaxed text-foreground italic">
+                                  "{section.exampleLine}"
+                                </p>
+                              ) : (
+                                <p className="text-sm leading-relaxed text-muted-foreground">
+                                  {section.description}
+                                </p>
+                              )}
+                              {section.purpose && (
+                                <p className="text-xs text-muted-foreground mt-1.5 flex items-center gap-1">
+                                  <Target className="w-3 h-3" /> {section.purpose}
+                                </p>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ) : clonedStructure.analysis?.originalTranscript ? (
+                      <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">
+                        {clonedStructure.analysis.originalTranscript}
+                      </p>
+                    ) : clonedStructure.transcript ? (
+                      <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed" data-testid="text-raw-transcript">
+                        {clonedStructure.transcript}
+                      </p>
+                    ) : (
+                      <p className="text-sm text-muted-foreground italic" data-testid="text-no-transcript">
+                        Transcript could not be extracted. The AI analysis above still captures the video's format and structure.
+                      </p>
+                    )}
+
+                    {/* Full raw transcript (collapsible) */}
+                    {(clonedStructure.analysis?.originalTranscript || clonedStructure.transcript) && clonedStructure.analysis?.sections?.length > 0 && (
+                      <Collapsible open={showOriginalTranscript} onOpenChange={setShowOriginalTranscript} className="mt-4 pt-4 border-t border-border">
+                        <CollapsibleTrigger className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground w-full" data-testid="button-toggle-raw-transcript">
+                          <Quote className="w-3.5 h-3.5" />
+                          <span>View full raw transcript</span>
+                          {showOriginalTranscript ? <ChevronUp className="w-3 h-3 ml-auto" /> : <ChevronDown className="w-3 h-3 ml-auto" />}
+                        </CollapsibleTrigger>
+                        <CollapsibleContent className="mt-3">
+                          <div className="p-3 rounded-md bg-muted/30 border border-border">
+                            <p className="text-xs text-muted-foreground whitespace-pre-wrap leading-relaxed">
+                              {clonedStructure.analysis?.originalTranscript || clonedStructure.transcript}
+                            </p>
+                          </div>
+                        </CollapsibleContent>
+                      </Collapsible>
+                    )}
+                  </Card>
+                </div>
+
+                {/* RIGHT: Structure Details Panel */}
+                <div className="lg:col-span-2 space-y-4">
+
+                  {/* Emotional Arc */}
+                  {clonedStructure.analysis?.emotionalArc && (
+                    <Card className="p-4">
+                      <div className="flex items-center gap-2 mb-3">
+                        <Heart className="w-4 h-4 text-primary" />
+                        <h4 className="text-sm font-semibold">Emotional Arc</h4>
+                      </div>
+                      <p className="text-sm text-muted-foreground leading-relaxed" data-testid="text-emotional-arc">
+                        {clonedStructure.analysis.emotionalArc}
+                      </p>
+                    </Card>
+                  )}
+
+                  {/* Voice & Tone */}
+                  {clonedStructure.analysis?.toneProfile && (
+                    <Card className="p-4">
+                      <div className="flex items-center gap-2 mb-3">
+                        <Volume2 className="w-4 h-4 text-primary" />
+                        <h4 className="text-sm font-semibold">Voice & Tone</h4>
+                      </div>
+                      <div className="space-y-2">
+                        {clonedStructure.analysis.toneProfile.energy && (
+                          <div>
+                            <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Energy</p>
+                            <p className="text-sm">{clonedStructure.analysis.toneProfile.energy}</p>
+                          </div>
+                        )}
+                        {clonedStructure.analysis.toneProfile.attitude && (
+                          <div>
+                            <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Attitude</p>
+                            <p className="text-sm">{clonedStructure.analysis.toneProfile.attitude}</p>
+                          </div>
+                        )}
+                        {clonedStructure.analysis.toneProfile.personality && (
+                          <div>
+                            <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Personality</p>
+                            <p className="text-sm">{clonedStructure.analysis.toneProfile.personality}</p>
+                          </div>
+                        )}
+                        {clonedStructure.analysis.toneProfile.vocabulary && (
+                          <div>
+                            <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Vocabulary</p>
+                            <p className="text-sm">{clonedStructure.analysis.toneProfile.vocabulary}</p>
+                          </div>
+                        )}
+                      </div>
+                    </Card>
+                  )}
+
+                  {/* Retention Mechanics */}
+                  {clonedStructure.analysis?.retentionMechanics && clonedStructure.analysis.retentionMechanics.length > 0 && (
+                    <Card className="p-4">
+                      <div className="flex items-center gap-2 mb-3">
+                        <Eye className="w-4 h-4 text-primary" />
+                        <h4 className="text-sm font-semibold">Why It Keeps You Watching</h4>
+                      </div>
+                      <ul className="space-y-1.5">
+                        {clonedStructure.analysis.retentionMechanics.map((mechanic: string, i: number) => (
+                          <li key={i} className="text-xs text-muted-foreground flex items-start gap-2">
+                            <span className="text-primary mt-0.5 flex-shrink-0">-</span>
+                            {mechanic}
+                          </li>
+                        ))}
+                      </ul>
+                    </Card>
+                  )}
+
+                  {/* Transition Phrases */}
+                  {clonedStructure.analysis?.transitionPhrases && clonedStructure.analysis.transitionPhrases.length > 0 && (
+                    <Card className="p-4">
+                      <div className="flex items-center gap-2 mb-3">
+                        <ArrowRight className="w-4 h-4 text-primary" />
+                        <h4 className="text-sm font-semibold">Transition Phrases</h4>
+                      </div>
+                      <div className="flex flex-wrap gap-1.5">
+                        {clonedStructure.analysis.transitionPhrases.map((phrase: string, i: number) => (
+                          <span key={i} className="px-2 py-1 rounded-md bg-muted text-xs text-muted-foreground italic">
+                            "{phrase}"
+                          </span>
+                        ))}
+                      </div>
+                    </Card>
+                  )}
+
+                  {/* Pacing & Sentence Style */}
+                  {(clonedStructure.analysis?.pacing || clonedStructure.analysis?.sentenceStructure) && (
+                    <Card className="p-4">
+                      <div className="flex items-center gap-2 mb-3">
+                        <Zap className="w-4 h-4 text-primary" />
+                        <h4 className="text-sm font-semibold">Pacing & Rhythm</h4>
+                      </div>
+                      <div className="space-y-2">
+                        {typeof clonedStructure.analysis?.pacing === 'object' && (
+                          <>
+                            {clonedStructure.analysis.pacing.sentenceRhythm && (
+                              <div>
+                                <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Cadence</p>
+                                <p className="text-sm">{clonedStructure.analysis.pacing.sentenceRhythm}</p>
+                              </div>
+                            )}
+                            {clonedStructure.analysis.pacing.pausePattern && (
+                              <div>
+                                <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Pauses</p>
+                                <p className="text-sm">{clonedStructure.analysis.pacing.pausePattern}</p>
+                              </div>
+                            )}
+                          </>
+                        )}
+                        {clonedStructure.analysis?.sentenceStructure?.pattern && (
+                          <div>
+                            <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Sentence Pattern</p>
+                            <p className="text-sm">{clonedStructure.analysis.sentenceStructure.pattern}</p>
+                          </div>
+                        )}
+                      </div>
+                    </Card>
+                  )}
+
+                  {/* Power Words */}
+                  {clonedStructure.analysis?.powerWords && clonedStructure.analysis.powerWords.length > 0 && (
+                    <Card className="p-4">
+                      <div className="flex items-center gap-2 mb-3">
+                        <Flame className="w-4 h-4 text-primary" />
+                        <h4 className="text-sm font-semibold">Power Words</h4>
+                      </div>
+                      <div className="flex flex-wrap gap-1.5">
+                        {clonedStructure.analysis.powerWords.map((word: string, i: number) => (
+                          <Badge key={i} variant="secondary" className="text-xs">{word}</Badge>
+                        ))}
+                      </div>
+                    </Card>
+                  )}
+
+                  {/* Unique Style Notes */}
+                  {clonedStructure.analysis?.uniqueStyleNotes && (
+                    <Card className="p-4">
+                      <div className="flex items-center gap-2 mb-3">
+                        <Star className="w-4 h-4 text-primary" />
+                        <h4 className="text-sm font-semibold">What Makes It Unique</h4>
+                      </div>
+                      <p className="text-xs text-muted-foreground leading-relaxed" data-testid="text-unique-style">
+                        {clonedStructure.analysis.uniqueStyleNotes}
+                      </p>
+                    </Card>
+                  )}
+                </div>
+              </div>
+
+              {/* Apply button - prominent at bottom */}
+              <div className="text-center">
+                <Button
+                  onClick={() => {
+                    setCloneStep("template");
+                    setCloneTemplateTopic("");
+                    setCloneSectionInputs({});
+                    setShowOriginalTranscript(false);
+                    setCloneGeneratedHooks([]);
+                    setSelectedCloneHookId(null);
+                    setIsGeneratingCloneHooks(false);
+                    setClonedStructure({ ...clonedStructure, applied: true });
+                  }}
+                  className="px-8"
+                  size="lg"
+                  data-testid="button-apply-clone-format"
+                >
+                  <ArrowDown className="w-4 h-4 mr-2" />
+                  Use This Format for My Script
+                </Button>
+                <p className="text-xs text-muted-foreground mt-2">
+                  Next: Enter your topic and we'll generate a script matching this exact format
+                </p>
               </div>
             </div>
           )}
@@ -1136,6 +1357,16 @@ export default function Home() {
                 </button>
               </div>
 
+              {/* Step 2 header */}
+              <div className="text-center mb-6">
+                <h2 className="text-xl font-bold mb-1">Step 2: Apply the Format to Your Topic</h2>
+                <p className="text-sm text-muted-foreground">
+                  {cloneStep === "template" 
+                    ? "Enter your topic and fill in each section — we'll match the original structure" 
+                    : "Review and generate your cloned script"}
+                </p>
+              </div>
+              
               {/* Clone step indicator */}
               <div className="flex items-center justify-center gap-2 mb-6">
                 <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium ${
@@ -1199,22 +1430,27 @@ export default function Home() {
                     </p>
                   </div>
 
-                  {/* Original transcript (collapsible) */}
-                  {clonedStructure.transcript && (
-                    <Collapsible open={showOriginalTranscript} onOpenChange={setShowOriginalTranscript} className="mb-6">
-                      <CollapsibleTrigger className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground w-full">
-                        <FileText className="w-4 h-4" />
-                        <span>View original video transcript for inspiration</span>
-                        {showOriginalTranscript ? <ChevronUp className="w-4 h-4 ml-auto" /> : <ChevronDown className="w-4 h-4 ml-auto" />}
-                      </CollapsibleTrigger>
-                      <CollapsibleContent className="mt-3">
-                        <div className="p-4 rounded-lg bg-muted/50 border border-border">
-                          <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">
-                            {clonedStructure.transcript}
-                          </p>
-                        </div>
-                      </CollapsibleContent>
-                    </Collapsible>
+                  {/* Reference: original structure at a glance */}
+                  {clonedStructure.analysis?.sections && clonedStructure.analysis.sections.length > 0 && (
+                    <div className="mb-6 p-3 rounded-md bg-muted/30 border border-border">
+                      <p className="text-xs text-muted-foreground mb-2 font-medium">Structure you're cloning:</p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {clonedStructure.analysis.sections.map((section: any, i: number) => (
+                          <Badge key={i} variant="secondary" className="text-[10px]">
+                            {section.name} ({section.durationPercent}%)
+                          </Badge>
+                        ))}
+                      </div>
+                      <button
+                        onClick={() => {
+                          setClonedStructure({ ...clonedStructure, applied: false });
+                        }}
+                        className="text-xs text-primary hover:underline mt-2 inline-flex items-center gap-1"
+                        data-testid="link-review-analysis"
+                      >
+                        <Eye className="w-3 h-3" /> Review full analysis
+                      </button>
+                    </div>
                   )}
 
                   {/* AI Hook Generation */}
