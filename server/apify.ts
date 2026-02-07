@@ -1232,7 +1232,7 @@ export async function fetchInstagramViralExamples(
 // ============================================
 
 export interface VideoCloneData {
-  platform: "tiktok" | "instagram" | "unknown";
+  platform: "tiktok" | "instagram" | "youtube" | "unknown";
   transcript: string;
   author?: string;
   views?: number;
@@ -1253,7 +1253,7 @@ export interface ExtractedFrame {
 }
 
 // Parse video URL to determine platform and extract ID
-function parseVideoUrl(url: string): { platform: "tiktok" | "instagram" | "unknown"; videoId?: string } {
+function parseVideoUrl(url: string): { platform: "tiktok" | "instagram" | "youtube" | "unknown"; videoId?: string } {
   const normalizedUrl = url.toLowerCase().trim();
   
   if (normalizedUrl.includes("tiktok.com")) {
@@ -1264,6 +1264,15 @@ function parseVideoUrl(url: string): { platform: "tiktok" | "instagram" | "unkno
   if (normalizedUrl.includes("instagram.com")) {
     const postMatch = url.match(/(?:\/p\/|\/reel\/|\/reels\/)([A-Za-z0-9_-]+)/);
     return { platform: "instagram", videoId: postMatch?.[1] };
+  }
+  
+  if (normalizedUrl.includes("youtube.com") || normalizedUrl.includes("youtu.be")) {
+    let videoId: string | undefined;
+    const longMatch = url.match(/[?&]v=([A-Za-z0-9_-]+)/);
+    const shortMatch = url.match(/youtu\.be\/([A-Za-z0-9_-]+)/);
+    const shortsMatch = url.match(/\/shorts\/([A-Za-z0-9_-]+)/);
+    videoId = longMatch?.[1] || shortMatch?.[1] || shortsMatch?.[1];
+    return { platform: "youtube", videoId };
   }
   
   return { platform: "unknown" };
@@ -1387,6 +1396,81 @@ export async function scrapeInstagramVideo(postUrl: string): Promise<VideoCloneD
 }
 
 // Main function to extract video transcript from any supported URL
+// Scrape a YouTube video transcript by URL
+export async function scrapeYouTubeVideo(videoUrl: string): Promise<VideoCloneData> {
+  if (!APIFY_TOKEN) {
+    return { platform: "youtube", transcript: "", success: false, error: "APIFY_API_TOKEN is not configured" };
+  }
+
+  const client = new ApifyClient({ token: APIFY_TOKEN });
+
+  try {
+    const input = {
+      startUrls: [{ url: videoUrl }],
+      maxResults: 1,
+    };
+
+    console.log("[Video Clone] Scraping YouTube video:", videoUrl);
+    const run = await client.actor("karamelo/youtube-transcripts").call(input, {
+      waitSecs: 120,
+    });
+
+    const { items } = await client.dataset(run.defaultDatasetId).listItems();
+    
+    if (!items || items.length === 0) {
+      console.log("[Video Clone] YouTube scraper returned no items");
+      return { platform: "youtube", transcript: "", success: false, error: "Could not extract transcript from YouTube video. The video may not have captions available." };
+    }
+
+    const video = items[0] as any;
+    console.log("[Video Clone] YouTube video scraped, raw keys:", Object.keys(video).join(", "));
+    
+    let transcript = "";
+    if (video.transcript && typeof video.transcript === 'string') {
+      transcript = video.transcript;
+    } else if (video.captions && typeof video.captions === 'string') {
+      transcript = video.captions;
+    } else if (video.text && typeof video.text === 'string') {
+      transcript = video.text;
+    } else if (Array.isArray(video.transcript)) {
+      transcript = video.transcript.map((seg: any) => seg.text || seg).join(' ');
+    } else if (Array.isArray(video.captions)) {
+      transcript = video.captions.map((seg: any) => seg.text || seg).join(' ');
+    }
+
+    if (!transcript) {
+      console.log("[Video Clone] YouTube: No transcript found in response");
+      return { platform: "youtube", transcript: "", success: false, error: "No transcript/captions available for this YouTube video." };
+    }
+
+    console.log("[Video Clone] YouTube transcript extracted, length:", transcript.length);
+
+    const coverImageUrl = video.thumbnailUrl || video.thumbnail || video.thumbnails?.[0]?.url || "";
+    const author = video.channelName || video.channel || video.author || video.uploader || "";
+    const views = video.viewCount || video.views || 0;
+    const likes = video.likeCount || video.likes || 0;
+    const comments = video.commentCount || video.comments || 0;
+    const duration = video.duration || video.lengthSeconds || 0;
+
+    console.log("[Video Clone] YouTube cover:", coverImageUrl ? coverImageUrl.substring(0, 80) : "none");
+
+    return {
+      platform: "youtube",
+      transcript,
+      author,
+      views: typeof views === 'number' ? views : parseInt(views) || 0,
+      likes: typeof likes === 'number' ? likes : parseInt(likes) || 0,
+      comments: typeof comments === 'number' ? comments : parseInt(comments) || 0,
+      duration: typeof duration === 'number' ? duration : parseInt(duration) || 0,
+      coverImageUrl: coverImageUrl || undefined,
+      success: true,
+    };
+  } catch (error: any) {
+    console.error("[Video Clone] YouTube scrape error:", error);
+    return { platform: "youtube", transcript: "", success: false, error: error.message || "Failed to scrape YouTube video" };
+  }
+}
+
 export async function extractVideoTranscript(videoUrl: string): Promise<VideoCloneData> {
   const { platform } = parseVideoUrl(videoUrl);
 
@@ -1398,11 +1482,15 @@ export async function extractVideoTranscript(videoUrl: string): Promise<VideoClo
     return scrapeInstagramVideo(videoUrl);
   }
 
+  if (platform === "youtube") {
+    return scrapeYouTubeVideo(videoUrl);
+  }
+
   return {
     platform: "unknown",
     transcript: "",
     success: false,
-    error: "Unsupported platform. Please use a TikTok or Instagram video URL.",
+    error: "Unsupported platform. Please use a TikTok, Instagram, or YouTube video URL.",
   };
 }
 

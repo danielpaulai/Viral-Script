@@ -113,7 +113,7 @@ import {
   ArrowDown,
   Volume2,
 } from "lucide-react";
-import { SiTiktok, SiInstagram } from "react-icons/si";
+import { SiTiktok, SiInstagram, SiYoutube } from "react-icons/si";
 
 const presetIcons: Record<string, typeof Zap> = {
   business_growth: TrendingUp,
@@ -851,7 +851,7 @@ export default function Home() {
                     </div>
                   </div>
                   <p className="text-sm text-muted-foreground">
-                    Paste a viral TikTok or Instagram video URL. The AI will analyze its structure and create your script in the same format.
+                    Paste a viral TikTok, Instagram, or YouTube video URL. The AI will analyze its structure and create your script in the same format.
                   </p>
                 </button>
               </div>
@@ -873,14 +873,14 @@ export default function Home() {
                   <ChevronLeft className="w-3 h-3" /> Back to options
                 </button>
                 <h2 className="text-xl font-bold mb-2">Clone a Viral Video</h2>
-                <p className="text-sm text-muted-foreground">Paste a TikTok or Instagram video URL to analyze its format</p>
+                <p className="text-sm text-muted-foreground">Paste a TikTok, Instagram, or YouTube video URL to analyze its format</p>
               </div>
               
               <div className="p-6 rounded-xl border-2 border-purple-500/30 bg-gradient-to-br from-purple-500/5 to-pink-500/5">
                 <Label className="text-sm font-medium mb-2 block">Video URL</Label>
                 <div className="flex gap-2 mb-4">
                   <Input
-                    placeholder="https://www.tiktok.com/@user/video/123... or https://instagram.com/reel/..."
+                    placeholder="Paste TikTok, Instagram, or YouTube URL..."
                     value={cloneVideoUrl}
                     onChange={(e) => setCloneVideoUrl(e.target.value)}
                     className="flex-1"
@@ -3147,11 +3147,11 @@ export default function Home() {
             <Badge variant="outline" className="text-[10px] border-purple-500/50 text-purple-300">New</Badge>
           </div>
           <p className="text-xs text-muted-foreground mb-3">
-            Paste a TikTok or Instagram video URL to clone its format. The AI will analyze the structure and generate your script in that style.
+            Paste a TikTok, Instagram, or YouTube video URL to clone its format. The AI will analyze the structure and generate your script in that style.
           </p>
           <div className="flex gap-2">
             <Input
-              placeholder="https://www.tiktok.com/@user/video/123... or https://instagram.com/reel/..."
+              placeholder="Paste TikTok, Instagram, or YouTube URL..."
               value={cloneVideoUrl}
               onChange={(e) => setCloneVideoUrl(e.target.value)}
               className="flex-1 text-sm"

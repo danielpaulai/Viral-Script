@@ -2807,10 +2807,11 @@ Create a powerful video brief that will make this topic stand out and go viral.`
       // Validate URL format before calling Apify
       const tiktokPattern = /^https?:\/\/(www\.)?(tiktok\.com|vm\.tiktok\.com)/i;
       const instagramPattern = /^https?:\/\/(www\.)?instagram\.com\/(p|reel|tv)/i;
+      const youtubePattern = /^https?:\/\/(www\.)?(youtube\.com|youtu\.be|m\.youtube\.com)/i;
       
-      if (!tiktokPattern.test(videoUrl) && !instagramPattern.test(videoUrl)) {
+      if (!tiktokPattern.test(videoUrl) && !instagramPattern.test(videoUrl) && !youtubePattern.test(videoUrl)) {
         return res.status(400).json({ 
-          error: "Please enter a valid TikTok or Instagram video URL (e.g., https://www.tiktok.com/@user/video/123 or https://www.instagram.com/reel/abc)" 
+          error: "Please enter a valid TikTok, Instagram, or YouTube video URL" 
         });
       }
       

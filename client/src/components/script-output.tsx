@@ -388,6 +388,9 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
     }
   };
 
+  const isClonedScript = !!script.parameters.clonedVideoStructure;
+  const cloneSections = script.parameters.clonedVideoStructure?.sections || [];
+
   const getDisplayScript = () => {
     let baseScript = enhancedScript || script.script;
     
@@ -404,10 +407,9 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
       .replace(/^HOOK:\s*/gim, '')
       .replace(/^BODY:\s*/gim, '')
       .replace(/^CTA:\s*/gim, '')
-      .replace(/\n{3,}/g, '\n\n') // Clean up extra newlines
+      .replace(/\n{3,}/g, '\n\n')
       .trim();
     
-    // Strip inline production notes (they appear after "--- PRODUCTION NOTES ---")
     const prodNotesMarker = /---\s*PRODUCTION NOTES\s*---/i;
     if (prodNotesMarker.test(baseScript)) {
       baseScript = baseScript.split(prodNotesMarker)[0].trim();
@@ -422,6 +424,61 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
       return lines.join('\n');
     }
     return baseScript;
+  };
+
+  const parseClonedSections = (): Array<{ name: string; content: string; isHook: boolean; isCta: boolean }> => {
+    let baseScript = enhancedScript || script.script;
+    
+    const prodNotesMarker = /---\s*PRODUCTION NOTES\s*---/i;
+    if (prodNotesMarker.test(baseScript)) {
+      baseScript = baseScript.split(prodNotesMarker)[0].trim();
+    }
+
+    const sectionPattern = /\[([^\]]+)\]/g;
+    const matches: Array<{ name: string; index: number }> = [];
+    let match;
+    while ((match = sectionPattern.exec(baseScript)) !== null) {
+      const name = match[1].trim();
+      if (name.startsWith('VISUAL') || name.startsWith('SHOT') || name.startsWith('CARD') || name.startsWith('SCREEN') || name.startsWith('EXPRESSION')) continue;
+      matches.push({ name, index: match.index });
+    }
+
+    if (matches.length < 2) {
+      const mdPattern = /^\*\*([^*]+)\*\*/gm;
+      while ((match = mdPattern.exec(baseScript)) !== null) {
+        const name = match[1].trim();
+        if (['HOOK', 'BODY', 'CTA', 'CORE TEACHING', 'CALL TO ACTION'].includes(name.toUpperCase())) continue;
+        matches.push({ name, index: match.index });
+      }
+    }
+
+    if (matches.length < 2) {
+      return [];
+    }
+
+    const sections: Array<{ name: string; content: string; isHook: boolean; isCta: boolean }> = [];
+    for (let i = 0; i < matches.length; i++) {
+      const headerEnd = baseScript.indexOf('\n', matches[i].index);
+      const contentStart = headerEnd >= 0 ? headerEnd + 1 : matches[i].index + matches[i].name.length + 2;
+      const contentEnd = i < matches.length - 1 ? matches[i + 1].index : baseScript.length;
+      let content = baseScript.slice(contentStart, contentEnd).trim();
+      content = content
+        .replace(/\[VISUAL:[^\]]*\]/gi, '')
+        .replace(/^\*\*Total.*$/gim, '')
+        .replace(/^\*\*Word count.*$/gim, '')
+        .replace(/\n{3,}/g, '\n\n')
+        .trim();
+      
+      const nameLower = matches[i].name.toLowerCase();
+      const isHook = nameLower.includes('hook') || nameLower.includes('intro') || nameLower.includes('opening');
+      const isCta = nameLower.includes('cta') || nameLower.includes('call') || nameLower.includes('close') || nameLower.includes('closing');
+      
+      if (content) {
+        sections.push({ name: matches[i].name, content, isHook, isCta });
+      }
+    }
+
+    return sections;
   };
 
   const getInlineProductionNotes = (): string[] => {
@@ -833,112 +890,183 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
         </TabsList>
         
         <TabsContent value="script" className="mt-4">
-          {/* Hook Metadata Header */}
-          {(() => {
-            const hookId = selectedHook || script.parameters.hook;
-            const foundHook = currentHook || viralHooks.find(h => h.id === hookId);
-            const isCustomHook = !foundHook || hookId === "custom";
-            const hookIndex = viralHooks.findIndex(h => h.id === hookId);
-            const sanitizedFirstLine = getDisplayScript().split('\n').filter(l => l.trim())[0] || "";
-            const actualHookLine = customHookLine || sanitizedFirstLine;
-            
-            return (
-              <div className="mb-4 p-4 rounded-md bg-primary/10 border border-primary/20 space-y-2">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Zap className="w-4 h-4 text-primary" />
-                    <span className="text-sm font-semibold text-foreground">
-                      {isCustomHook ? "YOUR HOOK" : `HOOK #${hookIndex + 1}: ${foundHook?.name}`}
-                    </span>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleCopySection("hook")}
-                    className="text-xs h-7"
-                    data-testid="button-copy-hook"
-                  >
-                    <Copy className="w-3 h-3 mr-1" />
-                    Copy Hook
-                  </Button>
+          {/* Cloned Script - Section-by-section display matching original structure */}
+          {isClonedScript && (() => {
+            const parsed = parseClonedSections();
+            const sectionColors = ['text-primary', 'text-blue-500', 'text-indigo-500', 'text-violet-500', 'text-purple-500', 'text-pink-500', 'text-green-500'];
+            const sectionBgColors = ['bg-primary/10 border-primary/20', 'bg-blue-500/10 border-blue-500/20', 'bg-indigo-500/10 border-indigo-500/20', 'bg-violet-500/10 border-violet-500/20', 'bg-purple-500/10 border-purple-500/20', 'bg-pink-500/10 border-pink-500/20', 'bg-green-500/10 border-green-500/20'];
+
+            if (parsed.length > 0) {
+              return (
+                <div className="space-y-4">
+                  {cloneSections.length > 0 && (
+                    <div className="flex items-center gap-2 mb-2 flex-wrap">
+                      <Badge variant="outline" className="text-xs">Cloned Structure</Badge>
+                      <span className="text-xs text-muted-foreground">{parsed.length} sections matching original format</span>
+                    </div>
+                  )}
+                  {parsed.map((section, idx) => {
+                    const colorClass = section.isHook ? sectionColors[0] : section.isCta ? 'text-green-500' : sectionColors[idx % sectionColors.length];
+                    const bgClass = section.isHook ? sectionBgColors[0] : section.isCta ? 'bg-green-500/10 border-green-500/20' : 'bg-muted/50 border-border';
+                    const matchingOriginal = cloneSections.find((s: any) => 
+                      s.name.toLowerCase() === section.name.toLowerCase() ||
+                      section.name.toLowerCase().includes(s.name.toLowerCase()) ||
+                      s.name.toLowerCase().includes(section.name.toLowerCase())
+                    );
+                    
+                    return (
+                      <div key={idx} className={`p-4 rounded-md border ${bgClass}`}>
+                        <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className={`text-xs font-semibold uppercase tracking-wider ${colorClass}`}>
+                              {section.name}
+                            </span>
+                            {matchingOriginal?.durationPercent && (
+                              <Badge variant="outline" className="text-[10px]">{matchingOriginal.durationPercent}%</Badge>
+                            )}
+                            {matchingOriginal?.emotionalTone && (
+                              <span className="text-[10px] text-muted-foreground capitalize">{matchingOriginal.emotionalTone}</span>
+                            )}
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={async () => {
+                              await navigator.clipboard.writeText(section.content);
+                              toast({ description: `${section.name} copied to clipboard.` });
+                            }}
+                            className="text-xs h-6 px-2"
+                            data-testid={`button-copy-section-${idx}`}
+                          >
+                            <Copy className="w-3 h-3" />
+                          </Button>
+                        </div>
+                        <p className="font-mono text-sm text-foreground whitespace-pre-wrap leading-relaxed">{section.content}</p>
+                        {matchingOriginal?.purpose && (
+                          <p className="text-[10px] text-muted-foreground mt-2 flex items-center gap-1">
+                            <Target className="w-2.5 h-2.5 flex-shrink-0" /> {matchingOriginal.purpose}
+                          </p>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
-                {!isCustomHook && foundHook?.template && (
-                  <div className="text-xs text-muted-foreground">
-                    <span className="font-medium text-muted-foreground">Template:</span> "{foundHook.template}"
-                  </div>
-                )}
-                <div className="text-xs text-muted-foreground">
-                  <span className="font-medium text-muted-foreground">Your hook:</span> "{actualHookLine}"
-                </div>
-              </div>
-            );
+              );
+            }
+            return null;
           })()}
 
-          {/* Script Sections with Individual Copy */}
-          <div className="space-y-4">
-            {(() => {
-              const displayScript = getDisplayScript();
-              const lines = displayScript.split('\n').filter(Boolean);
-              const hookLine = lines[0] || "";
-              const bodyLines = lines.slice(1, -1).join('\n');
-              const ctaLine = lines[lines.length - 1] || "";
-              
-              return (
-                <>
-                  {/* Hook Section */}
-                  <div className="p-4 rounded-md bg-muted/50 border border-border">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs font-semibold text-primary uppercase tracking-wider">Hook</span>
+          {/* Regular Script - Hook/Body/CTA display */}
+          {(!isClonedScript || parseClonedSections().length === 0) && (
+            <>
+              {/* Hook Metadata Header */}
+              {(() => {
+                const hookId = selectedHook || script.parameters.hook;
+                const foundHook = currentHook || viralHooks.find(h => h.id === hookId);
+                const isCustomHook = !foundHook || hookId === "custom";
+                const hookIndex = viralHooks.findIndex(h => h.id === hookId);
+                const sanitizedFirstLine = getDisplayScript().split('\n').filter(l => l.trim())[0] || "";
+                const actualHookLine = customHookLine || sanitizedFirstLine;
+                
+                return (
+                  <div className="mb-4 p-4 rounded-md bg-primary/10 border border-primary/20 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Zap className="w-4 h-4 text-primary" />
+                        <span className="text-sm font-semibold text-foreground">
+                          {isCustomHook ? "YOUR HOOK" : `HOOK #${hookIndex + 1}: ${foundHook?.name}`}
+                        </span>
+                      </div>
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={() => handleCopySection("hook")}
-                        className="text-xs h-6 px-2"
-                        data-testid="button-copy-hook-section"
+                        className="text-xs h-7"
+                        data-testid="button-copy-hook"
                       >
-                        <Copy className="w-3 h-3" />
+                        <Copy className="w-3 h-3 mr-1" />
+                        Copy Hook
                       </Button>
                     </div>
-                    <p className="font-mono text-sm text-foreground leading-relaxed">{hookLine}</p>
+                    {!isCustomHook && foundHook?.template && (
+                      <div className="text-xs text-muted-foreground">
+                        <span className="font-medium text-muted-foreground">Template:</span> "{foundHook.template}"
+                      </div>
+                    )}
+                    <div className="text-xs text-muted-foreground">
+                      <span className="font-medium text-muted-foreground">Your hook:</span> "{actualHookLine}"
+                    </div>
                   </div>
+                );
+              })()}
 
-                  {/* Body Section */}
-                  <div className="p-4 rounded-md bg-muted/50 border border-border">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Body</span>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleCopySection("body")}
-                        className="text-xs h-6 px-2"
-                        data-testid="button-copy-body"
-                      >
-                        <Copy className="w-3 h-3" />
-                      </Button>
-                    </div>
-                    <p className="font-mono text-sm text-foreground whitespace-pre-wrap leading-relaxed">{bodyLines}</p>
-                  </div>
+              {/* Script Sections with Individual Copy */}
+              <div className="space-y-4">
+                {(() => {
+                  const displayScript = getDisplayScript();
+                  const lines = displayScript.split('\n').filter(Boolean);
+                  const hookLine = lines[0] || "";
+                  const bodyLines = lines.slice(1, -1).join('\n');
+                  const ctaLine = lines[lines.length - 1] || "";
+                  
+                  return (
+                    <>
+                      {/* Hook Section */}
+                      <div className="p-4 rounded-md bg-muted/50 border border-border">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-xs font-semibold text-primary uppercase tracking-wider">Hook</span>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleCopySection("hook")}
+                            className="text-xs h-6 px-2"
+                            data-testid="button-copy-hook-section"
+                          >
+                            <Copy className="w-3 h-3" />
+                          </Button>
+                        </div>
+                        <p className="font-mono text-sm text-foreground leading-relaxed">{hookLine}</p>
+                      </div>
 
-                  {/* CTA Section */}
-                  <div className="p-4 rounded-md bg-muted/50 border border-border">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs font-semibold text-green-500 uppercase tracking-wider">Call to Action</span>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleCopySection("cta")}
-                        className="text-xs h-6 px-2"
-                        data-testid="button-copy-cta"
-                      >
-                        <Copy className="w-3 h-3" />
-                      </Button>
-                    </div>
-                    <p className="font-mono text-sm text-foreground leading-relaxed">{ctaLine}</p>
-                  </div>
-                </>
-              );
-            })()}
-          </div>
+                      {/* Body Section */}
+                      <div className="p-4 rounded-md bg-muted/50 border border-border">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Body</span>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleCopySection("body")}
+                            className="text-xs h-6 px-2"
+                            data-testid="button-copy-body"
+                          >
+                            <Copy className="w-3 h-3" />
+                          </Button>
+                        </div>
+                        <p className="font-mono text-sm text-foreground whitespace-pre-wrap leading-relaxed">{bodyLines}</p>
+                      </div>
+
+                      {/* CTA Section */}
+                      <div className="p-4 rounded-md bg-muted/50 border border-border">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-xs font-semibold text-green-500 uppercase tracking-wider">Call to Action</span>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleCopySection("cta")}
+                            className="text-xs h-6 px-2"
+                            data-testid="button-copy-cta"
+                          >
+                            <Copy className="w-3 h-3" />
+                          </Button>
+                        </div>
+                        <p className="font-mono text-sm text-foreground leading-relaxed">{ctaLine}</p>
+                      </div>
+                    </>
+                  );
+                })()}
+              </div>
+            </>
+          )}
         </TabsContent>
         
         <TabsContent value="production" className="mt-4">
