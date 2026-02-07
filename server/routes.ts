@@ -806,26 +806,60 @@ Generate a NEW script about the user's topic that follows these same patterns bu
   if (params.clonedVideoStructure) {
     const clone = params.clonedVideoStructure;
     clonedStructureInstructions = `
-=== CLONED VIDEO STRUCTURE (HIGHEST PRIORITY - MATCH THIS EXACT FORMAT) ===
-You MUST structure your script to match this cloned video format exactly:
 
-FORMAT: ${clone.format?.replace(/_/g, " ") || "unknown"}
-HOOK STYLE: ${clone.hookStyle?.replace(/_/g, " ") || "unknown"}
-PACING: ${clone.pacing?.replace(/_/g, " ") || "unknown"}
-TONE: ${clone.toneDescription || "Not specified"}
-CTA STYLE: ${clone.ctaStyle?.replace(/_/g, " ") || "soft ask"}
+######################################################################
+# CLONED FORMAT MODE - THIS OVERRIDES ALL OTHER FORMATTING RULES     #
+######################################################################
 
-${clone.sections?.length > 0 ? `STRUCTURE SECTIONS (follow this order and approximate timing):
-${clone.sections.map((s: any, i: number) => `${i + 1}. ${s.name} (${s.durationPercent}% of video): ${s.description}`).join('\n')}` : ''}
+You are FORMAT-CLONING a viral video. Your #1 job is to make the NEW script feel like it was written by the SAME creator as the original. The structure, rhythm, transitions, and style must be nearly identical — only the TOPIC changes.
 
-${clone.keyPatterns?.length > 0 ? `KEY PATTERNS TO REPLICATE:
+ORIGINAL VIDEO FORMAT:
+- Type: ${clone.format?.replace(/_/g, " ") || "unknown"}
+- Hook Style: ${clone.hookStyle?.replace(/_/g, " ") || "unknown"}  
+- Pacing: ${clone.pacing?.replace(/_/g, " ") || "unknown"}
+- Tone: ${clone.toneDescription || "Not specified"}
+- CTA Style: ${clone.ctaStyle?.replace(/_/g, " ") || "soft ask"}
+
+${clone.hookTemplate ? `HOOK TEMPLATE (fill in with user's topic):
+"${clone.hookTemplate}"` : ''}
+
+${clone.bodyTemplate ? `BODY STRUCTURE TEMPLATE (replicate this exact flow):
+"${clone.bodyTemplate}"` : ''}
+
+${clone.ctaTemplate ? `CTA TEMPLATE (fill in with user's topic):
+"${clone.ctaTemplate}"` : ''}
+
+${clone.sections?.length > 0 ? `SECTION-BY-SECTION BLUEPRINT (replicate this EXACT structure):
+${clone.sections.map((s: any, i: number) => `${i + 1}. ${s.name} (${s.durationPercent}% of video, ~${s.sentenceCount || '2-3'} sentences): ${s.description}${s.exampleLine ? `\n   ORIGINAL LINE: "${s.exampleLine}" ← Write YOUR version in this same style` : ''}`).join('\n\n')}` : ''}
+
+${(clone.transitionPhrases && clone.transitionPhrases.length > 0) ? `TRANSITION PHRASES TO MIRROR (use similar phrases, adapted to new topic):
+${clone.transitionPhrases.map((p: string) => `- "${p}"`).join('\n')}` : ''}
+
+${clone.keyPatterns?.length > 0 ? `SPECIFIC PATTERNS TO REPLICATE:
 ${clone.keyPatterns.map((p: string) => `- ${p}`).join('\n')}` : ''}
 
-${clone.originalTranscript ? `REFERENCE TRANSCRIPT (use as style guide):
-"${clone.originalTranscript.slice(0, 800)}${clone.originalTranscript.length > 800 ? '...' : ''}"` : ''}
+${clone.sentenceStructure ? `SENTENCE STYLE: ${clone.sentenceStructure}` : ''}
 
-IMPORTANT: Match the cloned video's structure, pacing, and format. Use the user's content skeleton but present it in this cloned format.
-=== END CLONED STRUCTURE ===
+${clone.uniqueStyleNotes ? `DISTINCTIVE STYLE ELEMENTS: ${clone.uniqueStyleNotes}` : ''}
+
+${clone.originalTranscript ? `REFERENCE TRANSCRIPT - Study the rhythm, word choice, and flow:
+"${clone.originalTranscript.slice(0, 1200)}${clone.originalTranscript.length > 1200 ? '...' : ''}"
+
+CRITICAL: Your script must read like a "sibling" of this transcript. Same sentence lengths, same transition style, same energy, same rhetorical patterns. Only the TOPIC and specific CONTENT changes.` : ''}
+
+FORMAT CLONING RULES:
+1. Match the EXACT number of sections from the original
+2. Match the approximate sentence count per section
+3. Use similar transition phrases (adapted to new topic)
+4. Mirror the hook structure — if original asks a question, you ask a question; if it starts with a bold claim, you start with a bold claim
+5. Mirror the CTA structure exactly
+6. Keep the same energy/pacing throughout
+7. If the original uses lists, use lists. If it uses stories, use stories.
+8. Match the word count within 15% of the original
+9. DO NOT default to a generic HOOK/BODY/CTA structure — use the ORIGINAL video's actual sections
+10. The user's content fills the template, but the TEMPLATE (structure/flow/style) comes from the cloned video
+
+######################################################################
 `;
   }
 
@@ -2632,11 +2666,20 @@ Create a powerful video brief that will make this topic stand out and go viral.`
       name: string;
       description: string;
       durationPercent: number;
+      sentenceCount?: number;
+      exampleLine?: string;
     }>;
     keyPatterns: string[];
     toneDescription: string;
     ctaStyle: string;
     originalTranscript: string;
+    sentenceStructure?: string;
+    transitionPhrases?: string[];
+    hookTemplate?: string;
+    bodyTemplate?: string;
+    ctaTemplate?: string;
+    uniqueStyleNotes?: string;
+    wordCount?: string;
   }
   
   app.post("/api/video-clone/analyze", isAuthenticated, async (req: any, res) => {
@@ -2675,40 +2718,52 @@ Create a powerful video brief that will make this topic stand out and go viral.`
       
       console.log("[Video Clone] Transcript extracted, length:", videoData.transcript.length);
       
-      // Step 2: Use AI to analyze the video structure
-      const analysisPrompt = `Analyze this video script/caption and extract its structural elements for cloning:
+      // Step 2: Use AI to deeply analyze the video structure for format cloning
+      const analysisPrompt = `You are an expert video format analyst. Your job is to reverse-engineer a video script so precisely that someone could recreate the EXACT same format with different content.
 
 TRANSCRIPT:
 "${videoData.transcript}"
 
-Analyze and return a JSON object with these fields:
+Analyze this transcript at a DEEP structural level. I need to understand not just WHAT was said, but HOW it was structured - the exact format, sentence patterns, transitions, and flow.
+
+Return a JSON object:
 {
-  "format": "The video format type (e.g., 'talking_head', 'duet', 'story_time', 'listicle', 'tutorial', 'reaction', 'clone_conversation', 'text_on_screen')",
+  "format": "The video format type (e.g., 'talking_head', 'duet', 'story_time', 'listicle', 'tutorial', 'reaction', 'text_on_screen')",
   "hookStyle": "How the video hooks viewers (e.g., 'question', 'bold_statement', 'curiosity_gap', 'direct_address', 'statistic')",
   "pacing": "The pacing style (e.g., 'fast_cuts', 'conversational', 'dramatic_pauses', 'energetic', 'calm')",
   "sections": [
     {
       "name": "Section name (e.g., 'Hook', 'Problem Setup', 'Main Content', 'CTA')",
-      "description": "What happens in this section",
-      "durationPercent": 15
+      "description": "What happens in this section AND the exact rhetorical technique used",
+      "durationPercent": 15,
+      "sentenceCount": 2,
+      "exampleLine": "Copy the actual opening line of this section verbatim as a style reference"
     }
   ],
-  "keyPatterns": ["Array of notable patterns like 'Uses repetition', 'Direct camera address', 'Multiple speakers', etc."],
-  "toneDescription": "Overall tone description (e.g., 'Casual and relatable with humor', 'Professional but accessible')",
-  "ctaStyle": "How the CTA is delivered (e.g., 'soft ask', 'direct command', 'question', 'none')"
+  "keyPatterns": ["Array of SPECIFIC patterns - not generic descriptions. e.g., 'Opens with a rhetorical question then immediately answers it', 'Uses 3-item lists in every section', 'Transitions with But here is the thing...', 'Ends each point with a pause word like Right?'"],
+  "toneDescription": "Detailed tone description including energy level, vocabulary style, and attitude",
+  "ctaStyle": "How the CTA is delivered (e.g., 'soft ask', 'direct command', 'question', 'none')",
+  "sentenceStructure": "Describe the typical sentence structure: Are sentences short fragments? Full sentences? Mix? How many words per sentence on average?",
+  "transitionPhrases": ["List the EXACT transition phrases used between sections, e.g., 'But here is what nobody tells you', 'And the crazy part is', 'So here is what you do'"],
+  "hookTemplate": "Write the hook as a fill-in-the-blank template. e.g., 'Stop [doing X] if you want to [achieve Y]' or '[Number] reasons why [topic] is [claim]'",
+  "bodyTemplate": "Describe the body structure as a template. e.g., 'Point 1 (statement + proof) → Transition → Point 2 (statement + proof) → Transition → Point 3 (statement + twist)'",
+  "ctaTemplate": "Write the CTA as a fill-in-the-blank template. e.g., 'Follow for more [topic] tips' or 'Comment [word] if you want [thing]'",
+  "wordCount": "Approximate total word count of the transcript",
+  "uniqueStyleNotes": "Any distinctive stylistic choices: repetition, callbacks, humor style, rhetorical devices, emphasis patterns"
 }
 
-Be specific and accurate based on the actual content. If this appears to be a multi-person or clone/duet format, note that in the format and keyPatterns.
+Be extremely specific and accurate. I need enough detail to recreate this EXACT format with completely different content.
 
 Return ONLY valid JSON, no other text.`;
 
       const response = await openai.chat.completions.create({
-        model: "gpt-4o-mini",
+        model: "gpt-4o",
         messages: [
-          { role: "system", content: "You are an expert video content analyst. Analyze video scripts and return structured JSON analysis." },
+          { role: "system", content: "You are an expert video format reverse-engineer. Extract every structural detail so the format can be precisely replicated with different content. Return ONLY valid JSON." },
           { role: "user", content: analysisPrompt }
         ],
         temperature: 0.3,
+        response_format: { type: "json_object" },
       });
       
       const analysisText = response.choices[0].message.content?.trim() || "{}";
@@ -2716,7 +2771,6 @@ Return ONLY valid JSON, no other text.`;
       // Parse the JSON response
       let analysis: any;
       try {
-        // Remove markdown code blocks if present
         const cleanJson = analysisText.replace(/```json\n?|\n?```/g, '').trim();
         analysis = JSON.parse(cleanJson);
       } catch (parseError) {
@@ -2733,6 +2787,13 @@ Return ONLY valid JSON, no other text.`;
         toneDescription: analysis.toneDescription || "",
         ctaStyle: analysis.ctaStyle || "soft_ask",
         originalTranscript: videoData.transcript,
+        sentenceStructure: analysis.sentenceStructure || "",
+        transitionPhrases: analysis.transitionPhrases || [],
+        hookTemplate: analysis.hookTemplate || "",
+        bodyTemplate: analysis.bodyTemplate || "",
+        ctaTemplate: analysis.ctaTemplate || "",
+        uniqueStyleNotes: analysis.uniqueStyleNotes || "",
+        wordCount: analysis.wordCount || "",
       };
       
       console.log("[Video Clone] Analysis complete:", structureAnalysis.format, structureAnalysis.sections.length, "sections");

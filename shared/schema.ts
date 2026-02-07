@@ -505,9 +505,18 @@ export interface ScriptParameters {
       name: string;
       durationPercent: number;
       description: string;
+      sentenceCount?: number;
+      exampleLine?: string;
     }>;
     keyPatterns: string[];
     originalTranscript?: string;
+    sentenceStructure?: string;
+    transitionPhrases?: string[];
+    hookTemplate?: string;
+    bodyTemplate?: string;
+    ctaTemplate?: string;
+    uniqueStyleNotes?: string;
+    wordCount?: string;
   };
 }
 
