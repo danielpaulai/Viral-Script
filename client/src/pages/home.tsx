@@ -1166,20 +1166,24 @@ export default function Home() {
 
                     {/* Full raw transcript (collapsible) */}
                     {(clonedStructure.analysis?.originalTranscript || clonedStructure.transcript) && clonedStructure.analysis?.sections?.length > 0 && (
-                      <Collapsible open={showOriginalTranscript} onOpenChange={setShowOriginalTranscript} className="mt-4 pt-4 border-t border-border">
-                        <CollapsibleTrigger className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground w-full" data-testid="button-toggle-raw-transcript">
+                      <div className="mt-4 pt-4 border-t border-border">
+                        <button
+                          onClick={() => setShowOriginalTranscript(!showOriginalTranscript)}
+                          className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground w-full"
+                          data-testid="button-toggle-raw-transcript"
+                        >
                           <Quote className="w-3.5 h-3.5" />
                           <span>View full raw transcript</span>
                           {showOriginalTranscript ? <ChevronUp className="w-3 h-3 ml-auto" /> : <ChevronDown className="w-3 h-3 ml-auto" />}
-                        </CollapsibleTrigger>
-                        <CollapsibleContent className="mt-3">
-                          <div className="p-3 rounded-md bg-muted/30 border border-border">
-                            <p className="text-xs text-muted-foreground whitespace-pre-wrap leading-relaxed">
+                        </button>
+                        {showOriginalTranscript && (
+                          <div className="mt-3 p-3 rounded-md bg-muted/30 border border-border max-h-[500px] overflow-y-auto">
+                            <div className="text-xs text-muted-foreground whitespace-pre-wrap leading-relaxed break-words">
                               {clonedStructure.analysis?.originalTranscript || clonedStructure.transcript}
-                            </p>
+                            </div>
                           </div>
-                        </CollapsibleContent>
-                      </Collapsible>
+                        )}
+                      </div>
                     )}
                   </Card>
                 </div>
