@@ -268,6 +268,12 @@ export default function Home() {
   const [enhancedSkeleton, setEnhancedSkeleton] = useState<EnhancedSkeleton | null>(null);
   const [showLegacyFlow, setShowLegacyFlow] = useState(false);
   
+  const proxyImageUrl = (url: string) => {
+    if (!url) return "";
+    if (url.startsWith("/") || url.startsWith("data:")) return url;
+    return `/api/image-proxy?url=${encodeURIComponent(url)}`;
+  };
+
   // Video Clone Feature - Step 1 Method Selection
   type CreationMethod = "choose" | "scratch" | "clone";
   const [creationMethod, setCreationMethod] = useState<CreationMethod>("choose");
@@ -1026,7 +1032,7 @@ export default function Home() {
                       return (
                         <div key={i} className="flex-shrink-0" data-testid={`frame-thumbnail-${i}`}>
                           <div className="relative rounded-md overflow-hidden border border-border w-[100px] h-[133px]">
-                            <img src={frame.thumbnailUrl} alt={`Frame at ${frame.timestamp}s`} className="w-full h-full object-cover" loading="lazy" />
+                            <img src={proxyImageUrl(frame.thumbnailUrl)} alt={`Frame at ${frame.timestamp}s`} className="w-full h-full object-cover" loading="lazy" />
                             <div className="absolute bottom-0 left-0 right-0 bg-black/70 px-1.5 py-0.5">
                               <p className="text-[10px] text-white font-mono">{frame.timestamp}s</p>
                             </div>
@@ -1046,7 +1052,7 @@ export default function Home() {
                     Video Cover
                   </p>
                   <div className="relative rounded-md overflow-hidden border border-border w-[140px]" data-testid="cover-image">
-                    <img src={clonedStructure.analysis.coverImageUrl} alt="Video cover" className="w-full aspect-[9/16] object-cover" loading="lazy" />
+                    <img src={proxyImageUrl(clonedStructure.analysis.coverImageUrl)} alt="Video cover" className="w-full aspect-[9/16] object-cover" loading="lazy" />
                     {clonedStructure.duration && (
                       <div className="absolute bottom-0 left-0 right-0 bg-black/70 px-1.5 py-0.5">
                         <p className="text-[10px] text-white font-mono text-center">{clonedStructure.duration}s</p>
@@ -1924,7 +1930,7 @@ export default function Home() {
                                 {sectionFrames.slice(0, 2).map((frame: any, j: number) => (
                                   <div key={j} className="relative rounded-md overflow-hidden border border-border">
                                     <img
-                                      src={frame.thumbnailUrl}
+                                      src={proxyImageUrl(frame.thumbnailUrl)}
                                       alt={`${section.name} at ${frame.timestamp}s`}
                                       className="w-full aspect-[9/16] object-cover"
                                       loading="lazy"
@@ -1939,7 +1945,7 @@ export default function Home() {
                               <div>
                                 <div className="relative rounded-md overflow-hidden border border-border">
                                   <img
-                                    src={clonedStructure.analysis.coverImageUrl}
+                                    src={proxyImageUrl(clonedStructure.analysis.coverImageUrl)}
                                     alt={`${section.name} preview`}
                                     className="w-full aspect-[9/16] object-cover"
                                     loading="lazy"

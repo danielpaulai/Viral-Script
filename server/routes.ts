@@ -3015,6 +3015,52 @@ Be surgically precise. Every field should contain enough detail that someone cou
     }
   });
 
+  app.get("/api/image-proxy", async (req, res) => {
+    try {
+      const imageUrl = req.query.url as string;
+      if (!imageUrl) {
+        return res.status(400).json({ error: "URL parameter required" });
+      }
+
+      const allowedDomains = [
+        "tiktokcdn.com", "tiktokcdn-us.com", "tiktok.com",
+        "cdninstagram.com", "instagram.com", "fbcdn.net",
+        "ytimg.com", "youtube.com", "ggpht.com",
+        "apifyusercontent.com", "apify.com",
+        "pexels.com", "unsplash.com",
+      ];
+
+      const urlObj = new URL(imageUrl);
+      const isAllowed = allowedDomains.some(d => urlObj.hostname.endsWith(d));
+      if (!isAllowed) {
+        return res.status(403).json({ error: "Domain not allowed" });
+      }
+
+      const response = await fetch(imageUrl, {
+        headers: {
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+          "Accept": "image/*,*/*",
+          "Referer": urlObj.origin,
+        },
+      });
+
+      if (!response.ok) {
+        return res.status(response.status).json({ error: "Failed to fetch image" });
+      }
+
+      const contentType = response.headers.get("content-type") || "image/jpeg";
+      res.setHeader("Content-Type", contentType);
+      res.setHeader("Cache-Control", "public, max-age=3600");
+      res.setHeader("Access-Control-Allow-Origin", "*");
+
+      const buffer = Buffer.from(await response.arrayBuffer());
+      res.send(buffer);
+    } catch (error: any) {
+      console.error("[Image Proxy] Error:", error.message);
+      res.status(500).json({ error: "Failed to proxy image" });
+    }
+  });
+
   // Generate Content Skeleton for Deep Research Mode
   app.post("/api/scripts/generate-skeleton", async (req, res) => {
     try {
