@@ -1666,56 +1666,137 @@ export default function Home() {
                 </Card>
               )}
 
-              {/* Generate Step */}
-              {cloneStep === "generate" && (
-                <Card className="p-6">
-                  {/* Summary of what will be generated */}
-                  <div className="mb-6">
-                    <h2 className="font-semibold text-lg mb-3">Ready to Generate Your Script</h2>
-                    
-                    <div className="p-4 rounded-lg bg-muted/50 border border-border space-y-3">
-                      <div className="flex items-start gap-3">
-                        <Target className="w-5 h-5 text-primary mt-0.5" />
-                        <div>
-                          <p className="text-sm font-medium">Topic</p>
-                          <p className="text-sm text-muted-foreground">{cloneTemplateTopic}</p>
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-start gap-3">
-                        <Sparkles className="w-5 h-5 text-primary mt-0.5" />
-                        <div>
-                          <p className="text-sm font-medium">Cloned Format</p>
-                          <p className="text-sm text-muted-foreground capitalize">
-                            {String(clonedStructure.analysis?.format || "").replace(/_/g, " ")} • 
-                            {String(clonedStructure.analysis?.hookAnalysis?.style || clonedStructure.analysis?.hookStyle || "").replace(/_/g, " ")} hook • 
-                            {String(typeof clonedStructure.analysis?.pacing === 'object' ? clonedStructure.analysis?.pacing?.overall : clonedStructure.analysis?.pacing || "moderate")} pacing
-                          </p>
-                        </div>
-                      </div>
+              {/* Generate Step - Visual Storyboard */}
+              {cloneStep === "generate" && (() => {
+                const sections = clonedStructure.analysis?.sections || [];
+                const frames = clonedStructure.analysis?.frames || [];
+                const totalDuration = clonedStructure.analysis?.estimatedDurationSeconds || clonedStructure.duration || 60;
+                const sectionColors = ['bg-primary', 'bg-blue-500', 'bg-indigo-500', 'bg-violet-500', 'bg-purple-500', 'bg-pink-500', 'bg-green-500'];
+                const sectionBorders = ['border-primary', 'border-blue-500', 'border-indigo-500', 'border-violet-500', 'border-purple-500', 'border-pink-500', 'border-green-500'];
+                const sectionTextColors = ['text-primary', 'text-blue-500', 'text-indigo-500', 'text-violet-500', 'text-purple-500', 'text-pink-500', 'text-green-500'];
 
-                      <div className="flex items-start gap-3">
-                        <Layers className="w-5 h-5 text-primary mt-0.5" />
-                        <div>
-                          <p className="text-sm font-medium">Your Content Outline</p>
-                          <div className="text-sm text-muted-foreground">
-                            {Object.entries(cloneSectionInputs).filter(([_, v]) => v.trim()).length > 0 ? (
-                              <ul className="list-disc list-inside space-y-1 mt-1">
-                                {Object.entries(cloneSectionInputs)
-                                  .filter(([_, v]) => v.trim())
-                                  .map(([name, content]) => (
-                                    <li key={name}>
-                                      <span className="font-medium">{name}:</span> {content.slice(0, 50)}{content.length > 50 ? '...' : ''}
-                                    </li>
-                                  ))}
-                              </ul>
+                const getFramesForSection = (sectionIndex: number) => {
+                  if (frames.length === 0 || sections.length === 0) return [];
+                  const totalPercent = sections.reduce((sum: number, s: any) => sum + (s.durationPercent || 0), 0);
+                  const hasValidPercents = totalPercent > 0;
+
+                  if (!hasValidPercents) {
+                    const perSection = Math.ceil(frames.length / sections.length);
+                    const start = sectionIndex * perSection;
+                    return frames.slice(start, start + perSection);
+                  }
+
+                  let startPercent = 0;
+                  for (let i = 0; i < sectionIndex; i++) {
+                    startPercent += sections[i].durationPercent || 0;
+                  }
+                  const endPercent = startPercent + (sections[sectionIndex].durationPercent || 0);
+                  const startTime = (startPercent / 100) * totalDuration;
+                  const endTime = (endPercent / 100) * totalDuration;
+                  return frames.filter((f: any) => f.timestamp >= startTime - 1 && f.timestamp <= endTime + 1);
+                };
+
+                const allSections = sections.length > 0 ? sections : [
+                  { name: "Hook", durationPercent: 15 },
+                  { name: "Main Content", durationPercent: 70 },
+                  { name: "CTA", durationPercent: 15 },
+                ];
+
+                return (
+                <Card className="p-6">
+                  <div className="mb-6">
+                    <h2 className="font-semibold text-lg mb-1">Script Storyboard</h2>
+                    <p className="text-sm text-muted-foreground">
+                      Your content mapped to the cloned format — review before generating
+                    </p>
+                  </div>
+
+                  {/* Topic banner */}
+                  <div className="flex flex-wrap items-center gap-3 p-3 rounded-md bg-primary/10 dark:bg-primary/5 border border-primary/20 mb-6" data-testid="storyboard-topic-banner">
+                    <Target className="w-4 h-4 text-primary flex-shrink-0" />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Topic</p>
+                      <p className="text-sm font-medium truncate">{cloneTemplateTopic}</p>
+                    </div>
+                    <div className="flex flex-wrap justify-end gap-1.5 flex-shrink-0">
+                      <Badge variant="secondary" className="text-[10px] capitalize">{String(clonedStructure.analysis?.format || "").replace(/_/g, " ")}</Badge>
+                      <Badge variant="secondary" className="text-[10px] capitalize">{String(typeof clonedStructure.analysis?.pacing === 'object' ? clonedStructure.analysis?.pacing?.overall : clonedStructure.analysis?.pacing || "moderate")} pacing</Badge>
+                    </div>
+                  </div>
+
+                  {/* Visual Storyboard - Frames + Sections side by side */}
+                  <div className="space-y-3 mb-6" data-testid="storyboard-sections">
+                    {allSections.map((section: any, i: number) => {
+                      const sectionFrames = getFramesForSection(i);
+                      const userContent = cloneSectionInputs[section.name] || "";
+                      const isHook = section.name.toLowerCase().includes('hook') || section.name.toLowerCase().includes('intro') || section.name.toLowerCase().includes('opening');
+                      const isCta = section.name.toLowerCase().includes('cta') || section.name.toLowerCase().includes('call') || section.name.toLowerCase().includes('close');
+
+                      return (
+                        <div
+                          key={i}
+                          className={`flex flex-wrap sm:flex-nowrap gap-3 p-3 rounded-md border ${sectionBorders[i % sectionBorders.length]} bg-card`}
+                          data-testid={`storyboard-section-${i}`}
+                        >
+                          {/* Frame thumbnail(s) */}
+                          <div className="flex-shrink-0 w-[90px]">
+                            {sectionFrames.length > 0 ? (
+                              <div className="space-y-1.5">
+                                {sectionFrames.slice(0, 2).map((frame: any, j: number) => (
+                                  <div key={j} className="relative rounded-md overflow-hidden border border-border">
+                                    <img
+                                      src={frame.thumbnailUrl}
+                                      alt={`${section.name} at ${frame.timestamp}s`}
+                                      className="w-full aspect-[9/16] object-cover"
+                                      loading="lazy"
+                                    />
+                                    <div className="absolute bottom-0 left-0 right-0 bg-black/70 px-1 py-0.5">
+                                      <p className="text-[9px] text-white font-mono text-center">{frame.timestamp}s</p>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
                             ) : (
-                              <p>AI will generate content matching the cloned structure</p>
+                              <div className="w-full aspect-[9/16] rounded-md bg-muted/50 border border-border flex flex-col items-center justify-center">
+                                <div className={`w-8 h-8 rounded-full ${sectionColors[i % sectionColors.length]} flex items-center justify-center mb-1`}>
+                                  {isHook ? <Zap className="w-4 h-4 text-white" /> : isCta ? <ArrowRight className="w-4 h-4 text-white" /> : <FileText className="w-4 h-4 text-white" />}
+                                </div>
+                                <p className="text-[9px] text-muted-foreground">{section.durationPercent}%</p>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Section content */}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1.5 flex-wrap gap-y-1">
+                              <span className={`text-xs font-bold uppercase tracking-wider ${sectionTextColors[i % sectionTextColors.length]}`}>
+                                {section.name}
+                              </span>
+                              <span className="text-[10px] text-muted-foreground">({section.durationPercent}%)</span>
+                              {section.emotionalTone && (
+                                <Badge variant="secondary" className="text-[10px] ml-auto">{section.emotionalTone}</Badge>
+                              )}
+                            </div>
+
+                            {userContent ? (
+                              <p className="text-sm leading-relaxed" data-testid={`storyboard-content-${i}`}>
+                                {userContent}
+                              </p>
+                            ) : (
+                              <p className="text-sm text-muted-foreground italic" data-testid={`storyboard-content-${i}`}>
+                                AI will generate this section matching the original {section.name.toLowerCase()} style
+                              </p>
+                            )}
+
+                            {section.purpose && (
+                              <p className="text-[10px] text-muted-foreground mt-1.5 flex items-center gap-1">
+                                <Target className="w-2.5 h-2.5 flex-shrink-0" /> {section.purpose}
+                              </p>
                             )}
                           </div>
                         </div>
-                      </div>
-                    </div>
+                      );
+                    })}
                   </div>
 
                   {/* Platform/Duration selection */}
@@ -1766,7 +1847,6 @@ export default function Home() {
                     </Button>
                     <Button
                       onClick={() => {
-                        // Build section content for generation
                         const sectionContent = Object.entries(cloneSectionInputs)
                           .filter(([_, v]) => v.trim())
                           .map(([name, content]) => `${name}: ${content}`)
@@ -1798,7 +1878,8 @@ export default function Home() {
                     </Button>
                   </div>
                 </Card>
-              )}
+                );
+              })()}
             </div>
           )}
 
