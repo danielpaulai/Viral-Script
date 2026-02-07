@@ -1239,8 +1239,17 @@ export interface VideoCloneData {
   likes?: number;
   comments?: number;
   duration?: number;
+  videoDownloadUrl?: string;
+  coverImageUrl?: string;
   success: boolean;
   error?: string;
+}
+
+export interface ExtractedFrame {
+  thumbnailUrl: string;
+  timestamp: number;
+  width?: number;
+  height?: number;
 }
 
 // Parse video URL to determine platform and extract ID
@@ -1298,6 +1307,11 @@ export async function scrapeTikTokVideo(videoUrl: string): Promise<VideoCloneDat
 
     console.log("[Video Clone] TikTok video scraped successfully, transcript length:", transcript.length);
 
+    const videoDownloadUrl = video.videoUrl || video.video?.downloadAddr || video.video?.playAddr || video.downloadUrl || "";
+    const coverImageUrl = video.covers?.default || video.video?.cover || video.coverUrl || video.cover || "";
+    
+    console.log("[Video Clone] Video download URL available:", !!videoDownloadUrl, "Cover:", !!coverImageUrl);
+
     return {
       platform: "tiktok",
       transcript,
@@ -1306,6 +1320,8 @@ export async function scrapeTikTokVideo(videoUrl: string): Promise<VideoCloneDat
       likes: video.stats?.diggCount || video.diggCount,
       comments: video.stats?.commentCount || video.commentCount,
       duration: video.duration,
+      videoDownloadUrl: videoDownloadUrl || undefined,
+      coverImageUrl: coverImageUrl || undefined,
       success: true,
     };
   } catch (error: any) {
@@ -1345,6 +1361,11 @@ export async function scrapeInstagramVideo(postUrl: string): Promise<VideoCloneD
 
     console.log("[Video Clone] Instagram post scraped successfully, transcript length:", transcript.length);
 
+    const videoDownloadUrl = post.videoUrl || post.video?.url || "";
+    const coverImageUrl = post.displayUrl || post.thumbnailUrl || "";
+    
+    console.log("[Video Clone] Instagram video URL available:", !!videoDownloadUrl, "Cover:", !!coverImageUrl);
+
     return {
       platform: "instagram",
       transcript,
@@ -1353,6 +1374,8 @@ export async function scrapeInstagramVideo(postUrl: string): Promise<VideoCloneD
       likes: post.likesCount,
       comments: post.commentsCount,
       duration: post.videoDuration,
+      videoDownloadUrl: videoDownloadUrl || undefined,
+      coverImageUrl: coverImageUrl || undefined,
       success: true,
     };
   } catch (error: any) {
@@ -1379,4 +1402,64 @@ export async function extractVideoTranscript(videoUrl: string): Promise<VideoClo
     success: false,
     error: "Unsupported platform. Please use a TikTok or Instagram video URL.",
   };
+}
+
+// ============================================
+// VIDEO FRAME EXTRACTION - Extract key frames from video
+// ============================================
+
+export async function extractVideoFrames(
+  videoDownloadUrl: string,
+  thumbnailCount: number = 5,
+  videoDuration?: number
+): Promise<{ frames: ExtractedFrame[]; error?: string }> {
+  if (!APIFY_TOKEN) {
+    return { frames: [], error: "APIFY_API_TOKEN is not configured" };
+  }
+
+  const client = new ApifyClient({ token: APIFY_TOKEN });
+
+  try {
+    const input: any = {
+      videoUrls: [videoDownloadUrl],
+      thumbnailCount,
+      outputFormat: "jpeg",
+      imageWidth: 480,
+      imageQuality: 80,
+      includeMetadata: true,
+      timeout: 120,
+    };
+
+    if (videoDuration && videoDuration > 0) {
+      const timestamps: number[] = [];
+      const interval = videoDuration / (thumbnailCount + 1);
+      for (let i = 1; i <= thumbnailCount; i++) {
+        timestamps.push(Math.round(interval * i));
+      }
+      input.customTimestamps = timestamps;
+    }
+
+    console.log("[Frame Extraction] Extracting frames from video, count:", thumbnailCount);
+    const run = await client.actor("creator-tribe/automated-video-thumbnail-generator").call(input, {
+      waitSecs: 180,
+    });
+
+    const { items } = await client.dataset(run.defaultDatasetId).listItems();
+
+    const frames: ExtractedFrame[] = (items as any[])
+      .filter((item) => item.status === "success" && item.thumbnailUrl)
+      .map((item) => ({
+        thumbnailUrl: item.thumbnailUrl,
+        timestamp: item.timestamp || 0,
+        width: item.width,
+        height: item.height,
+      }))
+      .sort((a, b) => a.timestamp - b.timestamp);
+
+    console.log("[Frame Extraction] Successfully extracted", frames.length, "frames");
+    return { frames };
+  } catch (error: any) {
+    console.error("[Frame Extraction] Error:", error.message || error);
+    return { frames: [], error: error.message || "Failed to extract frames" };
+  }
 }

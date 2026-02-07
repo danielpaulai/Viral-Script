@@ -407,9 +407,14 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
       .replace(/\n{3,}/g, '\n\n') // Clean up extra newlines
       .trim();
     
+    // Strip inline production notes (they appear after "--- PRODUCTION NOTES ---")
+    const prodNotesMarker = /---\s*PRODUCTION NOTES\s*---/i;
+    if (prodNotesMarker.test(baseScript)) {
+      baseScript = baseScript.split(prodNotesMarker)[0].trim();
+    }
+    
     if (customHookLine) {
       const lines = baseScript.split('\n');
-      // Find first non-empty line and replace it
       const firstNonEmptyIndex = lines.findIndex(l => l.trim());
       if (firstNonEmptyIndex !== -1) {
         lines[firstNonEmptyIndex] = customHookLine;
@@ -417,6 +422,19 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
       return lines.join('\n');
     }
     return baseScript;
+  };
+
+  const getInlineProductionNotes = (): string[] => {
+    const fullScript = enhancedScript || script.script;
+    const prodNotesMarker = /---\s*PRODUCTION NOTES\s*---/i;
+    if (prodNotesMarker.test(fullScript)) {
+      const notesSection = fullScript.split(prodNotesMarker)[1]?.trim() || "";
+      return notesSection
+        .split('\n')
+        .map(line => line.replace(/^[-•*]\s*/, '').replace(/^\*\*.*?\*\*:?\s*/, '').trim())
+        .filter(line => line.length > 5);
+    }
+    return [];
   };
 
   const currentHook = selectedHook 
@@ -1423,9 +1441,22 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
             <div className="p-4 rounded-md bg-primary/10 border border-primary/20">
               <div className="flex items-center gap-2 mb-3">
                 <Lightbulb className="w-4 h-4 text-primary" />
-                <h4 className="text-sm font-semibold text-primary">Pro Tips</h4>
+                <h4 className="text-sm font-semibold text-primary">
+                  {getInlineProductionNotes().length > 0 ? "Production Notes" : "Pro Tips"}
+                </h4>
               </div>
-              {typeof script.productionNotes === 'object' && script.productionNotes !== null ? (
+              {getInlineProductionNotes().length > 0 ? (
+                <ul className="space-y-2" data-testid="list-production-notes">
+                  {getInlineProductionNotes().map((note, index) => (
+                    <li key={index} className="text-sm text-muted-foreground flex items-start gap-2">
+                      <span className="text-primary mt-0.5 flex-shrink-0">
+                        <Camera className="w-3.5 h-3.5" />
+                      </span>
+                      {note}
+                    </li>
+                  ))}
+                </ul>
+              ) : typeof script.productionNotes === 'object' && script.productionNotes !== null ? (
                 <div className="space-y-3">
                   <p className="text-sm text-muted-foreground" data-testid="text-production-notes">
                     {(script.productionNotes as any).filming || "Film close-up, direct to camera. High energy on the hook."}

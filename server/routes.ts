@@ -53,7 +53,7 @@ import {
   type KnowledgeBaseDoc,
 } from "@shared/schema";
 import { getCreatorById, creatorStyles as comprehensiveCreatorStyles } from "@shared/creator-styles";
-import { scrapeTikTokProfile, scrapeInstagramProfile, analyzeCreatorStyle, searchTikTokByKeyword, extractVideoTranscript, VideoCloneData } from "./apify";
+import { scrapeTikTokProfile, scrapeInstagramProfile, analyzeCreatorStyle, searchTikTokByKeyword, extractVideoTranscript, extractVideoFrames, VideoCloneData, ExtractedFrame } from "./apify";
 
 // Configure OpenAI client - Always use direct OpenAI API
 const openaiApiKey = process.env.OPENAI_API_KEY;
@@ -881,6 +881,11 @@ ${clone.uniqueStyleNotes}` : ''}
 ${clone.visualCues?.length > 0 ? `## VISUAL/EDITING NOTES
 ${clone.visualCues.map((v: string) => `- ${v}`).join('\n')}` : ''}
 
+${clone.frames?.length > 0 ? `## VIDEO FRAME ANALYSIS
+The original video has ${clone.frames.length} key frames extracted at these timestamps:
+${clone.frames.map((f: any, i: number) => `- Frame ${i + 1}: ${f.timestamp}s`).join('\n')}
+Use these visual reference points to generate PRODUCTION NOTES for each section of the cloned script.` : ''}
+
 ${clone.originalTranscript ? `## REFERENCE TRANSCRIPT
 Study the rhythm, word choice, and flow — then write your script as a sibling:
 "${clone.originalTranscript.slice(0, 1500)}${clone.originalTranscript.length > 1500 ? '...' : ''}"` : ''}
@@ -906,6 +911,15 @@ Return the script with clear section labels matching the original's structure. I
 - [SECTION NAME] headers matching the blueprint above
 - Any visual/text overlay suggestions in [VISUAL: ...] brackets
 - Total word count at the end
+
+After the script, add a "--- PRODUCTION NOTES ---" section with practical filming/editing guidance based on the original video's visual style:
+- Camera setup (e.g., "Direct to camera, waist-up framing", "Screen recording with voiceover")
+- Text overlay suggestions for key moments (what text, when it appears, style)
+- B-roll or visual cut suggestions tied to specific script sections
+- Pacing/editing notes (e.g., "Jump cut every 3-4 seconds", "Hold on face for emphasis during hook")
+- Audio/music direction (e.g., "Trending audio underneath", "Clean audio, no music")
+- Lighting and setting suggestions based on the content type
+Keep production notes concise and actionable — each note should be something the creator can directly implement.
 ######################################################################
 `;
   }
@@ -2741,6 +2755,13 @@ Create a powerful video brief that will make this topic stand out and go viral.`
     powerWords?: string[];
     ctaAnalysis?: { style?: string; template?: string; exactLine?: string };
     visualCues?: string[];
+    frames?: Array<{
+      thumbnailUrl: string;
+      timestamp: number;
+      width?: number;
+      height?: number;
+    }>;
+    coverImageUrl?: string;
   }
   
   app.post("/api/video-clone/analyze", isAuthenticated, async (req: any, res) => {
@@ -2778,8 +2799,18 @@ Create a powerful video brief that will make this topic stand out and go viral.`
       }
       
       console.log("[Video Clone] Transcript extracted, length:", videoData.transcript.length);
+      console.log("[Video Clone] Video download URL:", videoData.videoDownloadUrl ? "available" : "not available");
       
-      // Step 2: Use AI to deeply analyze the video structure for format cloning
+      // Step 2: Run frame extraction in parallel with AI analysis (if video URL available)
+      const frameExtractionPromise = videoData.videoDownloadUrl 
+        ? extractVideoFrames(videoData.videoDownloadUrl, 5, videoData.duration)
+            .catch(err => {
+              console.error("[Video Clone] Frame extraction failed (non-blocking):", err);
+              return { frames: [] as ExtractedFrame[], error: "Frame extraction failed" };
+            })
+        : Promise.resolve({ frames: [] as ExtractedFrame[], error: "No video download URL available" });
+      
+      // Step 3: Use AI to deeply analyze the video structure for format cloning
       const analysisPrompt = `You are an elite video format reverse-engineer. Your job is to deconstruct a video so precisely that a different creator could replicate its EXACT format, rhythm, psychology, and feel with completely different content.
 
 TRANSCRIPT:
@@ -2917,12 +2948,27 @@ Be surgically precise. Every field should contain enough detail that someone cou
       
       console.log("[Video Clone] Analysis complete:", structureAnalysis.format, structureAnalysis.sections.length, "sections");
       
+      // Wait for frame extraction to complete (runs in parallel with AI analysis)
+      const frameResult = await frameExtractionPromise;
+      if (frameResult.frames.length > 0) {
+        structureAnalysis.frames = frameResult.frames;
+        console.log("[Video Clone] Frames attached:", frameResult.frames.length);
+      } else {
+        console.log("[Video Clone] No frames extracted:", frameResult.error || "unknown reason");
+      }
+      
+      // Attach cover image if available
+      if (videoData.coverImageUrl) {
+        structureAnalysis.coverImageUrl = videoData.coverImageUrl;
+      }
+      
       res.json({
         success: true,
         platform: videoData.platform,
         author: videoData.author,
         views: videoData.views,
         likes: videoData.likes,
+        duration: videoData.duration,
         analysis: structureAnalysis,
       });
       

@@ -1022,11 +1022,73 @@ export default function Home() {
                   </div>
                 )}
 
+                {/* Extracted Video Frames Filmstrip */}
+                {clonedStructure.analysis?.frames && clonedStructure.analysis.frames.length > 0 && (
+                  <div className="mb-4">
+                    <p className="text-xs text-muted-foreground mb-2 font-medium flex items-center gap-1.5">
+                      <Film className="w-3.5 h-3.5" />
+                      Video Frames Timeline:
+                    </p>
+                    <div className="flex gap-2 overflow-x-auto pb-2">
+                      {clonedStructure.analysis.frames.map((frame: any, i: number) => {
+                        const totalDuration = clonedStructure.analysis?.estimatedDurationSeconds || clonedStructure.duration || 60;
+                        const sections = clonedStructure.analysis?.sections || [];
+                        let sectionLabel = "";
+                        let cumulativePercent = 0;
+                        const framePercent = totalDuration > 0 ? (frame.timestamp / totalDuration) * 100 : 0;
+                        for (const section of sections) {
+                          cumulativePercent += section.durationPercent || 0;
+                          if (framePercent <= cumulativePercent) {
+                            sectionLabel = section.name;
+                            break;
+                          }
+                        }
+                        return (
+                          <div key={i} className="flex-shrink-0 group" data-testid={`frame-thumbnail-${i}`}>
+                            <div className="relative rounded-md overflow-hidden border border-border w-[120px] h-[160px]">
+                              <img 
+                                src={frame.thumbnailUrl} 
+                                alt={`Frame at ${frame.timestamp}s`}
+                                className="w-full h-full object-cover"
+                                loading="lazy"
+                              />
+                              <div className="absolute bottom-0 left-0 right-0 bg-black/70 px-1.5 py-0.5">
+                                <p className="text-[10px] text-white font-mono">{frame.timestamp}s</p>
+                              </div>
+                            </div>
+                            {sectionLabel && (
+                              <p className="text-[10px] text-muted-foreground mt-1 text-center truncate w-[120px]">{sectionLabel}</p>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Cover image fallback when no frames */}
+                {(!clonedStructure.analysis?.frames || clonedStructure.analysis.frames.length === 0) && clonedStructure.analysis?.coverImageUrl && (
+                  <div className="mb-4">
+                    <p className="text-xs text-muted-foreground mb-2 font-medium flex items-center gap-1.5">
+                      <Film className="w-3.5 h-3.5" />
+                      Video Cover:
+                    </p>
+                    <div className="rounded-md overflow-hidden border border-border w-[160px] h-[213px]">
+                      <img 
+                        src={clonedStructure.analysis.coverImageUrl} 
+                        alt="Video cover"
+                        className="w-full h-full object-cover"
+                        loading="lazy"
+                        data-testid="video-cover-image"
+                      />
+                    </div>
+                  </div>
+                )}
+
                 {/* Apply button */}
                 <div className="pt-4 border-t border-border">
                   <Button
                     onClick={() => {
-                      // Reset clone template state to ensure fresh start
                       setCloneStep("template");
                       setCloneTemplateTopic("");
                       setCloneSectionInputs({});
@@ -1034,7 +1096,6 @@ export default function Home() {
                       setCloneGeneratedHooks([]);
                       setSelectedCloneHookId(null);
                       setIsGeneratingCloneHooks(false);
-                      // Apply the format
                       setClonedStructure({ ...clonedStructure, applied: true });
                       toast({ 
                         title: "Format Applied!", 
