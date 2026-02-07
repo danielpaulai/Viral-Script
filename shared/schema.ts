@@ -497,26 +497,40 @@ export interface ScriptParameters {
   };
   clonedVideoStructure?: {
     format: string;
-    hookStyle: string;
-    pacing: string;
-    toneDescription: string;
-    ctaStyle: string;
+    hookStyle?: string;
+    pacing?: string | { overall?: string; sentenceRhythm?: string; pausePattern?: string };
+    toneDescription?: string;
+    ctaStyle?: string;
     sections: Array<{
       name: string;
       durationPercent: number;
       description: string;
       sentenceCount?: number;
+      avgWordsPerSentence?: number;
       exampleLine?: string;
+      exampleLines?: string[];
+      purpose?: string;
+      emotionalTone?: string;
     }>;
-    keyPatterns: string[];
+    keyPatterns?: string[];
     originalTranscript?: string;
-    sentenceStructure?: string;
+    sentenceStructure?: string | { dominantType?: string; avgLength?: string; pattern?: string };
     transitionPhrases?: string[];
     hookTemplate?: string;
     bodyTemplate?: string;
     ctaTemplate?: string;
     uniqueStyleNotes?: string;
-    wordCount?: string;
+    wordCount?: string | number;
+    estimatedDurationSeconds?: number;
+    wordsPerMinute?: number;
+    audienceProfile?: string;
+    hookAnalysis?: { style?: string; psychologyTrigger?: string; template?: string; openingLine?: string };
+    toneProfile?: { energy?: string; vocabulary?: string; attitude?: string; personality?: string };
+    emotionalArc?: string;
+    retentionMechanics?: string[];
+    powerWords?: string[];
+    ctaAnalysis?: { style?: string; template?: string; exactLine?: string };
+    visualCues?: string[];
   };
 }
 

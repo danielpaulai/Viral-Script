@@ -1,0 +1,102 @@
+######################################################################
+# FORMAT CLONE MODE — STRUCTURE IS LAW, ONLY THE TOPIC CHANGES       #
+######################################################################
+
+You are ghostwriting a video script that must feel like it was made by the SAME creator as the original. A viewer who watched both videos should think: "This is definitely the same person's style." The structure, rhythm, emotional arc, transitions, and psychology must be near-identical. Only the TOPIC changes.
+
+## ORIGINAL VIDEO DNA
+
+**Format:** [format]
+**Audience:** [audienceProfile]
+**Estimated Duration:** [estimatedDurationSeconds]s | **Word Count Target:** [wordCount] (±15%)
+**Words Per Minute:** [wordsPerMinute]
+
+## VOICE & TONE
+
+- **Energy:** [toneProfile.energy]
+- **Vocabulary:** [toneProfile.vocabulary]
+- **Attitude:** [toneProfile.attitude]
+- **Personality:** [toneProfile.personality]
+
+## EMOTIONAL ARC TO REPLICATE
+[emotionalArc]
+↑ Your script must follow this SAME emotional journey. Each section should hit the same emotional beat as the original.
+
+## HOOK (replicate this EXACT psychology)
+- **Trigger:** [hookAnalysis.psychologyTrigger]
+- **Style:** [hookAnalysis.style]
+- **Template:** "[hookAnalysis.template]"
+- **Original line:** "[hookAnalysis.openingLine]" ← Write YOUR version targeting the same psychological trigger
+
+## SECTION-BY-SECTION BLUEPRINT
+Replicate this EXACT structure. Do not add, remove, or reorder sections.
+
+[For each section:]
+### [index]. [section.name] ([section.durationPercent]% | ~[section.sentenceCount] sentences | ~[section.avgWordsPerSentence] words/sentence)
+**Purpose:** [section.purpose]
+**Emotional tone:** [section.emotionalTone]
+**Description:** [section.description]
+**Original lines:** "[section.exampleLines]" ← Write YOUR version matching this style, length, and tone
+
+## BODY STRUCTURE TEMPLATE
+[bodyTemplate]
+↑ Follow this flow exactly. If the original presents problem→wrong solution→right solution, you do the same. If it stacks 3 examples, you stack 3 examples.
+
+## CTA (replicate this exact approach)
+- **Style:** [ctaAnalysis.style]
+- **Template:** "[ctaAnalysis.template]"
+- **Original:** "[ctaAnalysis.exactLine]" ← Adapt to new topic, keep same structure
+
+## TRANSITION PHRASES TO MIRROR
+Use similar phrases adapted to the new topic:
+[For each phrase in transitionPhrases:]
+- "[phrase]"
+
+## SENTENCE STYLE RULES
+- **Dominant type:** [sentenceStructure.dominantType]
+- **Average length:** [sentenceStructure.avgLength] words per sentence
+- **Rhythm pattern:** [sentenceStructure.pattern]
+- **Pacing:** [pacing.overall]
+- **Cadence:** [pacing.sentenceRhythm]
+- **Pauses:** [pacing.pausePattern]
+
+## POWER WORDS & VOCABULARY
+Use equivalents of these for the new topic: [powerWords]
+
+## RETENTION MECHANICS TO REPLICATE
+[For each mechanic in retentionMechanics:]
+- [mechanic]
+
+## DISTINCTIVE STYLE ELEMENTS
+[uniqueStyleNotes]
+
+## VISUAL/EDITING NOTES
+[visualCues]
+
+## REFERENCE TRANSCRIPT
+Study the rhythm, word choice, and flow — then write your script as a sibling:
+"[first 1500 chars of original transcript]"
+
+######################################################################
+# CLONE QUALITY RULES — VIOLATING ANY = FAILED CLONE                 #
+######################################################################
+1. EXACT same number of sections as the original
+2. Match sentence count per section (±1 sentence)
+3. Match total word count within 15%
+4. Mirror the hook psychology — same trigger type, not just same format
+5. Use adapted transition phrases in the SAME positions as the original
+6. Follow the SAME emotional arc — each section hits the same emotional beat
+7. Match sentence rhythm: if original uses short-short-long, you use short-short-long
+8. Mirror CTA structure and positioning exactly
+9. Replicate retention mechanics — if original uses open loops, you use open loops
+10. DO NOT flatten into generic Hook/Body/CTA — use the ORIGINAL section names and structure
+11. DO NOT add motivational filler, generic advice, or padding not present in the original style
+12. The new topic fills the template. The TEMPLATE comes from the cloned video. Template is law.
+
+## OUTPUT FORMAT
+Return the script with clear section labels matching the original's structure. Include:
+- [SECTION NAME] headers matching the blueprint above
+- Approximate timestamp or duration note per section
+- Any visual/text overlay suggestions in [VISUAL: ...] brackets
+- Total word count at the end
+######################################################################

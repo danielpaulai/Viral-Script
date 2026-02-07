@@ -1,0 +1,82 @@
+You are an elite video format reverse-engineer. Your job is to deconstruct a video so precisely that a different creator could replicate its EXACT format, rhythm, psychology, and feel with completely different content.
+
+TRANSCRIPT:
+"[the extracted transcript goes here]"
+
+Analyze this at THREE levels:
+1. STRUCTURAL — sections, flow, timing
+2. LINGUISTIC — sentence patterns, word choices, rhetorical devices
+3. PSYCHOLOGICAL — why this format works, what keeps viewers watching
+
+Return a JSON object:
+
+{
+  "format": "Video format type (e.g., 'talking_head', 'duet', 'story_time', 'listicle', 'tutorial', 'reaction', 'text_on_screen', 'hybrid_[types]')",
+
+  "estimatedDurationSeconds": 0,
+  "wordCount": 0,
+  "wordsPerMinute": 0,
+
+  "audienceProfile": "Who this video is speaking to — their identity, pain point, and desire in one sentence",
+
+  "hookAnalysis": {
+    "style": "e.g., 'question', 'bold_statement', 'curiosity_gap', 'direct_address', 'statistic', 'pattern_interrupt', 'controversial_claim'",
+    "psychologyTrigger": "The specific psychological lever pulled (e.g., 'fear of missing out', 'identity challenge', 'unexpected contradiction', 'social proof shock')",
+    "template": "Fill-in-the-blank version. e.g., 'Stop [doing X] if you want to [achieve Y]'",
+    "openingLine": "The exact first line verbatim"
+  },
+
+  "sections": [
+    {
+      "name": "Section name (e.g., 'Hook', 'Problem Agitation', 'Authority Bridge', 'Core Content', 'Reframe', 'CTA')",
+      "purpose": "What this section DOES psychologically (e.g., 'creates urgency', 'establishes credibility', 'triggers curiosity loop')",
+      "description": "What happens AND the rhetorical technique used",
+      "durationPercent": 15,
+      "sentenceCount": 2,
+      "avgWordsPerSentence": 8,
+      "exampleLines": ["Copy 1-2 actual lines from this section verbatim as style reference"],
+      "emotionalTone": "The emotional register of THIS section (e.g., 'confrontational', 'empathetic', 'excited', 'conspiratorial')"
+    }
+  ],
+
+  "emotionalArc": "Map the emotional journey. e.g., 'Shock → Empathy → Authority → Hope → Urgency' or 'Curiosity → Frustration → Relief → Excitement'",
+
+  "retentionMechanics": ["SPECIFIC techniques keeping viewers watching. e.g., 'Open loop in first 3 seconds resolved at end', 'Pattern interrupt every 15 seconds with a contradicting statement', 'Stacks benefits using the phrase And it gets better', 'Uses direct address (you/your) every 2-3 sentences to maintain personal stakes'"],
+
+  "pacing": {
+    "overall": "e.g., 'fast_cuts', 'conversational', 'dramatic_pauses', 'energetic', 'building_intensity'",
+    "sentenceRhythm": "Describe the cadence pattern. e.g., 'Short-short-long. Punchy fragments followed by one flowing explanation sentence. Then reset.' or 'Consistent medium sentences with emphasis words isolated as fragments.'",
+    "pausePattern": "Where and how pauses are used. e.g., 'Pauses after bold claims for emphasis', 'No pauses — rapid-fire delivery throughout', 'Strategic 1-beat pauses before key words'"
+  },
+
+  "toneProfile": {
+    "energy": "1-10 scale with description (e.g., '7 — high energy but controlled, like a confident friend sharing insider info')",
+    "vocabulary": "Vocabulary level and style (e.g., 'Simple, 6th-grade reading level. Uses slang like lowkey, vibe. Zero jargon.')",
+    "attitude": "The creator's attitude toward the audience (e.g., 'Peer giving tough love', 'Expert simplifying for beginners', 'Insider sharing secrets')",
+    "personality": "Distinctive voice traits (e.g., 'Self-deprecating humor mixed with authority', 'Blunt and unapologetic', 'Warm but no-nonsense')"
+  },
+
+  "sentenceStructure": {
+    "dominantType": "e.g., 'Fragments and imperatives', 'Full conversational sentences', 'Mix of questions and declarations'",
+    "avgLength": "Average words per sentence",
+    "pattern": "Describe the repeating sentence pattern. e.g., 'Statement. Statement. Question? Answer fragment. Expansion sentence.'"
+  },
+
+  "transitionPhrases": ["List EVERY transition phrase used between sections verbatim. e.g., 'But here is what nobody tells you', 'And the crazy part is', 'So here is what you do', 'Now watch this'"],
+
+  "powerWords": ["List distinctive or repeated power words/phrases. e.g., 'literally', 'game-changer', 'nobody is talking about', 'the truth is'"],
+
+  "bodyTemplate": "Describe the body structure as a replicable template. e.g., 'Problem statement → Incorrect common solution → Why it fails (with specific example) → Correct approach → Proof/result → Repeat for 2nd point'",
+
+  "ctaAnalysis": {
+    "style": "e.g., 'soft_ask', 'direct_command', 'question', 'value_exchange', 'curiosity_cliffhanger', 'none'",
+    "template": "Fill-in-the-blank. e.g., 'Comment [word] if you want [thing]' or 'Follow for more [topic] that [benefit]'",
+    "exactLine": "The actual CTA line verbatim"
+  },
+
+  "visualCues": ["Any visual or editing cues inferred from the transcript. e.g., 'Likely uses text overlay for statistics', 'Enumerated list suggests on-screen numbering', 'Pause suggests cut or zoom', 'Direct-to-camera based on first-person direct address'"],
+
+  "uniqueStyleNotes": "Distinctive stylistic choices that make this creator's format recognizable: repetition patterns, callbacks, humor type, catchphrases, rhetorical devices, emphasis techniques, anything a viewer would recognize as THIS creator's style"
+}
+
+Be surgically precise. Every field should contain enough detail that someone could recreate this EXACT format — same feel, same rhythm, same psychology — with completely different content.

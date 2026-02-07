@@ -804,61 +804,108 @@ Generate a NEW script about the user's topic that follows these same patterns bu
   // Cloned video structure instructions
   let clonedStructureInstructions = "";
   if (params.clonedVideoStructure) {
-    const clone = params.clonedVideoStructure;
+    const clone = params.clonedVideoStructure as any;
     clonedStructureInstructions = `
 
 ######################################################################
-# CLONED FORMAT MODE - THIS OVERRIDES ALL OTHER FORMATTING RULES     #
+# FORMAT CLONE MODE — STRUCTURE IS LAW, ONLY THE TOPIC CHANGES       #
 ######################################################################
 
-You are FORMAT-CLONING a viral video. Your #1 job is to make the NEW script feel like it was written by the SAME creator as the original. The structure, rhythm, transitions, and style must be nearly identical — only the TOPIC changes.
+You are ghostwriting a video script that must feel like it was made by the SAME creator as the original. A viewer who watched both videos should think: "This is definitely the same person's style." The structure, rhythm, emotional arc, transitions, and psychology must be near-identical. Only the TOPIC changes.
 
-ORIGINAL VIDEO FORMAT:
-- Type: ${clone.format?.replace(/_/g, " ") || "unknown"}
-- Hook Style: ${clone.hookStyle?.replace(/_/g, " ") || "unknown"}  
-- Pacing: ${clone.pacing?.replace(/_/g, " ") || "unknown"}
-- Tone: ${clone.toneDescription || "Not specified"}
-- CTA Style: ${clone.ctaStyle?.replace(/_/g, " ") || "soft ask"}
+## ORIGINAL VIDEO DNA
 
-${clone.hookTemplate ? `HOOK TEMPLATE (fill in with user's topic):
-"${clone.hookTemplate}"` : ''}
+**Format:** ${clone.format?.replace(/_/g, " ") || "unknown"}
+${clone.audienceProfile ? `**Audience:** ${clone.audienceProfile}` : ''}
+${clone.estimatedDurationSeconds ? `**Estimated Duration:** ${clone.estimatedDurationSeconds}s` : ''} ${clone.wordCount ? `| **Word Count Target:** ${clone.wordCount} (±15%)` : ''}
+${clone.wordsPerMinute ? `**Words Per Minute:** ${clone.wordsPerMinute}` : ''}
 
-${clone.bodyTemplate ? `BODY STRUCTURE TEMPLATE (replicate this exact flow):
-"${clone.bodyTemplate}"` : ''}
+## VOICE & TONE
 
-${clone.ctaTemplate ? `CTA TEMPLATE (fill in with user's topic):
-"${clone.ctaTemplate}"` : ''}
+${clone.toneProfile ? `- **Energy:** ${clone.toneProfile.energy || 'Not specified'}
+- **Vocabulary:** ${clone.toneProfile.vocabulary || 'Not specified'}
+- **Attitude:** ${clone.toneProfile.attitude || 'Not specified'}
+- **Personality:** ${clone.toneProfile.personality || 'Not specified'}` : `- **Tone:** ${clone.toneDescription || 'Conversational'}`}
 
-${clone.sections?.length > 0 ? `SECTION-BY-SECTION BLUEPRINT (replicate this EXACT structure):
-${clone.sections.map((s: any, i: number) => `${i + 1}. ${s.name} (${s.durationPercent}% of video, ~${s.sentenceCount || '2-3'} sentences): ${s.description}${s.exampleLine ? `\n   ORIGINAL LINE: "${s.exampleLine}" ← Write YOUR version in this same style` : ''}`).join('\n\n')}` : ''}
+${clone.emotionalArc ? `## EMOTIONAL ARC TO REPLICATE
+${clone.emotionalArc}
+↑ Your script must follow this SAME emotional journey. Each section should hit the same emotional beat as the original.` : ''}
 
-${(clone.transitionPhrases && clone.transitionPhrases.length > 0) ? `TRANSITION PHRASES TO MIRROR (use similar phrases, adapted to new topic):
+## HOOK (replicate this EXACT psychology)
+${clone.hookAnalysis ? `- **Trigger:** ${clone.hookAnalysis.psychologyTrigger || 'Not specified'}
+- **Style:** ${clone.hookAnalysis.style || clone.hookStyle || 'Not specified'}
+- **Template:** "${clone.hookAnalysis.template || ''}"
+- **Original line:** "${clone.hookAnalysis.openingLine || ''}" ← Write YOUR version targeting the same psychological trigger` : `- **Style:** ${clone.hookStyle?.replace(/_/g, " ") || "unknown"}
+${clone.hookTemplate ? `- **Template:** "${clone.hookTemplate}"` : ''}`}
+
+${clone.sections?.length > 0 ? `## SECTION-BY-SECTION BLUEPRINT
+Replicate this EXACT structure. Do not add, remove, or reorder sections.
+
+${clone.sections.map((s: any, i: number) => `### ${i + 1}. ${s.name} (${s.durationPercent}% | ~${s.sentenceCount || '2-3'} sentences${s.avgWordsPerSentence ? ` | ~${s.avgWordsPerSentence} words/sentence` : ''})
+${s.purpose ? `**Purpose:** ${s.purpose}` : ''}
+${s.emotionalTone ? `**Emotional tone:** ${s.emotionalTone}` : ''}
+**Description:** ${s.description}
+${s.exampleLines?.length > 0 ? `**Original lines:** "${s.exampleLines.join('" | "')}" ← Write YOUR version matching this style, length, and tone` : s.exampleLine ? `**Original line:** "${s.exampleLine}" ← Write YOUR version matching this style` : ''}`).join('\n\n')}` : ''}
+
+${clone.bodyTemplate ? `## BODY STRUCTURE TEMPLATE
+${clone.bodyTemplate}
+↑ Follow this flow exactly. If the original presents problem→wrong solution→right solution, you do the same. If it stacks 3 examples, you stack 3 examples.` : ''}
+
+## CTA (replicate this exact approach)
+${clone.ctaAnalysis ? `- **Style:** ${clone.ctaAnalysis.style || clone.ctaStyle || 'soft ask'}
+- **Template:** "${clone.ctaAnalysis.template || ''}"
+- **Original:** "${clone.ctaAnalysis.exactLine || ''}" ← Adapt to new topic, keep same structure` : `- **Style:** ${clone.ctaStyle?.replace(/_/g, " ") || "soft ask"}
+${clone.ctaTemplate ? `- **Template:** "${clone.ctaTemplate}"` : ''}`}
+
+${(clone.transitionPhrases && clone.transitionPhrases.length > 0) ? `## TRANSITION PHRASES TO MIRROR
+Use similar phrases adapted to the new topic:
 ${clone.transitionPhrases.map((p: string) => `- "${p}"`).join('\n')}` : ''}
 
-${clone.keyPatterns?.length > 0 ? `SPECIFIC PATTERNS TO REPLICATE:
-${clone.keyPatterns.map((p: string) => `- ${p}`).join('\n')}` : ''}
+## SENTENCE STYLE RULES
+${clone.sentenceStructure?.dominantType ? `- **Dominant type:** ${clone.sentenceStructure.dominantType}
+- **Average length:** ${clone.sentenceStructure.avgLength || 'varies'} words per sentence
+- **Rhythm pattern:** ${clone.sentenceStructure.pattern || 'varies'}` : clone.sentenceStructure ? `${clone.sentenceStructure}` : ''}
+${clone.pacing?.overall ? `- **Pacing:** ${clone.pacing.overall}
+- **Cadence:** ${clone.pacing.sentenceRhythm || 'Not specified'}
+- **Pauses:** ${clone.pacing.pausePattern || 'Not specified'}` : ''}
 
-${clone.sentenceStructure ? `SENTENCE STYLE: ${clone.sentenceStructure}` : ''}
+${clone.powerWords?.length > 0 ? `## POWER WORDS & VOCABULARY
+Use equivalents of these for the new topic: ${clone.powerWords.join(', ')}` : ''}
 
-${clone.uniqueStyleNotes ? `DISTINCTIVE STYLE ELEMENTS: ${clone.uniqueStyleNotes}` : ''}
+${clone.retentionMechanics?.length > 0 ? `## RETENTION MECHANICS TO REPLICATE
+${clone.retentionMechanics.map((m: string) => `- ${m}`).join('\n')}` : ''}
 
-${clone.originalTranscript ? `REFERENCE TRANSCRIPT - Study the rhythm, word choice, and flow:
-"${clone.originalTranscript.slice(0, 1200)}${clone.originalTranscript.length > 1200 ? '...' : ''}"
+${clone.uniqueStyleNotes ? `## DISTINCTIVE STYLE ELEMENTS
+${clone.uniqueStyleNotes}` : ''}
 
-CRITICAL: Your script must read like a "sibling" of this transcript. Same sentence lengths, same transition style, same energy, same rhetorical patterns. Only the TOPIC and specific CONTENT changes.` : ''}
+${clone.visualCues?.length > 0 ? `## VISUAL/EDITING NOTES
+${clone.visualCues.map((v: string) => `- ${v}`).join('\n')}` : ''}
 
-FORMAT CLONING RULES:
-1. Match the EXACT number of sections from the original
-2. Match the approximate sentence count per section
-3. Use similar transition phrases (adapted to new topic)
-4. Mirror the hook structure — if original asks a question, you ask a question; if it starts with a bold claim, you start with a bold claim
-5. Mirror the CTA structure exactly
-6. Keep the same energy/pacing throughout
-7. If the original uses lists, use lists. If it uses stories, use stories.
-8. Match the word count within 15% of the original
-9. DO NOT default to a generic HOOK/BODY/CTA structure — use the ORIGINAL video's actual sections
-10. The user's content fills the template, but the TEMPLATE (structure/flow/style) comes from the cloned video
+${clone.originalTranscript ? `## REFERENCE TRANSCRIPT
+Study the rhythm, word choice, and flow — then write your script as a sibling:
+"${clone.originalTranscript.slice(0, 1500)}${clone.originalTranscript.length > 1500 ? '...' : ''}"` : ''}
 
+######################################################################
+# CLONE QUALITY RULES — VIOLATING ANY = FAILED CLONE                 #
+######################################################################
+1. EXACT same number of sections as the original
+2. Match sentence count per section (±1 sentence)
+3. Match total word count within 15%
+4. Mirror the hook psychology — same trigger type, not just same format
+5. Use adapted transition phrases in the SAME positions as the original
+6. Follow the SAME emotional arc — each section hits the same emotional beat
+7. Match sentence rhythm: if original uses short-short-long, you use short-short-long
+8. Mirror CTA structure and positioning exactly
+9. Replicate retention mechanics — if original uses open loops, you use open loops
+10. DO NOT flatten into generic Hook/Body/CTA — use the ORIGINAL section names and structure
+11. DO NOT add motivational filler, generic advice, or padding not present in the original style
+12. The new topic fills the template. The TEMPLATE comes from the cloned video. Template is law.
+
+## OUTPUT FORMAT
+Return the script with clear section labels matching the original's structure. Include:
+- [SECTION NAME] headers matching the blueprint above
+- Any visual/text overlay suggestions in [VISUAL: ...] brackets
+- Total word count at the end
 ######################################################################
 `;
   }
@@ -2660,26 +2707,40 @@ Create a powerful video brief that will make this topic stand out and go viral.`
   
   interface VideoStructureAnalysis {
     format: string;
-    hookStyle: string;
-    pacing: string;
+    hookStyle?: string;
+    pacing?: any;
     sections: Array<{
       name: string;
       description: string;
       durationPercent: number;
       sentenceCount?: number;
+      avgWordsPerSentence?: number;
       exampleLine?: string;
+      exampleLines?: string[];
+      purpose?: string;
+      emotionalTone?: string;
     }>;
-    keyPatterns: string[];
-    toneDescription: string;
-    ctaStyle: string;
+    keyPatterns?: string[];
+    toneDescription?: string;
+    ctaStyle?: string;
     originalTranscript: string;
-    sentenceStructure?: string;
+    sentenceStructure?: any;
     transitionPhrases?: string[];
     hookTemplate?: string;
     bodyTemplate?: string;
     ctaTemplate?: string;
     uniqueStyleNotes?: string;
-    wordCount?: string;
+    wordCount?: string | number;
+    estimatedDurationSeconds?: number;
+    wordsPerMinute?: number;
+    audienceProfile?: string;
+    hookAnalysis?: { style?: string; psychologyTrigger?: string; template?: string; openingLine?: string };
+    toneProfile?: { energy?: string; vocabulary?: string; attitude?: string; personality?: string };
+    emotionalArc?: string;
+    retentionMechanics?: string[];
+    powerWords?: string[];
+    ctaAnalysis?: { style?: string; template?: string; exactLine?: string };
+    visualCues?: string[];
   }
   
   app.post("/api/video-clone/analyze", isAuthenticated, async (req: any, res) => {
@@ -2719,42 +2780,88 @@ Create a powerful video brief that will make this topic stand out and go viral.`
       console.log("[Video Clone] Transcript extracted, length:", videoData.transcript.length);
       
       // Step 2: Use AI to deeply analyze the video structure for format cloning
-      const analysisPrompt = `You are an expert video format analyst. Your job is to reverse-engineer a video script so precisely that someone could recreate the EXACT same format with different content.
+      const analysisPrompt = `You are an elite video format reverse-engineer. Your job is to deconstruct a video so precisely that a different creator could replicate its EXACT format, rhythm, psychology, and feel with completely different content.
 
 TRANSCRIPT:
 "${videoData.transcript}"
 
-Analyze this transcript at a DEEP structural level. I need to understand not just WHAT was said, but HOW it was structured - the exact format, sentence patterns, transitions, and flow.
+Analyze this at THREE levels:
+1. STRUCTURAL — sections, flow, timing
+2. LINGUISTIC — sentence patterns, word choices, rhetorical devices
+3. PSYCHOLOGICAL — why this format works, what keeps viewers watching
 
 Return a JSON object:
+
 {
-  "format": "The video format type (e.g., 'talking_head', 'duet', 'story_time', 'listicle', 'tutorial', 'reaction', 'text_on_screen')",
-  "hookStyle": "How the video hooks viewers (e.g., 'question', 'bold_statement', 'curiosity_gap', 'direct_address', 'statistic')",
-  "pacing": "The pacing style (e.g., 'fast_cuts', 'conversational', 'dramatic_pauses', 'energetic', 'calm')",
+  "format": "Video format type (e.g., 'talking_head', 'duet', 'story_time', 'listicle', 'tutorial', 'reaction', 'text_on_screen', 'hybrid_[types]')",
+
+  "estimatedDurationSeconds": 0,
+  "wordCount": 0,
+  "wordsPerMinute": 0,
+
+  "audienceProfile": "Who this video is speaking to — their identity, pain point, and desire in one sentence",
+
+  "hookAnalysis": {
+    "style": "e.g., 'question', 'bold_statement', 'curiosity_gap', 'direct_address', 'statistic', 'pattern_interrupt', 'controversial_claim'",
+    "psychologyTrigger": "The specific psychological lever pulled (e.g., 'fear of missing out', 'identity challenge', 'unexpected contradiction', 'social proof shock')",
+    "template": "Fill-in-the-blank version. e.g., 'Stop [doing X] if you want to [achieve Y]'",
+    "openingLine": "The exact first line verbatim"
+  },
+
   "sections": [
     {
-      "name": "Section name (e.g., 'Hook', 'Problem Setup', 'Main Content', 'CTA')",
-      "description": "What happens in this section AND the exact rhetorical technique used",
+      "name": "Section name (e.g., 'Hook', 'Problem Agitation', 'Authority Bridge', 'Core Content', 'Reframe', 'CTA')",
+      "purpose": "What this section DOES psychologically (e.g., 'creates urgency', 'establishes credibility', 'triggers curiosity loop')",
+      "description": "What happens AND the rhetorical technique used",
       "durationPercent": 15,
       "sentenceCount": 2,
-      "exampleLine": "Copy the actual opening line of this section verbatim as a style reference"
+      "avgWordsPerSentence": 8,
+      "exampleLines": ["Copy 1-2 actual lines from this section verbatim as style reference"],
+      "emotionalTone": "The emotional register of THIS section (e.g., 'confrontational', 'empathetic', 'excited', 'conspiratorial')"
     }
   ],
-  "keyPatterns": ["Array of SPECIFIC patterns - not generic descriptions. e.g., 'Opens with a rhetorical question then immediately answers it', 'Uses 3-item lists in every section', 'Transitions with But here is the thing...', 'Ends each point with a pause word like Right?'"],
-  "toneDescription": "Detailed tone description including energy level, vocabulary style, and attitude",
-  "ctaStyle": "How the CTA is delivered (e.g., 'soft ask', 'direct command', 'question', 'none')",
-  "sentenceStructure": "Describe the typical sentence structure: Are sentences short fragments? Full sentences? Mix? How many words per sentence on average?",
-  "transitionPhrases": ["List the EXACT transition phrases used between sections, e.g., 'But here is what nobody tells you', 'And the crazy part is', 'So here is what you do'"],
-  "hookTemplate": "Write the hook as a fill-in-the-blank template. e.g., 'Stop [doing X] if you want to [achieve Y]' or '[Number] reasons why [topic] is [claim]'",
-  "bodyTemplate": "Describe the body structure as a template. e.g., 'Point 1 (statement + proof) → Transition → Point 2 (statement + proof) → Transition → Point 3 (statement + twist)'",
-  "ctaTemplate": "Write the CTA as a fill-in-the-blank template. e.g., 'Follow for more [topic] tips' or 'Comment [word] if you want [thing]'",
-  "wordCount": "Approximate total word count of the transcript",
-  "uniqueStyleNotes": "Any distinctive stylistic choices: repetition, callbacks, humor style, rhetorical devices, emphasis patterns"
+
+  "emotionalArc": "Map the emotional journey. e.g., 'Shock → Empathy → Authority → Hope → Urgency' or 'Curiosity → Frustration → Relief → Excitement'",
+
+  "retentionMechanics": ["SPECIFIC techniques keeping viewers watching. e.g., 'Open loop in first 3 seconds resolved at end', 'Pattern interrupt every 15 seconds with a contradicting statement', 'Stacks benefits using the phrase And it gets better', 'Uses direct address (you/your) every 2-3 sentences to maintain personal stakes'"],
+
+  "pacing": {
+    "overall": "e.g., 'fast_cuts', 'conversational', 'dramatic_pauses', 'energetic', 'building_intensity'",
+    "sentenceRhythm": "Describe the cadence pattern. e.g., 'Short-short-long. Punchy fragments followed by one flowing explanation sentence. Then reset.'",
+    "pausePattern": "Where and how pauses are used. e.g., 'Pauses after bold claims for emphasis', 'No pauses — rapid-fire delivery throughout'"
+  },
+
+  "toneProfile": {
+    "energy": "1-10 scale with description (e.g., '7 — high energy but controlled, like a confident friend sharing insider info')",
+    "vocabulary": "Vocabulary level and style (e.g., 'Simple, 6th-grade reading level. Uses slang like lowkey, vibe. Zero jargon.')",
+    "attitude": "The creator's attitude toward the audience (e.g., 'Peer giving tough love', 'Expert simplifying for beginners', 'Insider sharing secrets')",
+    "personality": "Distinctive voice traits (e.g., 'Self-deprecating humor mixed with authority', 'Blunt and unapologetic', 'Warm but no-nonsense')"
+  },
+
+  "sentenceStructure": {
+    "dominantType": "e.g., 'Fragments and imperatives', 'Full conversational sentences', 'Mix of questions and declarations'",
+    "avgLength": "Average words per sentence",
+    "pattern": "Describe the repeating sentence pattern. e.g., 'Statement. Statement. Question? Answer fragment. Expansion sentence.'"
+  },
+
+  "transitionPhrases": ["List EVERY transition phrase used between sections verbatim. e.g., 'But here is what nobody tells you', 'And the crazy part is', 'So here is what you do', 'Now watch this'"],
+
+  "powerWords": ["List distinctive or repeated power words/phrases. e.g., 'literally', 'nobody is talking about', 'the truth is'"],
+
+  "bodyTemplate": "Describe the body structure as a replicable template. e.g., 'Problem statement → Incorrect common solution → Why it fails (with specific example) → Correct approach → Proof/result → Repeat for 2nd point'",
+
+  "ctaAnalysis": {
+    "style": "e.g., 'soft_ask', 'direct_command', 'question', 'value_exchange', 'curiosity_cliffhanger', 'none'",
+    "template": "Fill-in-the-blank. e.g., 'Comment [word] if you want [thing]' or 'Follow for more [topic] that [benefit]'",
+    "exactLine": "The actual CTA line verbatim"
+  },
+
+  "visualCues": ["Any visual or editing cues inferred from the transcript. e.g., 'Likely uses text overlay for statistics', 'Enumerated list suggests on-screen numbering', 'Direct-to-camera based on first-person direct address'"],
+
+  "uniqueStyleNotes": "Distinctive stylistic choices that make this creator's format recognizable: repetition patterns, callbacks, humor type, catchphrases, rhetorical devices, emphasis techniques, anything a viewer would recognize as THIS creator's style"
 }
 
-Be extremely specific and accurate. I need enough detail to recreate this EXACT format with completely different content.
-
-Return ONLY valid JSON, no other text.`;
+Be surgically precise. Every field should contain enough detail that someone could recreate this EXACT format — same feel, same rhythm, same psychology — with completely different content.`;
 
       const response = await openai.chat.completions.create({
         model: "gpt-4o",
@@ -2780,20 +2887,32 @@ Return ONLY valid JSON, no other text.`;
       
       const structureAnalysis: VideoStructureAnalysis = {
         format: analysis.format || "talking_head",
-        hookStyle: analysis.hookStyle || "direct_address",
-        pacing: analysis.pacing || "conversational",
-        sections: analysis.sections || [],
-        keyPatterns: analysis.keyPatterns || [],
-        toneDescription: analysis.toneDescription || "",
-        ctaStyle: analysis.ctaStyle || "soft_ask",
         originalTranscript: videoData.transcript,
+        sections: analysis.sections || [],
+        // New rich fields from improved analysis prompt
+        estimatedDurationSeconds: analysis.estimatedDurationSeconds,
+        wordCount: analysis.wordCount,
+        wordsPerMinute: analysis.wordsPerMinute,
+        audienceProfile: analysis.audienceProfile || "",
+        hookAnalysis: analysis.hookAnalysis || undefined,
+        emotionalArc: analysis.emotionalArc || "",
+        retentionMechanics: analysis.retentionMechanics || [],
+        pacing: analysis.pacing || "conversational",
+        toneProfile: analysis.toneProfile || undefined,
         sentenceStructure: analysis.sentenceStructure || "",
         transitionPhrases: analysis.transitionPhrases || [],
-        hookTemplate: analysis.hookTemplate || "",
+        powerWords: analysis.powerWords || [],
         bodyTemplate: analysis.bodyTemplate || "",
-        ctaTemplate: analysis.ctaTemplate || "",
+        ctaAnalysis: analysis.ctaAnalysis || undefined,
+        visualCues: analysis.visualCues || [],
         uniqueStyleNotes: analysis.uniqueStyleNotes || "",
-        wordCount: analysis.wordCount || "",
+        // Legacy fields for backward compatibility with UI
+        hookStyle: analysis.hookAnalysis?.style || analysis.hookStyle || "direct_address",
+        toneDescription: analysis.toneProfile?.attitude || analysis.toneDescription || "",
+        ctaStyle: analysis.ctaAnalysis?.style || analysis.ctaStyle || "soft_ask",
+        keyPatterns: analysis.keyPatterns || [],
+        hookTemplate: analysis.hookAnalysis?.template || analysis.hookTemplate || "",
+        ctaTemplate: analysis.ctaAnalysis?.template || analysis.ctaTemplate || "",
       };
       
       console.log("[Video Clone] Analysis complete:", structureAnalysis.format, structureAnalysis.sections.length, "sections");
