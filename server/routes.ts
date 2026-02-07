@@ -1001,7 +1001,7 @@ Style guidelines:
 VIDEO TYPE: ${videoType.name}
 ${videoTypeInstructions[videoType.id] || videoTypeInstructions.talking_head}
 
-${videoType.id === "talking_head" ? `IMPORTANT: Structure your script with EXACTLY these three sections:
+${videoType.id === "talking_head" && !params.clonedVideoStructure ? `IMPORTANT: Structure your script with EXACTLY these three sections:
 
 **HOOK**
 (First 3 seconds - must stop the scroll. One powerful opening line.)
@@ -1116,7 +1116,47 @@ ${skeleton.suggestedHooks.map((h: string) => `- "${h}"`).join('\n')}
 `;
   }
 
-  const userPrompt = `Write a FULL ${params.duration}-second video script. You MUST write ${targetWords.min}-${targetWords.max} words to fill the entire duration. DO NOT write a shorter script - the viewer needs content for the FULL ${params.duration} seconds.
+  // In clone mode, use the cloned video's word count and duration instead of form defaults
+  const isCloneMode = !!params.clonedVideoStructure;
+  const cloneWordCount = isCloneMode ? (params.clonedVideoStructure as any)?.wordCount : null;
+  const cloneDuration = isCloneMode ? (params.clonedVideoStructure as any)?.estimatedDurationSeconds : null;
+  const effectiveDuration = cloneDuration || params.duration;
+  const effectiveWordTarget = cloneWordCount 
+    ? { min: Math.round(cloneWordCount * 0.85), max: Math.round(cloneWordCount * 1.15) }
+    : targetWords;
+
+  const userPrompt = isCloneMode 
+    ? `Write a script about the topic below using the FORMAT CLONE instructions from the system prompt. The cloned video's structure, rhythm, and style are LAW — only the topic changes.
+
+${knowledgeBaseInstructions}
+${creatorStyleMemory || ''}
+=== YOUR TOPIC - STAY 100% ON THIS ===
+${params.topic}
+=== EVERY SENTENCE MUST BE ABOUT THIS EXACT TOPIC ===
+${skeletonContext}
+
+TARGET WORD COUNT: ${effectiveWordTarget.min}-${effectiveWordTarget.max} words (matching the original video's length)
+${effectiveDuration ? `TARGET DURATION: ~${effectiveDuration} seconds` : ''}
+PLATFORM: ${params.platform}
+${params.targetAudience ? `TARGET AUDIENCE: ${params.targetAudience}` : ""}
+${params.keyFacts ? `KEY FACTS TO INCLUDE: ${params.keyFacts}` : ""}
+
+=== MANDATORY CTA - USE EXACTLY AS WRITTEN ===
+"${finalCta}"
+=== END CTA ===
+
+You MUST end the script with the EXACT CTA above. Copy it word-for-word. Do NOT change it, improve it, or write your own.
+
+${researchContext ? `=== MANDATORY RESEARCH DATA - YOU MUST USE THESE ===
+${researchContext}
+
+YOU MUST incorporate at least 2 stats or facts from this research into your script.
+Do NOT ignore this research. Use specific numbers, percentages, and data points.
+=== END RESEARCH DATA ===` : ""}
+
+Write the script now. Follow the FORMAT CLONE blueprint exactly. Use the ORIGINAL section names from the clone analysis. Make each line its own paragraph.`
+
+    : `Write a FULL ${params.duration}-second video script. You MUST write ${targetWords.min}-${targetWords.max} words to fill the entire duration. DO NOT write a shorter script - the viewer needs content for the FULL ${params.duration} seconds.
 
 ${knowledgeBaseInstructions}
 ${creatorStyleMemory || ''}
