@@ -70,6 +70,14 @@ Script generation uses predefined catalogs:
 - **Word Count Targets**: Platform/duration specific at ~2.7-3.3 words/sec speaking rate (15s: 38-50, 30s: 80-100, 60s: 160-200, 90s: 240-300, 180s: 480-600 words)
 - **Fallback**: Automatically falls back to template-based generation if AI fails
 
+### Clone Video Format Feature
+- **Video Analysis**: Uses GPT-4o to analyze viral videos and extract full "Video DNA" — sections, hookAnalysis, emotionalArc, retentionMechanics, toneProfile, sentenceStructure, transitionPhrases, powerWords, ctaAnalysis
+- **Clone Script Generation**: Uses GPT-4o (upgraded from gpt-4o-mini) with 3000 max_tokens for higher fidelity structural cloning
+- **Clone-Specific Quality Rules**: Clone mode uses its own quality criteria (structural fidelity, voice match, rhythm match, hook psychology, transition fidelity, emotional arc) instead of generic rules (grade level, fluff detection, specificity)
+- **Separate Retry Logic**: Clone mode only retries for word count, CTA, and topic relevance — skips grade level, fluff, actionability, and specificity checks that would conflict with the cloned video's style
+- **Coherence Validation Bypass**: Clone scripts skip the generic "hook → problem → solution → CTA" coherence check since cloned structures have their own custom flow
+- **Section Display**: Frontend uses `parseClonedSections()` to render each section with color-coded headers, copy buttons, and matching original section metadata (purpose, emotional tone, duration percentage)
+
 ### Apify Social Media Integration
 - **TikTok Viral Examples API**: `/api/viral-examples` fetches top viral TikTok captions by topic
 - **Instagram Viral Examples API**: `/api/viral-examples/instagram` fetches top Instagram Reels/posts by hashtag

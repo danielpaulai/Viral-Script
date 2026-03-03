@@ -935,13 +935,42 @@ You MUST emulate this creator's exact style, including their signature phrases, 
 CRITICAL RULES - FOLLOW EXACTLY:
 1. TOPIC RELEVANCE (MOST IMPORTANT): Your script MUST be 100% about the EXACT topic provided. Every sentence must directly relate to the topic. Do NOT go off on tangents. Do NOT write about something else. If the topic is "How to get leads from LinkedIn" - EVERY sentence must be about LinkedIn lead generation.
 
-2. READING LEVEL: Grade 3-6 reading level. Use simple, everyday words. Short sentences. No jargon.
-3. SOUND HUMAN: Write like you're texting a friend. Use contractions. Be casual. No corporate speak.
+${isCloneMode ? `2. VOICE & STYLE: Match the cloned video's EXACT tone, vocabulary level, and speaking style from the FORMAT CLONE DNA above. Do NOT impose a different reading level or style — the original video's voice IS the target voice.
+3. SOUND LIKE THE ORIGINAL CREATOR: Your script should read as if the same person wrote it. Match their energy, sentence structure, vocabulary, and personality exactly.` : `2. READING LEVEL: Grade 3-6 reading level. Use simple, everyday words. Short sentences. No jargon.
+3. SOUND HUMAN: Write like you're texting a friend. Use contractions. Be casual. No corporate speak.`}
 4. CTA: You MUST use the EXACT CTA provided by the user. Copy it word-for-word. Do NOT create your own CTA.
 5. ONE IDEA PER SENTENCE: Never combine multiple thoughts in one sentence.
 6. BANNED WORDS - NEVER USE: ${aiWordsToAvoid.join(", ")}
 
-<output_quality_rules>
+${isCloneMode ? `<output_quality_rules>
+CLONE MODE QUALITY RULES:
+
+1. STRUCTURAL FIDELITY — Your script MUST have the EXACT same number of sections, in the EXACT same order, with matching sentence counts (±1) per section. This is non-negotiable.
+
+2. VOICE MATCH — Read the tone profile, energy level, vocabulary level, and personality from the FORMAT CLONE DNA. Your script must sound like the SAME creator wrote it. If the original is high-energy and uses slang, yours must too. If the original is calm and professional, match that.
+
+3. RHYTHM MATCH — Mirror the sentence rhythm pattern. If the original uses "short-short-long" sentences, you do too. If it uses fragments followed by a full sentence, you do too. Count the beats.
+
+4. HOOK PSYCHOLOGY — Your hook must trigger the SAME psychological response as the original (curiosity gap, identity challenge, controversy, etc.) — not just use the same format.
+
+5. CONTENT DEPTH — Each section must have REAL substance about the new topic. Don't pad with generic filler. Provide specific examples, numbers, frameworks, or insights that match the depth of the original.
+
+6. TRANSITION FIDELITY — Use adapted versions of the original's transition phrases in the SAME positions. If the original says "But here's what nobody tells you" between sections 2 and 3, you use a similar transition there.
+
+7. EMOTIONAL ARC — Follow the same emotional journey. If the original goes Shock→Empathy→Authority→Hope, your script hits those same emotional beats in the same order.
+</output_quality_rules>
+
+<quality_check>
+Before outputting, verify your clone against:
+- Structure match (Same section count, same order, same proportions?)
+- Voice match (Would a viewer think the same person wrote both?)
+- Rhythm match (Sentence lengths and patterns mirror the original?)
+- Hook psychology match (Same trigger type, adapted to new topic?)
+- Content depth (Real substance, not generic filler?)
+- Word count (Within 15% of original?)
+
+If any of these fail, rewrite before showing.
+</quality_check>` : `<output_quality_rules>
 EVERY SCRIPT MUST:
 
 1. BE ACTIONABLE
@@ -969,13 +998,13 @@ EVERY SCRIPT MUST:
 - "At the end of the day..."
 - "It's important to remember..."
 
-4. GET TO THE POINT
+5. GET TO THE POINT
 - Hook in first 2 seconds (first sentence)
 - Main value by second 3-5
 - No long intros or build-ups
 - Every sentence must earn its place
 
-5. END WITH CLEAR NEXT STEP
+6. END WITH CLEAR NEXT STEP
 - Tell them exactly what to do next
 - Make it doable in under 5 minutes
 - Be specific: "Comment 'GUIDE' below" not "Let me know what you think"
@@ -990,7 +1019,7 @@ Before outputting any script, internally grade it 1-10 on:
 - Clear CTA (Is the next step obvious?)
 
 If total score is below 35/50, rewrite the script before showing.
-</quality_check>
+</quality_check>`}
 
 Style guidelines:
 - One short sentence per line
@@ -1130,12 +1159,21 @@ ${skeleton.suggestedHooks.map((h: string) => `- "${h}"`).join('\n')}
 
 ${knowledgeBaseInstructions}
 ${creatorStyleMemory || ''}
-=== YOUR TOPIC - STAY 100% ON THIS ===
+=== YOUR TOPIC ===
 ${params.topic}
-=== EVERY SENTENCE MUST BE ABOUT THIS EXACT TOPIC ===
+=== END TOPIC ===
+
+${params.referenceScript ? `=== USER'S CONTENT NOTES FOR EACH SECTION ===
+The creator provided these notes for what they want in each section. Use this content as the foundation for each section — it tells you what SPECIFIC points to cover:
+
+${params.referenceScript}
+
+Weave these notes into the cloned structure naturally. The notes tell you WHAT to say; the clone blueprint tells you HOW to say it.
+=== END CONTENT NOTES ===` : ''}
+
 ${skeletonContext}
 
-TARGET WORD COUNT: ${effectiveWordTarget.min}-${effectiveWordTarget.max} words (matching the original video's length)
+TARGET WORD COUNT: ${effectiveWordTarget.min}-${effectiveWordTarget.max} words (match the original video's length)
 ${effectiveDuration ? `TARGET DURATION: ~${effectiveDuration} seconds` : ''}
 PLATFORM: ${params.platform}
 ${params.targetAudience ? `TARGET AUDIENCE: ${params.targetAudience}` : ""}
@@ -1147,14 +1185,23 @@ ${params.keyFacts ? `KEY FACTS TO INCLUDE: ${params.keyFacts}` : ""}
 
 You MUST end the script with the EXACT CTA above. Copy it word-for-word. Do NOT change it, improve it, or write your own.
 
-${researchContext ? `=== MANDATORY RESEARCH DATA - YOU MUST USE THESE ===
+${researchContext ? `=== RESEARCH DATA — INCORPORATE INTO YOUR SCRIPT ===
 ${researchContext}
 
-YOU MUST incorporate at least 2 stats or facts from this research into your script.
-Do NOT ignore this research. Use specific numbers, percentages, and data points.
+Weave at least 2 stats or facts from this research naturally into the relevant sections.
 === END RESEARCH DATA ===` : ""}
 
-Write the script now. Follow the FORMAT CLONE blueprint exactly. Use the ORIGINAL section names from the clone analysis. Make each line its own paragraph.`
+=== WRITING INSTRUCTIONS ===
+1. Follow the FORMAT CLONE blueprint section by section
+2. Use [SECTION NAME] headers matching the blueprint's section names exactly
+3. Write each line as its own paragraph (one sentence per line)
+4. Match the original video's sentence count per section (±1 sentence)
+5. Match the original video's sentence lengths, rhythm, and energy
+6. Your script should feel like a SIBLING of the original — same creator, different topic
+7. Include [VISUAL: ...] notes where the original had visual elements
+8. After the script, add "--- PRODUCTION NOTES ---" with practical filming/editing guidance
+
+Write the full script now.`
 
     : `Write a FULL ${params.duration}-second video script. You MUST write ${targetWords.min}-${targetWords.max} words to fill the entire duration. DO NOT write a shorter script - the viewer needs content for the FULL ${params.duration} seconds.
 
@@ -1280,7 +1327,12 @@ ${videoType.id !== "talking_head" ? `Remember to use the ${videoType.name} forma
     let currentWordCount = 0;
     
     // Retry loop for quality validation
-    while (attempts < maxAttempts && (gradeLevel > 5 || !ctaValid || hasFluff || !actionabilityCheck.actionable || !topicRelevance.relevant || !specificityCheck.specific || !wordCountValid)) {
+    // Clone mode: only retry for word count, CTA, and topic — don't enforce grade level, fluff, specificity, or actionability
+    // since the cloned video's style may legitimately differ from our generic quality rules
+    const needsRetry = () => isCloneMode
+      ? (!ctaValid || !wordCountValid || !topicRelevance.relevant)
+      : (gradeLevel > 5 || !ctaValid || hasFluff || !actionabilityCheck.actionable || !topicRelevance.relevant || !specificityCheck.specific || !wordCountValid);
+    while (attempts < maxAttempts && needsRetry()) {
       attempts++;
       const temperature = attempts === 1 ? 0.8 : 0.6; // Lower temperature on retries
       
@@ -1288,25 +1340,27 @@ ${videoType.id !== "talking_head" ? `Remember to use the ${videoType.name} forma
       let retryHints: string[] = [];
       if (attempts > 1) {
         if (!wordCountValid) {
-          if (currentWordCount < targetWords.min) {
-            retryHints.push(`SCRIPT IS TOO SHORT! You wrote ${currentWordCount} words but need ${targetWords.min}-${targetWords.max} words for a ${params.duration}-second video. ADD MORE CONTENT.`);
-          } else if (currentWordCount > targetWords.max) {
-            retryHints.push(`SCRIPT IS TOO LONG! You wrote ${currentWordCount} words but need only ${targetWords.min}-${targetWords.max} words for a ${params.duration}-second video. CUT IT DOWN.`);
+          if (currentWordCount < effectiveWordTarget.min) {
+            retryHints.push(`SCRIPT IS TOO SHORT! You wrote ${currentWordCount} words but need ${effectiveWordTarget.min}-${effectiveWordTarget.max} words. ADD MORE CONTENT.`);
+          } else if (currentWordCount > effectiveWordTarget.max) {
+            retryHints.push(`SCRIPT IS TOO LONG! You wrote ${currentWordCount} words but need only ${effectiveWordTarget.min}-${effectiveWordTarget.max} words. CUT IT DOWN.`);
           }
         }
         if (!topicRelevance.relevant) retryHints.push(`STAY ON TOPIC! Your script must be about "${params.topic}". Every sentence must relate to this topic. You only matched ${topicRelevance.matchedKeywords}/${topicRelevance.totalKeywords} topic keywords.`);
-        if (!specificityCheck.specific) {
-          const issues: string[] = [];
-          if (specificityCheck.numberCount < 2) issues.push(`ADD MORE SPECIFIC NUMBERS! You only have ${specificityCheck.numberCount} - need at least 2 stats/percentages/timeframes.`);
-          if (specificityCheck.genericWords.length > 2) issues.push(`REMOVE GENERIC WORDS: ${specificityCheck.genericWords.slice(0, 3).join(', ')}. Replace with specific names, numbers, or examples.`);
-          retryHints.push(issues.join(' '));
+        if (!isCloneMode) {
+          if (!specificityCheck.specific) {
+            const issues: string[] = [];
+            if (specificityCheck.numberCount < 2) issues.push(`ADD MORE SPECIFIC NUMBERS! You only have ${specificityCheck.numberCount} - need at least 2 stats/percentages/timeframes.`);
+            if (specificityCheck.genericWords.length > 2) issues.push(`REMOVE GENERIC WORDS: ${specificityCheck.genericWords.slice(0, 3).join(', ')}. Replace with specific names, numbers, or examples.`);
+            retryHints.push(issues.join(' '));
+          }
+          if (gradeLevel > 5) retryHints.push('USE SIMPLER WORDS AND SHORTER SENTENCES.');
+          if (hasFluff) retryHints.push('REMOVE ALL FLUFFY PHRASES. Get straight to the point. No "In today\'s world" or "The truth is".');
+          if (!actionabilityCheck.actionable) {
+            retryHints.push(`MAKE IT MORE ACTIONABLE: ${actionabilityCheck.reasons.join(', ')}. Include specific numbers, timeframes, and clear next steps.`);
+          }
         }
-        if (gradeLevel > 5) retryHints.push('USE SIMPLER WORDS AND SHORTER SENTENCES.');
         if (!ctaValid) retryHints.push('USE THE EXACT CTA PROVIDED - COPY IT WORD FOR WORD.');
-        if (hasFluff) retryHints.push('REMOVE ALL FLUFFY PHRASES. Get straight to the point. No "In today\'s world" or "The truth is".');
-        if (!actionabilityCheck.actionable) {
-          retryHints.push(`MAKE IT MORE ACTIONABLE: ${actionabilityCheck.reasons.join(', ')}. Include specific numbers, timeframes, and clear next steps.`);
-        }
       }
       
       const retryHint = retryHints.length > 0 
@@ -1314,13 +1368,13 @@ ${videoType.id !== "talking_head" ? `Remember to use the ${videoType.name} forma
         : '';
       
       const response = await openai.chat.completions.create({
-        model: "gpt-4o-mini",
+        model: isCloneMode ? "gpt-4o" : "gpt-4o-mini",
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: userPrompt + retryHint }
         ],
-        max_tokens: 1500,
-        temperature,
+        max_tokens: isCloneMode ? 3000 : 1500,
+        temperature: isCloneMode ? 0.7 : temperature,
       });
 
       scriptContent = response.choices[0]?.message?.content || "";
@@ -1334,9 +1388,9 @@ ${videoType.id !== "talking_head" ? `Remember to use the ${videoType.name} forma
       // Word count validation
       const scriptWords = scriptContent.split(/\s+/).filter(Boolean);
       currentWordCount = scriptWords.length;
-      wordCountValid = currentWordCount >= targetWords.min && currentWordCount <= targetWords.max;
+      wordCountValid = currentWordCount >= effectiveWordTarget.min && currentWordCount <= effectiveWordTarget.max;
       
-      console.log(`Script generation attempt ${attempts}: words=${currentWordCount} (target ${targetWords.min}-${targetWords.max}), grade=${gradeLevel.toFixed(1)}, ctaValid=${ctaValid}, hasFluff=${hasFluff}, actionable=${actionabilityCheck.actionable}, topicRelevant=${topicRelevance.relevant} (${topicRelevance.matchedKeywords}/${topicRelevance.totalKeywords}), specific=${specificityCheck.specific} (${specificityCheck.numberCount} numbers, ${specificityCheck.genericWords.length} generic words)`);
+      console.log(`Script generation attempt ${attempts}: words=${currentWordCount} (target ${effectiveWordTarget.min}-${effectiveWordTarget.max}), grade=${gradeLevel.toFixed(1)}, ctaValid=${ctaValid}, hasFluff=${hasFluff}, actionable=${actionabilityCheck.actionable}, topicRelevant=${topicRelevance.relevant} (${topicRelevance.matchedKeywords}/${topicRelevance.totalKeywords}), specific=${specificityCheck.specific} (${specificityCheck.numberCount} numbers, ${specificityCheck.genericWords.length} generic words)`);
     }
     
     // If we still failed validation after max attempts, log warning but continue
@@ -1363,9 +1417,10 @@ ${videoType.id !== "talking_head" ? `Remember to use the ${videoType.name} forma
     }
     
     // COHERENCE VALIDATION - Check if script is logically connected, not random facts stitched together
-    let coherenceCheck = { coherent: false, issues: [] as string[], suggestions: [] as string[] };
+    // Skip for clone mode - cloned scripts follow the original video's structure, not hook→problem→solution→CTA
+    let coherenceCheck = { coherent: isCloneMode ? true : false, issues: [] as string[], suggestions: [] as string[] };
     let coherenceAttempts = 0;
-    const maxCoherenceAttempts = 2;
+    const maxCoherenceAttempts = isCloneMode ? 0 : 2;
     
     while (coherenceAttempts < maxCoherenceAttempts && !coherenceCheck.coherent) {
       coherenceAttempts++;
