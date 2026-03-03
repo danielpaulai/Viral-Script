@@ -1988,24 +1988,7 @@ Generate 3 CTAs now:`;
         } : null,
       });
       
-      // Check trial status for authenticated users
-      if (userId) {
-        const trialStatus = await storage.checkTrialStatus(userId);
-        if (trialStatus.trialEnded) {
-          return res.status(403).json({ 
-            error: "Trial ended", 
-            message: "Your free trial has ended. Please upgrade to continue generating scripts.",
-            trialStatus
-          });
-        }
-        if (trialStatus.scriptsRemaining <= 0) {
-          return res.status(403).json({ 
-            error: "Script limit reached", 
-            message: "You've used all 3 free scripts. Upgrade to continue creating viral content!",
-            trialStatus
-          });
-        }
-      }
+      // All features are free - no trial or subscription checks needed
       
       let knowledgeBaseDocs: KnowledgeBaseDoc[] = [];
       if (params.useKnowledgeBase && userId) {
@@ -2589,15 +2572,6 @@ Return ONLY the improved script.`
         return res.status(401).json({ error: "User not found" });
       }
 
-      // Check if user has Pro subscription
-      const user = await storage.getUser(userId);
-      if (!user || (user.plan !== "pro" && user.plan !== "agency")) {
-        return res.status(403).json({ 
-          error: "This feature requires a Pro or Agency subscription",
-          requiresPlan: "pro"
-        });
-      }
-
       const { keyword, limit = 15 } = req.body;
       
       if (!keyword || typeof keyword !== 'string' || keyword.trim().length < 2) {
@@ -2655,15 +2629,6 @@ Return ONLY the improved script.`
       const userId = req.user?.id;
       if (!userId) {
         return res.status(401).json({ error: "User not found" });
-      }
-
-      // Check if user has Pro subscription
-      const user = await storage.getUser(userId);
-      if (!user || (user.plan !== "pro" && user.plan !== "agency")) {
-        return res.status(403).json({ 
-          error: "Deep Research requires a Pro or Agency subscription",
-          requiresPlan: "pro"
-        });
       }
 
       const { topic, targetAudience, includeCompetitorResearch = false } = req.body;
@@ -4128,15 +4093,6 @@ Create problems that are:
   app.get("/api/knowledge-base", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user?.id;
-      
-      // Check if user has Pro subscription for Knowledge Base
-      const user = await storage.getUser(userId);
-      if (!user || (user.plan !== "pro" && user.plan !== "agency")) {
-        return res.status(403).json({ 
-          error: "Knowledge Base requires a Pro or Agency subscription",
-          requiresPlan: "pro"
-        });
-      }
 
       const docs = await storage.getKnowledgeBaseDocs(userId);
       res.json(docs);
@@ -4148,15 +4104,6 @@ Create problems that are:
   app.get("/api/knowledge-base/:id", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user?.id;
-      
-      // Check if user has Pro subscription for Knowledge Base
-      const user = await storage.getUser(userId);
-      if (!user || (user.plan !== "pro" && user.plan !== "agency")) {
-        return res.status(403).json({ 
-          error: "Knowledge Base requires a Pro or Agency subscription",
-          requiresPlan: "pro"
-        });
-      }
 
       const doc = await storage.getKnowledgeBaseDoc(req.params.id);
       if (!doc) {
@@ -4175,15 +4122,6 @@ Create problems that are:
   app.post("/api/knowledge-base", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user?.id;
-      
-      // Check if user has Pro subscription for Knowledge Base
-      const user = await storage.getUser(userId);
-      if (!user || (user.plan !== "pro" && user.plan !== "agency")) {
-        return res.status(403).json({ 
-          error: "Knowledge Base requires a Pro or Agency subscription",
-          requiresPlan: "pro"
-        });
-      }
 
       const { type, title, content, summary, tags } = req.body;
       if (!type || !title || !content) {
@@ -4206,15 +4144,6 @@ Create problems that are:
   app.patch("/api/knowledge-base/:id", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user?.id;
-      
-      // Check if user has Pro subscription for Knowledge Base
-      const user = await storage.getUser(userId);
-      if (!user || (user.plan !== "pro" && user.plan !== "agency")) {
-        return res.status(403).json({ 
-          error: "Knowledge Base requires a Pro or Agency subscription",
-          requiresPlan: "pro"
-        });
-      }
 
       const existingDoc = await storage.getKnowledgeBaseDoc(req.params.id);
       if (!existingDoc) {
@@ -4235,15 +4164,6 @@ Create problems that are:
   app.delete("/api/knowledge-base/:id", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user?.id;
-      
-      // Check if user has Pro subscription for Knowledge Base
-      const user = await storage.getUser(userId);
-      if (!user || (user.plan !== "pro" && user.plan !== "agency")) {
-        return res.status(403).json({ 
-          error: "Knowledge Base requires a Pro or Agency subscription",
-          requiresPlan: "pro"
-        });
-      }
 
       const existingDoc = await storage.getKnowledgeBaseDoc(req.params.id);
       if (!existingDoc) {
@@ -4282,15 +4202,6 @@ Create problems that are:
       const userId = req.user?.id;
       if (!userId) {
         return res.status(401).json({ error: "User not found" });
-      }
-
-      // Check if user has Pro subscription for Knowledge Base
-      const user = await storage.getUser(userId);
-      if (!user || (user.plan !== "pro" && user.plan !== "agency")) {
-        return res.status(403).json({ 
-          error: "Knowledge Base requires a Pro or Agency subscription",
-          requiresPlan: "pro"
-        });
       }
 
       const files = req.files as Express.Multer.File[];
@@ -4921,28 +4832,16 @@ Create problems that are:
     }
   });
 
-  // Trial Status endpoint
+  // Trial Status endpoint - all features are now free
   app.get("/api/user/trial-status", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user?.id;
-      if (!userId) {
-        return res.status(401).json({ error: "User not found" });
-      }
-      const trialStatus = await storage.checkTrialStatus(userId);
-      const user = await storage.getUser(userId);
-      
-      // Check if user is a paid subscriber (not on trial/starter plan)
-      const isPaidUser = user?.plan && !['starter', 'free', null].includes(user.plan);
-      const hasActiveSubscription = user?.subscriptionStatus === 'active' || user?.subscriptionStatus === 'trialing';
-      
-      // Map backend response to frontend expected format
       res.json({
-        isActive: trialStatus.isOnTrial && !trialStatus.trialEnded,
-        daysRemaining: trialStatus.daysRemaining,
-        scriptsUsed: user?.trialScriptsUsed || 0,
-        scriptsLimit: 3, // Free trial: 3 scripts before requiring payment
-        trialEndsAt: user?.trialEndsAt || null,
-        isPaidUser: isPaidUser || hasActiveSubscription,
+        isActive: false,
+        daysRemaining: 999,
+        scriptsUsed: 0,
+        scriptsLimit: 999999,
+        trialEndsAt: null,
+        isPaidUser: true,
       });
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch trial status" });
@@ -4955,15 +4854,6 @@ Create problems that are:
       const userId = req.user?.id;
       if (!userId) {
         return res.status(401).json({ error: "User not found" });
-      }
-
-      // Check if user has Pro or Agency plan
-      const user = await storage.getUser(userId);
-      if (!user || (user.plan !== "pro" && user.plan !== "agency")) {
-        return res.status(403).json({ 
-          error: "This feature requires a Pro or Agency subscription",
-          requiresPlan: "pro"
-        });
       }
 
       const { username } = req.body;
@@ -5005,15 +4895,6 @@ Create problems that are:
         return res.status(401).json({ error: "User not found" });
       }
 
-      // Check if user has Pro subscription
-      const user = await storage.getUser(userId);
-      if (!user || (user.plan !== "pro" && user.plan !== "agency")) {
-        return res.status(403).json({ 
-          error: "Viral Examples requires a Pro or Agency subscription",
-          requiresPlan: "pro"
-        });
-      }
-
       const { topic, limit = 5 } = req.body;
       if (!topic || typeof topic !== 'string' || topic.trim().length < 3) {
         return res.status(400).json({ error: "Topic is required (at least 3 characters)" });
@@ -5049,15 +4930,6 @@ Create problems that are:
       const userId = req.user?.id;
       if (!userId) {
         return res.status(401).json({ error: "User not found" });
-      }
-
-      // Check if user has Pro subscription
-      const user = await storage.getUser(userId);
-      if (!user || (user.plan !== "pro" && user.plan !== "agency")) {
-        return res.status(403).json({ 
-          error: "Strategic Insights requires a Pro or Agency subscription",
-          requiresPlan: "pro"
-        });
       }
 
       const { topic, platforms, limit = 20 } = req.body;
@@ -5099,15 +4971,6 @@ Create problems that are:
         return res.status(401).json({ error: "User not found" });
       }
 
-      // Check if user has Pro subscription
-      const user = await storage.getUser(userId);
-      if (!user || (user.plan !== "pro" && user.plan !== "agency")) {
-        return res.status(403).json({ 
-          error: "Instagram Viral Examples requires a Pro or Agency subscription",
-          requiresPlan: "pro"
-        });
-      }
-
       const { topic, limit = 5 } = req.body;
       if (!topic || typeof topic !== 'string' || topic.trim().length < 3) {
         return res.status(400).json({ error: "Topic is required (at least 3 characters)" });
@@ -5142,15 +5005,6 @@ Create problems that are:
       const userId = req.user?.id;
       if (!userId) {
         return res.status(401).json({ error: "User not found" });
-      }
-
-      // Check if user has Pro or Agency plan
-      const user = await storage.getUser(userId);
-      if (!user || (user.plan !== "pro" && user.plan !== "agency")) {
-        return res.status(403).json({ 
-          error: "This feature requires a Pro or Agency subscription",
-          requiresPlan: "pro"
-        });
       }
 
       const { username } = req.body;

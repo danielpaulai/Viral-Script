@@ -133,12 +133,11 @@ export function setupAuth(app: Express) {
         });
       });
 
-      // New users always need payment setup (no subscription yet, created after cutoff)
       res.status(201).json({
         id: newUser.id,
         username: newUser.username,
         email: newUser.email,
-        needsPaymentSetup: true,
+        needsPaymentSetup: false,
         plan: 'starter',
         subscriptionStatus: null,
       });

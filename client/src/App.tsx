@@ -154,11 +154,6 @@ function AppContent() {
 
   const isAuthenticated = !!user;
   
-  // Check if authenticated user needs to complete payment setup
-  if (isAuthenticated && user?.needsPaymentSetup) {
-    return <Onboarding />;
-  }
-
   return isAuthenticated ? <AuthenticatedApp /> : <PublicRouter />;
 }
 

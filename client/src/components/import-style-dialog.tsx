@@ -41,7 +41,7 @@ export function ImportStyleDialog({ userPlan, onImportComplete }: ImportStyleDia
   const [result, setResult] = useState<ScrapeResult | null>(null);
   const { toast } = useToast();
 
-  const isPro = userPlan === "pro" || userPlan === "ultimate";
+  const isPro = true;
 
   const scrapeMutation = useMutation({
     mutationFn: async ({ platform, username }: { platform: string; username: string }) => {

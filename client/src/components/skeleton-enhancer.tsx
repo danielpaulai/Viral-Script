@@ -61,7 +61,7 @@ export function SkeletonEnhancer({
   onBack,
   userPlan = "starter",
 }: SkeletonEnhancerProps) {
-  const isPro = userPlan === "pro" || userPlan === "agency";
+  const isPro = true;
   const [requiresProError, setRequiresProError] = useState(false);
   const { toast } = useToast();
   const [editingSection, setEditingSection] = useState<SkeletonSectionType | null>(null);

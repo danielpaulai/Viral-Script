@@ -54,11 +54,6 @@ export default function KnowledgeBase() {
               <Bell className="w-4 h-4" />
               Notify Me When Available
             </Button>
-            <Link href="/pricing">
-              <Button className="gap-2" data-testid="button-view-pricing">
-                View Pricing Plans
-              </Button>
-            </Link>
           </div>
         </CardContent>
       </Card>

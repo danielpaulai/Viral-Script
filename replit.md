@@ -95,25 +95,16 @@ Script generation uses predefined catalogs:
 - **Supabase Sync**: Admin-only button to sync Supabase Auth users to local DB for complete analytics
 - **Access Control**: Analytics visible to all authenticated users; sync restricted to admin plan
 
-### Stripe Subscription System
-- **Subscription Flow**: Users provide card info, $0 initial charge with 7-day trial, then $19.99/month
-- **Billing API Endpoints**:
-  - `POST /api/billing/create-checkout` - Creates Stripe Checkout Session with 7-day trial
-  - `POST /api/billing/cancel-subscription` - Cancels at period end (not immediate)
-  - `POST /api/billing/resume-subscription` - Reactivates a cancelled subscription
-  - `POST /api/billing/portal` - Opens Stripe Customer Portal for billing management
-  - `GET /api/billing/status` - Returns current billing status (plan, status, trial info, cancellation status)
-- **User Schema Fields**: stripeCustomerId, stripeSubscriptionId, stripePriceId, subscriptionStatus, currentPeriodEnd, cancelAtPeriodEnd
-- **Webhook Handling**: Processes customer.subscription.created/updated/deleted, invoice.payment_succeeded/failed to sync Stripe state to local DB
-- **UI Integration**: Settings page Subscription tab shows trial status, subscription actions (start/cancel/resume), and Stripe portal access
+### Pricing Model
+- **Completely Free**: All features are free with no limits, no trial, no subscription required
+- **No Paywalls**: All server-side plan checks and trial limits have been removed
+- **Stripe Integration**: Still configured but not actively used for billing (webhook/billing endpoints remain for legacy compatibility)
 
 ### Hybrid Authentication System
 - **Supabase Auth**: Primary authentication provider for user registration and login
-- **Local Database**: Stores user records, subscriptions, usage data, and trial status
+- **Local Database**: Stores user records and usage data
 - **User Sync**: When Supabase users log in, local records are created/updated with `supabase_user_id` link
 - **Shadow Users**: Admin can manually sync Supabase users who haven't logged in yet via `/api/admin/sync-supabase-users`
-- **Trial Tracking**: 7-day free trial with 20 script limit, tracked in local database
-- **Subscription Enforcement**: All subscription/usage checks use local DB records (source of truth)
 
 ### Key Design Decisions
 

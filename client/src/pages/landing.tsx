@@ -18,12 +18,10 @@ import {
   Briefcase,
   Check,
   XCircle,
-  Star,
   Moon,
   Sun
 } from "lucide-react";
 import { Link } from "wouter";
-import { pricingTiers } from "@shared/schema";
 import { useState, useEffect, useCallback } from "react";
 import { useTheme } from "@/components/theme-provider";
 
@@ -845,109 +843,56 @@ export default function Landing() {
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
           <div className="text-center">
             <h2 className="text-4xl sm:text-5xl font-medium text-white tracking-tight mb-6">
-              Pricing Plans
+              100% Free
             </h2>
             <p className="text-[#b8bec1] text-sm leading-relaxed mb-12">
-              Start free. Upgrade when you're ready to scale.
+              All features included. No credit card required. No limits.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
-            {pricingTiers.map((tier) => (
-              tier.popular ? (
-                /* Featured Pro Card */
-                <div 
-                  key={tier.id}
-                  className="border-primary/30 border ring-1 ring-primary/20 rounded-3xl p-2 relative backdrop-blur-xl bg-[#111]"
-                  data-testid={`pricing-card-${tier.id}`}
-                >
-                  <div className="overflow-hidden bg-gradient-to-b from-white/[0.08] to-transparent rounded-2xl relative h-full flex flex-col">
-                    {/* Radial glow */}
-                    <div className="absolute inset-0">
-                      <div className="absolute inset-0 bg-[radial-gradient(60%_80%_at_80%_0%,rgba(233,13,65,0.15),transparent_60%)]" />
-                    </div>
-
-                    <div className="p-6 relative flex flex-col h-full">
-                      <div className="flex items-start justify-between gap-2">
-                        <div>
-                          <div className="text-xs font-bold uppercase tracking-[0.2em] text-primary">
-                            {tier.name}
-                          </div>
-                          <div className="mt-2 flex items-end gap-2">
-                            <div className="text-4xl font-medium tracking-tight text-white">
-                              ${tier.price}
-                            </div>
-                            <div className="text-sm text-white/60">/mo</div>
-                          </div>
-                        </div>
-                        <span className="inline-flex items-center gap-1 rounded-full bg-primary/20 px-2 py-1 text-[10px] font-medium text-primary ring-1 ring-primary/40">
-                          <Star className="w-3 h-3" />
-                          Popular
-                        </span>
-                      </div>
-
-                      <p className="text-white/60 text-xs mt-2">{tier.description}</p>
-
-                      <Link href="/login" className="mt-6">
-                        <Button 
-                          className="w-full shadow-[0_4px_20px_rgba(233,13,65,0.3)] hover:scale-[1.02] transition-all"
-                          data-testid={`button-pricing-${tier.id}`}
-                        >
-                          Upgrade to {tier.name}
-                        </Button>
-                      </Link>
-
-                      <ul className="mt-8 space-y-4 text-sm text-white/80">
-                        {tier.features.map((feature, idx) => (
-                          <li key={idx} className="flex items-start gap-3">
-                            <CheckCircle2 className="w-4 h-4 text-primary flex-shrink-0" />
-                            <span>{feature}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  </div>
+          <div className="max-w-lg mx-auto">
+            <div 
+              className="border-primary/30 border ring-1 ring-primary/20 rounded-3xl p-2 relative backdrop-blur-xl bg-[#111]"
+              data-testid="pricing-card-free"
+            >
+              <div className="overflow-hidden bg-gradient-to-b from-white/[0.08] to-transparent rounded-2xl relative h-full flex flex-col">
+                <div className="absolute inset-0">
+                  <div className="absolute inset-0 bg-[radial-gradient(60%_80%_at_80%_0%,rgba(233,13,65,0.15),transparent_60%)]" />
                 </div>
-              ) : (
-                /* Standard Card */
-                <div 
-                  key={tier.id}
-                  className="bg-[radial-gradient(circle_at_top_left,var(--tw-gradient-stops))] from-white/10 to-white/0 rounded-3xl p-6 backdrop-blur-xl relative border border-white/[0.06] hover:border-white/[0.12] transition-all"
-                  data-testid={`pricing-card-${tier.id}`}
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="text-xs font-bold uppercase tracking-[0.2em] text-white/40">
-                        {tier.name}
+
+                <div className="p-6 relative flex flex-col h-full">
+                  <div className="text-center">
+                    <div className="text-xs font-bold uppercase tracking-[0.2em] text-primary">
+                      Free Plan
+                    </div>
+                    <div className="mt-2 flex items-end justify-center gap-2">
+                      <div className="text-4xl font-medium tracking-tight text-white">
+                        $0
                       </div>
-                      <div className="mt-2 flex items-end gap-2">
-                        <div className="text-4xl font-medium tracking-tight text-white">
-                          ${tier.price}
-                        </div>
-                        <div className="text-sm text-white/50">/mo</div>
-                      </div>
+                      <div className="text-sm text-white/60">forever</div>
                     </div>
                   </div>
 
-                  <p className="text-white/50 text-xs mt-2">{tier.description}</p>
-
-                  <Link href="/login" className="block mt-6">
-                    <button className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-sm font-medium tracking-tight text-white hover:bg-white/10 transition-all">
-                      Get Started
-                    </button>
+                  <Link href="/login" className="mt-6">
+                    <Button 
+                      className="w-full shadow-[0_4px_20px_rgba(233,13,65,0.3)] hover:scale-[1.02] transition-all"
+                      data-testid="button-pricing-free"
+                    >
+                      Get Started Free
+                    </Button>
                   </Link>
 
-                  <ul className="mt-6 space-y-3 text-sm text-white/60">
-                    {tier.features.map((feature, idx) => (
+                  <ul className="mt-8 space-y-4 text-sm text-white/80">
+                    {["Unlimited AI script generation", "Clone Video Format from TikTok, Instagram, YouTube", "Deep Research mode", "Knowledge Base", "50 viral hooks library", "30+ CTA templates", "Voice DNA & Style Import", "All platforms supported"].map((feature, idx) => (
                       <li key={idx} className="flex items-start gap-3">
-                        <CheckCircle2 className="w-4 h-4 text-white/40 flex-shrink-0" />
+                        <CheckCircle2 className="w-4 h-4 text-primary flex-shrink-0" />
                         <span>{feature}</span>
                       </li>
                     ))}
                   </ul>
                 </div>
-              )
-            ))}
+              </div>
+            </div>
           </div>
         </div>
       </section>

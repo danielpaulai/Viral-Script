@@ -46,9 +46,8 @@ const mainNavItems = [
 ];
 
 const proNavItems = [
-  { href: "/competitive", label: "Competitive Analysis", icon: BarChart3, isPro: true, comingSoon: true },
-  { href: "/knowledge-base", label: "Knowledge Base", icon: BookOpen, isPro: true, comingSoon: true },
-  { href: "/pricing", label: "Pricing", icon: CreditCard },
+  { href: "/competitive", label: "Competitive Analysis", icon: BarChart3, comingSoon: true },
+  { href: "/knowledge-base", label: "Knowledge Base", icon: BookOpen, comingSoon: true },
   { href: "/settings", label: "Settings", icon: Settings },
   { href: "/admin", label: "Admin Analytics", icon: BarChart3, isAdmin: true },
 ];
@@ -228,7 +227,6 @@ export function AppSidebar() {
       </SidebarContent>
 
       <SidebarFooter>
-        <TrialStatusCard />
         <SidebarSeparator />
         <SidebarMenu>
           {footerNavItems.map((item) => {
