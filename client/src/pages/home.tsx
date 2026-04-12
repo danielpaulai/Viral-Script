@@ -3323,7 +3323,7 @@ export default function Home() {
           </div>
         )}
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+        <div className="grid grid-cols-2 gap-3 mb-4">
           <div>
             <Label className="text-xs font-medium mb-2 block uppercase tracking-wider">Platform</Label>
             <Select
@@ -3362,8 +3362,36 @@ export default function Home() {
             </Select>
           </div>
 
+        </div>
+
+        <Collapsible open={showAdvanced} onOpenChange={setShowAdvanced}>
+          <CollapsibleTrigger asChild>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className={`w-full mb-4 border-dashed ${showAdvanced ? "border-primary/50 text-primary" : "border-border text-foreground/80 bg-muted/50"}`}
+              data-testid="button-toggle-advanced"
+            >
+              {showAdvanced ? (
+                <>
+                  <ChevronUp className="w-4 h-4 mr-2" />
+                  Hide Optional Extras
+                </>
+              ) : (
+                <>
+                  <ChevronDown className="w-4 h-4 mr-2" />
+                  Optional Extras (most people skip this)
+                </>
+              )}
+            </Button>
+          </CollapsibleTrigger>
+          
+          <CollapsibleContent className="space-y-4">
+
+          <div className="grid grid-cols-2 gap-3 mb-4">
+
           <div>
-            <Label className="text-xs font-medium mb-2 block uppercase tracking-wider">Category</Label>
+            <Label className="text-xs font-medium mb-2 block uppercase tracking-wider">Content Angle</Label>
             <Select
               value={formData.category}
               onValueChange={(value) => setFormData((prev) => ({ ...prev, category: value }))}
@@ -3382,7 +3410,7 @@ export default function Home() {
           </div>
 
           <div>
-            <Label className="text-xs font-medium mb-2 block uppercase tracking-wider">Structure</Label>
+            <Label className="text-xs font-medium mb-2 block uppercase tracking-wider">Format</Label>
             <Select
               value={formData.structure}
               onValueChange={(value) => setFormData((prev) => ({ ...prev, structure: value }))}
@@ -3603,29 +3631,6 @@ export default function Home() {
           )}
         </div>
 
-        <Collapsible open={showAdvanced} onOpenChange={setShowAdvanced}>
-          <CollapsibleTrigger asChild>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className={`w-full mb-4 border-dashed ${showAdvanced ? "border-primary/50 text-primary" : "border-border text-foreground/80 bg-muted/50"}`}
-              data-testid="button-toggle-advanced"
-            >
-              {showAdvanced ? (
-                <>
-                  <ChevronUp className="w-4 h-4 mr-2" />
-                  Hide Advanced Options
-                </>
-              ) : (
-                <>
-                  <ChevronDown className="w-4 h-4 mr-2" />
-                  Customize: Audience, CTA, Facts & Research
-                </>
-              )}
-            </Button>
-          </CollapsibleTrigger>
-          
-          <CollapsibleContent className="space-y-4">
             <div className="grid md:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="audience" className="text-xs font-medium mb-2 block uppercase tracking-wider">Target Audience</Label>
@@ -3821,6 +3826,7 @@ export default function Home() {
                 />
               )}
             </div>
+
           </CollapsibleContent>
         </Collapsible>
 
