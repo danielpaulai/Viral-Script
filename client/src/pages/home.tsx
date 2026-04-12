@@ -246,6 +246,7 @@ export default function Home() {
   const { toast } = useToast();
   const { user } = useAuth();
   const [generatedScript, setGeneratedScript] = useState<GeneratedScript | null>(null);
+  const [batchScripts, setBatchScripts] = useState<GeneratedScript[]>([]);
   const [activePreset, setActivePreset] = useState<string | null>(null);
   const [deepResearch, setDeepResearch] = useState(false);
   const [includeCompetitorResearch, setIncludeCompetitorResearch] = useState(false);
@@ -445,6 +446,36 @@ export default function Home() {
       });
     },
   };
+
+  const batchGenerateMutation = useMutation({
+    mutationFn: async (params: ScriptParameters) => {
+      const res = await apiRequest("POST", "/api/scripts/generate-batch", params);
+      return res.json();
+    },
+    onSuccess: (data: { count: number; scripts: GeneratedScript[] }) => {
+      const scripts = data?.scripts || [];
+      setBatchScripts(scripts);
+      setStreamProgress(null);
+      if (scripts.length > 0) {
+        setGeneratedScript(scripts[0]);
+      }
+      queryClient.invalidateQueries({ queryKey: ['/api/user/trial-status'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/user/usage'] });
+      toast({
+        title: "Batch Ready",
+        description: `Generated ${scripts.length} script variations.`,
+      });
+    },
+    onError: (error: any) => {
+      setStreamProgress(null);
+      const msg = error?.message || "Failed to generate script variations.";
+      toast({
+        title: "Batch Generation Failed",
+        description: msg,
+        variant: "destructive",
+      });
+    },
+  });
 
   // Topic expansion for Deep Research mode
   const expandTopicMutation = useMutation({
@@ -780,16 +811,7 @@ export default function Home() {
     generateMutation.mutate({ ...params, ...skeletonPayload });
   };
 
-  const handleGenerate = () => {
-    if (!formData.topic.trim()) {
-      toast({
-        title: "Topic Required",
-        description: "Please enter a topic or video idea.",
-        variant: "destructive",
-      });
-      return;
-    }
-    // Pass skeleton data when locked - filter out placeholder key moments
+  const buildGenerationPayload = (): ScriptParameters => {
     const skeletonData = isSkeletonLocked && contentSkeleton ? {
       contentSkeleton: {
         topicSummary: contentSkeleton.topicSummary,
@@ -807,13 +829,43 @@ export default function Home() {
         isLocked: true,
       }
     } : {};
-    
-    // Include cloned video structure if available
+
     const cloneData = clonedStructure?.analysis ? {
       clonedVideoStructure: clonedStructure.analysis,
     } : {};
-    
-    generateMutation.mutate({ ...formData, deepResearch, useKnowledgeBase, ...skeletonData, ...cloneData });
+
+    return { ...formData, deepResearch, useKnowledgeBase, ...skeletonData, ...cloneData };
+  };
+
+  const handleGenerate = () => {
+    if (!formData.topic.trim()) {
+      toast({
+        title: "Topic Required",
+        description: "Please enter a topic or video idea.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setBatchScripts([]);
+    generateMutation.mutate(buildGenerationPayload());
+  };
+
+  const handleGenerateBatch = () => {
+    if (!formData.topic.trim()) {
+      toast({
+        title: "Topic Required",
+        description: "Please enter a topic or video idea.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setStreamProgress({ event: "generation_progress", message: "Generating 3 variations...", progress: 25 });
+    batchGenerateMutation.mutate({
+      ...buildGenerationPayload(),
+      batchCount: 3,
+    });
   };
 
   const currentHook = useMemo(() => {
@@ -3620,6 +3672,55 @@ export default function Home() {
         onCancel={cancelStream}
         hasResearch={deepResearch}
       />
+
+      {!generateMutation.isPending && !batchGenerateMutation.isPending && formData.topic.trim().length > 0 && !generatedScript && (
+        <div className="mb-4 flex justify-center">
+          <Button
+            variant="outline"
+            onClick={handleGenerateBatch}
+            data-testid="button-generate-batch"
+          >
+            <Sparkles className="w-4 h-4 mr-2" />
+            Generate 3 Variations
+          </Button>
+        </div>
+      )}
+
+      {batchGenerateMutation.isPending && (
+        <div className="mb-4 flex items-center justify-center gap-2 text-sm text-muted-foreground">
+          <Loader2 className="w-4 h-4 animate-spin" />
+          Generating multiple script variations...
+        </div>
+      )}
+
+      {batchScripts.length > 1 && (
+        <Card className="mb-4 p-4 border-primary/20 bg-primary/5">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-sm font-semibold">Pick Your Best Variation</h3>
+            <Badge variant="outline">{batchScripts.length} options</Badge>
+          </div>
+          <div className="space-y-2">
+            {batchScripts.map((script, idx) => {
+              const preview = script.script.split("\n").filter(Boolean).slice(0, 2).join(" ");
+              const selected = generatedScript?.id === script.id;
+              return (
+                <button
+                  key={script.id}
+                  onClick={() => setGeneratedScript(script)}
+                  className={`w-full text-left p-3 rounded-md border transition ${selected ? "border-primary bg-primary/10" : "border-border bg-background hover:border-primary/40"}`}
+                  data-testid={`button-select-variation-${idx + 1}`}
+                >
+                  <div className="flex items-center justify-between gap-2 mb-1">
+                    <span className="text-xs font-medium text-primary">Variation {idx + 1}</span>
+                    <span className="text-[10px] text-muted-foreground">{script.wordCount} words</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">{preview}</p>
+                </button>
+              );
+            })}
+          </div>
+        </Card>
+      )}
       
       {generatedScript && (
         <ScriptOutput 

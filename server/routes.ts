@@ -2225,6 +2225,110 @@ Generate 3 CTAs now:`;
     }
   });
 
+  app.post("/api/scripts/generate-batch", async (req: any, res) => {
+    try {
+      const params: ScriptParameters = req.body;
+      const userId = req.user?.id;
+      const requested = Number(params.batchCount ?? 3);
+      const batchCount = Math.min(Math.max(Number.isFinite(requested) ? requested : 3, 2), 5);
+
+      if (!params.topic || params.topic.trim().length < 5) {
+        return res.status(400).json({
+          error: {
+            code: ERROR_CODES.INVALID_TOPIC,
+            message: "Topic must be at least 5 characters",
+          },
+        });
+      }
+
+      let knowledgeBaseDocs: KnowledgeBaseDoc[] = [];
+      if (params.useKnowledgeBase && userId) {
+        knowledgeBaseDocs = await storage.getKnowledgeBaseDocs(userId);
+      }
+
+      let creatorStyleMemory = "";
+      if (userId) {
+        try {
+          const styleAnalysis = await getCachedStyleAnalysis(userId, () => storage.getRecentScripts(userId, 8));
+          if (styleAnalysis.hasHistory) {
+            creatorStyleMemory = styleAnalysis.summary;
+          }
+        } catch (error) {
+          console.error("[Script Memory] Failed to analyze past scripts:", error);
+        }
+      }
+
+      const scripts: GeneratedScript[] = [];
+      for (let i = 0; i < batchCount; i++) {
+        const variantParams: ScriptParameters = {
+          ...params,
+          // Nudge variability without changing user's core topic.
+          keyFacts: `${params.keyFacts || ""}${params.keyFacts ? "\n" : ""}Variation mode: produce a distinctly different angle and opening from prior variants.`,
+        };
+
+        const generatedScript = await generateScriptWithAI(variantParams, knowledgeBaseDocs, creatorStyleMemory);
+
+        const savedScript = await storage.createScript({
+          userId: userId || null,
+          title: `${params.topic?.slice(0, 90) || "Untitled Script"} (Variant ${i + 1})`,
+          script: generatedScript.script,
+          wordCount: String(generatedScript.wordCount),
+          gradeLevel: String(generatedScript.gradeLevel),
+          productionNotes: generatedScript.productionNotes,
+          bRollIdeas: JSON.stringify(generatedScript.bRollIdeas),
+          onScreenText: JSON.stringify(generatedScript.onScreenText),
+          parameters: params,
+          status: "draft",
+        });
+
+        scripts.push({
+          ...generatedScript,
+          id: savedScript.id,
+        });
+      }
+
+      if (userId) {
+        const now = new Date();
+        const month = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+        for (let i = 0; i < batchCount; i++) {
+          await storage.incrementUsage(userId, month, 'scriptsGenerated');
+        }
+
+        const user = await storage.getUser(userId);
+        if (user && (!user.plan || user.plan === 'starter')) {
+          for (let i = 0; i < batchCount; i++) {
+            await storage.incrementTrialScriptsUsed(userId);
+          }
+        }
+
+        if (params.deepResearch) {
+          for (let i = 0; i < batchCount; i++) {
+            await storage.incrementUsage(userId, month, 'deepResearchUsed');
+          }
+        }
+        if (params.useKnowledgeBase && knowledgeBaseDocs.length > 0) {
+          for (let i = 0; i < batchCount; i++) {
+            await storage.incrementUsage(userId, month, 'knowledgeBaseQueries');
+          }
+        }
+      }
+
+      res.json({
+        count: scripts.length,
+        scripts,
+      });
+    } catch (error) {
+      console.error("Error generating script batch:", error);
+      const parsed = parseOpenAIError(error);
+      res.status(parsed.statusCode).json({
+        error: {
+          code: parsed.code,
+          message: parsed.message,
+        },
+      });
+    }
+  });
+
   // Enhance an existing script with AI
   app.post("/api/scripts/enhance", async (req, res) => {
     try {
