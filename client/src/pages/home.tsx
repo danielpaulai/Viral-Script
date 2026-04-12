@@ -218,6 +218,24 @@ interface ViralExamplesResult {
   bestPerformingDuration: string;
 }
 
+interface ScriptTemplateSummary {
+  id: string;
+  name: string;
+  description?: string | null;
+  platform: string;
+  duration: string;
+  category: string;
+  structure: string;
+  hook: string;
+  tone?: string | null;
+  voice?: string | null;
+  pacing?: string | null;
+  videoType?: string | null;
+  creatorStyle?: string | null;
+  defaultTargetAudience?: string | null;
+  defaultCta?: string | null;
+}
+
 function VoiceInputButton({ onTranscript }: { onTranscript: (text: string) => void }) {
   const { isListening, isSupported, transcript, toggleListening } = useVoiceCommand({
     onResult: (text) => {
@@ -295,6 +313,7 @@ export default function Home() {
   const [cloneGeneratedCtas, setCloneGeneratedCtas] = useState<Array<{cta: string, category: string, rationale: string}>>([]);
   const [isGeneratingCloneCtas, setIsGeneratingCloneCtas] = useState(false);
   const [selectedCloneCtaIndex, setSelectedCloneCtaIndex] = useState<number | null>(null);
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string>("");
 
   const [formData, setFormData] = useState<ScriptParameters>({
     topic: "",
@@ -374,6 +393,11 @@ export default function Home() {
     enabled: !!user,
   });
   const userPlan = subscriptionData?.plan || "starter";
+
+  const { data: templates = [] } = useQuery<ScriptTemplateSummary[]>({
+    queryKey: ["/api/templates"],
+    enabled: !!user,
+  });
 
   // Streaming state
   const { stream, isStreaming, cancel: cancelStream } = useStream();
@@ -472,6 +496,40 @@ export default function Home() {
       toast({
         title: "Batch Generation Failed",
         description: msg,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const saveTemplateMutation = useMutation({
+    mutationFn: async () => {
+      const templateName = `${formData.category.replace(/_/g, " ")} • ${formData.duration}s • ${formData.platform}`;
+      const res = await apiRequest("POST", "/api/templates", {
+        name: templateName,
+        description: `Quick-saved from generator (${new Date().toLocaleDateString()})`,
+        platform: formData.platform,
+        duration: formData.duration,
+        category: formData.category,
+        structure: formData.structure,
+        hook: formData.hook,
+        tone: formData.tone || null,
+        voice: formData.voice || null,
+        pacing: formData.pacing || null,
+        videoType: formData.videoType || "talking_head",
+        creatorStyle: formData.creatorStyle || "default",
+        defaultTargetAudience: formData.targetAudience || null,
+        defaultCta: formData.customCta || formData.callToAction || null,
+      });
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/templates"] });
+      toast({ title: "Template Saved", description: "Current settings were saved as a reusable template." });
+    },
+    onError: () => {
+      toast({
+        title: "Save Failed",
+        description: "Could not save this template right now.",
         variant: "destructive",
       });
     },
@@ -868,6 +926,31 @@ export default function Home() {
     });
   };
 
+  const applySelectedTemplate = () => {
+    if (!selectedTemplateId) return;
+    const template = templates.find(t => t.id === selectedTemplateId);
+    if (!template) return;
+
+    setFormData(prev => ({
+      ...prev,
+      platform: template.platform || prev.platform,
+      duration: template.duration || prev.duration,
+      category: template.category || prev.category,
+      structure: template.structure || prev.structure,
+      hook: template.hook || prev.hook,
+      tone: template.tone || prev.tone,
+      voice: template.voice || prev.voice,
+      pacing: template.pacing || prev.pacing,
+      videoType: template.videoType || prev.videoType,
+      creatorStyle: template.creatorStyle || prev.creatorStyle,
+      targetAudience: template.defaultTargetAudience || prev.targetAudience,
+      callToAction: template.defaultCta || prev.callToAction,
+      customCta: template.defaultCta || prev.customCta,
+    }));
+
+    toast({ title: "Template Applied", description: `${template.name} is now active.` });
+  };
+
   const currentHook = useMemo(() => {
     return viralHooks.find(h => h.id === formData.hook);
   }, [formData.hook]);
@@ -896,6 +979,57 @@ export default function Home() {
           Better inputs = Better scripts. Structure your idea first.
         </p>
       </div>
+
+      {!!user && (
+        <Card className="mb-4 p-3 border-border bg-muted/30">
+          <div className="flex flex-col md:flex-row items-stretch md:items-end gap-2">
+            <div className="flex-1">
+              <Label className="text-xs font-medium mb-1 block uppercase tracking-wider">Quick Template</Label>
+              <Select value={selectedTemplateId || "none"} onValueChange={(value) => setSelectedTemplateId(value === "none" ? "" : value)}>
+                <SelectTrigger data-testid="select-home-template">
+                  <SelectValue placeholder={templates.length ? "Choose a saved template..." : "No templates yet"} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">None</SelectItem>
+                  {templates.map((template) => (
+                    <SelectItem key={template.id} value={template.id}>
+                      {template.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                onClick={applySelectedTemplate}
+                disabled={!selectedTemplateId}
+                data-testid="button-apply-home-template"
+              >
+                Apply
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => saveTemplateMutation.mutate()}
+                disabled={saveTemplateMutation.isPending}
+                data-testid="button-save-home-template"
+              >
+                {saveTemplateMutation.isPending ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <Plus className="w-4 h-4 mr-2" />
+                    Save Current as Template
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </Card>
+      )}
 
       {/* New: 3-Step Video Idea Flow */}
       {!showLegacyFlow && !generatedScript && (
