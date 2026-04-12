@@ -45,7 +45,16 @@ const mainNavItems = [
   { href: "/calendar", label: "Calendar", icon: Calendar },
 ];
 
-const proNavItems = [
+interface ProNavItem {
+  href: string;
+  label: string;
+  icon: typeof Home;
+  comingSoon?: boolean;
+  isAdmin?: boolean;
+  isPro?: boolean;
+}
+
+const proNavItems: ProNavItem[] = [
   { href: "/competitive", label: "Competitive Analysis", icon: BarChart3, comingSoon: true },
   { href: "/knowledge-base", label: "Knowledge Base", icon: BookOpen, comingSoon: true },
   { href: "/settings", label: "Settings", icon: Settings },
@@ -194,8 +203,8 @@ export function AppSidebar() {
               {filteredProNavItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = location === item.href;
-                const isPro = 'isPro' in item && item.isPro;
-                const isComingSoon = 'comingSoon' in item && item.comingSoon;
+                const isPro = item.isPro === true;
+                const isComingSoon = item.comingSoon === true;
                 return (
                   <SidebarMenuItem key={item.href}>
                     <SidebarMenuButton

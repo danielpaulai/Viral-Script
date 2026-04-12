@@ -4,6 +4,7 @@ import { z } from "zod";
 
 // Export auth models for Replit Auth integration
 export * from "./models/auth";
+export * from "./models/chat";
 
 // Script Categories
 export const scriptCategories = [

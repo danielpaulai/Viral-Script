@@ -5,7 +5,7 @@ import mammoth from 'mammoth';
 let pdfParse: any;
 async function getPdfParser() {
   if (!pdfParse) {
-    const module = await import('pdf-parse');
+    const module: any = await import('pdf-parse');
     pdfParse = module.default || module;
   }
   return pdfParse;
