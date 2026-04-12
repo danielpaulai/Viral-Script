@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -55,11 +55,12 @@ import {
   type VideoIdeaSkeleton,
 } from "@shared/schema";
 import { ScriptOutput } from "@/components/script-output";
-import { GenerationProgress } from "@/components/generation-progress";
+import { GenerationProgress, type StreamProgress } from "@/components/generation-progress";
 import { IdeaClarifier } from "@/components/idea-clarifier";
 import { SkeletonEnhancer } from "@/components/skeleton-enhancer";
 import type { EnhancedSkeleton } from "@shared/schema";
 import { useVoiceCommand } from "@/hooks/use-voice-command";
+import { useStream, useDraftAutoSave, getSavedDraft, clearSavedDraft } from "@/hooks/use-stream";
 import { 
   Wand2, 
   ArrowRight, 
@@ -373,31 +374,77 @@ export default function Home() {
   });
   const userPlan = subscriptionData?.plan || "starter";
 
-  const generateMutation = useMutation({
-    mutationFn: async (params: ScriptParameters) => {
-      const res = await apiRequest("POST", "/api/scripts/generate", params);
-      return res.json();
-    },
-    onSuccess: (data: GeneratedScript) => {
-      setGeneratedScript(data);
-      setExpandedBrief(null); // Clear brief after generating
-      setShowBriefEditor(false);
-      // Invalidate all usage-related queries to update script counts everywhere
-      queryClient.invalidateQueries({ queryKey: ['/api/user/trial-status'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/user/usage'] });
-      toast({
-        title: "Script Generated",
-        description: "Your video script is ready!",
+  // Streaming state
+  const { stream, isStreaming, cancel: cancelStream } = useStream();
+  const [streamProgress, setStreamProgress] = useState<StreamProgress | null>(null);
+
+  // Draft auto-save: save formData + deepResearch every 5s
+  const draftData = useMemo(
+    () => ({ formData, deepResearch, useKnowledgeBase } as Record<string, unknown>),
+    [formData, deepResearch, useKnowledgeBase]
+  );
+  useDraftAutoSave("script_form", draftData, 5000);
+
+  // Restore draft on first load
+  useEffect(() => {
+    const draft = getSavedDraft("script_form") as { formData?: ScriptParameters; deepResearch?: boolean; useKnowledgeBase?: boolean } | null;
+    if (draft?.formData && draft.formData.topic) {
+      setFormData(prev => ({ ...prev, ...draft.formData }));
+      if (typeof draft.deepResearch === "boolean") setDeepResearch(draft.deepResearch);
+      if (typeof draft.useKnowledgeBase === "boolean") setUseKnowledgeBase(draft.useKnowledgeBase);
+    }
+  // Only run once on mount
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Wrapper for backward-compat with generateMutation pattern
+  const [hasGenerationError, setHasGenerationError] = useState(false);
+  const generateMutation = {
+    isPending: isStreaming,
+    isError: hasGenerationError,
+    mutate: (params: ScriptParameters) => {
+      setHasGenerationError(false);
+      setStreamProgress({ event: "start", message: "Starting...", progress: 5 });
+      stream("/api/scripts/generate-stream", params as unknown as Record<string, unknown>, {
+        onProgress: (update) => {
+          setStreamProgress({ event: update.event, message: update.message, progress: update.progress });
+        },
+        onComplete: (data) => {
+          const script = data as unknown as GeneratedScript;
+          setGeneratedScript(script);
+          setExpandedBrief(null);
+          setShowBriefEditor(false);
+          setStreamProgress(null);
+          setHasGenerationError(false);
+          clearSavedDraft("script_form");
+          queryClient.invalidateQueries({ queryKey: ['/api/user/trial-status'] });
+          queryClient.invalidateQueries({ queryKey: ['/api/user/usage'] });
+          toast({ title: "Script Ready!", description: "Your video script has been generated." });
+        },
+        onError: (error) => {
+          setStreamProgress(null);
+          setHasGenerationError(true);
+          const errorMessages: Record<string, string> = {
+            AI_RATE_LIMITED: "AI is overloaded right now. Wait a few seconds and try again.",
+            AI_TOKEN_LIMIT: "Your topic is too complex. Try a simpler topic or shorter duration.",
+            GENERATION_TIMEOUT: "Generation timed out. Try a shorter script duration.",
+            INVALID_TOPIC: "Please enter a topic of at least 5 characters.",
+            QUOTA_EXCEEDED: "You've hit your monthly limit. Upgrade to Pro for more scripts.",
+          };
+          toast({
+            title: "Generation Failed",
+            description: errorMessages[error.code] || error.message || "Failed to generate script. Please try again.",
+            variant: "destructive",
+          });
+        },
+        onCancel: () => {
+          setStreamProgress(null);
+          setHasGenerationError(false);
+          toast({ title: "Cancelled", description: "Script generation was cancelled." });
+        },
       });
     },
-    onError: () => {
-      toast({
-        title: "Error",
-        description: "Failed to generate script. Please try again.",
-        variant: "destructive",
-      });
-    },
-  });
+  };
 
   // Topic expansion for Deep Research mode
   const expandTopicMutation = useMutation({
@@ -3568,7 +3615,9 @@ export default function Home() {
       )}
 
       <GenerationProgress 
-        isGenerating={generateMutation.isPending} 
+        isGenerating={generateMutation.isPending}
+        streamProgress={streamProgress}
+        onCancel={cancelStream}
         hasResearch={deepResearch}
       />
       

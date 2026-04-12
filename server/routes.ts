@@ -8,6 +8,8 @@ import OpenAI from "openai";
 import multer from "multer";
 import { setupAuth, isAuthenticated, setupPasswordReset } from "./auth";
 import { extractTextFromFile, truncateText, SUPPORTED_MIME_TYPES, MAX_FILE_SIZE, MAX_FILES } from "./ocr-utils";
+import { parseOpenAIError, ERROR_CODES } from "./error-handler";
+import { setupSSE, createProgressTracker, CancellationToken } from "./streaming";
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -2025,6 +2027,119 @@ Generate 3 CTAs now:`;
           details: process.env.NODE_ENV === 'development' ? errorDetails : undefined
         });
       }
+    }
+  });
+
+  // SSE Streaming generation endpoint - real-time progress updates
+  app.post("/api/scripts/generate-stream", async (req: any, res) => {
+    const params: ScriptParameters = req.body;
+    const userId = req.user?.id;
+
+    setupSSE(res);
+    const tracker = createProgressTracker(res);
+
+    // Handle client disconnect
+    let cancelled = false;
+    req.on("close", () => {
+      cancelled = true;
+    });
+
+    const checkCancelled = () => {
+      if (cancelled) {
+        tracker.update("cancelled", "Generation cancelled by user");
+        res.end();
+        return true;
+      }
+      return false;
+    };
+
+    try {
+      tracker.update("start", "Starting script generation...", {}, 5);
+
+      if (!params.topic || params.topic.trim().length < 5) {
+        tracker.error(ERROR_CODES.INVALID_TOPIC, "Topic must be at least 5 characters");
+        return;
+      }
+
+      let knowledgeBaseDocs: KnowledgeBaseDoc[] = [];
+      if (params.useKnowledgeBase && userId) {
+        knowledgeBaseDocs = await storage.getKnowledgeBaseDocs(userId);
+      }
+
+      if (checkCancelled()) return;
+
+      let creatorStyleMemory = "";
+      if (userId) {
+        try {
+          const styleAnalysis = await getCachedStyleAnalysis(userId, () => storage.getRecentScripts(userId, 8));
+          if (styleAnalysis.hasHistory) {
+            creatorStyleMemory = styleAnalysis.summary;
+          }
+        } catch (error) {
+          console.error("[Script Memory] Failed to analyze past scripts:", error);
+        }
+      }
+
+      if (params.deepResearch) {
+        tracker.update("research_start", "Researching your topic...", {}, 15);
+      } else {
+        tracker.update("generation_start", "Generating your script...", {}, 20);
+      }
+
+      if (checkCancelled()) return;
+
+      tracker.update("generation_progress", "Writing script with quality checks...", {}, 50);
+
+      let generatedScript: GeneratedScript;
+      try {
+        generatedScript = await generateScriptWithAI(params, knowledgeBaseDocs, creatorStyleMemory);
+      } catch (aiError: any) {
+        const { code, message } = parseOpenAIError(aiError);
+        tracker.error(code, message);
+        return;
+      }
+
+      if (checkCancelled()) return;
+
+      tracker.update("validation_complete", "Quality checks passed!", {}, 80);
+      tracker.update("saving_start", "Saving your script...", {}, 90);
+
+      const savedScript = await storage.createScript({
+        userId: userId || null,
+        title: params.topic?.slice(0, 100) || "Untitled Script",
+        script: generatedScript.script,
+        wordCount: String(generatedScript.wordCount),
+        gradeLevel: String(generatedScript.gradeLevel),
+        productionNotes: generatedScript.productionNotes,
+        bRollIdeas: JSON.stringify(generatedScript.bRollIdeas),
+        onScreenText: JSON.stringify(generatedScript.onScreenText),
+        parameters: params,
+        status: "draft",
+      });
+
+      if (userId) {
+        const now = new Date();
+        const month = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+        await storage.incrementUsage(userId, month, 'scriptsGenerated');
+        const user = await storage.getUser(userId);
+        if (user && (!user.plan || user.plan === 'starter')) {
+          await storage.incrementTrialScriptsUsed(userId);
+        }
+        if (params.deepResearch) {
+          await storage.incrementUsage(userId, month, 'deepResearchUsed');
+        }
+        if (params.useKnowledgeBase && knowledgeBaseDocs.length > 0) {
+          await storage.incrementUsage(userId, month, 'knowledgeBaseQueries');
+        }
+      }
+
+      tracker.complete({ ...generatedScript, id: savedScript.id });
+    } catch (error: any) {
+      console.error("[Stream Generate] Error:", error);
+      tracker.error(
+        ERROR_CODES.GENERATION_FAILED,
+        error?.message || "Script generation failed. Please try again."
+      );
     }
   });
 
