@@ -315,6 +315,7 @@ export default function Home() {
   const [selectedCloneCtaIndex, setSelectedCloneCtaIndex] = useState<number | null>(null);
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>("");
   const [batchSortMode, setBatchSortMode] = useState<"quality" | "duration" | "words">("quality");
+  const [lockedVoiceReference, setLockedVoiceReference] = useState<{ scriptId: string; scriptText: string; label: string } | null>(null);
 
   const [formData, setFormData] = useState<ScriptParameters>({
     topic: "",
@@ -894,7 +895,11 @@ export default function Home() {
       clonedVideoStructure: clonedStructure.analysis,
     } : {};
 
-    return { ...formData, deepResearch, useKnowledgeBase, ...skeletonData, ...cloneData };
+    const voiceReferenceData = lockedVoiceReference ? {
+      voiceReferenceScript: lockedVoiceReference.scriptText,
+    } : {};
+
+    return { ...formData, deepResearch, useKnowledgeBase, ...skeletonData, ...cloneData, ...voiceReferenceData };
   };
 
   const handleGenerate = () => {
@@ -1047,6 +1052,26 @@ export default function Home() {
                 )}
               </Button>
             </div>
+          </div>
+        </Card>
+      )}
+
+      {lockedVoiceReference && (
+        <Card className="mb-4 p-3 border-primary/30 bg-primary/5">
+          <div className="flex items-center justify-between gap-3 flex-wrap">
+            <div>
+              <p className="text-xs font-semibold text-primary uppercase tracking-wider">Winning Voice Locked</p>
+              <p className="text-sm text-foreground">Future generations will bias toward: {lockedVoiceReference.label}</p>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setLockedVoiceReference(null)}
+              data-testid="button-clear-locked-voice"
+            >
+              <X className="w-4 h-4 mr-2" />
+              Clear Voice Lock
+            </Button>
           </div>
         </Card>
       )}
@@ -3931,6 +3956,22 @@ export default function Home() {
                       data-testid={`button-preview-variation-${idx + 1}`}
                     >
                       Preview
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setGeneratedScript(script);
+                        setLockedVoiceReference({
+                          scriptId: script.id,
+                          scriptText: script.script,
+                          label: `Variation ${idx + 1}`,
+                        });
+                        toast({ title: "Voice Locked", description: `Future generations will follow Variation ${idx + 1}'s voice.` });
+                      }}
+                      data-testid={`button-lock-variation-voice-${idx + 1}`}
+                    >
+                      <Lock className="w-4 h-4" />
                     </Button>
                   </div>
                 </div>

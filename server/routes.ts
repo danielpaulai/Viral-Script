@@ -671,6 +671,7 @@ async function generateScriptWithAI(params: ScriptParameters, knowledgeBaseDocs?
 
   let researchContext = "";
   let referenceAnalysis = "";
+  let voiceReferenceAnalysis = "";
   const kbContext = knowledgeBaseDocs ? buildKnowledgeBaseContext(knowledgeBaseDocs) : "";
   
   if (params.deepResearch) {
@@ -735,6 +736,37 @@ Be concise. Format as a brief analysis that can guide script generation.`
       referenceAnalysis = analysisResponse.choices[0]?.message?.content || "";
     } catch (error) {
       console.error("Reference analysis failed, continuing without:", error);
+    }
+  }
+
+  if (params.voiceReferenceScript && params.voiceReferenceScript.trim().length > 50) {
+    try {
+      const voiceAnalysisResponse = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [
+          {
+            role: "system",
+            content: `You are a creator voice analyst. Analyze the script and extract the creator's natural voice so a future script can sound like the same person.
+Focus on:
+1. Sentence rhythm and pacing
+2. Vocabulary simplicity/complexity
+3. Tone and confidence level
+4. Common transitions or phrasing patterns
+5. How the creator opens and closes ideas
+
+Return a concise style analysis for a ghostwriter.`
+          },
+          {
+            role: "user",
+            content: `Analyze this winning script voice:\n\n${params.voiceReferenceScript.slice(0, 3000)}`
+          }
+        ],
+        max_tokens: 400,
+        temperature: 0.4,
+      });
+      voiceReferenceAnalysis = voiceAnalysisResponse.choices[0]?.message?.content || "";
+    } catch (error) {
+      console.error("Voice reference analysis failed, continuing without:", error);
     }
   }
 
@@ -822,6 +854,13 @@ REFERENCE SCRIPT ANALYSIS - MATCH THIS STYLE:
 ${referenceAnalysis}
 
 Generate a NEW script about the user's topic that follows these same patterns but with original content.
+` : "";
+
+  const voiceReferenceInstructions = voiceReferenceAnalysis ? `
+LOCKED WINNER VOICE - USE THIS AS THE BASELINE STYLE:
+${voiceReferenceAnalysis}
+
+This is the user's chosen winning variant. Match its rhythm, phrasing, and voice confidence so the next script feels like it came from the same creator brain.
 ` : "";
 
   // Cloned video structure instructions
@@ -1077,7 +1116,8 @@ ${videoType.id === "talking_head" && !params.clonedVideoStructure ? `IMPORTANT: 
 Use these exact labels.` : ""}
 
 Do NOT include hashtags unless specified. Separate each line with a blank line for clarity.
-${referenceInstructions}`;
+${referenceInstructions}
+${voiceReferenceInstructions}`;
 
   // Build skeleton context if provided (supports both legacy contentSkeleton and new videoIdeaSkeleton)
   let skeletonContext = "";
@@ -1417,7 +1457,7 @@ ${videoType.id !== "talking_head" ? `Remember to use the ${videoType.name} forma
     let styleMatch = 100;
     const referenceStyleSource = isCloneMode
       ? ((params.clonedVideoStructure as any)?.originalTranscript || "")
-      : (params.referenceScript || "");
+      : (params.voiceReferenceScript || params.referenceScript || "");
     const enforceStyleMatch = referenceStyleSource.trim().length > 30 || isCloneMode;
     const targetDurationSeconds = Number(effectiveDuration) || Number(params.duration) || 60;
     const minStyleScore = isCloneMode ? 72 : 60;

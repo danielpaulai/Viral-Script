@@ -465,6 +465,7 @@ export interface ScriptParameters {
   videoType?: string;
   creatorStyle?: string;
   referenceScript?: string;
+  voiceReferenceScript?: string;
   batchCount?: number;
   contentSkeleton?: {
     topicSummary: string;
