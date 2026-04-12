@@ -514,6 +514,23 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
     ? "Moderate" 
     : "Complex";
 
+  const qualityReport = script.qualityReport;
+  const qualityTone = qualityReport
+    ? qualityReport.overallScore >= 85
+      ? "text-green-500"
+      : qualityReport.overallScore >= 70
+      ? "text-yellow-500"
+      : "text-red-500"
+    : "text-muted-foreground";
+
+  const qualityBadgeLabel = qualityReport
+    ? qualityReport.overallScore >= 85
+      ? "Excellent"
+      : qualityReport.overallScore >= 70
+      ? "Good"
+      : "Needs Work"
+    : "N/A";
+
 
   const groupedHooks = hookCategories.map(cat => ({
     ...cat,
@@ -597,6 +614,50 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
           </Button>
         </div>
       </div>
+
+      {qualityReport && (
+        <div className="mb-6 p-4 rounded-md bg-muted/40 border border-border">
+          <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+            <div className="flex items-center gap-2">
+              <Gauge className="w-4 h-4 text-primary" />
+              <h3 className="text-sm font-semibold text-foreground">Quality Report</h3>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className={`text-sm font-bold ${qualityTone}`} data-testid="text-overall-quality-score">
+                {qualityReport.overallScore}/100
+              </span>
+              <Badge variant="outline" data-testid="badge-quality-rating">{qualityBadgeLabel}</Badge>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-3 text-xs">
+            <div>
+              <p className="text-muted-foreground">Duration</p>
+              <p className="font-semibold" data-testid="text-quality-duration">{qualityReport.durationMatchScore}</p>
+            </div>
+            <div>
+              <p className="text-muted-foreground">Style Match</p>
+              <p className="font-semibold" data-testid="text-quality-style">{qualityReport.styleMatchScore}</p>
+            </div>
+            <div>
+              <p className="text-muted-foreground">Coherence</p>
+              <p className="font-semibold" data-testid="text-quality-coherence">{qualityReport.coherenceScore}</p>
+            </div>
+            <div>
+              <p className="text-muted-foreground">CTA Match</p>
+              <p className="font-semibold" data-testid="text-quality-cta">{qualityReport.ctaScore}</p>
+            </div>
+            <div>
+              <p className="text-muted-foreground">Topic Match</p>
+              <p className="font-semibold" data-testid="text-quality-topic">{qualityReport.topicRelevanceScore}</p>
+            </div>
+          </div>
+
+          <p className="text-xs text-muted-foreground" data-testid="text-quality-runtime">
+            Runtime target: ~{qualityReport.targetSeconds}s, estimated: ~{qualityReport.estimatedSeconds}s, words: {qualityReport.actualWords} (target {qualityReport.targetWordMin}-{qualityReport.targetWordMax})
+          </p>
+        </div>
+      )}
 
       {/* Enhanced Script Indicator */}
       {enhancedScript && (
@@ -864,7 +925,7 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
             <div>
               <p className="text-xs text-muted-foreground mb-1">Est. Duration</p>
               <p className="text-2xl font-bold text-foreground" data-testid="stat-duration">
-                {Math.round(script.wordCount / 2.5)}s
+                {qualityReport ? `${qualityReport.estimatedSeconds}s` : `${Math.round(script.wordCount / 2.5)}s`}
               </p>
             </div>
             <div>
@@ -873,6 +934,14 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
                 {gradeLabel}
               </Badge>
             </div>
+            {qualityReport && (
+              <div>
+                <p className="text-xs text-muted-foreground mb-1">Quality Score</p>
+                <p className={`text-2xl font-bold ${qualityTone}`} data-testid="stat-quality">
+                  {qualityReport.overallScore}
+                </p>
+              </div>
+            )}
           </div>
         </div>
       )}

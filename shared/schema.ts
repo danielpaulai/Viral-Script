@@ -544,6 +544,20 @@ export interface SceneBreakdown {
   energy: string;
 }
 
+export interface ScriptQualityReport {
+  overallScore: number;
+  durationMatchScore: number;
+  styleMatchScore: number;
+  coherenceScore: number;
+  ctaScore: number;
+  topicRelevanceScore: number;
+  targetSeconds: number;
+  estimatedSeconds: number;
+  targetWordMin: number;
+  targetWordMax: number;
+  actualWords: number;
+}
+
 // Generated Script Interface
 export interface GeneratedScript {
   id: string;
@@ -564,6 +578,7 @@ export interface GeneratedScript {
   createdAt: Date;
   research?: string;
   referenceAnalysis?: string;
+  qualityReport?: ScriptQualityReport;
 }
 
 // Content Skeleton for Deep Research Mode

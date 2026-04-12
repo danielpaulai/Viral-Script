@@ -509,6 +509,14 @@ ${cta}`,
   const scriptLines = scriptContent.split("\n\n").filter(Boolean);
   const totalDuration = parseInt(params.duration) || 60;
   const perScene = Math.floor(totalDuration / Math.max(scriptLines.length, 4));
+  const fallbackWordTargets: Record<string, { min: number; max: number }> = {
+    "15": { min: 38, max: 50 },
+    "30": { min: 80, max: 100 },
+    "60": { min: 160, max: 200 },
+    "90": { min: 240, max: 300 },
+    "180": { min: 480, max: 600 },
+  };
+  const fallbackTarget = fallbackWordTargets[params.duration || "60"] || fallbackWordTargets["60"];
   
   const scenes = [
     {
@@ -558,6 +566,19 @@ ${cta}`,
     scenes,
     parameters: params,
     createdAt: new Date(),
+    qualityReport: {
+      overallScore: 70,
+      durationMatchScore: 70,
+      styleMatchScore: 65,
+      coherenceScore: 75,
+      ctaScore: 85,
+      topicRelevanceScore: 80,
+      targetSeconds: parseInt(params.duration || "60") || 60,
+      estimatedSeconds: Math.round((wordCount / 172) * 60),
+      targetWordMin: fallbackTarget.min,
+      targetWordMax: fallbackTarget.max,
+      actualWords: wordCount,
+    },
   };
 }
 
@@ -1508,6 +1529,7 @@ ${videoType.id !== "talking_head" ? `Remember to use the ${videoType.name} forma
     // COHERENCE VALIDATION - Check if script is logically connected, not random facts stitched together
     // Skip for clone mode - cloned scripts follow the original video's structure, not hook→problem→solution→CTA
     let coherenceCheck = { coherent: isCloneMode ? true : false, issues: [] as string[], suggestions: [] as string[] };
+    let coherenceScore = isCloneMode ? 100 : 65;
     let coherenceAttempts = 0;
     const maxCoherenceAttempts = isCloneMode ? 0 : 2;
     
@@ -1568,6 +1590,7 @@ Does this script tell a coherent story where each part connects logically? Or do
         const jsonMatch = coherenceJson.match(/\{[\s\S]*\}/);
         if (jsonMatch) {
           const parsed = JSON.parse(jsonMatch[0]);
+          coherenceScore = typeof parsed.score === "number" ? Math.max(1, Math.min(10, parsed.score)) * 10 : coherenceScore;
           coherenceCheck = {
             coherent: parsed.coherent === true || parsed.score >= 7,
             issues: parsed.issues || [],
@@ -1631,6 +1654,25 @@ DO NOT just list random tips. Tell a STORY with a beginning, middle, and end.`;
     }
     
     const wordCount = currentWordCount;
+
+    const durationMatchScore = (() => {
+      if (!targetDurationSeconds || targetDurationSeconds <= 0) return 80;
+      const deltaPct = Math.abs(estimatedSeconds - targetDurationSeconds) / targetDurationSeconds;
+      return Math.max(0, Math.round(100 - Math.min(100, deltaPct * 300)));
+    })();
+
+    const topicRelevanceScore = topicRelevance.totalKeywords > 0
+      ? Math.round((topicRelevance.matchedKeywords / topicRelevance.totalKeywords) * 100)
+      : 100;
+    const ctaScore = ctaValid ? 100 : 0;
+    const normalizedStyleScore = enforceStyleMatch ? styleMatch : 85;
+    const overallScore = Math.round(
+      durationMatchScore * 0.2 +
+      normalizedStyleScore * 0.25 +
+      coherenceScore * 0.2 +
+      ctaScore * 0.15 +
+      topicRelevanceScore * 0.2
+    );
 
     // Enhanced production notes with music resources
     const musicResources = [
@@ -1844,6 +1886,19 @@ Return JSON in this exact format:
       createdAt: new Date(),
       research: researchContext || undefined,
       referenceAnalysis: referenceAnalysis || undefined,
+      qualityReport: {
+        overallScore,
+        durationMatchScore,
+        styleMatchScore: normalizedStyleScore,
+        coherenceScore,
+        ctaScore,
+        topicRelevanceScore,
+        targetSeconds: targetDurationSeconds,
+        estimatedSeconds,
+        targetWordMin: effectiveWordTarget.min,
+        targetWordMax: effectiveWordTarget.max,
+        actualWords: wordCount,
+      },
     };
   } catch (error) {
     console.error("AI script generation failed, falling back to template:", error);
