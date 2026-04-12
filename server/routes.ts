@@ -4147,18 +4147,20 @@ RULES:
 4. Maximum 1-2 sentences (under 20 words ideally)
 5. Create curiosity, tension, or a reason to keep watching
 6. Make it SPECIFIC to the problem/solution - not generic
-7. Vary the approach - give 4 distinctly different conversational hooks
+7. Vary the approach - give 5 distinctly different conversational hooks
 8. Consider the platform (${platform || 'TikTok'}) - shorter for TikTok, can be slightly longer for YouTube
+9. Score each hook from 1-100 based on scroll-stopping strength, clarity, and specificity
 
-Respond with a JSON array of exactly 4 hooks:
+Respond with a JSON array of exactly 5 hooks:
 [
-  {"hook": "The conversational hook text", "reasoning": "Why this grabs attention and sounds spoken"},
-  {"hook": "Another option", "reasoning": "Explanation"},
-  {"hook": "Third option", "reasoning": "Explanation"},
-  {"hook": "Fourth option", "reasoning": "Explanation"}
+  {"hook": "The conversational hook text", "reasoning": "Why this grabs attention and sounds spoken", "score": 92},
+  {"hook": "Another option", "reasoning": "Explanation", "score": 88},
+  {"hook": "Third option", "reasoning": "Explanation", "score": 84},
+  {"hook": "Fourth option", "reasoning": "Explanation", "score": 79},
+  {"hook": "Fifth option", "reasoning": "Explanation", "score": 75}
 ]`;
 
-      const userPrompt = `Generate 4 CONVERSATIONAL hooks for this video:
+      const userPrompt = `Generate 5 CONVERSATIONAL hooks for this video:
 
 VIDEO TYPE: ${videoPurpose || 'education'}
 PROBLEM the video addresses: ${problem || 'Not specified'}
@@ -4167,7 +4169,7 @@ TARGET AUDIENCE: ${targetAudience || 'General creators'}
 PLATFORM: ${platform || 'TikTok'}
 DURATION: ${duration || '60s'}
 
-Create 4 distinctly different hooks in the "${hookCategory?.name || hookStyle}" style. 
+Create 5 distinctly different hooks in the "${hookCategory?.name || hookStyle}" style. 
 Remember: Each hook should sound like someone TALKING to the viewer, not a written title or headline.
 Start with words like: "If you're...", "Okay so...", "Look,", "I'm going to...", "Stop.", "Here's the thing...", etc.`;
 
@@ -4192,10 +4194,11 @@ Start with words like: "If you're...", "Okay so...", "Look,", "I'm going to...",
         const hooks = JSON.parse(cleanedJson);
         
         // Validate and normalize
-        const normalizedHooks = (Array.isArray(hooks) ? hooks : []).slice(0, 4).map((h: any, i: number) => ({
+        const normalizedHooks = (Array.isArray(hooks) ? hooks : []).slice(0, 5).map((h: any, i: number) => ({
           id: `hook_${i + 1}`,
           hook: h.hook || h.text || `Hook option ${i + 1}`,
           reasoning: h.reasoning || h.why || "AI-generated hook",
+          score: typeof h.score === 'number' ? Math.max(1, Math.min(100, Math.round(h.score))) : Math.max(60, 92 - (i * 6)),
           style: hookStyle,
         }));
         

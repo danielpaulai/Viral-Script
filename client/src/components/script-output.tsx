@@ -67,6 +67,14 @@ interface ChatMessage {
   timestamp: Date;
 }
 
+interface GeneratedHookOption {
+  id: string;
+  hook: string;
+  reasoning: string;
+  score: number;
+  style: string;
+}
+
 interface ScriptOutputProps {
   script: GeneratedScript;
   onRegenerate: () => void;
@@ -80,6 +88,7 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
   const [showHookSelector, setShowHookSelector] = useState(false);
   const [selectedHook, setSelectedHook] = useState<string | null>(null);
   const [customHookLine, setCustomHookLine] = useState<string | null>(null);
+  const [generatedHookOptions, setGeneratedHookOptions] = useState<GeneratedHookOption[]>([]);
   const [expandedShot, setExpandedShot] = useState<string | null>(null);
   const [showResearch, setShowResearch] = useState(false);
   const [enhancedScript, setEnhancedScript] = useState<string | null>(null);
@@ -371,11 +380,38 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
     },
   });
 
+  const generateHookOptionsMutation = useMutation({
+    mutationFn: async () => {
+      const activeHook = viralHooks.find(h => h.id === (selectedHook || script.parameters.hook));
+      const hookStyle = activeHook?.category || "personal_experience";
+      const params = script.parameters as unknown as Record<string, unknown>;
+      const res = await apiRequest("POST", "/api/hooks/generate", {
+        hookStyle,
+        problem: script.parameters.topic || "",
+        solution: script.parameters.keyFacts || script.parameters.callToAction || script.script,
+        targetAudience: script.parameters.targetAudience || "General audience",
+        platform: script.parameters.platform || "tiktok",
+        duration: script.parameters.duration || "60",
+        videoPurpose: params.videoPurpose || "education",
+      });
+      return await res.json() as { hooks: GeneratedHookOption[]; style: string; styleName: string };
+    },
+    onSuccess: (data) => {
+      const ranked = [...(data.hooks || [])].sort((a, b) => b.score - a.score);
+      setGeneratedHookOptions(ranked);
+      toast({ title: "Hook Options Ready", description: `Generated ${ranked.length} ranked hook options.` });
+    },
+    onError: () => {
+      toast({ title: "Hook Generation Failed", description: "Could not generate hook options.", variant: "destructive" });
+    },
+  });
+
   const handleHookChange = (hookId: string) => {
     const hook = viralHooks.find(h => h.id === hookId);
     if (hook) {
       // Show loading state
       setSelectedHook(hookId);
+      setGeneratedHookOptions([]);
       toast({
         title: "Adapting Hook",
         description: `Customizing "${hook.name}" for your content...`,
@@ -852,9 +888,30 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
 
       {showHookSelector && (
         <div className="mb-6 p-4 rounded-md bg-muted/50 border border-border">
-          <div className="flex items-center gap-2 mb-3">
-            <Lightbulb className="w-4 h-4 text-primary" />
-            <h3 className="text-sm font-medium text-foreground">Select a Viral Hook Style</h3>
+          <div className="flex items-center justify-between gap-2 mb-3 flex-wrap">
+            <div className="flex items-center gap-2">
+              <Lightbulb className="w-4 h-4 text-primary" />
+              <h3 className="text-sm font-medium text-foreground">Select a Viral Hook Style</h3>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => generateHookOptionsMutation.mutate()}
+              disabled={generateHookOptionsMutation.isPending}
+              data-testid="button-generate-hook-options"
+            >
+              {generateHookOptionsMutation.isPending ? (
+                <>
+                  <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                  Generating...
+                </>
+              ) : (
+                <>
+                  <Sparkles className="w-3 h-3 mr-1" />
+                  Generate 5 Hook Options
+                </>
+              )}
+            </Button>
           </div>
           <p className="text-xs text-muted-foreground mb-4">
             Choose from 50 proven viral hooks to change how your script opens
@@ -913,6 +970,44 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
               <div>
                 <p className="text-xs text-muted-foreground mb-1">WHY IT WORKS</p>
                 <p className="text-xs text-muted-foreground">{currentHook.why}</p>
+              </div>
+            </div>
+          )}
+
+          {generatedHookOptions.length > 0 && (
+            <div className="mt-4 p-3 rounded-md bg-background/60 border border-border">
+              <div className="flex items-center justify-between mb-3">
+                <div>
+                  <p className="text-xs font-semibold text-primary uppercase tracking-wider">Ranked Hook Alternatives</p>
+                  <p className="text-[10px] text-muted-foreground">One click swaps the hook in your live preview.</p>
+                </div>
+                <Badge variant="outline">{generatedHookOptions.length} options</Badge>
+              </div>
+              <div className="space-y-2">
+                {generatedHookOptions.map((option, index) => {
+                  const isApplied = customHookLine === option.hook;
+                  return (
+                    <button
+                      key={option.id}
+                      onClick={() => {
+                        setCustomHookLine(option.hook);
+                        toast({ title: "Hook Applied", description: `Using option ${index + 1} in the preview.` });
+                      }}
+                      className={`w-full text-left p-3 rounded-md border transition ${isApplied ? "border-primary bg-primary/10" : "border-border bg-muted/30 hover:border-primary/40"}`}
+                      data-testid={`button-apply-generated-hook-${index + 1}`}
+                    >
+                      <div className="flex items-start justify-between gap-3 mb-1">
+                        <div className="flex items-center gap-2">
+                          <Badge variant="outline">#{index + 1}</Badge>
+                          <span className="text-xs font-semibold text-foreground">Score {option.score}</span>
+                          {isApplied && <Badge className="bg-primary/20 text-primary border-0">Applied</Badge>}
+                        </div>
+                      </div>
+                      <p className="text-sm text-foreground font-medium mb-1">"{option.hook}"</p>
+                      <p className="text-[11px] text-muted-foreground">{option.reasoning}</p>
+                    </button>
+                  );
+                })}
               </div>
             </div>
           )}
