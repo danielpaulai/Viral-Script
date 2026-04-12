@@ -926,6 +926,16 @@ Keep production notes concise and actionable — each note should be something t
 `;
   }
 
+  // Clone mode and duration settings must be defined before prompt construction.
+  const isCloneMode = !!params.clonedVideoStructure;
+  const cloneWordCount = isCloneMode ? (params.clonedVideoStructure as any)?.wordCount : null;
+  const cloneDuration = isCloneMode ? (params.clonedVideoStructure as any)?.estimatedDurationSeconds : null;
+  const cloneWordsPerMinute = isCloneMode ? (params.clonedVideoStructure as any)?.wordsPerMinute : null;
+  const effectiveDuration = cloneDuration || params.duration;
+  const effectiveWordTarget = cloneWordCount
+    ? { min: Math.round(cloneWordCount * 0.85), max: Math.round(cloneWordCount * 1.15) }
+    : targetWords;
+
   const systemPrompt = `You are a world-class short-form video scriptwriter who writes like a real human, NOT an AI.
 ${clonedStructureInstructions}
 ${creatorStyleInstructions ? `
@@ -1147,15 +1157,6 @@ ${skeleton.suggestedHooks.map((h: string) => `- "${h}"`).join('\n')}
 `;
   }
 
-  // In clone mode, use the cloned video's word count and duration instead of form defaults
-  const isCloneMode = !!params.clonedVideoStructure;
-  const cloneWordCount = isCloneMode ? (params.clonedVideoStructure as any)?.wordCount : null;
-  const cloneDuration = isCloneMode ? (params.clonedVideoStructure as any)?.estimatedDurationSeconds : null;
-  const effectiveDuration = cloneDuration || params.duration;
-  const effectiveWordTarget = cloneWordCount 
-    ? { min: Math.round(cloneWordCount * 0.85), max: Math.round(cloneWordCount * 1.15) }
-    : targetWords;
-
   const userPrompt = isCloneMode 
     ? `Write a script about the topic below using the FORMAT CLONE instructions from the system prompt. The cloned video's structure, rhythm, and style are LAW — only the topic changes.
 
@@ -1177,6 +1178,7 @@ ${skeletonContext}
 
 TARGET WORD COUNT: ${effectiveWordTarget.min}-${effectiveWordTarget.max} words (match the original video's length)
 ${effectiveDuration ? `TARGET DURATION: ~${effectiveDuration} seconds` : ''}
+${cloneWordsPerMinute ? `TARGET SPEAKING PACE: ~${cloneWordsPerMinute} words per minute` : 'TARGET SPEAKING PACE: ~165-180 words per minute'}
 PLATFORM: ${params.platform}
 ${params.targetAudience ? `TARGET AUDIENCE: ${params.targetAudience}` : ""}
 ${params.keyFacts ? `KEY FACTS TO INCLUDE: ${params.keyFacts}` : ""}
@@ -1228,6 +1230,7 @@ STRUCTURE: ${structure?.name || "Problem Solver"} - ${structure?.description || 
 TONE: ${tone?.name || "High Energy"}
 VOICE: ${voice?.name || "Confident"}
 PLATFORM: ${params.platform}
+TARGET SPEAKING PACE: ~165-180 words per minute
 ${params.contentStrategy ? `CONTENT CATEGORY: ${params.contentStrategy} (consider this funnel stage when writing)` : ""}
 ${params.targetAudience ? `TARGET AUDIENCE: ${params.targetAudience}` : ""}
 ${params.keyFacts ? `KEY FACTS TO INCLUDE: ${params.keyFacts}` : ""}
@@ -1254,6 +1257,67 @@ ${videoType.id !== "talking_head" ? `Remember to use the ${videoType.name} forma
     const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
     const avgWordsPerSentence = words.length / Math.max(1, sentences.length);
     return Math.max(3, Math.min(12, 0.39 * avgWordsPerSentence + 4));
+  };
+
+  const estimateDurationSeconds = (wordCount: number, wordsPerMinute?: number): number => {
+    const wpm = wordsPerMinute && wordsPerMinute > 0 ? wordsPerMinute : 172;
+    return Math.round((wordCount / wpm) * 60);
+  };
+
+  type StyleFingerprint = {
+    avgWordsPerSentence: number;
+    questionRatio: number;
+    exclamationRatio: number;
+    shortSentenceRatio: number;
+    firstPersonRatio: number;
+  };
+
+  const getStyleFingerprint = (text: string): StyleFingerprint => {
+    const words = text.toLowerCase().split(/\s+/).filter(Boolean);
+    const sentenceChunks = text
+      .split(/\n+/)
+      .map(s => s.trim())
+      .filter(Boolean);
+    const sentences = sentenceChunks.length > 0 ? sentenceChunks : text.split(/[.!?]+/).map(s => s.trim()).filter(Boolean);
+
+    const sentenceWordCounts = sentences.map(s => s.split(/\s+/).filter(Boolean).length).filter(n => n > 0);
+    const avgWordsPerSentence = sentenceWordCounts.length
+      ? sentenceWordCounts.reduce((a, b) => a + b, 0) / sentenceWordCounts.length
+      : 0;
+
+    const questionCount = (text.match(/\?/g) || []).length;
+    const exclamationCount = (text.match(/!/g) || []).length;
+    const shortSentenceCount = sentenceWordCounts.filter(n => n <= 7).length;
+    const firstPersonCount = (text.match(/\b(i|i'm|i’ve|ive|my|me|we|our|us)\b/gi) || []).length;
+
+    return {
+      avgWordsPerSentence,
+      questionRatio: sentences.length ? questionCount / sentences.length : 0,
+      exclamationRatio: sentences.length ? exclamationCount / sentences.length : 0,
+      shortSentenceRatio: sentenceWordCounts.length ? shortSentenceCount / sentenceWordCounts.length : 0,
+      firstPersonRatio: words.length ? firstPersonCount / words.length : 0,
+    };
+  };
+
+  const styleMatchScore = (reference: string, candidate: string): number => {
+    if (!reference?.trim() || !candidate?.trim()) return 100;
+    const a = getStyleFingerprint(reference);
+    const b = getStyleFingerprint(candidate);
+
+    const sentenceLenDelta = Math.abs(a.avgWordsPerSentence - b.avgWordsPerSentence);
+    const questionDelta = Math.abs(a.questionRatio - b.questionRatio);
+    const exclamationDelta = Math.abs(a.exclamationRatio - b.exclamationRatio);
+    const shortSentenceDelta = Math.abs(a.shortSentenceRatio - b.shortSentenceRatio);
+    const firstPersonDelta = Math.abs(a.firstPersonRatio - b.firstPersonRatio);
+
+    const penalty =
+      Math.min(35, sentenceLenDelta * 3.5) +
+      Math.min(20, questionDelta * 100) +
+      Math.min(15, exclamationDelta * 100) +
+      Math.min(15, shortSentenceDelta * 100) +
+      Math.min(15, firstPersonDelta * 300);
+
+    return Math.max(0, Math.round(100 - penalty));
   };
   
   // Helper function to check if CTA is present in script
@@ -1327,13 +1391,22 @@ ${videoType.id !== "talking_head" ? `Remember to use the ${videoType.name} forma
     let specificityCheck = { specific: false, numberCount: 0, genericWords: [] as string[] };
     let wordCountValid = false;
     let currentWordCount = 0;
+    let durationValid = false;
+    let estimatedSeconds = 0;
+    let styleMatch = 100;
+    const referenceStyleSource = isCloneMode
+      ? ((params.clonedVideoStructure as any)?.originalTranscript || "")
+      : (params.referenceScript || "");
+    const enforceStyleMatch = referenceStyleSource.trim().length > 30 || isCloneMode;
+    const targetDurationSeconds = Number(effectiveDuration) || Number(params.duration) || 60;
+    const minStyleScore = isCloneMode ? 72 : 60;
     
     // Retry loop for quality validation
     // Clone mode: only retry for word count, CTA, and topic — don't enforce grade level, fluff, specificity, or actionability
     // since the cloned video's style may legitimately differ from our generic quality rules
     const needsRetry = () => isCloneMode
-      ? (!ctaValid || !wordCountValid || !topicRelevance.relevant)
-      : (gradeLevel > 5 || !ctaValid || hasFluff || !actionabilityCheck.actionable || !topicRelevance.relevant || !specificityCheck.specific || !wordCountValid);
+      ? (!ctaValid || !wordCountValid || !topicRelevance.relevant || !durationValid || (enforceStyleMatch && styleMatch < minStyleScore))
+      : (gradeLevel > 5 || !ctaValid || hasFluff || !actionabilityCheck.actionable || !topicRelevance.relevant || !specificityCheck.specific || !wordCountValid || !durationValid || (enforceStyleMatch && styleMatch < minStyleScore));
     while (attempts < maxAttempts && needsRetry()) {
       attempts++;
       const temperature = attempts === 1 ? 0.8 : 0.6; // Lower temperature on retries
@@ -1349,6 +1422,8 @@ ${videoType.id !== "talking_head" ? `Remember to use the ${videoType.name} forma
           }
         }
         if (!topicRelevance.relevant) retryHints.push(`STAY ON TOPIC! Your script must be about "${params.topic}". Every sentence must relate to this topic. You only matched ${topicRelevance.matchedKeywords}/${topicRelevance.totalKeywords} topic keywords.`);
+        if (!durationValid) retryHints.push(`DURATION MISMATCH: Estimated ${estimatedSeconds}s vs target ~${targetDurationSeconds}s. Tighten or expand lines so spoken runtime matches.`);
+        if (enforceStyleMatch && styleMatch < minStyleScore) retryHints.push(`STYLE MISMATCH: Your style match score is ${styleMatch}/100 (need ${minStyleScore}+). Match sentence rhythm, punctuation energy, and POV to the reference video.`);
         if (!isCloneMode) {
           if (!specificityCheck.specific) {
             const issues: string[] = [];
@@ -1391,13 +1466,25 @@ ${videoType.id !== "talking_head" ? `Remember to use the ${videoType.name} forma
       const scriptWords = scriptContent.split(/\s+/).filter(Boolean);
       currentWordCount = scriptWords.length;
       wordCountValid = currentWordCount >= effectiveWordTarget.min && currentWordCount <= effectiveWordTarget.max;
+      estimatedSeconds = estimateDurationSeconds(currentWordCount, cloneWordsPerMinute || undefined);
+      const durationTolerance = isCloneMode ? 0.1 : 0.15;
+      const minDuration = Math.floor(targetDurationSeconds * (1 - durationTolerance));
+      const maxDuration = Math.ceil(targetDurationSeconds * (1 + durationTolerance));
+      durationValid = estimatedSeconds >= minDuration && estimatedSeconds <= maxDuration;
+      styleMatch = styleMatchScore(referenceStyleSource, scriptContent);
       
-      console.log(`Script generation attempt ${attempts}: words=${currentWordCount} (target ${effectiveWordTarget.min}-${effectiveWordTarget.max}), grade=${gradeLevel.toFixed(1)}, ctaValid=${ctaValid}, hasFluff=${hasFluff}, actionable=${actionabilityCheck.actionable}, topicRelevant=${topicRelevance.relevant} (${topicRelevance.matchedKeywords}/${topicRelevance.totalKeywords}), specific=${specificityCheck.specific} (${specificityCheck.numberCount} numbers, ${specificityCheck.genericWords.length} generic words)`);
+      console.log(`Script generation attempt ${attempts}: words=${currentWordCount} (target ${effectiveWordTarget.min}-${effectiveWordTarget.max}), estDuration=${estimatedSeconds}s (~${targetDurationSeconds}s), styleMatch=${styleMatch}/100, grade=${gradeLevel.toFixed(1)}, ctaValid=${ctaValid}, hasFluff=${hasFluff}, actionable=${actionabilityCheck.actionable}, topicRelevant=${topicRelevance.relevant} (${topicRelevance.matchedKeywords}/${topicRelevance.totalKeywords}), specific=${specificityCheck.specific} (${specificityCheck.numberCount} numbers, ${specificityCheck.genericWords.length} generic words)`);
     }
     
     // If we still failed validation after max attempts, log warning but continue
     if (!wordCountValid) {
       console.warn(`Word count validation failed: ${currentWordCount} words (target ${targetWords.min}-${targetWords.max}) after ${maxAttempts} attempts`);
+    }
+    if (!durationValid) {
+      console.warn(`Duration validation failed: estimated ${estimatedSeconds}s (target ~${targetDurationSeconds}s) after ${maxAttempts} attempts`);
+    }
+    if (enforceStyleMatch && styleMatch < minStyleScore) {
+      console.warn(`Style match validation failed: ${styleMatch}/100 (required ${minStyleScore}+) after ${maxAttempts} attempts`);
     }
     if (gradeLevel > 5) {
       console.warn(`Script grade level ${gradeLevel.toFixed(1)} exceeds target (max 5) after ${maxAttempts} attempts`);
@@ -1525,6 +1612,13 @@ DO NOT just list random tips. Tell a STORY with a beginning, middle, and end.`;
           ctaValid = ctaIsPresent(scriptContent, finalCta);
           const scriptWords = scriptContent.split(/\s+/).filter(Boolean);
           currentWordCount = scriptWords.length;
+          wordCountValid = currentWordCount >= effectiveWordTarget.min && currentWordCount <= effectiveWordTarget.max;
+          estimatedSeconds = estimateDurationSeconds(currentWordCount, cloneWordsPerMinute || undefined);
+          const durationTolerance = isCloneMode ? 0.1 : 0.15;
+          const minDuration = Math.floor(targetDurationSeconds * (1 - durationTolerance));
+          const maxDuration = Math.ceil(targetDurationSeconds * (1 + durationTolerance));
+          durationValid = estimatedSeconds >= minDuration && estimatedSeconds <= maxDuration;
+          styleMatch = styleMatchScore(referenceStyleSource, scriptContent);
         }
       } catch (error) {
         console.error("Coherence validation failed:", error);
