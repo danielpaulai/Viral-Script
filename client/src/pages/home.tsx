@@ -314,6 +314,7 @@ export default function Home() {
   const [isGeneratingCloneCtas, setIsGeneratingCloneCtas] = useState(false);
   const [selectedCloneCtaIndex, setSelectedCloneCtaIndex] = useState<number | null>(null);
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>("");
+  const [batchSortMode, setBatchSortMode] = useState<"quality" | "duration" | "words">("quality");
 
   const [formData, setFormData] = useState<ScriptParameters>({
     topic: "",
@@ -481,7 +482,8 @@ export default function Home() {
       setBatchScripts(scripts);
       setStreamProgress(null);
       if (scripts.length > 0) {
-        setGeneratedScript(scripts[0]);
+        const bestScript = [...scripts].sort((a, b) => (b.qualityReport?.overallScore || 0) - (a.qualityReport?.overallScore || 0))[0];
+        setGeneratedScript(bestScript || scripts[0]);
       }
       queryClient.invalidateQueries({ queryKey: ['/api/user/trial-status'] });
       queryClient.invalidateQueries({ queryKey: ['/api/user/usage'] });
@@ -954,6 +956,24 @@ export default function Home() {
   const currentHook = useMemo(() => {
     return viralHooks.find(h => h.id === formData.hook);
   }, [formData.hook]);
+
+  const sortedBatchScripts = useMemo(() => {
+    const scripts = [...batchScripts];
+    if (batchSortMode === "duration") {
+      const target = Number(formData.duration) || 60;
+      return scripts.sort((a, b) => {
+        const aDelta = Math.abs((a.qualityReport?.estimatedSeconds || target) - target);
+        const bDelta = Math.abs((b.qualityReport?.estimatedSeconds || target) - target);
+        return aDelta - bDelta;
+      });
+    }
+
+    if (batchSortMode === "words") {
+      return scripts.sort((a, b) => b.wordCount - a.wordCount);
+    }
+
+    return scripts.sort((a, b) => (b.qualityReport?.overallScore || 0) - (a.qualityReport?.overallScore || 0));
+  }, [batchScripts, batchSortMode, formData.duration]);
 
   const liveHookPreview = useMemo(() => {
     if (!currentHook) return null;
@@ -3829,27 +3849,91 @@ export default function Home() {
 
       {batchScripts.length > 1 && (
         <Card className="mb-4 p-4 border-primary/20 bg-primary/5">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="text-sm font-semibold">Pick Your Best Variation</h3>
-            <Badge variant="outline">{batchScripts.length} options</Badge>
+          <div className="flex items-center justify-between mb-3 gap-3 flex-wrap">
+            <div>
+              <h3 className="text-sm font-semibold">Compare Variations</h3>
+              <p className="text-xs text-muted-foreground">Review the strongest scripts side-by-side and choose a winner.</p>
+            </div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <Badge variant="outline">{batchScripts.length} options</Badge>
+              <Select value={batchSortMode} onValueChange={(value: "quality" | "duration" | "words") => setBatchSortMode(value)}>
+                <SelectTrigger className="w-[170px] h-8 text-xs" data-testid="select-batch-sort">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="quality">Sort by Quality</SelectItem>
+                  <SelectItem value="duration">Sort by Duration Fit</SelectItem>
+                  <SelectItem value="words">Sort by Word Count</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
-          <div className="space-y-2">
-            {batchScripts.map((script, idx) => {
-              const preview = script.script.split("\n").filter(Boolean).slice(0, 2).join(" ");
+
+          <div className="grid gap-3 lg:grid-cols-3">
+            {sortedBatchScripts.map((script, idx) => {
+              const lines = script.script.split("\n").filter(Boolean);
+              const preview = lines.slice(0, 3).join(" ");
               const selected = generatedScript?.id === script.id;
+              const quality = script.qualityReport;
+              const isTop = idx === 0 && batchSortMode === "quality";
+
               return (
-                <button
+                <div
                   key={script.id}
-                  onClick={() => setGeneratedScript(script)}
-                  className={`w-full text-left p-3 rounded-md border transition ${selected ? "border-primary bg-primary/10" : "border-border bg-background hover:border-primary/40"}`}
-                  data-testid={`button-select-variation-${idx + 1}`}
+                  className={`p-4 rounded-md border transition ${selected ? "border-primary bg-primary/10" : "border-border bg-background"}`}
+                  data-testid={`card-variation-${idx + 1}`}
                 >
-                  <div className="flex items-center justify-between gap-2 mb-1">
-                    <span className="text-xs font-medium text-primary">Variation {idx + 1}</span>
+                  <div className="flex items-start justify-between gap-2 mb-2">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-xs font-medium text-primary">Variation {idx + 1}</span>
+                      {isTop && <Badge className="bg-green-500/20 text-green-400 border-0">Best Score</Badge>}
+                      {selected && <Badge className="bg-primary/20 text-primary border-0">Selected</Badge>}
+                    </div>
                     <span className="text-[10px] text-muted-foreground">{script.wordCount} words</span>
                   </div>
-                  <p className="text-xs text-muted-foreground">{preview}</p>
-                </button>
+
+                  <div className="grid grid-cols-3 gap-2 mb-3 text-[10px]">
+                    <div className="p-2 rounded bg-muted/40 border border-border">
+                      <p className="text-muted-foreground">Quality</p>
+                      <p className="font-semibold text-foreground">{quality?.overallScore ?? "-"}</p>
+                    </div>
+                    <div className="p-2 rounded bg-muted/40 border border-border">
+                      <p className="text-muted-foreground">Duration</p>
+                      <p className="font-semibold text-foreground">{quality?.estimatedSeconds ?? "-"}s</p>
+                    </div>
+                    <div className="p-2 rounded bg-muted/40 border border-border">
+                      <p className="text-muted-foreground">Style</p>
+                      <p className="font-semibold text-foreground">{quality?.styleMatchScore ?? "-"}</p>
+                    </div>
+                  </div>
+
+                  <div className="mb-3">
+                    <p className="text-[10px] text-muted-foreground mb-1">Hook Preview</p>
+                    <p className="text-xs font-medium text-foreground">{lines[0] || "No hook generated"}</p>
+                  </div>
+
+                  <p className="text-xs text-muted-foreground mb-3">{preview}</p>
+
+                  <div className="flex gap-2">
+                    <Button
+                      variant={selected ? "default" : "outline"}
+                      size="sm"
+                      className="flex-1"
+                      onClick={() => setGeneratedScript(script)}
+                      data-testid={`button-select-variation-${idx + 1}`}
+                    >
+                      {selected ? "Winner" : "Choose Winner"}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setGeneratedScript(script)}
+                      data-testid={`button-preview-variation-${idx + 1}`}
+                    >
+                      Preview
+                    </Button>
+                  </div>
+                </div>
               );
             })}
           </div>
