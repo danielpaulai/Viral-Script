@@ -2494,6 +2494,12 @@ Generate 3 CTAs now:`;
 - Make transitions snappier
 - Increase urgency and energy
 - Use simple power words a 3rd grader knows`,
+        authority: `Rewrite this script in strong expert authority style:
+      - Confident, decisive, no hedging language
+      - Use clear frameworks and "do this / avoid this" guidance
+      - Keep claims specific and practical
+      - Remove tentative language like "maybe" or "might"
+      - Keep wording simple and spoken`,
         clearer: `Make this script clearer and simpler:
 - Use grade 3 reading level (elementary school)
 - Replace all jargon with simple everyday words
@@ -2506,6 +2512,18 @@ Generate 3 CTAs now:`;
 - Add vivid but simple details
 - Build better tension and payoff
 - Keep language simple (grade 3 level)`,
+        high_retention: `Rewrite this script for maximum retention:
+      - Hard hook in first line
+      - Open at least one curiosity loop in first 2-3 lines
+      - Add 2 pattern interrupts in the body
+      - Tighten transitions so each line creates forward pull
+      - Keep pace fast and spoken`,
+        style_match: `Rewrite this script to closely match the creator/reference style:
+      - Mirror sentence rhythm and energy
+      - Match vocabulary simplicity and tone
+      - Keep the same section flow and pacing
+      - Preserve the original creator voice while improving clarity
+      - Do not sound generic`,
         engagement: `Optimize this script for maximum engagement:
 - Strengthen the hook to stop the scroll
 - Add more curiosity gaps
@@ -2529,6 +2547,27 @@ Generate 3 CTAs now:`;
         const avgWordsPerSentence = words.length / Math.max(1, sentences.length);
         return Math.max(3, Math.min(12, 0.39 * avgWordsPerSentence + 4));
       };
+
+      const estimateDurationSeconds = (wordCount: number): number => {
+        // Average short-form spoken pace target.
+        return Math.round((wordCount / 172) * 60);
+      };
+
+      const styleScore = (source: string, candidate: string): number => {
+        const sent = (t: string) => t.split(/[.!?\n]+/).map(s => s.trim()).filter(Boolean);
+        const aSent = sent(source);
+        const bSent = sent(candidate);
+        const aWords = source.split(/\s+/).filter(Boolean);
+        const bWords = candidate.split(/\s+/).filter(Boolean);
+        const aAvg = aSent.length ? aWords.length / aSent.length : 0;
+        const bAvg = bSent.length ? bWords.length / bSent.length : 0;
+        const aQ = aSent.length ? ((source.match(/\?/g) || []).length / aSent.length) : 0;
+        const bQ = bSent.length ? ((candidate.match(/\?/g) || []).length / bSent.length) : 0;
+        const aBang = aSent.length ? ((source.match(/!/g) || []).length / aSent.length) : 0;
+        const bBang = bSent.length ? ((candidate.match(/!/g) || []).length / bSent.length) : 0;
+        const delta = Math.abs(aAvg - bAvg) * 3 + Math.abs(aQ - bQ) * 100 + Math.abs(aBang - bBang) * 100;
+        return Math.max(0, Math.round(100 - Math.min(100, delta)));
+      };
       
       // Extract CTA from original script (last section after **CTA**)
       const extractCta = (text: string): string => {
@@ -2537,16 +2576,36 @@ Generate 3 CTAs now:`;
       };
       
       const originalCta = extractCta(script);
+      const originalWords = script.split(/\s+/).filter(Boolean).length;
+      const targetDuration = Number(parameters?.duration) || Math.round((originalWords / 172) * 60);
+      const durationMin = Math.floor(targetDuration * 0.9);
+      const durationMax = Math.ceil(targetDuration * 1.1);
       
       let enhancedScript = script;
       let attempts = 0;
-      const maxAttempts = 2;
+      const maxAttempts = 3;
       let gradeLevel = 10;
+      let enhancedWordCount = originalWords;
+      let estimatedSeconds = estimateDurationSeconds(originalWords);
+      let ctaOk = true;
+      let lengthOk = true;
+      let styleOk = true;
+      let currentStyleScore = 100;
+
+      const requiresStyle = enhancementType === 'style_match' || !!parameters?.referenceScript || !!parameters?.clonedVideoStructure;
+      const minStyleScore = enhancementType === 'style_match' ? 70 : 60;
       
-      while (attempts < maxAttempts && gradeLevel > 5) {
+      while (attempts < maxAttempts && (gradeLevel > 5 || !lengthOk || !ctaOk || (requiresStyle && !styleOk))) {
         attempts++;
         const temperature = attempts === 1 ? 0.7 : 0.5;
-        const retryHint = attempts > 1 ? '\n\nPREVIOUS ATTEMPT HAD COMPLEX LANGUAGE. USE MUCH SIMPLER WORDS.' : '';
+        const retryHints: string[] = [];
+        if (attempts > 1) {
+          if (gradeLevel > 5) retryHints.push('Use simpler words and shorter sentences.');
+          if (!lengthOk) retryHints.push(`Keep runtime near ${targetDuration}s. Current estimated runtime is ${estimatedSeconds}s.`);
+          if (!ctaOk) retryHints.push('Keep the CTA exactly unchanged from original script.');
+          if (requiresStyle && !styleOk) retryHints.push(`Increase style fidelity. Current style score ${currentStyleScore}/100; need ${minStyleScore}+.`);
+        }
+        const retryHint = retryHints.length ? `\n\nPREVIOUS ATTEMPT ISSUES:\n- ${retryHints.join('\n- ')}` : '';
         
         const response = await openai.chat.completions.create({
           model: "gpt-4o-mini",
@@ -2560,8 +2619,9 @@ CRITICAL RULES:
 2. KEEP EXACT CTA: The CTA section must stay EXACTLY the same - do NOT change or improve it.
 3. SOUND HUMAN: Write like you're texting a friend. Be casual. No corporate speak.
 4. KEEP STRUCTURE: Maintain HOOK, BODY, CTA structure if present.
-5. SAME LENGTH: Stay within 20% of original word count.
+5. SAME LENGTH: Stay within 10% of original word count and keep spoken runtime near target.
 6. BANNED WORDS: leverage, unleash, game-changer, revolutionary, elevate, empower, unlock, transform, cutting-edge, dive in, unpack, seamlessly
+7. DURATION TARGET: Keep estimated runtime near ${targetDuration}s (acceptable ${durationMin}-${durationMax}s).
 
 ${enhancementPrompt}`
             },
@@ -2580,8 +2640,16 @@ Return ONLY the enhanced script with no explanations or commentary.${retryHint}`
         
         enhancedScript = response.choices[0]?.message?.content || script;
         gradeLevel = calculateGradeLevel(enhancedScript);
+        enhancedWordCount = enhancedScript.split(/\s+/).filter(Boolean).length;
+        estimatedSeconds = estimateDurationSeconds(enhancedWordCount);
+        lengthOk = enhancedWordCount >= Math.floor(originalWords * 0.9) && enhancedWordCount <= Math.ceil(originalWords * 1.1)
+          && estimatedSeconds >= durationMin
+          && estimatedSeconds <= durationMax;
+        ctaOk = originalCta ? enhancedScript.toLowerCase().includes(originalCta.toLowerCase().replace(/\s+/g, ' ').trim()) : true;
+        currentStyleScore = styleScore(script, enhancedScript);
+        styleOk = !requiresStyle || currentStyleScore >= minStyleScore;
         
-        console.log(`Enhancement attempt ${attempts}: grade=${gradeLevel.toFixed(1)}`);
+        console.log(`Enhancement attempt ${attempts}: grade=${gradeLevel.toFixed(1)}, words=${enhancedWordCount}, duration=${estimatedSeconds}s, ctaOk=${ctaOk}, style=${currentStyleScore}`);
       }
       
       // Calculate final metrics
@@ -2592,6 +2660,9 @@ Return ONLY the enhanced script with no explanations or commentary.${retryHint}`
         enhancedScript,
         wordCount,
         gradeLevel: Math.round(gradeLevel * 10) / 10,
+        estimatedSeconds,
+        styleMatchScore: currentStyleScore,
+        ctaPreserved: ctaOk,
         enhancementType: enhancementType || 'general',
       });
     } catch (error) {

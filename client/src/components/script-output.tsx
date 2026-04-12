@@ -140,9 +140,11 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
     onSuccess: (data) => {
       setEnhancedScript(data.enhancedScript);
       setEnhancedMetrics({ wordCount: data.wordCount, gradeLevel: data.gradeLevel });
+      const runtimeInfo = typeof data.estimatedSeconds === "number" ? ` ~${data.estimatedSeconds}s` : "";
+      const styleInfo = typeof data.styleMatchScore === "number" ? ` • Style ${data.styleMatchScore}/100` : "";
       toast({
         title: "Script Enhanced",
-        description: `Your script has been improved. Word count: ${data.wordCount}, Grade level: ${data.gradeLevel}`,
+        description: `Improved with ${data.enhancementType || "auto"} mode. ${data.wordCount} words${runtimeInfo}${styleInfo}`,
       });
       setShowEnhanceOptions(false);
     },
@@ -763,7 +765,7 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
           <p className="text-xs text-muted-foreground mb-4">
             Choose how you want AI to improve your script
           </p>
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+          <div className="grid grid-cols-2 md:grid-cols-7 gap-2">
             <button
               onClick={() => enhanceScriptMutation.mutate('punchier')}
               disabled={enhanceScriptMutation.isPending}
@@ -773,6 +775,16 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
               <Zap className="w-4 h-4 text-yellow-400 mb-1" />
               <p className="text-xs font-medium text-foreground">Punchier</p>
               <p className="text-[10px] text-muted-foreground">More energy</p>
+            </button>
+            <button
+              onClick={() => enhanceScriptMutation.mutate('authority')}
+              disabled={enhanceScriptMutation.isPending}
+              className="p-3 rounded-md bg-muted/50 border border-border text-left hover-elevate active-elevate-2"
+              data-testid="button-enhance-authority"
+            >
+              <Target className="w-4 h-4 text-orange-400 mb-1" />
+              <p className="text-xs font-medium text-foreground">Authority</p>
+              <p className="text-[10px] text-muted-foreground">Expert tone</p>
             </button>
             <button
               onClick={() => enhanceScriptMutation.mutate('clearer')}
@@ -793,6 +805,26 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
               <MessageSquare className="w-4 h-4 text-blue-400 mb-1" />
               <p className="text-xs font-medium text-foreground">Story Mode</p>
               <p className="text-[10px] text-muted-foreground">More narrative</p>
+            </button>
+            <button
+              onClick={() => enhanceScriptMutation.mutate('high_retention')}
+              disabled={enhanceScriptMutation.isPending}
+              className="p-3 rounded-md bg-muted/50 border border-border text-left hover-elevate active-elevate-2"
+              data-testid="button-enhance-retention"
+            >
+              <Sparkles className="w-4 h-4 text-cyan-400 mb-1" />
+              <p className="text-xs font-medium text-foreground">Retention</p>
+              <p className="text-[10px] text-muted-foreground">Watch-time pull</p>
+            </button>
+            <button
+              onClick={() => enhanceScriptMutation.mutate('style_match')}
+              disabled={enhanceScriptMutation.isPending}
+              className="p-3 rounded-md bg-muted/50 border border-border text-left hover-elevate active-elevate-2"
+              data-testid="button-enhance-style-match"
+            >
+              <Bot className="w-4 h-4 text-indigo-400 mb-1" />
+              <p className="text-xs font-medium text-foreground">Style Match</p>
+              <p className="text-[10px] text-muted-foreground">Reference voice</p>
             </button>
             <button
               onClick={() => enhanceScriptMutation.mutate('engagement')}
