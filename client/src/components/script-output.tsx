@@ -109,9 +109,22 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
   const [chatInput, setChatInput] = useState("");
   const [showAiChat, setShowAiChat] = useState(true);
 
+  const getWorkingScript = () => {
+    const baseScript = enhancedScript || script.script;
+    if (!customHookLine) return baseScript;
+
+    const lines = baseScript.split('\n');
+    const firstNonEmptyIndex = lines.findIndex((line) => line.trim());
+    if (firstNonEmptyIndex !== -1) {
+      lines[firstNonEmptyIndex] = customHookLine;
+      return lines.join('\n');
+    }
+    return customHookLine;
+  };
+
   const boostViralityMutation = useMutation({
     mutationFn: async () => {
-      const currentScript = enhancedScript || script.script;
+      const currentScript = getWorkingScript();
       const res = await apiRequest("POST", "/api/scripts/boost", {
         script: currentScript,
         parameters: script.parameters,
@@ -140,7 +153,7 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
   
   const enhanceScriptMutation = useMutation({
     mutationFn: async (enhancementType: string) => {
-      const currentScript = enhancedScript || script.script;
+      const currentScript = getWorkingScript();
       const res = await apiRequest("POST", "/api/scripts/enhance", {
         script: currentScript,
         enhancementType,
@@ -216,7 +229,7 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
 
   const saveScriptMutation = useMutation({
     mutationFn: async () => {
-      const currentScript = enhancedScript || script.script;
+      const currentScript = getWorkingScript();
       const res = await apiRequest("PATCH", `/api/scripts/${script.id}`, {
         script: currentScript,
       });
@@ -242,7 +255,7 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
   // AI Chat Refinement mutation
   const refineScriptMutation = useMutation({
     mutationFn: async (userRequest: string) => {
-      const currentScript = enhancedScript || script.script;
+      const currentScript = getWorkingScript();
       const res = await apiRequest("POST", "/api/scripts/refine", {
         script: currentScript,
         userRequest,
@@ -319,9 +332,7 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
   });
 
   const handleCopy = async () => {
-    const scriptToCopy = customHookLine 
-      ? script.script.replace(/^[^\n]+/, customHookLine)
-      : script.script;
+    const scriptToCopy = getDisplayScript();
     await navigator.clipboard.writeText(scriptToCopy);
     setCopied(true);
     toast({
