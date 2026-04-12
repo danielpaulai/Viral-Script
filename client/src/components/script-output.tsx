@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import {
   Select,
   SelectContent,
@@ -93,6 +94,7 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
   const [showResearch, setShowResearch] = useState(false);
   const [enhancedScript, setEnhancedScript] = useState<string | null>(null);
   const [showEnhanceOptions, setShowEnhanceOptions] = useState(false);
+  const [showMoreActions, setShowMoreActions] = useState(false);
 
   const [enhancedMetrics, setEnhancedMetrics] = useState<{wordCount: number, gradeLevel: number} | null>(null);
   const [boostSuggestions, setBoostSuggestions] = useState<Array<{area: string, issue: string, fix: string}> | null>(null);
@@ -1827,6 +1829,31 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
         </Button>
         
         <Button
+          onClick={() => {
+            if (!enhancedScript) {
+              setEnhancedScript(script.script);
+            }
+            setShowCollabEditor(true);
+          }}
+          variant="outline"
+          size="sm"
+          className="bg-muted/50 border-border"
+          data-testid="button-edit-script"
+        >
+          <FileText className="w-4 h-4 mr-1" />
+          Edit Script
+        </Button>
+
+        <Collapsible open={showMoreActions} onOpenChange={setShowMoreActions}>
+          <CollapsibleTrigger asChild>
+            <Button variant="outline" size="sm" className="bg-muted/50 border-border" data-testid="button-more-actions">
+              More Actions
+              {showMoreActions ? <ChevronUp className="w-4 h-4 ml-1" /> : <ChevronDown className="w-4 h-4 ml-1" />}
+            </Button>
+          </CollapsibleTrigger>
+          <CollapsibleContent className="w-full">
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              <Button
           onClick={() => saveToVaultMutation.mutate()}
           variant="outline"
           size="sm"
@@ -1835,7 +1862,7 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
           data-testid="button-save-vault"
         >
           <Save className="w-4 h-4 mr-1" />
-          Save to Vault
+          Save
         </Button>
         
         {script.id && (
@@ -1848,7 +1875,7 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
             data-testid="button-email-script"
           >
             <Mail className="w-4 h-4 mr-1" />
-            {emailScriptMutation.isPending ? "Sending..." : "Email Script"}
+            {emailScriptMutation.isPending ? "Sending..." : "Email"}
           </Button>
         )}
         
@@ -1861,7 +1888,7 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
           data-testid="button-add-project"
         >
           <FolderPlus className="w-4 h-4 mr-1" />
-          Add to Project
+          Project
         </Button>
         
         <Button 
@@ -1891,24 +1918,9 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
             History
           </Button>
         )}
-        
-        {script.id && (
-          <Button
-            variant="outline"
-            size="sm"
-            className="bg-muted/50 border-border"
-            onClick={() => {
-              if (!enhancedScript) {
-                setEnhancedScript(script.script);
-              }
-              setShowCollabEditor(true);
-            }}
-            data-testid="button-edit-script"
-          >
-            <FileText className="w-4 h-4 mr-1" />
-            Edit & Save
-          </Button>
-        )}
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
       </div>
       
       {showVersionHistory && script.id && (

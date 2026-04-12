@@ -1060,8 +1060,8 @@ export default function Home() {
         <Card className="mb-4 p-3 border-primary/30 bg-primary/5">
           <div className="flex items-center justify-between gap-3 flex-wrap">
             <div>
-              <p className="text-xs font-semibold text-primary uppercase tracking-wider">Winning Voice Locked</p>
-              <p className="text-sm text-foreground">Future generations will bias toward: {lockedVoiceReference.label}</p>
+              <p className="text-xs font-semibold text-primary uppercase tracking-wider">Using Winning Voice</p>
+              <p className="text-sm text-foreground">New scripts will follow the feel of {lockedVoiceReference.label}.</p>
             </div>
             <Button
               variant="outline"
@@ -2673,9 +2673,9 @@ export default function Home() {
             <div className="flex items-center gap-3">
               <Search className="w-4 h-4 text-primary" />
               <div>
-                <p className="text-sm font-medium text-foreground">Deep Research Mode</p>
+                <p className="text-sm font-medium text-foreground">Help Me Build This Out</p>
                 <p className="text-[10px] text-muted-foreground">
-                  {deepResearch ? "AI expands your idea into a detailed brief first" : "Turn ON if your idea is raw/basic"}
+                  {deepResearch ? "AI turns your rough idea into a clearer outline first" : "Turn this on if your idea is still rough"}
                 </p>
               </div>
             </div>
@@ -2701,8 +2701,8 @@ export default function Home() {
                 <div className="flex items-center gap-2">
                   <Globe className="w-4 h-4 text-blue-400" />
                   <div>
-                    <p className="text-xs font-medium text-foreground">Competitor Research</p>
-                    <p className="text-[10px] text-muted-foreground">Analyze top TikTok posts for this topic</p>
+                    <p className="text-xs font-medium text-foreground">Competitor Examples</p>
+                    <p className="text-[10px] text-muted-foreground">Look at top posts on this topic first</p>
                   </div>
                 </div>
                 <Switch
@@ -3860,7 +3860,7 @@ export default function Home() {
             data-testid="button-generate-batch"
           >
             <Sparkles className="w-4 h-4 mr-2" />
-            Generate 3 Variations
+            Generate 3 Options
           </Button>
         </div>
       )}
@@ -3876,8 +3876,8 @@ export default function Home() {
         <Card className="mb-4 p-4 border-primary/20 bg-primary/5">
           <div className="flex items-center justify-between mb-3 gap-3 flex-wrap">
             <div>
-              <h3 className="text-sm font-semibold">Compare Variations</h3>
-              <p className="text-xs text-muted-foreground">Review the strongest scripts side-by-side and choose a winner.</p>
+              <h3 className="text-sm font-semibold">Compare Options</h3>
+              <p className="text-xs text-muted-foreground">Pick the version you want to keep.</p>
             </div>
             <div className="flex items-center gap-2 flex-wrap">
               <Badge variant="outline">{batchScripts.length} options</Badge>
@@ -3911,24 +3911,20 @@ export default function Home() {
                   <div className="flex items-start justify-between gap-2 mb-2">
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="text-xs font-medium text-primary">Variation {idx + 1}</span>
-                      {isTop && <Badge className="bg-green-500/20 text-green-400 border-0">Best Score</Badge>}
+                      {isTop && <Badge className="bg-green-500/20 text-green-400 border-0">Recommended</Badge>}
                       {selected && <Badge className="bg-primary/20 text-primary border-0">Selected</Badge>}
                     </div>
                     <span className="text-[10px] text-muted-foreground">{script.wordCount} words</span>
                   </div>
 
-                  <div className="grid grid-cols-3 gap-2 mb-3 text-[10px]">
+                  <div className="grid grid-cols-2 gap-2 mb-3 text-[10px]">
                     <div className="p-2 rounded bg-muted/40 border border-border">
                       <p className="text-muted-foreground">Quality</p>
                       <p className="font-semibold text-foreground">{quality?.overallScore ?? "-"}</p>
                     </div>
                     <div className="p-2 rounded bg-muted/40 border border-border">
-                      <p className="text-muted-foreground">Duration</p>
+                      <p className="text-muted-foreground">Runtime</p>
                       <p className="font-semibold text-foreground">{quality?.estimatedSeconds ?? "-"}s</p>
-                    </div>
-                    <div className="p-2 rounded bg-muted/40 border border-border">
-                      <p className="text-muted-foreground">Style</p>
-                      <p className="font-semibold text-foreground">{quality?.styleMatchScore ?? "-"}</p>
                     </div>
                   </div>
 
@@ -3947,15 +3943,7 @@ export default function Home() {
                       onClick={() => setGeneratedScript(script)}
                       data-testid={`button-select-variation-${idx + 1}`}
                     >
-                      {selected ? "Winner" : "Choose Winner"}
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setGeneratedScript(script)}
-                      data-testid={`button-preview-variation-${idx + 1}`}
-                    >
-                      Preview
+                      {selected ? "Using This" : "Use This"}
                     </Button>
                     <Button
                       variant="ghost"
