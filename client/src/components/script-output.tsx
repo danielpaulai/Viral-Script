@@ -588,21 +588,6 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
             <span className={gradeColor} data-testid="text-grade-level">
               Grade {displayGradeLevel.toFixed(1)} ({gradeLabel})
             </span>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => boostViralityMutation.mutate()}
-              disabled={boostViralityMutation.isPending}
-              className="ml-2 bg-gradient-to-r from-orange-500/20 to-red-500/20 border-orange-500/50 text-orange-400 hover:text-orange-300"
-              data-testid="button-boost-virality"
-            >
-              {boostViralityMutation.isPending ? (
-                <div className="w-3 h-3 border-2 border-orange-400/30 border-t-orange-400 rounded-full animate-spin mr-1" />
-              ) : (
-                <TrendingUp className="w-3 h-3 mr-1" />
-              )}
-              Boost Virality
-            </Button>
           </div>
         </div>
         
@@ -655,7 +640,7 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
         </div>
       </div>
 
-      {qualityReport && (
+      {qualityReport && showAnalysis && (
         <div className="mb-6 p-4 rounded-md bg-muted/40 border border-border">
           <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
             <div className="flex items-center gap-2">
@@ -1853,6 +1838,22 @@ export function ScriptOutput({ script, onRegenerate, isRegenerating }: ScriptOut
           </CollapsibleTrigger>
           <CollapsibleContent className="w-full">
             <div className="mt-2 flex flex-wrap items-center gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => boostViralityMutation.mutate()}
+                disabled={boostViralityMutation.isPending}
+                className="bg-gradient-to-r from-orange-500/20 to-red-500/20 border-orange-500/50 text-orange-400 hover:text-orange-300"
+                data-testid="button-boost-virality"
+              >
+                {boostViralityMutation.isPending ? (
+                  <div className="w-3 h-3 border-2 border-orange-400/30 border-t-orange-400 rounded-full animate-spin mr-1" />
+                ) : (
+                  <TrendingUp className="w-3 h-3 mr-1" />
+                )}
+                Boost
+              </Button>
+
               <Button
           onClick={() => saveToVaultMutation.mutate()}
           variant="outline"
