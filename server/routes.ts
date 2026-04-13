@@ -55,7 +55,7 @@ import {
   type KnowledgeBaseDoc,
 } from "../shared/schema.js";
 import { getCreatorById, creatorStyles as comprehensiveCreatorStyles } from "../shared/creator-styles.js";
-import { scrapeTikTokProfile, scrapeInstagramProfile, analyzeCreatorStyle, searchTikTokByKeyword, extractVideoTranscript, extractVideoFrames, VideoCloneData, ExtractedFrame } from "./apify.js";
+import { scrapeTikTokProfile, scrapeInstagramProfile, analyzeCreatorStyle, searchTikTokByKeyword, extractVideoTranscript, extractVideoFrames, fetchViralExamples, fetchInstagramViralExamples, fetchAP5Insights, VideoCloneData, ExtractedFrame } from "./apify.js";
 
 // Configure OpenAI client - Always use direct OpenAI API
 const openaiApiKey = process.env.OPENAI_API_KEY;
@@ -674,21 +674,35 @@ async function generateScriptWithAI(params: ScriptParameters, knowledgeBaseDocs?
   let voiceReferenceAnalysis = "";
   const kbContext = knowledgeBaseDocs ? buildKnowledgeBaseContext(knowledgeBaseDocs) : "";
   
-  if (params.deepResearch) {
+  const researchSections: string[] = [];
+  const shouldRunGeneralResearch = !!params.deepResearch;
+  const shouldRunSocialResearch = !!(params.deepResearch || params.includeCompetitorResearch);
+
+  if (shouldRunGeneralResearch) {
     try {
       const researchResponse = await openai.chat.completions.create({
         model: "gpt-4o-mini",
         messages: [
           {
             role: "system",
-            content: `You are a viral content researcher. Research the given topic and provide:
-1. 3-5 surprising statistics or data points with sources
-2. 2-3 expert quotes or insights from credible people
-3. 1-2 contrarian takes that challenge common beliefs  
-4. Real-world examples or case studies
-5. Common mistakes people make and why
+            content: `You are a factual short-form content researcher.
 
-Keep responses concise and factual. Cite sources where possible.`
+Return concise research in plain text with these sections:
+STATS:
+- 3 to 5 specific data points with source names
+EXPERT INSIGHTS:
+- 2 to 3 expert quotes or paraphrased positions with source names
+CONTRARIAN ANGLES:
+- 1 to 2 sharp takes that challenge default advice
+REAL EXAMPLES:
+- 2 concrete case studies or examples
+COMMON MISTAKES:
+- 3 mistakes people make on this topic
+
+Rules:
+- Prefer real, widely known facts over speculation
+- If uncertain, say "source needs verification"
+- Keep every bullet useful for writing a better short-form script`
           },
           {
             role: "user",
@@ -697,14 +711,57 @@ ${params.targetAudience ? `Target audience: ${params.targetAudience}` : ""}
 ${params.keyFacts ? `Known facts to include: ${params.keyFacts}` : ""}`
           }
         ],
-        max_tokens: 800,
-        temperature: 0.7,
+        max_tokens: 900,
+        temperature: 0.4,
       });
-      researchContext = researchResponse.choices[0]?.message?.content || "";
+      const generalResearch = researchResponse.choices[0]?.message?.content?.trim();
+      if (generalResearch) {
+        researchSections.push(`GENERAL RESEARCH\n${generalResearch}`);
+      }
     } catch (error) {
-      console.error("Research failed, continuing without deep research:", error);
+      console.error("General research failed, continuing without it:", error);
     }
   }
+
+  if (shouldRunSocialResearch && process.env.APIFY_API_TOKEN) {
+    try {
+      const [tiktokExamplesResult, instagramExamplesResult, strategicInsightsResult] = await Promise.allSettled([
+        fetchViralExamples(params.topic, 5),
+        fetchInstagramViralExamples(params.topic, 5),
+        fetchAP5Insights(params.topic, { platforms: ["tiktok", "instagram"], limit: 12 }),
+      ]);
+
+      if (tiktokExamplesResult.status === "fulfilled" && tiktokExamplesResult.value.examples.length > 0) {
+        const tiktokExamples = tiktokExamplesResult.value;
+        researchSections.push(`TIKTOK WINNERS\n${tiktokExamples.examples.slice(0, 4).map((example) => `- Hook: "${example.hookLine}" | ${Math.round(example.views / 1000)}K views | ${example.engagementRate}% engagement | Format: ${example.formatType}`).join("\n")}\nTop TikTok formats: ${tiktokExamples.dominantFormats.join(", ") || "unknown"}\nTop TikTok hook types: ${tiktokExamples.dominantHookTypes.join(", ") || "unknown"}`);
+      }
+
+      if (instagramExamplesResult.status === "fulfilled" && instagramExamplesResult.value.examples.length > 0) {
+        const instagramExamples = instagramExamplesResult.value;
+        researchSections.push(`INSTAGRAM WINNERS\n${instagramExamples.examples.slice(0, 4).map((example) => `- Hook: "${example.hookLine}" | ${Math.round(example.views / 1000)}K plays/likes | ${example.engagementRate}% engagement | Format: ${example.formatType}`).join("\n")}\nTop Instagram formats: ${instagramExamples.dominantFormats.join(", ") || "unknown"}\nTop Instagram hook types: ${instagramExamples.dominantHookTypes.join(", ") || "unknown"}`);
+      }
+
+      if (strategicInsightsResult.status === "fulfilled") {
+        const insights = strategicInsightsResult.value;
+        const strategicLines = [
+          insights.topicSummary ? `Summary: ${insights.topicSummary}` : "",
+          insights.keyInsights.length > 0 ? `Key insights:\n${insights.keyInsights.slice(0, 5).map((item) => `- ${item}`).join("\n")}` : "",
+          insights.painPoints.length > 0 ? `Audience pain points:\n${insights.painPoints.slice(0, 4).map((item) => `- ${item}`).join("\n")}` : "",
+          insights.emotionalDrivers.length > 0 ? `Emotional drivers:\n${insights.emotionalDrivers.slice(0, 4).map((item) => `- ${item}`).join("\n")}` : "",
+          insights.provenCTAIdeas.length > 0 ? `Proven CTA ideas:\n${insights.provenCTAIdeas.slice(0, 3).map((item) => `- ${item}`).join("\n")}` : "",
+          insights.swipeableFacts.length > 0 ? `Swipeable facts:\n${insights.swipeableFacts.slice(0, 4).map((item) => `- ${item}`).join("\n")}` : "",
+        ].filter(Boolean).join("\n");
+
+        if (strategicLines) {
+          researchSections.push(`SOCIAL STRATEGIC INSIGHTS\n${strategicLines}`);
+        }
+      }
+    } catch (error) {
+      console.error("Social research failed, continuing without it:", error);
+    }
+  }
+
+  researchContext = researchSections.join("\n\n");
 
   // Analyze reference script if provided
   if (params.referenceScript && params.referenceScript.trim().length > 50) {

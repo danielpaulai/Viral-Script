@@ -806,6 +806,7 @@ export default function Home() {
       structure: "problem_solver",
       hook: "custom",
       deepResearch: !!enhanced.research, // Enable if we have research
+      includeCompetitorResearch,
       videoType: formData.videoType || "talking_head",
       creatorStyle: formData.creatorStyle || "default",
     };
@@ -851,6 +852,7 @@ export default function Home() {
       structure: "problem_solver",
       hook: "custom",
       deepResearch: false,
+      includeCompetitorResearch,
       videoType: formData.videoType || "talking_head",
       creatorStyle: formData.creatorStyle || "default",
     };
@@ -899,7 +901,7 @@ export default function Home() {
       voiceReferenceScript: lockedVoiceReference.scriptText,
     } : {};
 
-    return { ...formData, deepResearch, useKnowledgeBase, ...skeletonData, ...cloneData, ...voiceReferenceData };
+    return { ...formData, deepResearch, includeCompetitorResearch, useKnowledgeBase, ...skeletonData, ...cloneData, ...voiceReferenceData };
   };
 
   const handleGenerate = () => {

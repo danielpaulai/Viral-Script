@@ -461,6 +461,7 @@ export interface ScriptParameters {
   voice?: string;
   pacing?: string;
   deepResearch?: boolean;
+  includeCompetitorResearch?: boolean;
   contentStrategy?: string;
   useKnowledgeBase?: boolean;
   videoType?: string;

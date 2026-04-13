@@ -816,13 +816,13 @@ export async function fetchAP5Insights(
 
     // Convert viral examples to the format processAP5Data expects
     const items = viralData.examples.map((ex: any) => ({
-      text: ex.caption,
+      text: ex.fullCaption || ex.hookLine || "",
       views: ex.views,
       likes: ex.likes,
       shares: ex.shares,
       comments: ex.comments,
-      hashtags: ex.hashtags,
-      creator: ex.creator,
+      hashtags: [],
+      creator: ex.author,
     }));
 
     // Process and extract insights from the viral content
