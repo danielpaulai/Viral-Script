@@ -38,7 +38,7 @@ import { randomUUID } from "crypto";
 import session from "express-session";
 import createMemoryStore from "memorystore";
 import connectPgSimple from "connect-pg-simple";
-import { db, pool, isDatabaseAvailable } from "./db";
+import { db, pool, isDatabaseAvailable } from "./db.js";
 import { eq, desc, and } from "drizzle-orm";
 
 const MemoryStore = createMemoryStore(session);

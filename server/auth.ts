@@ -2,8 +2,8 @@ console.log("🔐 AUTH.TS LOADED - HYBRID VERSION WITH SUPABASE");
 
 import { Express } from "express";
 import session from "express-session";
-import { storage } from "./storage";
-import { supabase } from "./supabase";
+import { storage } from "./storage.js";
+import { supabase } from "./supabase.js";
 import { authCredentialsSchema } from "@shared/schema";
 import crypto from "crypto";
 

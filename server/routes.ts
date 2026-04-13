@@ -1,15 +1,15 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
-import { storage } from "./storage";
-import { db } from "./db";
+import { storage } from "./storage.js";
+import { db } from "./db.js";
 import { sql } from "drizzle-orm";
 import { randomUUID } from "crypto";
 import OpenAI from "openai";
 import multer from "multer";
-import { setupAuth, isAuthenticated, setupPasswordReset } from "./auth";
-import { extractTextFromFile, truncateText, SUPPORTED_MIME_TYPES, MAX_FILE_SIZE, MAX_FILES } from "./ocr-utils";
-import { parseOpenAIError, ERROR_CODES } from "./error-handler";
-import { setupSSE, createProgressTracker, CancellationToken } from "./streaming";
+import { setupAuth, isAuthenticated, setupPasswordReset } from "./auth.js";
+import { extractTextFromFile, truncateText, SUPPORTED_MIME_TYPES, MAX_FILE_SIZE, MAX_FILES } from "./ocr-utils.js";
+import { parseOpenAIError, ERROR_CODES } from "./error-handler.js";
+import { setupSSE, createProgressTracker, CancellationToken } from "./streaming.js";
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -55,7 +55,7 @@ import {
   type KnowledgeBaseDoc,
 } from "@shared/schema";
 import { getCreatorById, creatorStyles as comprehensiveCreatorStyles } from "@shared/creator-styles";
-import { scrapeTikTokProfile, scrapeInstagramProfile, analyzeCreatorStyle, searchTikTokByKeyword, extractVideoTranscript, extractVideoFrames, VideoCloneData, ExtractedFrame } from "./apify";
+import { scrapeTikTokProfile, scrapeInstagramProfile, analyzeCreatorStyle, searchTikTokByKeyword, extractVideoTranscript, extractVideoFrames, VideoCloneData, ExtractedFrame } from "./apify.js";
 
 // Configure OpenAI client - Always use direct OpenAI API
 const openaiApiKey = process.env.OPENAI_API_KEY;
