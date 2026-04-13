@@ -1252,6 +1252,90 @@ export interface ExtractedFrame {
   height?: number;
 }
 
+function extractTextFragments(value: unknown): string[] {
+  if (typeof value === "string") {
+    return [value];
+  }
+
+  if (Array.isArray(value)) {
+    return value.flatMap((item) => extractTextFragments(item));
+  }
+
+  if (!value || typeof value !== "object") {
+    return [];
+  }
+
+  const record = value as Record<string, unknown>;
+  const preferredKeys = [
+    "text",
+    "caption",
+    "captions",
+    "subtitle",
+    "subtitles",
+    "transcript",
+    "content",
+    "sentence",
+    "utterance",
+    "words",
+    "lines",
+    "segments",
+    "snippets",
+    "body",
+    "desc",
+  ];
+
+  const collected: string[] = [];
+  for (const key of preferredKeys) {
+    if (key in record) {
+      collected.push(...extractTextFragments(record[key]));
+    }
+  }
+
+  if (collected.length > 0) {
+    return collected;
+  }
+
+  return Object.values(record).flatMap((item) => extractTextFragments(item));
+}
+
+function normalizeVideoTranscript(transcript: string): string {
+  if (!transcript) return "";
+
+  const normalized = transcript
+    .replace(/```[\s\S]*?```/g, " ")
+    .replace(/https?:\/\/\S+/gi, " ")
+    .replace(/\b\d{1,2}:\d{2}(?::\d{2})?\b/g, " ")
+    .replace(/#[A-Za-z0-9_-]+/g, " ")
+    .replace(/@[A-Za-z0-9._-]+/g, " ")
+    .replace(/[|•·]+/g, "\n")
+    .replace(/\s{2,}/g, " ")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+
+  const dedupedLines = normalized
+    .split(/\n+/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .filter((line, index, lines) => {
+      if (line.length < 2) return false;
+      if (line.replace(/[^A-Za-z0-9]/g, "").length < 2) return false;
+      const previous = lines[index - 1]?.trim().toLowerCase();
+      return previous !== line.toLowerCase();
+    });
+
+  return dedupedLines.join("\n").trim();
+}
+
+function buildBestTranscript(...sources: unknown[]): string {
+  const candidates = sources
+    .flatMap((source) => extractTextFragments(source))
+    .map((text) => normalizeVideoTranscript(text))
+    .filter((text) => text.length > 0)
+    .sort((a, b) => b.length - a.length);
+
+  return candidates[0] || "";
+}
+
 // Parse video URL to determine platform and extract ID
 function parseVideoUrl(url: string): { platform: "tiktok" | "instagram" | "youtube" | "unknown"; videoId?: string } {
   const normalizedUrl = url.toLowerCase().trim();
@@ -1308,10 +1392,23 @@ export async function scrapeTikTokVideo(videoUrl: string): Promise<VideoCloneDat
     }
 
     const video = items[0] as any;
-    let transcript = video.desc || video.text || "";
-    
-    if (video.subtitles || video.captions) {
-      transcript = video.subtitles || video.captions;
+    const transcript = buildBestTranscript(
+      video.subtitles,
+      video.captions,
+      video.subtitle,
+      video.desc,
+      video.text,
+      video.video?.subtitle,
+      video.video?.captions,
+    );
+
+    if (!transcript || transcript.split(/\s+/).filter(Boolean).length < 12) {
+      return {
+        platform: "tiktok",
+        transcript: "",
+        success: false,
+        error: "This video did not return enough spoken transcript to clone accurately. Try a video with clearer captions or spoken dialogue.",
+      };
     }
 
     console.log("[Video Clone] TikTok video scraped successfully, transcript length:", transcript.length);
@@ -1367,7 +1464,23 @@ export async function scrapeInstagramVideo(postUrl: string): Promise<VideoCloneD
     }
 
     const post = items[0] as any;
-    const transcript = post.caption || "";
+    const transcript = buildBestTranscript(
+      post.caption,
+      post.text,
+      post.subtitles,
+      post.captions,
+      post.videoCaption,
+      post.accessibilityCaption,
+    );
+
+    if (!transcript || transcript.split(/\s+/).filter(Boolean).length < 12) {
+      return {
+        platform: "instagram",
+        transcript: "",
+        success: false,
+        error: "This Instagram post did not return enough spoken transcript to clone accurately. Try a reel with clearer captions or spoken dialogue.",
+      };
+    }
 
     console.log("[Video Clone] Instagram post scraped successfully, transcript length:", transcript.length);
 
@@ -1425,18 +1538,13 @@ export async function scrapeYouTubeVideo(videoUrl: string): Promise<VideoCloneDa
     const video = items[0] as any;
     console.log("[Video Clone] YouTube video scraped, raw keys:", Object.keys(video).join(", "));
     
-    let transcript = "";
-    if (video.transcript && typeof video.transcript === 'string') {
-      transcript = video.transcript;
-    } else if (video.captions && typeof video.captions === 'string') {
-      transcript = video.captions;
-    } else if (video.text && typeof video.text === 'string') {
-      transcript = video.text;
-    } else if (Array.isArray(video.transcript)) {
-      transcript = video.transcript.map((seg: any) => seg.text || seg).join(' ');
-    } else if (Array.isArray(video.captions)) {
-      transcript = video.captions.map((seg: any) => seg.text || seg).join(' ');
-    }
+    const transcript = buildBestTranscript(
+      video.transcript,
+      video.captions,
+      video.text,
+      video.description,
+      video.subtitle,
+    );
 
     if (!transcript) {
       console.log("[Video Clone] YouTube: No transcript found in response");

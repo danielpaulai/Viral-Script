@@ -3369,6 +3369,13 @@ Create a powerful video brief that will make this topic stand out and go viral.`
           error: videoData.error || "Could not extract transcript from video. Make sure the URL is a valid TikTok or Instagram video." 
         });
       }
+
+      const transcriptWordCount = videoData.transcript.split(/\s+/).filter(Boolean).length;
+      if (transcriptWordCount < 12) {
+        return res.status(400).json({
+          error: "This video does not have enough usable spoken transcript to clone well. Try a video with clear speech or captions.",
+        });
+      }
       
       console.log("[Video Clone] Transcript extracted, length:", videoData.transcript.length);
       console.log("[Video Clone] Video download URL:", videoData.videoDownloadUrl ? "available" : "not available");
@@ -3384,6 +3391,15 @@ Create a powerful video brief that will make this topic stand out and go viral.`
       
       // Step 3: Use AI to deeply analyze the video structure for format cloning
       const analysisPrompt = `You are an elite video format reverse-engineer. Your job is to deconstruct a video so precisely that a different creator could replicate its EXACT format, rhythm, psychology, and feel with completely different content.
+
+    VIDEO METADATA:
+    - Platform: ${videoData.platform}
+    - Author: ${videoData.author || "unknown"}
+    - Views: ${videoData.views || 0}
+    - Likes: ${videoData.likes || 0}
+    - Comments: ${videoData.comments || 0}
+    - Duration: ${videoData.duration || 0} seconds
+    - Transcript word count: ${transcriptWordCount}
 
 TRANSCRIPT:
 "${videoData.transcript}"
