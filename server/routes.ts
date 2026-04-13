@@ -53,8 +53,8 @@ import {
   type ScriptParameters,
   type GeneratedScript,
   type KnowledgeBaseDoc,
-} from "@shared/schema";
-import { getCreatorById, creatorStyles as comprehensiveCreatorStyles } from "@shared/creator-styles";
+} from "../shared/schema.js";
+import { getCreatorById, creatorStyles as comprehensiveCreatorStyles } from "../shared/creator-styles.js";
 import { scrapeTikTokProfile, scrapeInstagramProfile, analyzeCreatorStyle, searchTikTokByKeyword, extractVideoTranscript, extractVideoFrames, VideoCloneData, ExtractedFrame } from "./apify.js";
 
 // Configure OpenAI client - Always use direct OpenAI API

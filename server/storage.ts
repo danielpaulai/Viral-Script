@@ -33,7 +33,7 @@ import {
   vault as vaultTable,
   projects as projectsTable,
   scriptVersions as scriptVersionsTable,
-} from "@shared/schema";
+} from "../shared/schema.js";
 import { randomUUID } from "crypto";
 import session from "express-session";
 import createMemoryStore from "memorystore";

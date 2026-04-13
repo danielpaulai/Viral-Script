@@ -4,7 +4,7 @@ import { Express } from "express";
 import session from "express-session";
 import { storage } from "./storage.js";
 import { supabase } from "./supabase.js";
-import { authCredentialsSchema } from "@shared/schema";
+import { authCredentialsSchema } from "../shared/schema.js";
 import crypto from "crypto";
 
 async function hashPassword(password: string): Promise<string> {
