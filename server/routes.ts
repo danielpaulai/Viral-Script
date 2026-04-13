@@ -119,12 +119,69 @@ const bannedFluffyPhrases = [
   "If you're like most people",
   "You might be wondering",
   "Now, I know what you're thinking",
+  "it's not about",
+  "not because",
+  "the reason is not",
+];
+
+type ViralStyleTemplate = {
+  id: string;
+  name: string;
+  bestFor: string[];
+  hookBlueprint: string;
+  bodyBlueprint: string;
+  ctaBlueprint: string;
+  rhythm: string;
+  tone: string;
+};
+
+const viralStyleTemplates: ViralStyleTemplate[] = [
+  { id: "hard_truth", name: "Hard Truth", bestFor: ["business_marketing", "personal_branding"], hookBlueprint: "Direct uncomfortable truth in 8-12 words", bodyBlueprint: "Problem -> consequence -> specific fix", ctaBlueprint: "Command + one simple action", rhythm: "short-short-medium", tone: "blunt and direct" },
+  { id: "myth_breaker", name: "Myth Breaker", bestFor: ["content_creation", "ai_technology"], hookBlueprint: "Call out one myth with a concrete claim", bodyBlueprint: "What people believe -> why it fails -> what actually works", ctaBlueprint: "Invite comment with stance", rhythm: "medium-short-short", tone: "confident, corrective" },
+  { id: "case_study_snap", name: "Case Study Snap", bestFor: ["business_marketing", "wealth_finance"], hookBlueprint: "Lead with a measurable result", bodyBlueprint: "Context -> action -> result -> lesson", ctaBlueprint: "Offer template/checklist next", rhythm: "short-medium-medium", tone: "evidence-first" },
+  { id: "founder_confession", name: "Founder Confession", bestFor: ["personal_branding", "mindset_growth"], hookBlueprint: "Vulnerable first line tied to cost", bodyBlueprint: "Confession -> turning point -> repeatable rule", ctaBlueprint: "Ask viewer to reflect or share", rhythm: "medium-medium-short", tone: "honest, reflective" },
+  { id: "3_step_playbook", name: "3-Step Playbook", bestFor: ["education", "content_creation", "ai_technology"], hookBlueprint: "Promise a clear result with 3 steps", bodyBlueprint: "Step 1 -> Step 2 -> Step 3 with specifics", ctaBlueprint: "Save/comment to get full framework", rhythm: "short-medium-short", tone: "practical teacher" },
+  { id: "anti_hustle", name: "Anti-Hustle", bestFor: ["mindset_growth", "personal_branding"], hookBlueprint: "Challenge hustle advice with tension", bodyBlueprint: "Expose hidden cost -> better path -> proof", ctaBlueprint: "Ask audience to choose old vs new path", rhythm: "short-short-short", tone: "calm contrarian" },
+  { id: "tool_stack", name: "Tool Stack", bestFor: ["ai_technology", "content_creation"], hookBlueprint: "Name one tool outcome in one sentence", bodyBlueprint: "Tool 1 use-case -> Tool 2 -> Tool 3 with numbers", ctaBlueprint: "Comment keyword for stack", rhythm: "short-medium-medium", tone: "builder energy" },
+  { id: "pain_to_plan", name: "Pain to Plan", bestFor: ["business_marketing", "social_growth"], hookBlueprint: "Name the pain in second person", bodyBlueprint: "Pain diagnosis -> quick plan -> first move today", ctaBlueprint: "Direct action in next 5 minutes", rhythm: "medium-short-short", tone: "coach-like" },
+  { id: "data_shock", name: "Data Shock", bestFor: ["health_science", "wealth_finance", "ai_technology"], hookBlueprint: "Open with one surprising stat", bodyBlueprint: "Stat meaning -> implication -> what to do", ctaBlueprint: "Prompt save/share", rhythm: "short-medium-short", tone: "analytical but simple" },
+  { id: "faq_smash", name: "FAQ Smash", bestFor: ["education", "business_marketing"], hookBlueprint: "Ask the #1 recurring question", bodyBlueprint: "Quick answer -> nuance -> edge case", ctaBlueprint: "Invite next FAQ", rhythm: "short-medium-medium", tone: "friendly expert" },
+  { id: "before_after", name: "Before/After", bestFor: ["social_growth", "niche_optimization"], hookBlueprint: "Before state vs after state in one line", bodyBlueprint: "Before mistakes -> after system", ctaBlueprint: "Ask which stage they are in", rhythm: "short-short-medium", tone: "transformational" },
+  { id: "checklist", name: "Checklist", bestFor: ["content_creation", "education"], hookBlueprint: "If this is you, run this checklist", bodyBlueprint: "3-5 checks with pass/fail criteria", ctaBlueprint: "Save this checklist", rhythm: "short-medium-short", tone: "clear and tactical" },
+  { id: "creator_breakdown", name: "Creator Breakdown", bestFor: ["social_growth", "content_creation"], hookBlueprint: "Reverse-engineer a winning creator move", bodyBlueprint: "What they did -> why it worked -> how to adapt", ctaBlueprint: "Comment creator to break down next", rhythm: "medium-short-medium", tone: "observer/analyst" },
+  { id: "small_audience_big_money", name: "Small Audience, Big Money", bestFor: ["business_marketing", "personal_branding"], hookBlueprint: "Counterintuitive monetization claim", bodyBlueprint: "Audience myth -> monetization model -> practical proof", ctaBlueprint: "Ask for monetization keyword", rhythm: "short-medium-short", tone: "strategic" },
+  { id: "mistake_stack", name: "Mistake Stack", bestFor: ["education", "social_growth"], hookBlueprint: "You are making these 3 mistakes", bodyBlueprint: "Mistake 1/2/3 with concrete fixes", ctaBlueprint: "Save and implement today", rhythm: "short-short-short", tone: "high-clarity" },
+  { id: "opinion_with_receipts", name: "Opinion With Receipts", bestFor: ["business_marketing", "ai_technology"], hookBlueprint: "Strong opinion in one line", bodyBlueprint: "Claim -> receipts/data -> practical implication", ctaBlueprint: "Invite disagreement in comments", rhythm: "short-medium-medium", tone: "bold but grounded" },
+  { id: "framework_naming", name: "Named Framework", bestFor: ["education", "mindset_growth"], hookBlueprint: "Name your framework + result", bodyBlueprint: "Define 3 parts -> apply example", ctaBlueprint: "Offer full framework if requested", rhythm: "medium-medium-short", tone: "teacher/mentor" },
+  { id: "quick_story", name: "Quick Story", bestFor: ["personal_branding", "mindset_growth"], hookBlueprint: "One-sentence story setup", bodyBlueprint: "What happened -> lesson -> repeatable move", ctaBlueprint: "Invite similar story replies", rhythm: "medium-short-medium", tone: "human and warm" },
+  { id: "execution_gap", name: "Execution Gap", bestFor: ["business_marketing", "content_creation"], hookBlueprint: "Call out knowledge vs execution gap", bodyBlueprint: "Why people stall -> execution protocol", ctaBlueprint: "Ask for accountability action", rhythm: "short-medium-short", tone: "urgent coach" },
+  { id: "micro_lesson", name: "Micro Lesson", bestFor: ["education", "health_science"], hookBlueprint: "One sentence promise: learn this in 30 seconds", bodyBlueprint: "Core concept -> one example -> one action", ctaBlueprint: "Follow for next micro lesson", rhythm: "short-short-medium", tone: "crisp explainer" },
+  { id: "future_forecast", name: "Future Forecast", bestFor: ["ai_technology", "wealth_finance"], hookBlueprint: "Prediction with timestamp", bodyBlueprint: "What changes -> who wins/loses -> prep plan", ctaBlueprint: "Ask if they want part 2", rhythm: "medium-short-medium", tone: "forward-looking" },
+  { id: "belief_shift", name: "Belief Shift", bestFor: ["mindset_growth", "personal_branding"], hookBlueprint: "One belief that changed everything", bodyBlueprint: "Old belief -> new belief -> applied outcome", ctaBlueprint: "Ask what belief they need to drop", rhythm: "medium-medium-short", tone: "reflective authority" },
+  { id: "no_fluff_tutorial", name: "No-Fluff Tutorial", bestFor: ["education", "ai_technology"], hookBlueprint: "Do this exact thing in under X minutes", bodyBlueprint: "Step sequence with exact tools/inputs", ctaBlueprint: "Save for implementation", rhythm: "short-medium-short", tone: "operator mode" },
+  { id: "niche_voice", name: "Niche Voice", bestFor: ["niche_optimization", "social_growth"], hookBlueprint: "Speak directly to a specific niche identity", bodyBlueprint: "Niche pain -> niche fix -> niche proof", ctaBlueprint: "CTA with niche keyword", rhythm: "short-short-medium", tone: "high relevance" },
+  { id: "objection_crusher", name: "Objection Crusher", bestFor: ["business_marketing", "wealth_finance"], hookBlueprint: "Name the #1 objection out loud", bodyBlueprint: "Objection -> reframe -> evidence -> low-risk next step", ctaBlueprint: "Invite DM/comment trigger", rhythm: "medium-short-short", tone: "sales clarity" },
+  { id: "status_play", name: "Status Play", bestFor: ["personal_branding", "business_marketing"], hookBlueprint: "Call out status behavior and its cost", bodyBlueprint: "Status trap -> better signal -> practical move", ctaBlueprint: "Ask audience to commit publicly", rhythm: "short-medium-short", tone: "sharp and social" },
+  { id: "community_angle", name: "Community Angle", bestFor: ["personal_branding", "social_growth"], hookBlueprint: "You don't need more content, you need more community", bodyBlueprint: "Audience problem -> community mechanism -> example", ctaBlueprint: "Invite conversation starter", rhythm: "medium-short-medium", tone: "human-centered" },
+  { id: "experiment_log", name: "Experiment Log", bestFor: ["ai_technology", "content_creation"], hookBlueprint: "I tested X for Y days", bodyBlueprint: "Hypothesis -> method -> result -> takeaway", ctaBlueprint: "Ask what to test next", rhythm: "short-medium-medium", tone: "builder lab" },
+  { id: "one_move_today", name: "One Move Today", bestFor: ["education", "mindset_growth"], hookBlueprint: "If you do one thing today, do this", bodyBlueprint: "Why this move matters now -> exact execution", ctaBlueprint: "Prompt immediate action comment", rhythm: "short-short-short", tone: "decisive" },
 ];
 
 // Helper function to check for fluff in script
 function containsFluff(script: string): boolean {
   const lowerScript = script.toLowerCase();
-  return bannedFluffyPhrases.some(phrase => lowerScript.includes(phrase.toLowerCase()));
+  if (bannedFluffyPhrases.some(phrase => lowerScript.includes(phrase.toLowerCase()))) {
+    return true;
+  }
+
+  const repetitiveRhetoricPatterns = [
+    /it\s+isn't\s+about\s+.+?\s+it\s+is\s+about/gi,
+    /it's\s+not\s+about\s+.+?\s+it's\s+about/gi,
+    /not\s+because\s+.+?\s+but\s+because/gi,
+    /not\s+this\s+but\s+that/gi,
+  ];
+
+  return repetitiveRhetoricPatterns.some((pattern) => pattern.test(script));
 }
 
 // Helper function to check for actionability
@@ -652,6 +709,16 @@ async function generateScriptWithAI(params: ScriptParameters, knowledgeBaseDocs?
   const creatorStyle = foundCreator 
     ? { id: foundCreator.id, name: foundCreator.name, description: foundCreator.tone, characteristics: foundCreator.tone, exampleHook: foundCreator.exampleHook }
     : legacyCreator || creatorStyles[0];
+
+  const explicitTemplate = params.templateStyleId
+    ? viralStyleTemplates.find((template) => template.id === params.templateStyleId)
+    : undefined;
+  const categoryTemplatePool = viralStyleTemplates.filter((template) => template.bestFor.includes(params.category));
+  const randomizedTemplatePool = categoryTemplatePool.length > 0 ? categoryTemplatePool : viralStyleTemplates;
+  const autoTemplate = params.diversifyStyle === false
+    ? undefined
+    : randomizedTemplatePool[Math.floor(Math.random() * randomizedTemplatePool.length)];
+  const selectedStyleTemplate = explicitTemplate || autoTemplate;
   
   const selectedCta = params.selectedCtaId 
     ? ctaOptions.find(c => c.id === params.selectedCtaId)?.text 
@@ -905,6 +972,22 @@ Match this creator's:
     }
   }
 
+  const styleTemplateInstructions = !params.clonedVideoStructure && selectedStyleTemplate ? `
+ROTATING VIRAL STYLE TEMPLATE (FOLLOW THIS STYLE DNA):
+- Template: ${selectedStyleTemplate.name}
+- Hook blueprint: ${selectedStyleTemplate.hookBlueprint}
+- Body blueprint: ${selectedStyleTemplate.bodyBlueprint}
+- CTA blueprint: ${selectedStyleTemplate.ctaBlueprint}
+- Rhythm: ${selectedStyleTemplate.rhythm}
+- Tone: ${selectedStyleTemplate.tone}
+
+Execution rules:
+1. Use this as the primary structural style for this script.
+2. Keep it sounding conversational and spoken, not written.
+3. Vary wording naturally; do not repeat rhetorical formulas.
+4. Avoid binary cliché patterns like "not X, but Y" and "it's not about X, it's about Y".
+` : "";
+
   // Reference script instructions
   const referenceInstructions = referenceAnalysis ? `
 REFERENCE SCRIPT ANALYSIS - MATCH THIS STYLE:
@@ -1061,6 +1144,11 @@ ${creatorStyleInstructions}
 You MUST emulate this creator's exact style, including their signature phrases, hook patterns, sentence structure, and energy. This takes precedence over general rules below when there's a conflict.
 === END CREATOR STYLE ===
 ` : ''}
+${styleTemplateInstructions ? `
+=== TEMPLATE STYLE ROTATION ===
+${styleTemplateInstructions}
+=== END TEMPLATE STYLE ===
+` : ""}
 CRITICAL RULES - FOLLOW EXACTLY:
 1. TOPIC RELEVANCE (MOST IMPORTANT): Your script MUST be 100% about the EXACT topic provided. Every sentence must directly relate to the topic. Do NOT go off on tangents. Do NOT write about something else. If the topic is "How to get leads from LinkedIn" - EVERY sentence must be about LinkedIn lead generation.
 
@@ -1070,6 +1158,10 @@ ${isCloneMode ? `2. VOICE & STYLE: Match the cloned video's EXACT tone, vocabula
 4. CTA: You MUST use the EXACT CTA provided by the user. Copy it word-for-word. Do NOT create your own CTA.
 5. ONE IDEA PER SENTENCE: Never combine multiple thoughts in one sentence.
 6. BANNED WORDS - NEVER USE: ${aiWordsToAvoid.join(", ")}
+7. BANNED RHETORIC PATTERNS - NEVER USE:
+  - "It's not about X, it's about Y"
+  - "Not because X, but because Y"
+  - "The reason is not X. It's Y"
 
 ${isCloneMode ? `<output_quality_rules>
 CLONE MODE QUALITY RULES:
@@ -4203,6 +4295,10 @@ DO NOT make up fake statistics. Use the research data provided, or clearly state
 
   app.get("/api/hooks", (req, res) => {
     res.json(viralHooks);
+  });
+
+  app.get("/api/script-templates", (_req, res) => {
+    res.json({ templates: viralStyleTemplates, count: viralStyleTemplates.length });
   });
 
   // Generate multiple hook options based on style and content
