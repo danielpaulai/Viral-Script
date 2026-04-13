@@ -3,8 +3,8 @@ import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
 // Export auth models for Replit Auth integration
-export * from "./models/auth";
-export * from "./models/chat";
+export * from "./models/auth.js";
+export * from "./models/chat.js";
 
 // Script Categories
 export const scriptCategories = [
